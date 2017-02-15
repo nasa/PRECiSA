@@ -1,0 +1,9 @@
+PRECiSA Grand Totals: 87 proofs, 87 attempted, 87 succeeded (43.18 s)
+CD2D_tau Grand Totals: 57 proofs, 57 attempted, 57 succeeded (482.44 s)
+CPR Grand Totals: 8 proofs, 8 attempted, 8 succeeded (7.09 s)
+
+PRECiSA                  [OK: 87 proofs]
+CD2D_tau                 [OK: 57 proofs]
+CPR                      [OK: 8 proofs]
+
+*** Grand Total: 152 proofs / 152 formulas. Missed: 0 formulas.

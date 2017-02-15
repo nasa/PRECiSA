@@ -1,0 +1,7 @@
+cpr_dLat_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+   dLat (I: unb_single): unb_single = Sdiv(RtoS(360), Ssub(RtoS(60), I))
+   
+END cpr_dLat_single

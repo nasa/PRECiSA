@@ -1,0 +1,7 @@
+test_mul_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f (X, Y: unb_double): unb_double = Dmul(X, Y)
+
+END test_mul_double

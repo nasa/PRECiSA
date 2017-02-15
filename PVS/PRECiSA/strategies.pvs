@@ -1,0 +1,13 @@
+% PRECiSA strategies
+strategies : THEORY
+BEGIN
+
+  IMPORTING precIOsa,
+            float@strategies
+
+  %% This constant is used by the strategies to check if all the required theories 
+  %% have been imported in the current context
+
+  PrecisaStrategies__ : Unit
+
+END strategies
