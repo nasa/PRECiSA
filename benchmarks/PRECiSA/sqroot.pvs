@@ -1,0 +1,7 @@
+sqroot: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+sqroot(Y: unb_double):unb_double = Dadd(RtoD(1), Dsub(Dmul(RtoD(0.5),Y) ,Dadd(Dmul(RtoD(0.125),Dmul(Y,Y)) ,Dsub(Dmul(RtoD(0.0625), Dmul(Y, Dmul(Y,Y))),Dmul(RtoD(0.0390625), Dmul(Y, Dmul(Y,Dmul(Y,Y))))))))
+
+END sqroot

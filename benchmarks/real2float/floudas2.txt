@@ -1,0 +1,10 @@
+Variables
+  real x1 in [0, 3],
+  real x2 in [0, 4];
+
+Constraints
+  c1: 2 * ((x1 * x1) * (x1 * x1)) - 8 * (x1 * x1) * x1 + 8 * x1  * x1 - x2 >= 0,
+  c2: 4 * ((x1 * x1) * (x1 * x1)) - 32 * (x1 * x1) * x1 + 88 * x1 * x1 - 96 * x1 + 36 - x2 >= 0;
+
+Expressions
+  floudas2 rnd64= -x1 - x2;

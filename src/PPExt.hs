@@ -35,5 +35,4 @@ instance PPExt Double where
 instance PPExt Char where
   prettyDoc = char
 
-  
 

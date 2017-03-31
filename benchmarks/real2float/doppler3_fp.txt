@@ -1,0 +1,10 @@
+Variables
+  float64 u in [-30, 120],
+  float64 v in [320, 20300],
+  float64 T in [-50, 30];
+
+Definitions
+  t1 rnd64= no_rnd(331.4) + no_rnd(0.6) * T;
+
+Expressions
+  doppler3 rnd64= -t1 * v / ((t1 + u) * (t1 + u));

@@ -2,9 +2,32 @@ interval_ulp_sp: THEORY
 BEGIN
 
   IMPORTING float@ieee754sp,
-  	    interval_ulp[unb_single, StoR, RtoS, min_Sulp, ulp_sp]
+  	    interval_ulp
 
-  ULP_SP(expr: RealExpr): MACRO RealExpr =
-    interval_ulp[unb_single, StoR, RtoS, min_Sulp, ulp_sp].ULP(expr)
+  x: VAR real
+  X,Y: VAR Interval
+
+  Ulp_sp(I:Interval): Interval =
+    interval_ulp[unb_single, StoR, RtoS, min_Sulp, ulp_sp].Ulp(I)
+
+  Ulp_sp_proper: LEMMA
+    Proper?(X) IMPLIES Proper?(Ulp_sp(X))
+
+  Ulp_sp_inclusion : LEMMA
+    x ## X IMPLIES 
+    ulp_sp(x) ## Ulp_sp(X)
+
+  Ulp_sp_Inclusion : JUDGEMENT
+    Ulp_sp HAS_TYPE (Inclusion?(PreTrue,ulp_sp))
+
+  Ulp_sp_fundamental : LEMMA
+    Proper?(X) AND
+    X << Y IMPLIES
+    Ulp_sp(X) << Ulp_sp(Y)
+    
+  Ulp_sp_Fundamental : JUDGEMENT
+    Ulp_sp HAS_TYPE (Fundamental?(PreTrue))
+  
+  ULP_SP(expr: RealExpr): MACRO RealExpr = FUN(PreTrue, ulp_sp, Ulp_sp, expr)
 
 END interval_ulp_sp

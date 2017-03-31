@@ -1,0 +1,21 @@
+(doppler1
+ (dop1_TCC1 0
+  (dop1_TCC1-1 nil 3698847008
+   ("" (skeep :preds? t)
+    (("" (assert)
+      (("" (replace -7 :hide? t)
+        (("" (expand "/=")
+          (("" (expand "DtoR") (("" (assert) nil nil)) nil)) nil))
+        nil))
+      nil))
+    nil)
+   ((posrat_div_posrat_is_posrat application-judgement "posrat"
+     rationals nil)
+    (real_plus_real_is_real application-judgement "real" reals nil)
+    (rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(double_precision_format, dp_closest?) |
+         exact_rep_conservation[2]
+             (double_precision_format, dp_closest?)(RtoF)}" ieee754dp
+     "float/"))
+   nil)))
+

@@ -1,0 +1,7 @@
+Variables
+  float64 x in [-1.57079632679, 1.57079632679];
+
+Expressions
+  sineTaylor rnd64= x - (x * x * x) / 6.0
+                      + (x * x * x * x * x) / 120.0
+                      - (x * x * x * x * x * x * x) / 5040.0;

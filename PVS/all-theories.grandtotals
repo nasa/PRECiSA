@@ -1,0 +1,8 @@
+Processing PRECiSA/top.pvs. Writing output to file ./PRECiSA.summary
+Grand Totals: 99 proofs, 99 attempted, 99 succeeded (49.04 s)
+
+PVS_LIBRARY_PATH=/Users/cmunoz/src/PRECiSA.git/PVS:/Users/cmunoz/local/PVS/nasalib
+PRECiSA                  [OK: 99 proofs]
+
+*** Grand Totals: 99 proofs / 99 formulas. Missed: 0 formulas.
+*** Number of libraries: 1

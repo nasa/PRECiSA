@@ -1,0 +1,11 @@
+Variables
+  float64 x in [-8, 8];
+
+Definitions
+  f rnd64= x,
+  e = rnd(64, ne, 1.5)(exp(f)),
+  t rnd64= 1 + e,
+  r = rnd(64, ne, 1.5)(log(t));
+
+Expressions
+  logexp = r;

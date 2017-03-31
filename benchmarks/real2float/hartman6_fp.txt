@@ -1,0 +1,28 @@
+Variables
+  float64 x1 in [0, 1],
+  float64 x2 in [0, 1],
+  float64 x3 in [0, 1],
+  float64 x4 in [0, 1],
+  float64 x5 in [0, 1],
+  float64 x6 in [0, 1];
+
+Definitions
+  e1 rnd64= 10.0 * ((x1 - no_rnd(0.1312)) * (x1 - no_rnd(0.1312))) + 3.0 * ((x2 - no_rnd(0.1696)) * (x2 - no_rnd(0.1696)))
+            + 17.0 * ((x3 - no_rnd(0.5569)) * (x3 - no_rnd(0.5569))) + 3.5 * ((x4 - no_rnd(0.0124)) * (x4 - no_rnd(0.0124)))
+            + no_rnd(1.7) * ((x5 - no_rnd(0.8283)) * (x5 - no_rnd(0.8283))) + 8.0 * ((x6 - no_rnd(0.5886)) * (x6 - no_rnd(0.5886))),
+  e2 rnd64= no_rnd(0.05) * ((x1 - no_rnd(0.2329)) * (x1 - no_rnd(0.2329))) + 10.0 * ((x2 - no_rnd(0.4135)) * (x2 - no_rnd(0.4135)))
+            + 17.0 * ((x3 - no_rnd(0.8307)) * (x3 - no_rnd(0.8307))) + no_rnd(0.1) * ((x4 - no_rnd(0.3736)) * (x4 - no_rnd(0.3736)))
+            + 8.0 * ((x5 - no_rnd(0.1004)) * (x5 - no_rnd(0.1004))) + 14.0 * ((x6 - no_rnd(0.9991)) * (x6 - no_rnd(0.9991))),
+  e3 rnd64= 3.0 * ((x1 - no_rnd(0.2348)) * (x1 - no_rnd(0.2348))) + 3.5 * ((x2 - no_rnd(0.1451)) * (x2 - no_rnd(0.1451)))
+            + no_rnd(1.7) * ((x3 - no_rnd(0.3522)) * (x3 - no_rnd(0.3522))) + 10.0 * ((x4 - no_rnd(0.2883)) * (x4 - no_rnd(0.2883)))
+            + 17.0 * ((x5 - no_rnd(0.3047)) * (x5 - no_rnd(0.3047))) + 8.0 * ((x6 - no_rnd(0.665)) * (x6 - no_rnd(0.665))),
+  e4 rnd64= 17.0 * ((x1 - no_rnd(0.4047)) * (x1 - no_rnd(0.4047))) + 8.0 * ((x2 - no_rnd(0.8828)) * (x2 - no_rnd(0.8828)))
+            + no_rnd(0.05) * ((x3 - no_rnd(0.8732)) * (x3 - no_rnd(0.8732))) + 10.0 * ((x4 - no_rnd(0.5743)) * (x4 - no_rnd(0.5743)))
+            + no_rnd(0.1) * ((x5 - no_rnd(0.1091)) * (x5 - no_rnd(0.1091))) + 14.0 * ((x6 - no_rnd(0.0381)) * (x6 - no_rnd(0.0381))),
+  exp1 = rnd(64, ne, 1.5)(exp(-e1)),
+  exp2 = rnd(64, ne, 1.5)(exp(-e2)),
+  exp3 = rnd(64, ne, 1.5)(exp(-e3)),
+  exp4 = rnd(64, ne, 1.5)(exp(-e4));
+
+Expressions
+  hartman6 rnd64= -(1.0 * exp1 + no_rnd(1.2) * exp2 + 3.0 * exp3 + no_rnd(3.2) * exp4);

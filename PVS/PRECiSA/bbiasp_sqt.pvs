@@ -17,7 +17,7 @@ BEGIN
 
   aeboundsp_sqt_ia(n)(R,E): Interval =
     If aeb_sqt_pre2(R,E)
-    THEN Add(Sqrt(n)(E), Div(Ulp(Add(Abs(Sqrt(n)(R)),Sqrt(n)(E))),[|2|]))
+    THEN Add(Sqrt(n)(E), Div(Ulp_sp(Add(Abs(Sqrt(n)(R)),Sqrt(n)(E))),[|2|]))
     ELSE EmptyInterval
     ENDIF
  
@@ -30,7 +30,7 @@ BEGIN
     THEN aeboundsp_sqt(r,e)
     ELSE 1 ENDIF
 
- AEB_SQT_inclusion_j: JUDGEMENT
+  AEB_SQT_inclusion_j: JUDGEMENT
     aeboundsp_sqt_ia(n)
     HAS_TYPE (Inclusion2?(Any?,aeb_sqt_pre2,aeboundsp_sqt_safe))
 

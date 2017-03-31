@@ -1,0 +1,9 @@
+Variables
+  float64 x1 in [0, 2],
+  float64 x2 in [0, 3];
+
+Constraints
+  c1: -2 * ((x1 * x1) * (x1 * x1)) + 2 - x2 >= 0;
+
+Expressions
+  floudas3 rnd64= -12 * x1 - 7 * x2 + x2 * x2;

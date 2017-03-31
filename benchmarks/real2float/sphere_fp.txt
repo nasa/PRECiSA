@@ -1,0 +1,14 @@
+Variables
+  float64 x in [-10, 10],
+  float64 r in [0, 10],
+  float64 lat in [-1.570796, 1.570796],
+  float64 lon in [-3.14159265, 3.14159265];
+	
+Definitions
+  f_lat rnd64= lat,
+  f_lon rnd64= lon,
+  sinLat = rnd(64, ne, 1.5)(sin(f_lat)),
+  cosLon = rnd(64, ne, 1.5)(cos(f_lon));
+
+Expressions
+  sphere rnd64= x + r * sinLat * cosLon;

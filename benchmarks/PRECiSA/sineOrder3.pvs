@@ -1,0 +1,7 @@
+sineOrder3: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+sineOrder3(Z: unb_double):unb_double = Dsub(Dmul(RtoD(0.954929658551372),Z),Dmul(RtoD(0.12900613773279798),Dmul(Z,Dmul(Z,Z))))
+
+END sineOrder3

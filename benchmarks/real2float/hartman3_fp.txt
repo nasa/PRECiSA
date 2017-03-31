@@ -1,0 +1,21 @@
+Variables
+  float64 x1 in [0, 1],
+  float64 x2 in [0, 1],
+  float64 x3 in [0, 1];
+
+Definitions
+  e1 rnd64= 3.0 * ((x1 - no_rnd(0.3689)) * (x1 - no_rnd(0.3689))) + 10.0 * ((x2 - no_rnd(0.117)) * (x2 - no_rnd(0.117)))
+            + 30.0 * ((x3 - no_rnd(0.2673)) * (x3 - no_rnd(0.2673))),
+  e2 rnd64= no_rnd(0.1) * ((x1 - no_rnd(0.4699)) * (x1 - no_rnd(0.4699))) + 10.0 * ((x2 - no_rnd(0.4387)) * (x2 - no_rnd(0.4387)))
+            + 35.0 * ((x3 - no_rnd(0.747)) * (x3 - no_rnd(0.747))),
+  e3 rnd64= 3.0 * ((x1 - no_rnd(0.1091)) * (x1 - no_rnd(0.1091))) + 10.0 * ((x2 - no_rnd(0.8732)) * (x2 - no_rnd(0.8732)))
+            + 30.0 * ((x3 - no_rnd(0.5547)) * (x3 - no_rnd(0.5547))),
+  e4 rnd64= no_rnd(0.1) * ((x1 - no_rnd(0.03815)) * (x1 - no_rnd(0.03815))) + 10.0 * ((x2 - no_rnd(0.5743)) * (x2 - no_rnd(0.5743)))
+            + 35.0 * ((x3 - no_rnd(0.8828)) * (x3 - no_rnd(0.8828))),
+  exp1 = rnd(64, ne, 1.5)(exp(-e1)),
+  exp2 = rnd(64, ne, 1.5)(exp(-e2)),
+  exp3 = rnd(64, ne, 1.5)(exp(-e3)),
+  exp4 = rnd(64, ne, 1.5)(exp(-e4));
+
+Expressions
+  hartman3 rnd64= -(1.0 * exp1 + no_rnd(1.2) * exp2 + 3.0 * exp3 + no_rnd(3.2) * exp4);

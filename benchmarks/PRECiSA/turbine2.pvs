@@ -1,0 +1,7 @@
+turbine2: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+turbine2(V: unb_double | DtoR(Dsub(RtoD(1),V)) /= 0,W,R:unb_double):unb_double = Dsub(Dsub(Dmul(RtoD(6),V), Ddiv(Dmul(RtoD(0.5), Dmul(V, Dmul(Dmul(W,W),Dmul(R,R)))),Dsub(RtoD(1),V))),RtoD(2.5))
+
+END turbine2

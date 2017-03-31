@@ -1,0 +1,36 @@
+clgen_top: THEORY
+BEGIN
+
+  IMPORTING clgen_carbonGas,
+  	    clgen_verhustl,
+            clgen_predPrey,
+	    clgen_rigidbody1,
+	    clgen_rigidbody2,
+	    clgen_doppler1,  
+	    clgen_doppler2,  
+	    clgen_doppler3,  
+	    clgen_turbine1,  
+	    clgen_turbine2,  
+	    clgen_turbine3,  
+	    clgen_sqroot,    
+	    clgen_sine,      
+	    clgen_sineOrder3
+	    
+  main: void =
+    clgen_carbonGas.main & printf("~%~%") &
+    clgen_verhustl.main & printf("~%~%") &
+    clgen_predPrey  .main & printf("~%~%") &
+    clgen_rigidbody1.main & printf("~%~%") &
+    clgen_rigidbody2.main & printf("~%~%") &
+    clgen_doppler1  .main & printf("~%~%") &
+    clgen_doppler2  .main & printf("~%~%") &
+    clgen_doppler3  .main & printf("~%~%") &
+    clgen_turbine1  .main & printf("~%~%") &
+    clgen_turbine2  .main & printf("~%~%") &
+    clgen_turbine3  .main & printf("~%~%") &
+    clgen_sqroot    .main  & printf("~%~%") &
+    clgen_sine      .main & printf("~%~%") &
+    clgen_sineOrder3.main
+
+
+END clgen_top

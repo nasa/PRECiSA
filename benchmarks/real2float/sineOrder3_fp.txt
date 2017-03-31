@@ -1,0 +1,10 @@
+Constants
+  c1 = 0.954929658551372,
+  c2 = 0.12900613773279798;
+
+Variables
+  float64 z in [-2, 2];
+
+Expressions
+  sineOrder3 rnd64= no_rnd(c1) * z 
+                    - no_rnd(c2) * (z * z * z);

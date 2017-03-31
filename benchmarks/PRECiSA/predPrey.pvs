@@ -1,0 +1,8 @@
+predPrey: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+predatorPrey(X: unb_double | DtoR(Dadd(RtoD(1), Dmul(Ddiv(X, RtoD(1.11)), Ddiv(X, RtoD(1.11))))) /= 0):unb_double =
+  Ddiv(Dmul(RtoD(4),Dmul(X,X)),Dadd(RtoD(1),Dmul(Ddiv(X,RtoD(1.11)),Ddiv(X,RtoD(1.11)))))
+
+END predPrey

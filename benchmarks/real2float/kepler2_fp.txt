@@ -1,0 +1,14 @@
+Variables
+  float64 x1 in [4, 6.36],
+  float64 x2 in [4, 6.36],
+  float64 x3 in [4, 6.36],
+  float64 x4 in [4, 6.36],
+  float64 x5 in [4, 6.36],
+  float64 x6 in [4, 6.36];
+
+Expressions
+  kepler2 rnd64= x1 * x4 * (-x1 + x2 + x3 - x4 + x5 + x6)
+                 + x2 * x5 * (x1 - x2 + x3 + x4 - x5 + x6)
+		 + x3 * x6 * (x1 + x2 - x3 + x4 + x5 - x6)
+		 - x2 * x3 * x4 - x1 * x3 * x5
+		 - x1 * x2 * x6 - x4 * x5 * x6;

@@ -13,7 +13,8 @@
      (if newfml
 	 (then (replace newfml) (expand name))
        (expand name))))
-  "" "")
+  "[PRECiSA]"
+  "")
 
 (defun collect-all-path-conditions (expr)
   (cond 
@@ -41,7 +42,8 @@
 			   :initial-value `(skip)
 			   :from-end t)))
     (then steps))
-  "" "")
+  "[PRECiSA] Simplify ITE using hypothesis in the sequent."
+  "Simplifying ITE...")
 
 (defstep try-simp-ite ()
   (then
@@ -180,7 +182,7 @@
 
 (defstep var-aerr ()
   (then
-    (eval-expr (! 1 2))
+    (eval-expr (! 1 2) :quiet? t)
     (replace -1 :hide? t)
     (expand "[||]")) "" "")
 
@@ -199,41 +201,62 @@
 	(fail))
        (then (hide-all-but 1) (assert) (fail)))))
     (then (hide-all-but 1) (assert) (fail)))))
-   ""
+  "[PRECiSA] Try to close "
   "")
 
 (defstep aerr-assert ()
-  (let ((bla-name (freshname "bla")))
-    (then
-     (expand* ">" ">=")
-     (branch
-      (prop)
-      ((let ((neg-ineqs (get-relations '- '(<=)))
-	     (pos-ineqs (get-relations '+ '(<=)))
-	     (asserts_leq (loop for nfnum in neg-ineqs
-				append (loop for pfnum in pos-ineqs
-					     collect `(assert-ineqs__$ ,nfnum ,pfnum))))
-	     (neg-ineqs (get-relations '- '(<)))
-	     (pos-ineqs (get-relations '+ '(<)))
-	     (asserts_lt  (loop for nfnum in neg-ineqs
+  (then
+   (eval-formula :quiet? t)
+   (let ((bla-name (freshname "bla")))
+     (then
+      (expand* ">" ">=")
+      (branch
+       (prop)
+       ((let ((neg-ineqs (get-relations '- '(<=)))
+	      (pos-ineqs (get-relations '+ '(<=)))
+	      (asserts_leq (loop for nfnum in neg-ineqs
+				 append (loop for pfnum in pos-ineqs
+					      collect `(assert-ineqs__$ ,nfnum ,pfnum))))
+	      (neg-ineqs (get-relations '- '(<)))
+	      (pos-ineqs (get-relations '+ '(<)))
+	      (asserts_lt  (loop for nfnum in neg-ineqs
 				append (loop for pfnum in pos-ineqs
 					     collect `(assert-ineqs__$ ,nfnum ,pfnum)))))
-	 (then
-	  (try-here$ asserts_leq)
-	  (try-here$ asserts_lt)))))))
-  "Specific-purpouse strategy. Intended to close the main branch of proofs about floating point accumulated error calculation."	  
+	  (then
+	   (try-here$ asserts_leq)
+	   (try-here$ asserts_lt))))))))
+  "[PRECiSA] Specific-purpouse strategy. Intended to close the main branch of proofs about floating point accumulated error calculation."	  
   "Closing main branch...")
+  
+(defstep disjunctive-hypothesis ()
+  (let ((form  (manip-get-formula (car *new-fmla-nums*))))
+    (if (or+form? form)
+	(let ((exprs (or+ (list form)))
+	      (names (freshnames "ABS" (length exprs)))
+	      (names-and-exprs (loop for expr in exprs
+				     for name in names
+				     collect name
+				     collect expr)))
+	  (then
+	   (with-tccs (name-replace* names-and-exprs))
+	   (let ((new-fms *new-fmla-nums*)) (hide-all-but new-fms))
+	   (prop)))
+      (skip)))
+  "[PRECiSA] Try to close a hypothesis branch, using disjunctive premises."
+  "Proving hypothesis of the main lemma using disjunctive premises...")
 
-(defstep assert-condition ()
-  (try (then (rewrite-userdefs)
-	     (rewrite "neq_rew")
-	     (rewrite "noteq_rew")
-	     (eval-formulas)
-	     (branch (grind-reals) ((fail)))
-	     (fail))
+(defstrat assert-condition ()
+  (try (then 
+	(disjunctive-hypothesis)
+	(rewrite "neq_rew")
+	(rewrite "noteq_rew")
+	(eval-formulas :quiet? t)
+	(branch (grind-reals) ((fail)))
+	(fail))
        (skip)
        (subtype-tcc))
-  "" "")
+  "[PRECiSA] Try to prove the hypothesis of the main lemma."
+  "Proving hypothesis...")
 
 (defstep aerr-rew ()
   (then
@@ -241,7 +264,7 @@
     (branch (rewrite "noteq_rew_rl1") ((skip) (fail))) 
     (branch (rewrite "noteq_rew_rl2") ((skip) (fail)))
     (assert)))
-  "Rewritings specific to accumulated error calculations."
+  "[PRECiSA] Rewritings specific to accumulated error calculations."
   "Rewriting...")
 
 ;; General purpose strategies.
@@ -254,14 +277,15 @@
 			   :initial-value `(skip)
 			   :from-end t)))
     (then try-steps))
-  "" "")
+  "[PRECiSA] When CLOSING? is T (default), each of the steps given in STEPLISTS is tried on the current sequent until the branch is closed (CLOSING? is not nil) or the application of a step modifies the sequent (CLOSING? is nil) or the there are no more steps to try."
+  "Applying the steps: ~%~{  ~a~%~}")
 
-(defstep branch-lemmas (lemma-names next-step)
+(defstrat branch-lemmas (lemma-names next-step)
   (let ((lsteps (loop for lname in lemma-names
 		      collect `(then (lemma ,lname) ,next-step))))
     (try-here$ lsteps))
-  ""
-  "Applying lemmas.")
+  "[PRECiSA] Try to introduce each of the lemmas in LEMMA-NAMES in order, and then apply the step in NEXT_STEP."
+  "Applying lemmas: ~%~{~a~%~}")
 
 (defstep connect-ineqs__ (fnum1 fnum2)
   (with-fresh-labels ((l1 fnum1) (l2 fnum2))
@@ -273,8 +297,18 @@
 	;; close the rest of the branches.
      (fail))
     (interval))))
-   ""
-  "")
+  "[PRECiSA] Try to close a branch introducing an explicit link in the transitivity of an inequality."
+  "Closing branch using transitivity of <=.")
+
+;; Concrete certificates
+
+(defstep prove-concrete-lemma (symb-bound-lemma-name)
+ (then (skeep) (use symb-bound-lemma-name)
+  (branch (split -1)
+	  ((complete-trans) (assert))
+    (propax) (propax) (propax)))
+  "[PRECiSA] Strategy to prove concrete certificates generated by PRECiSA."
+  "Trying to prove concrete certificate...")
 
 (defstep complete-trans ()
   (let ((bla-name (freshname "bla")))
@@ -295,13 +329,12 @@
 	 (then
 	  (try-here$ asserts_leq)
 	  (try-here$ asserts_lt)))))))
-  "Specific-purpouse strategy. Intended to close the main branch of proofs about floating point accumulated error calculation."	  
+  "[PRECiSA] Specific-purpouse strategy. Intended to close the main branch of proofs about floating point accumulated error calculation."	  
   "Closing main branch...")
 
-(defstep prove-concrete-lemma (symb-bound-lemma-name)
- (then (skeep) (use symb-bound-lemma-name)
-  (spread (split -1)
-	  ((complete-trans))
-    (propax) (propax) (propax)))
-  ""
-  "")
+;; TCCs from symbolic certificates
+
+(defstrat precisa-gen-cert-tcc ()
+  (try (then (skeep) (eval-formulas :quiet? t) (fail)) (skip) (try (then (grind-reals) (fail)) (skip) (subtype-tcc)))
+  "[PRECiSA] Strategy to prove tccs from PRECiSA generated symbolic certificates."
+  "Proving PRECiSA tcc...")

@@ -38,6 +38,13 @@ botInterp = []
 
 type CebS = [Ceb]
 type Ceb = (BExpr, FBExpr, FAExpr, AExpr, EExpr, PVStree) 
+-- abstract domain element (real cond, fp cond, fp expr, real expr, error expr, PVS proof tree) --
+
+--condR :: Ceb -> Cond
+--condR (cond, _, _, _, _, _) = cond
+
+--condFP :: Ceb -> FCond
+--condFP (_, fcond, _, _, _, _) = fcond
 
 condR :: Ceb -> BExpr
 condR (cond, _, _, _, _, _) = cond
@@ -90,8 +97,11 @@ data PVStree = SIntR
              | SAbsR    EExpr AExpr FAExpr PVStree
              | SSinR    EExpr AExpr FAExpr PVStree
              | SCosR    EExpr AExpr FAExpr PVStree
-             | SArcsinR EExpr AExpr FAExpr PVStree
-             | SArccosR EExpr AExpr FAExpr PVStree
+             | STanR    EExpr AExpr FAExpr PVStree
+             | SAsinR EExpr AExpr FAExpr PVStree
+             | SAcosR EExpr AExpr FAExpr PVStree
+             | SAtanR EExpr AExpr FAExpr PVStree
+             | SMulPow2R EExpr AExpr FAExpr PVStree Integer
              | SUnTest  EExpr AExpr AExpr AExpr PVStree -- unstable test
              -------------------------------------------------------
              | DIntR
@@ -122,8 +132,11 @@ data PVStree = SIntR
              | DAbsR    EExpr AExpr FAExpr PVStree
              | DSinR    EExpr AExpr FAExpr PVStree
              | DCosR    EExpr AExpr FAExpr PVStree
-             | DArcsinR EExpr AExpr FAExpr PVStree
-             | DArccosR EExpr AExpr FAExpr PVStree
+             | DTanR    EExpr AExpr FAExpr PVStree
+             | DAsinR EExpr AExpr FAExpr PVStree
+             | DAcosR EExpr AExpr FAExpr PVStree
+             | DAtanR EExpr AExpr FAExpr PVStree
+             | DMulPow2R EExpr AExpr FAExpr PVStree Integer
              | DUnTest  EExpr AExpr AExpr AExpr PVStree -- unstable test
     deriving (Show)             
 
@@ -151,9 +164,9 @@ lemmas f n = hsep (punctuate (text " ") (lemmas' f n n))
     lemmas' f n m = (text "\"" <> text f <> text "_" <> int (n-m) <> text "\""):(lemmas' f n (m-1))
 
 instance PPExt (PVStree) where
-    prettyDoc SIntR = text "%|- (eval-formulas +)"
-    prettyDoc SDoubleR  = text "%|- (eval-formulas +)"
-    prettyDoc SPiR = text "%|- (eval-formulas +)"
+    prettyDoc SIntR = text "%|- (eval-formulas + :quiet? t)"
+    prettyDoc SDoubleR  = text "%|- (eval-formulas + :quiet? t)"
+    prettyDoc SPiR = text "%|- (eval-formulas + :quiet? t)"
     prettyDoc (SVarR x) = text "%|- (propax)"    
     prettyDoc (SUnTest e r1 r2 f t) =
         text "%|- (then"
@@ -407,9 +420,27 @@ instance PPExt (PVStree) where
         $$ text "%|- (assert-condition)"
         $$ text "%|- ))"
         $$ text "%|- (assert-condition))))))"
-    prettyDoc (SArcsinR e i f t) =
+    prettyDoc (STanR e i f t) =
         text "%|- (then"
-        $$ text "%|- (lemma \"Sarcsin_aerr\")"
+        $$ text "%|- (lemma \"Stan_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPSingle <> text "\""  
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPSingle <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (then (aerr-assert) (fail))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
+    prettyDoc (SAsinR e i f t) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Sasn_aerr\")"
         $$ text "%|- (let ((new-label (freshname \"l\")))"
         $$ text "%|-    (then (label new-label -1)"
         $$ text "%|- (branch (with-tccs (inst new-label"
@@ -425,9 +456,9 @@ instance PPExt (PVStree) where
         $$ text "%|- (assert-condition)"
         $$ text "%|- ))"
         $$ text "%|- (assert-condition))))))"
-    prettyDoc (SArccosR e i f t) =
+    prettyDoc (SAcosR e i f t) =
         text "%|- (then"
-        $$ text "%|- (lemma \"Sarccos_aerr\")"
+        $$ text "%|- (lemma \"Sacs_aerr\")"
         $$ text "%|- (let ((new-label (freshname \"l\")))"
         $$ text "%|-    (then (label new-label -1)"
         $$ text "%|- (branch (with-tccs (inst new-label"
@@ -439,14 +470,51 @@ instance PPExt (PVStree) where
         $$ text "%|- (split -1)"
         $$ text "%|- ("
         $$ text "%|- (then (aerr-assert) (fail))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
+    prettyDoc (SAtanR e i f t) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Satn_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPSingle <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (then (aerr-assert) (fail))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
+    prettyDoc (SMulPow2R e i f t n) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Smulpow2l_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> integer n <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (try (branch (case \"2^"<> (integer n) <> text "=" <> (integer (2^n)) <> text "\") ((assert) (eval-formulas + :quiet? t))) (skip) (then (aerr-assert) (fail)))"
         $$ prettyDoc t
         $$ text "%|- (assert-condition)"
         $$ text "%|- ))"
         $$ text "%|- (assert-condition))))))"
     --------------------------------------------------------
-    prettyDoc DIntR = text "%|- (eval-formulas +)"
-    prettyDoc DDoubleR  = text "%|- (eval-formulas +)"
-    prettyDoc DPiR = text "%|- (eval-formulas +)"
+    prettyDoc DIntR = text "%|- (eval-formulas + :quiet? t)"
+    prettyDoc DDoubleR  = text "%|- (eval-formulas + :quiet? t)"
+    prettyDoc DPiR = text "%|- (eval-formulas + :quiet? t)"
     prettyDoc (DVarR x) = text "%|- (propax)"
     prettyDoc (DUnTest e r1 r2 f t) = 
         text "%|- (then"
@@ -700,9 +768,27 @@ instance PPExt (PVStree) where
         $$ text "%|- (assert-condition)"
         $$ text "%|- ))"
         $$ text "%|- (assert-condition))))))"
-    prettyDoc (DArcsinR e i f t) =
+    prettyDoc (DTanR e i f t) =
         text "%|- (then"
-        $$ text "%|- (lemma \"Darcsin_aerr\")"
+        $$ text "%|- (lemma \"Dtan_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPDouble <> text "\"" 
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPDouble <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (then (aerr-assert) (fail))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
+    prettyDoc (DAsinR e i f t) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Dasn_aerr\")"
         $$ text "%|- (let ((new-label (freshname \"l\")))"
         $$ text "%|-    (then (label new-label -1)"
         $$ text "%|- (branch (with-tccs (inst new-label"
@@ -718,9 +804,9 @@ instance PPExt (PVStree) where
         $$ text "%|- (assert-condition)"
         $$ text "%|- ))"
         $$ text "%|- (assert-condition))))))"
-    prettyDoc (DArccosR e i f t) =
+    prettyDoc (DAcosR e i f t) =
         text "%|- (then"
-        $$ text "%|- (lemma \"Darccos_aerr\")"
+        $$ text "%|- (lemma \"Dacs_aerr\")"
         $$ text "%|- (let ((new-label (freshname \"l\")))"
         $$ text "%|-    (then (label new-label -1)"
         $$ text "%|- (branch (with-tccs (inst new-label"
@@ -736,7 +822,43 @@ instance PPExt (PVStree) where
         $$ text "%|- (assert-condition)"
         $$ text "%|- ))"
         $$ text "%|- (assert-condition))))))"
-
+    prettyDoc (DAtanR e i f t) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Datn_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPDouble <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (then (aerr-assert) (fail))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
+    prettyDoc (DMulPow2R e i f t n) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Dmulpow2l_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> integer n <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (try (branch (case \"2^"<> (integer n) <> text "=" <> (integer (2^n)) <> text "\") ((assert) (eval-formulas + :quiet? t))) (skip) (then (aerr-assert) (fail)))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
 
 
 

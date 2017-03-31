@@ -1,0 +1,10 @@
+Variables
+  real u in [-100, 100],
+  real v in [20, 20000],
+  real T in [-30, 50];
+
+Definitions
+  t1 rnd64= 331.4 + 0.6 * T;
+
+Expressions
+  doppler1 rnd64= -t1 * v / ((t1 + u) * (t1 + u));

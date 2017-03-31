@@ -9,7 +9,7 @@ BEGIN
   aeboundsp_mul_ia(R1,E1,R2,E2): Interval =
     If NonNeg?(E1) AND NonNeg?(E2)
     THEN Add(Add(Add(Mult(Abs(R1),E2),Mult(Abs(R2),E1)),Mult(E1,E2)),
-             Div(Ulp(
+             Div(Ulp_sp(
 	          Add(
 		   Mult(Abs(R1),Abs(R2)),
 	           Add(Add(Mult(Abs(R1),E2),Mult(Abs(R2),E1)),Mult(E1,E2)))),

@@ -2,13 +2,13 @@ bbiadp_flr_t: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-  	    float@aerr754dp_flr_t
+  	    float@aerr754dp_flr
 
   R,E: VAR Interval
 
   aebounddp_flr_t_ia(R,E): Interval =
     If NonNeg?(E)
-    THEN Add(E, Div(Ulp(Add(Abs(Floor(R)),E)),[|2|]))
+    THEN Add(E, Div(Ulp_dp(Add(Abs(Floor(R)),E)),[|2|]))
     ELSE EmptyInterval
     ENDIF
  

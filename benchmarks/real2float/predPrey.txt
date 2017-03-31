@@ -1,0 +1,8 @@
+Constants
+  K = 1.11;
+
+Variables
+  real x in [0.1, 0.3];
+
+Expressions
+  predPrey rnd64= 4 * x * x / (1 + ((x / K) * (x / K)));

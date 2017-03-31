@@ -1,0 +1,137 @@
+config-a
+
+Benchmark		Result			Time
+
+doppler1		1.58e-13		5.41
+doppler2		2.89e-13		5.33
+doppler3		8.21e-14		5.35
+rigidBody1		3.86e-13		3.88
+rigidBody2		5.23e-11		6.22
+verhulst		3.51e-16		2.67
+carbonGas		1.06e-08		7.16
+predPrey		1.89e-16		3.39
+kepler0			1.04e-13		11.18
+kepler1			4.49e-13		348.40
+kepler2			2.09e-12		928.57
+sineTaylor		6.75e-16		6.81
+sineOrder3		9.97e-16		3.70
+sqroot			7.12e-16		5.97
+floudas1		5.77e-13		432.84
+floudas2		1.22e-15		2.19
+floudas3		1.79e-14		3.49
+logexp			2.06e-15		2.16
+sphere			1.29e-14		4.35
+hartman3		3.19e-14		756.23
+hartman6 (no simpl)	2.03e-14		16187.16
+hartman6 (ns, 10^5)	2.54e-14		468.13
+?hartman6 (no simpl)	8.47e-13		34920.76
+
+config-c
+
+Benchmark		Result			Time
+
+doppler1 		1.58e-13		1.75
+doppler2 		2.89e-09		1.73
+doppler3 		8.21e-14		1.75
+rigidBody1		3.86e-13		1.46
+rigidBody2		5.23e-11		2.38
+verhulst		3.25e-16		1.37
+carbonGas		9.39e-09		2.65
+predPrey		1.84e-16		1.35
+kepler0			9.43e-14		3.68
+kepler1			3.56e-13		80.16
+kepler2			1.95e-12		315.17
+sineTaylor		5.56e-16		3.05
+sineOrder3		9.48e-16		1.47
+sqroot			6.99e-16		2.59
+floudas1		5.81e-13		512.95
+floudas2		1.22e-15		1.55
+floudas3		1.66e-14		1.55
+logexp			2.07e-15		1.25
+sphere			1.01e-14		3.09
+hartman3		9.51e-14		1950.83
+hartman6 (no simpl)	6.39e-15		13454.49
+hartman6 (ns, 10^5)	1.14e-14		300.42
+
+
+config-b
+
+Benchmark		Result			Time
+
+doppler1 (approx)	1.36e-13		6.36
+doppler2 (approx)	2.45e-13		5.60
+doppler3 		6.94e-14		34.28
+rigidBody1		2.95e-13		1.48
+rigidBody2		3.61e-11		1.79
+verhulst		2.50e-16		1.34
+carbonGas		8.27e-09		2.59
+predPrey		1.59e-16		1.48
+kepler0			7.47e-14		275.94
+kepler1			2.71e-13		81.26
+kepler2			1.58e-12		854.38	
+sineTaylor		4.43e-16		2.73
+sineOrder3		7.95e-16		1.51
+sqroot			5.02e-16		2.29
+floudas1		4.73e-13		676.08
+floudas2		8.88e-16		1.17
+floudas3		1.32e-14		1.34
+logexp			1.98e-15		1.30
+sphere			8.08e-15		219.65
+hartman3		1.22e-14		1342.88
+hartman6 (no simpl)	4.95e-15		13743.10
+hartman6 (ns, 10^5)	8.22e-15		320.70
+
+
+config-dev
+
+Benchmark		Result			Time
+
+doppler1 (approx)	1.29e-13		5.92
+doppler2 (approx)	2.29e-13		4.98
+doppler3		6.62e-14		36.09
+rigidBody1		2.95e-13		1.51
+rigidBody2		3.61e-11		1.85
+verhulst		2.47e-16		1.34
+carbonGas		8.09e-09		2.28
+predPrey		1.59e-16		1.49
+kepler0			7.44e-14		253.03
+kepler1			2.70e-13		84.53
+kepler2			1.57e-12		1030.78			
+sineTaylor		4.43e-16		2.72
+sineOrder3		5.94e-16		1.37
+sqroot			5.02e-16		2.30
+floudas1		4.71e-13		684.62
+floudas2		8.88e-16		0.86
+floudas3		1.32e-14		1.35
+logexp			1.98e-15		1.34
+sphere			8.08e-15		221.71
+hartman3		1.13e-14		1389.06
+hartman6 (no simpl)	3.78e-15		13590.71
+hartman6 (ns, 10^5)	7.17e-15		329.95
+
+
+config-z3
+
+Benchmark		Result			Time
+
+doppler1		1.57e-13		2.44		
+doppler2		2.87e-13		2.08
+doppler3		8.15e-14		2.01
+rigidBody1		3.86e-13		2.11
+rigidBody2 (approx)	5.23e-11		9.10
+verhulst		3.22e-16		0.83
+carbonGas		9.04e-09		3.13
+predPrey		1.82e-16		0.91		
+kepler0 (approx)	1.04e-13		7.51
+kepler1	(approx)	4.47e-13		21.90		
+kepler2			TO (bounds)		TO
+sineTaylor		5.52e-16		2.71
+sineOrder3		9.42e-16		0.99
+sqroot			6.95e-16		2.51
+floudas1 (approx)	3.64e-13		10.18
+floudas2		9.96e-16		1.41
+floudas3		8.59e-15		1.24
+logexp			
+sphere			
+hartman3		
+hartman6 (no simpl)

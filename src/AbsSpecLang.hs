@@ -4,7 +4,7 @@
 -- ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS
 -- AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT
 -- AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
--- 
+--
 -- Waiver and Indemnity: RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS
 -- IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT,
 -- ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
@@ -39,7 +39,7 @@ data VarBind = VarBind String LBound UBound
 data SpecBind
 -- list of variable ranges for a function
     = SpecBind String [VarId] [VarBind]
-  deriving (Eq, Ord, Show, Read)  
+  deriving (Eq, Ord, Show, Read)
 
 data Spec = Spec [SpecBind]
 -- specification for a program
@@ -67,16 +67,15 @@ instance PPExt (UBound) where
       e = abs $ base10Exponent $ fromFloatDigits d
   prettyDoc (UInf) = text "+inf"
 
-instance PPExt (VarBind) where  
+instance PPExt (VarBind) where
   prettyDoc (VarBind x lb ub) = text x <+> text "in" <+> lbrack <> prettyDoc lb <> comma <+> prettyDoc ub <>rbrack
 
-instance PPExt (SpecBind) where  
+instance PPExt (SpecBind) where
   prettyDoc (SpecBind f vs vbs) = text f <+> lparen
                                   <> (hsep $ punctuate comma $ map prettyDoc vs)
-                                  <> rparen <+> colon 
+                                  <> rparen <+> colon
                                   <+> (hsep $ punctuate comma $ map prettyDoc vbs)
 
-instance PPExt (Spec) where    
+instance PPExt (Spec) where
   prettyDoc (Spec specs) = (vcat $ punctuate (text ".") $ map prettyDoc specs)
 
-  

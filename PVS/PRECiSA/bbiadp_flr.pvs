@@ -8,7 +8,7 @@ BEGIN
 
   aebounddp_flr_ia(R,E): Interval =
     If NonNeg?(E)
-    THEN Add(Add(E,[|1|]), Div(Ulp(Add(Abs(Floor(R)),Add(E,[|1|]))),[|2|]))
+    THEN Add(Add(E,[|1|]), Div(Ulp_dp(Add(Abs(Floor(R)),Add(E,[|1|]))),[|2|]))
     ELSE EmptyInterval
     ENDIF
  

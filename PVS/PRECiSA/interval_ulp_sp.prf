@@ -1,17 +1,22 @@
 (interval_ulp_sp
- (IMP_interval_ulp_TCC1 0
-  (IMP_interval_ulp_TCC1-1 nil 3683129826
+ (Ulp_sp_TCC1 0
+  (Ulp_sp_TCC1-2 nil 3699269420
    ("" (skeep)
-    (("" (expand "ulp_sp") (("" (use "ulp_abs") nil nil)) nil)) nil)
+    (("" (expand "ulp_sp") (("" (use "ulp_abs[2]") nil nil)) nil)) nil)
    ((ulp_sp const-decl "nonneg_real" ieee754sp "float/")
     (ulp_abs formula-decl nil float "float/")
     (sp_closest?_j name-judgement
      "{round: RestrictedRounding[2](single_precision_format, EvenClosest?) |
          rounded_mode?(single_precision_format)(round)}" ieee754sp
      "float/")
-    (rtos_canonic_rounding_fun_j name-judgement
-     "CanonicRoundingFun[2](single_precision_format, sp_closest?)"
-     ieee754sp "float/")
+    (sp_closest?_closestroundingpred_j name-judgement
+     "ClosestRoundingPred[2](single_precision_format)" ieee754sp
+     "float/")
+    (rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
+         exact_rep_conservation[2]
+             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
+     "float/")
     (nat nonempty-type-eq-decl nil naturalnumbers nil)
     (above nonempty-type-eq-decl nil integers nil)
     (Format type-eq-decl nil float "float/")
@@ -39,19 +44,26 @@
     (closest_single? const-decl "bool" ieee754sp "float/")
     (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
      ieee754sp "float/"))
-   nil))
- (IMP_interval_ulp_TCC2 0
-  (IMP_interval_ulp_TCC2-1 nil 3683129826
+   nil)
+  (Ulp_sp_TCC1-1 nil 3699269065 ("" (assuming-tcc) nil nil) nil nil))
+ (Ulp_sp_TCC2 0
+  (Ulp_sp_TCC2-2 nil 3699269459
    ("" (skeep)
     (("" (expand "ulp_sp")
-      (("" (use "ulp_monotone") (("" (assert) nil nil)) nil)) nil))
+      (("" (use "ulp_monotone[2]") (("" (assert) nil nil)) nil)) nil))
     nil)
    ((ulp_sp const-decl "nonneg_real" ieee754sp "float/")
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (rtos_canonic_rounding_fun_j name-judgement
-     "CanonicRoundingFun[2](single_precision_format, sp_closest?)"
-     ieee754sp "float/")
+    (le_realorder name-judgement "RealOrder" real_orders "reals/")
+    (rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
+         exact_rep_conservation[2]
+             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
+     "float/")
+    (sp_closest?_closestroundingpred_j name-judgement
+     "ClosestRoundingPred[2](single_precision_format)" ieee754sp
+     "float/")
     (sp_closest?_j name-judgement
      "{round: RestrictedRounding[2](single_precision_format, EvenClosest?) |
          rounded_mode?(single_precision_format)(round)}" ieee754sp
@@ -81,13 +93,15 @@
     (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
      ieee754sp "float/")
     (ulp_monotone formula-decl nil float "float/"))
-   nil))
- (IMP_interval_ulp_TCC3 0
-  (IMP_interval_ulp_TCC3-1 nil 3683129826
+   nil)
+  (Ulp_sp_TCC2-1 nil 3699269065 ("" (assuming-tcc) nil nil) nil nil))
+ (Ulp_sp_TCC3 0
+  (Ulp_sp_TCC3-2 nil 3699269515
    ("" (skeep)
     (("" (expand "min_Sulp")
       (("" (expand "ulp_sp")
-        (("" (expand "ulp") (("" (use "Fulp_min") nil nil)) nil)) nil))
+        (("" (expand "ulp") (("" (use "Fulp_min[2]") nil nil)) nil))
+        nil))
       nil))
     nil)
    ((min_Sulp const-decl "nonneg_real" ieee754sp "float/")
@@ -114,5 +128,253 @@
     (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
      ieee754sp "float/")
     (ulp_sp const-decl "nonneg_real" ieee754sp "float/"))
+   nil)
+  (Ulp_sp_TCC3-1 nil 3699269065 ("" (assuming-tcc) nil nil) nil nil))
+ (Ulp_sp_proper 0
+  (Ulp_sp_proper-1 nil 3699283228
+   ("" (expand "Ulp_sp")
+    (("" (use "Ulp_proper[unb_single, StoR, RtoS, min_Sulp, ulp_sp]")
+      nil nil))
+    nil)
+   ((rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
+         exact_rep_conservation[2]
+             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
+     "float/")
+    (Ulp_proper formula-decl nil interval_ulp nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (float type-eq-decl nil float "float/")
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (above nonempty-type-eq-decl nil integers nil)
+    (Format type-eq-decl nil float "float/")
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (Fcanonic? const-decl "bool" float "float/")
+    (single_precision_format const-decl "Format" ieee754sp "float/")
+    (unb_single type-eq-decl nil ieee754sp "float/")
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (StoR const-decl "real" ieee754sp "float/")
+    (Fbounded? const-decl "bool" float "float/")
+    (closest_single? const-decl "bool" ieee754sp "float/")
+    (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
+     ieee754sp "float/")
+    (>= const-decl "bool" reals nil)
+    (nonneg_real nonempty-type-eq-decl nil real_types nil)
+    (min_Sulp const-decl "nonneg_real" ieee754sp "float/")
+    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
+    (Ulp_sp const-decl "Interval" interval_ulp_sp nil))
+   shostak))
+ (Ulp_sp_inclusion 0
+  (Ulp_sp_inclusion-1 nil 3699272340
+   ("" (expand "Ulp_sp")
+    ((""
+      (use "Ulp_inclusion[unb_single, StoR, RtoS, min_Sulp, ulp_sp]")
+      nil nil))
+    nil)
+   ((rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
+         exact_rep_conservation[2]
+             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
+     "float/")
+    (Ulp_inclusion formula-decl nil interval_ulp nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (float type-eq-decl nil float "float/")
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (above nonempty-type-eq-decl nil integers nil)
+    (Format type-eq-decl nil float "float/")
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (Fcanonic? const-decl "bool" float "float/")
+    (single_precision_format const-decl "Format" ieee754sp "float/")
+    (unb_single type-eq-decl nil ieee754sp "float/")
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (StoR const-decl "real" ieee754sp "float/")
+    (Fbounded? const-decl "bool" float "float/")
+    (closest_single? const-decl "bool" ieee754sp "float/")
+    (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
+     ieee754sp "float/")
+    (>= const-decl "bool" reals nil)
+    (nonneg_real nonempty-type-eq-decl nil real_types nil)
+    (min_Sulp const-decl "nonneg_real" ieee754sp "float/")
+    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
+    (Ulp_sp const-decl "Interval" interval_ulp_sp nil))
+   shostak))
+ (Ulp_sp_Inclusion 0
+  (Ulp_sp_Inclusion-2 nil 3699270609
+   ("" (expand "Inclusion?")
+    (("" (skeep)
+      ((""
+        (use "Ulp_inclusion[unb_single, StoR, RtoS, min_Sulp, ulp_sp]")
+        (("" (assert)
+          (("" (expand "Ulp_sp") (("" (propax) nil nil)) nil)) nil))
+        nil))
+      nil))
+    nil)
+   ((Ulp_sp const-decl "Interval" interval_ulp_sp nil)
+    (PreTrue const-decl "(Precondition?)" interval_expr
+     "interval_arith/")
+    (Precondition? const-decl "bool" interval "interval_arith/")
+    (PRED type-eq-decl nil defined_types nil)
+    (Interval type-eq-decl nil interval "interval_arith/")
+    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
+    (min_Sulp const-decl "nonneg_real" ieee754sp "float/")
+    (nonneg_real nonempty-type-eq-decl nil real_types nil)
+    (>= const-decl "bool" reals nil)
+    (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
+     ieee754sp "float/")
+    (closest_single? const-decl "bool" ieee754sp "float/")
+    (Fbounded? const-decl "bool" float "float/")
+    (StoR const-decl "real" ieee754sp "float/")
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number nonempty-type-decl nil numbers nil)
+    (unb_single type-eq-decl nil ieee754sp "float/")
+    (single_precision_format const-decl "Format" ieee754sp "float/")
+    (Fcanonic? const-decl "bool" float "float/")
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (Format type-eq-decl nil float "float/")
+    (above nonempty-type-eq-decl nil integers nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (float type-eq-decl nil float "float/")
+    (int nonempty-type-eq-decl nil integers nil)
+    (Ulp_inclusion formula-decl nil interval_ulp nil)
+    (rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
+         exact_rep_conservation[2]
+             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
+     "float/")
+    (Inclusion? const-decl "bool" interval "interval_arith/"))
+   nil)
+  (Ulp_sp_Inclusion-1 nil 3699269065 ("" (judgement-tcc) nil nil) nil
+   nil))
+ (Ulp_sp_fundamental 0
+  (Ulp_sp_fundamental-1 nil 3699272434
+   ("" (expand "Ulp_sp")
+    ((""
+      (use "Ulp_fundamental[unb_single, StoR, RtoS, min_Sulp, ulp_sp]")
+      nil nil))
+    nil)
+   ((rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
+         exact_rep_conservation[2]
+             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
+     "float/")
+    (Ulp_fundamental formula-decl nil interval_ulp nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (float type-eq-decl nil float "float/")
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (above nonempty-type-eq-decl nil integers nil)
+    (Format type-eq-decl nil float "float/")
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (Fcanonic? const-decl "bool" float "float/")
+    (single_precision_format const-decl "Format" ieee754sp "float/")
+    (unb_single type-eq-decl nil ieee754sp "float/")
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (StoR const-decl "real" ieee754sp "float/")
+    (Fbounded? const-decl "bool" float "float/")
+    (closest_single? const-decl "bool" ieee754sp "float/")
+    (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
+     ieee754sp "float/")
+    (>= const-decl "bool" reals nil)
+    (nonneg_real nonempty-type-eq-decl nil real_types nil)
+    (min_Sulp const-decl "nonneg_real" ieee754sp "float/")
+    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
+    (Ulp_sp const-decl "Interval" interval_ulp_sp nil))
+   shostak))
+ (Ulp_sp_Fundamental 0
+  (Ulp_sp_Fundamental-2 nil 3699270653
+   ("" (expand "Fundamental?")
+    (("" (skeep)
+      (("" (expand "Ulp_sp")
+        ((""
+          (use "Ulp_fundamental[unb_single, StoR, RtoS, min_Sulp, ulp_sp]")
+          (("" (assert) nil nil)) nil))
+        nil))
+      nil))
+    nil)
+   ((rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
+         exact_rep_conservation[2]
+             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
+     "float/")
+    (Ulp_fundamental formula-decl nil interval_ulp nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (float type-eq-decl nil float "float/")
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (above nonempty-type-eq-decl nil integers nil)
+    (Format type-eq-decl nil float "float/")
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (Fcanonic? const-decl "bool" float "float/")
+    (single_precision_format const-decl "Format" ieee754sp "float/")
+    (unb_single type-eq-decl nil ieee754sp "float/")
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (StoR const-decl "real" ieee754sp "float/")
+    (Fbounded? const-decl "bool" float "float/")
+    (closest_single? const-decl "bool" ieee754sp "float/")
+    (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
+     ieee754sp "float/")
+    (>= const-decl "bool" reals nil)
+    (nonneg_real nonempty-type-eq-decl nil real_types nil)
+    (min_Sulp const-decl "nonneg_real" ieee754sp "float/")
+    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
+    (Interval type-eq-decl nil interval "interval_arith/")
+    (Proper? const-decl "bool" interval "interval_arith/")
+    (ProperInterval type-eq-decl nil interval "interval_arith/")
+    (PRED type-eq-decl nil defined_types nil)
+    (Precondition? const-decl "bool" interval "interval_arith/")
+    (PreTrue const-decl "(Precondition?)" interval_expr
+     "interval_arith/")
+    (Ulp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp))"
+     interval_ulp nil)
+    (Ulp_Fundamental name-judgement "(Fundamental?(PreTrue))"
+     interval_ulp nil)
+    (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
+    (Fundamental? const-decl "bool" interval "interval_arith/"))
+   nil)
+  (Ulp_sp_Fundamental-1 nil 3699269065 ("" (judgement-tcc) nil nil) nil
+   nil))
+ (ULP_SP_TCC1 0
+  (ULP_SP_TCC1-1 nil 3699269065 ("" (subtype-tcc) nil nil)
+   ((Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
+     interval_ulp_sp nil)
+    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
+     interval_ulp_sp nil)
+    (posint_exp application-judgement "posint" exponentiation nil)
+    (nnrat_exp application-judgement "nnrat" exponentiation nil)
+    (posrat_exp application-judgement "posrat" exponentiation nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (even_times_int_is_even application-judgement "even_int" integers
+     nil)
+    (mult_divides1 application-judgement "(divides(n))" divides nil)
+    (mult_divides2 application-judgement "(divides(m))" divides nil)
+    (real_minus_real_is_real application-judgement "real" reals nil))
    nil)))
 

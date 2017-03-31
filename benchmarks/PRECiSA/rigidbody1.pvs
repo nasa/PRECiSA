@@ -1,0 +1,7 @@
+rigidbody1: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+rigidBody1(X1,X2,X3: unb_double):unb_double = Dsub(Dsub(Dsub(Dmul(Dneg(X1),X2),Dmul(RtoD(2),Dmul(X2,X3))),X1),X3)
+
+END rigidbody1

@@ -18,6 +18,7 @@ import qualified Data.List as List
 import qualified Data.Set as Set
 import Debug.Trace
 import Text.PrettyPrint
+import Numeric
 
 traceMany :: [(String, String)] -> a -> a
 traceMany xs a = trace (concat $ map showPair xs) a
@@ -62,7 +63,8 @@ filterCondFalse cs = filter condDiffFalse cs
     condDiffFalse (BFalse,_,_,_,_,_) = False
     condDiffFalse _ = True
 
-
+isPow2 :: (Floating r, RealFrac r) => r -> Bool
+isPow2 n = ((logBase 2 n) == fromInteger (round $ logBase 2 n)) && ((logBase 2 n)>= 0)
 ----------------------------
 -- Semantics declarations --
 ----------------------------
@@ -161,25 +163,26 @@ aexprSem :: FAExpr -> Interp -> Env -> FPrec -> CebS
 aexprSem (RtoS (Int n)) _ _ FPSingle = [(BTrue, FBTrue, RtoS (Int n), Int n, AE $ Int 0, SIntR)]
 aexprSem (RtoS (Int n)) _ _ FPDouble = error "aexprSem: FP precision mismatch"
 
-aexprSem (RtoS (Double n)) _ _ FPSingle = [(BTrue, FBTrue, RtoS (Double n), Double n, AE $ Int 0, SDoubleR)]
+aexprSem (RtoS (Double n)) _ _ FPSingle = [(BTrue, FBTrue, RtoS (Double n), Double n, ErrRat $ abs $ toRational ((fromRat n) :: Float) - (n :: Rational), SDoubleR)]
+-- [(BTrue, FBTrue, RtoS (Double n), Double n, HalfUlp (Double n), SDoubleR)]
 aexprSem (RtoS (Double n)) _ _ FPDouble = error "aexprSem: FP precision mismatch"
 
 aexprSem (RtoD (Int n)) _ _ FPDouble = [(BTrue, FBTrue, RtoD (Int n), Int n, AE $ Int 0, DIntR)] 
 aexprSem (RtoD (Int n)) _ _ FPSingle = error "aexprSem: FP precision mismatch"
 
-aexprSem (RtoD (Double n)) _ _ FPDouble = [(BTrue, FBTrue, RtoD (Double n), Double n, AE $ Int 0, DDoubleR)]
+aexprSem (RtoD (Double n)) _ _ FPDouble = [(BTrue, FBTrue, RtoD (Double n), Double n, ErrRat $ abs $ toRational ((fromRat n) :: Double) - (n :: Rational), DDoubleR)]
 aexprSem (RtoD (Double n)) _ _ FPSingle = error "aexprSem: FP precision mismatch"
 
 aexprSem (RtoS (Neg (Int n))) _ _ FPSingle = [(BTrue, FBTrue, RtoS (Neg (Int n)), Neg (Int n), AE $ Int 0, SIntR)]
 aexprSem (RtoS (Neg (Int n))) _ _ FPDouble = error "aexprSem: FP precision mismatch"
 
-aexprSem (RtoS (Neg (Double n))) _ _ FPSingle = [(BTrue, FBTrue, RtoS (Neg (Double n)), Neg (Double n), AE $ Int 0, SDoubleR)]
+aexprSem (RtoS (Neg (Double n))) _ _ FPSingle = [(BTrue, FBTrue, RtoS (Neg (Double n)), Neg (Double n), ErrRat $ abs $ toRational ((fromRat (-n)) :: Double) - ((-n) :: Rational), SDoubleR)]
 aexprSem (RtoS (Neg (Double n))) _ _ FPDouble = error "aexprSem: FP precision mismatch"
 
 aexprSem (RtoD (Neg (Int n))) _ _ FPDouble = [(BTrue, FBTrue, RtoD (Neg (Int n)), Neg (Int n), AE $ Int 0, DIntR)] 
 aexprSem (RtoD (Neg (Int n))) _ _ FPSingle = error "aexprSem: FP precision mismatch"
 
-aexprSem (RtoD (Neg (Double n))) _ _ FPDouble = [(BTrue, FBTrue, RtoD (Neg (Double n)), Neg (Double n), AE $ Int 0, DDoubleR)]
+aexprSem (RtoD (Neg (Double n))) _ _ FPDouble = [(BTrue, FBTrue, RtoD (Neg (Double n)), Neg (Double n), ErrRat $ abs $ toRational ((fromRat (-n)) :: Double) - ((-n) :: Rational), DDoubleR)]
 aexprSem (RtoD (Neg (Double n))) _ _ FPSingle = error "aexprSem: FP precision mismatch"
 
 aexprSem (FInt n) _ _ fp = [(BTrue, FBTrue, expr, Int n, AE $ Int 0, rule)] -- Int 0,
@@ -195,11 +198,12 @@ aexprSem (FDouble n) _ _ fp = [(BTrue, FBTrue, expr, Double n, AE $ Int 0, rule)
                     FPSingle -> (RtoS $ Double n, SDoubleR)
                     FPDouble -> (RtoD $ Double n, DDoubleR)
 
-aexprSem (FPi) _ _ fp = [(BTrue, FBTrue, expr, Double pi, AE $ Int 0, rule)] --- TODO: change (0,0) with the symbolic error -- Div (ulp Pi) (Int 2),
-  where
-    (expr, ulp, rule) = case fp of
-                        FPSingle -> (RtoS $ Pi, SUlp, SPiR)
-                        FPDouble -> (RtoD $ Pi, DUlp, DPiR)
+aexprSem (FPi) _ _ fp = error "aexprSem Pi: niy"
+--[(BTrue, FBTrue, expr, Double pi, AE $ Int 0, rule)] --- TODO: change (0,0) with the symbolic error -- Div (ulp Pi) (Int 2),
+--  where
+--    (expr, ulp, rule) = case fp of
+--                        FPSingle -> (RtoS $ Pi, SUlp, SPiR)
+--                        FPDouble -> (RtoD $ Pi, DUlp, DPiR)
 
 aexprSem (FVar x) _ env fp =
   case (lookup x env) of
@@ -223,6 +227,19 @@ aexprSem (FAdd a1 a2) i env fp = lub semAdd [(aexprSem a1 i env fp),(aexprSem a2
 aexprSem (FSub a1 a2) i env fp = lub semSub [(aexprSem a1 i env fp),(aexprSem a2 i env fp)] fp
 --                              ++ binLub semPrecSub a1 a2 (aexprSem a1 i env spec fun fp) (aexprSem a2 i env spec fun fp) fp
 
+aexprSem (FMul an@(FInt n) a)         i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(FDouble n) a)      i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(FInt n))         i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(FDouble n))      i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoD(Int n)) a)    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoD(Double n)) a) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoD(Int n)))    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoD(Double n))) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoS(Int n)) a)    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoS(Double n)) a) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoS(Int n)))    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoS(Double n))) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+
 aexprSem (FMul a1 a2) i env fp = lub semMul [(aexprSem a1 i env fp),(aexprSem a2 i env fp)] fp
 
 aexprSem (FDiv a1 a2) i env fp = lub semDiv [(aexprSem a1 i env fp),(aexprSem a2 i env fp)] fp
@@ -235,20 +252,15 @@ aexprSem (FPow a (FInt 2)) i env fp        = lub semMul [(aexprSem a i env fp),(
 aexprSem (FPow _ _) _ _ _                  = error "aexprSem: case Pow not implemented yet"
 
 aexprSem (FNeg a)    i env fp = lub semNeg    [aexprSem a i env fp] fp
- 
 aexprSem (FFloor a)  i env fp = (lub semFloor  [aexprSem a i env fp] fp) ++ (lub semFloor0  [aexprSem a i env fp] fp)
- 
 aexprSem (FSqrt a)   i env fp = lub semSqrt   [aexprSem a i env fp] fp
- 
 aexprSem (FAbs a)    i env fp = lub semAbs    [aexprSem a i env fp] fp
- 
 aexprSem (FSin a)    i env fp = lub semSin    [aexprSem a i env fp] fp
- 
 aexprSem (FCos a)    i env fp = lub semCos    [aexprSem a i env fp] fp
-
-aexprSem (FArcsin a) i env fp = lub semArcsin [aexprSem a i env fp] fp
-
-aexprSem (FArccos a) i env fp = lub semArccos [aexprSem a i env fp] fp
+aexprSem (FTan a)    i env fp = lub semTan    [aexprSem a i env fp] fp
+aexprSem (FAsin a)   i env fp = lub semAsin   [aexprSem a i env fp] fp
+aexprSem (FAcos a)   i env fp = lub semAcos   [aexprSem a i env fp] fp
+aexprSem (FAtan a)   i env fp = lub semAtan   [aexprSem a i env fp] fp
 
 aexprSem f i env fp = error ("aexprSem "++ (render $ prFAExpr f fp)++": not implemented yet")
 
@@ -314,19 +326,71 @@ semMul [(c1,g1,f1,r1,e1,t1),(c2,g2,f2,r2,e2,t2)] fp =
             FPSingle -> SMulR
             FPDouble -> DMulR
 
+semMulPow2 :: CebS -> FPrec -> Ceb
+semMulPow2 [(BTrue,FBTrue,f1,Int m,_,_),(c2,g2,f2,r2,e2,t2)] fp =
+  (simplBExprFix $ And c2 (Lt (Int n) (Sub FPrec (FExp f2))),
+   g2,
+   FMul f1 f2,
+   Mul (Int m) r2,
+   ErrMulPow2 n e2,
+   rule e2 r2 f2 t2 n)
+  where
+    n = round $ logBase 2 (fromIntegral m)
+    rule = case fp of
+             FPSingle -> SMulPow2R
+             FPDouble -> DMulPow2R 
+semMulPow2 [(BTrue,FBTrue,f1,Double m,_,_),(c2,g2,f2,r2,e2,t2)] fp =
+  (simplBExprFix $ And c2 (Lt (Int n) (Sub FPrec (FExp f2))),
+   g2,
+   FMul f1 f2,
+   Mul (Double m) r2,
+   ErrMulPow2 n e2,
+   rule e2 r2 f2 t2 n)
+  where
+    n = round $ logBase 2 (realToFrac m)
+    rule = case fp of
+             FPSingle -> SMulPow2R
+             FPDouble -> DMulPow2R 
+semMulPow2 _ _ = error "semMulPow2: something went wrong!"
+
+semMulPow2over :: CebS -> FPrec -> Ceb
+semMulPow2over [(BTrue,FBTrue,f1,Int m,e1,t1),(c2,g2,f2,r2,e2,t2)] fp =
+  (simplBExprFix $ And c2 (GtE (Int n) (Sub FPrec (FExp f2))),
+    g2,
+    FMul f1 f2,
+    Mul (Int m) r2,
+    ErrMul (Int m) e1 r2 e2,
+    rule e1 e2 (Int m) r2 f1 f2 t1 t2)
+  where
+    n = round $ logBase 2 (fromIntegral m)
+    rule = case fp of
+             FPSingle -> SMulR
+             FPDouble -> DMulR
+semMulPow2over [(BTrue,FBTrue,f1,Double m,e1,t1),(c2,g2,f2,r2,e2,t2)] fp =
+  (simplBExprFix $ And c2 (GtE (Int n) (Sub FPrec (FExp f2))),
+    g2,
+    FMul f1 f2,
+    Mul (Double m) r2,
+    ErrMul (Double m) e1 r2 e2,
+    rule e1 e2 (Double m) r2 f1 f2 t1 t2)
+  where
+    n = round $ logBase 2 (realToFrac m)
+    rule = case fp of
+             FPSingle -> SMulR
+             FPDouble -> DMulR
+
 semDiv :: CebS -> FPrec -> Ceb 
 semDiv [(c1,g1,f1,r1,e1,t1),(c2,g2,f2,r2,e2,t2)] fp =
-   (simplBExprFix $ And (And c1 c2) (Or (Lt (Add r2 (EE e2)) (Int 0)) (Gt (Sub r2 (EE e2)) (Int 0))),
-    simplFBExprFix $ FAnd g1 g2,
+   (simplBExprFix $ And (And (And (And c1 c2) (Neq r2 (Int 0))) (Neq (f2r f2) (Int 0))) (Or (Lt (Add r2 (EE e2)) (Int 0)) (Gt (Sub r2 (EE e2)) (Int 0))) ,
+    simplFBExprFix $ FAnd g1 g2 ,
     FDiv f1 f2,
     Div r1 r2,
     ErrDiv r1 e1 r2 e2,          
     rule e1 e2 r1 r2 f1 f2 t1 t2)
   where
-    rule = case fp of
-            FPSingle -> SDivR
-            FPDouble -> DDivR
-                  
+    (rule, f2r) = case fp of
+            FPSingle -> (SDivR,StoR)
+            FPDouble -> (DDivR,DtoR)
 
 semNeg :: CebS -> FPrec -> Ceb
 semNeg [(c,g,f,r,e,t)] fp = (c, g, FNeg f, Neg r, ErrNeg r e, rule e r f t)
@@ -351,7 +415,7 @@ semFloor [(c,g,f,r,e,t)] fp =
   ErrFloor r e,
   rule e r f t)
   where
-    cfloor = Or  (Neq (Floor r) (Floor (Sub r (EE e)))) (Neq (Floor r) (Floor (Add r (EE e))))
+    cfloor = Or (Neq (Floor r) (Floor (Sub r (EE e)))) (Neq (Floor r) (Floor (Add r (EE e))))
     (ulp, rule) = case fp of
                     FPSingle -> (SUlp, SFloorR)
                     FPDouble -> (DUlp, DFloorR)
@@ -384,17 +448,52 @@ semSqrt [(c,g,f,r,e,t)] fp =
                     FPDouble -> (DUlp, DSqrtR)
 
 semSin :: CebS -> FPrec -> Ceb 
-semSin [(c,g,f,r,e,t)] fp = error "semSin: niy"
+semSin [(c,g,f,r,e,t)] fp = 
+   (c,
+    g,
+    FSin f,
+    Sin r,
+    ErrSin r e,
+    rule e r f t) 
+  where
+    (ulp, rule) = case fp of
+                    FPSingle -> (SUlp, SSinR)
+                    FPDouble -> (DUlp, DSinR)
 
 semCos :: CebS -> FPrec -> Ceb 
-semCos [(c,g,f,r,e,t)] fp = error "semCos: niy"
+semCos [(c,g,f,r,e,t)] fp = 
+   (c,
+    g,
+    FCos f,
+    Cos r,
+    ErrCos r e,
+    rule e r f t) 
+  where
+    (ulp, rule) = case fp of
+                    FPSingle -> (SUlp, SCosR)
+                    FPDouble -> (DUlp, DCosR)
 
-semArcsin :: CebS -> FPrec -> Ceb 
-semArcsin [(c,g,f,r,e,t)] fp = error "semArcsin: niy"
+semTan :: CebS -> FPrec -> Ceb 
+semTan [(c,g,f,r,e,t)] fp = error "semTan: niy"
 
-semArccos :: CebS -> FPrec -> Ceb 
-semArccos [(c,g,f,r,e,t)] fp =error "semArccos: niy"     
+semAsin :: CebS -> FPrec -> Ceb 
+semAsin [(c,g,f,r,e,t)] fp = error "semAsin: niy"
 
+semAcos :: CebS -> FPrec -> Ceb 
+semAcos [(c,g,f,r,e,t)] fp =error "semAcos: niy"     
+
+semAtan :: CebS -> FPrec -> Ceb 
+semAtan [(c,g,f,r,e,t)] fp = 
+   (c,
+    g,
+    FAtan f,
+    ATan r,
+    ErrAtan r e,
+    rule e r f t) 
+  where
+    (ulp, rule) = case fp of
+                    FPSingle -> (SUlp, SAtanR)
+                    FPDouble -> (DUlp, DAtanR)
 
 -----------------------
 -- Arguments binding --
@@ -440,8 +539,10 @@ argsBindAExpr fa aa fp (Sqrt a)      = Sqrt   (argsBindAExpr fa aa fp a)
 argsBindAExpr fa aa fp (Abs a)       = Abs    (argsBindAExpr fa aa fp a)
 argsBindAExpr fa aa fp (Sin a)       = Sin    (argsBindAExpr fa aa fp a)
 argsBindAExpr fa aa fp (Cos a)       = Cos    (argsBindAExpr fa aa fp a)
-argsBindAExpr fa aa fp (Arccos a)    = Arccos (argsBindAExpr fa aa fp a)
-argsBindAExpr fa aa fp (Arcsin a)    = Arcsin (argsBindAExpr fa aa fp a)
+argsBindAExpr fa aa fp (Tan a)       = Tan    (argsBindAExpr fa aa fp a)
+argsBindAExpr fa aa fp (ACos a)      = ACos   (argsBindAExpr fa aa fp a)
+argsBindAExpr fa aa fp (ASin a)      = ASin   (argsBindAExpr fa aa fp a)
+argsBindAExpr fa aa fp (ATan a)      = ATan   (argsBindAExpr fa aa fp a)
 argsBindAExpr fa aa fp (SUlp a)      = SUlp   (argsBindAExpr fa aa fp a)
 argsBindAExpr fa aa fp (DUlp a)      = DUlp   (argsBindAExpr fa aa fp a)
 argsBindAExpr fa aa _ (StoR a)       = StoR   (argsBindFAExpr fa aa a)
@@ -451,6 +552,8 @@ argsBindAExpr _ _ _ d@(Double _)     = d
 argsBindAExpr _ _ _ Pi               = Pi
 argsBindAExpr fa aa fp (EFun f args) = EFun f (map (argsBindAExpr fa aa fp) args)
 argsBindAExpr fa aa fp (EE e)        = EE $ argsBindEExpr fa aa fp e
+argsBindAExpr fa aa fp FPrec         = FPrec
+argsBindAExpr fa aa fp (FExp fae)    = FExp (argsBindFAExpr fa aa fae)
 
 argsSemBindAExpr :: [VarId] -> CebS -> AExpr  -> AExpr
 argsSemBindAExpr fa aa (Var x)       = argsBindSemVar fa aa x
@@ -466,8 +569,10 @@ argsSemBindAExpr fa aa (Sqrt a)      = Sqrt   (argsSemBindAExpr fa aa a)
 argsSemBindAExpr fa aa (Abs a)       = Abs    (argsSemBindAExpr fa aa a)
 argsSemBindAExpr fa aa (Sin a)       = Sin    (argsSemBindAExpr fa aa a)
 argsSemBindAExpr fa aa (Cos a)       = Cos    (argsSemBindAExpr fa aa a)
-argsSemBindAExpr fa aa (Arccos a)    = Arccos (argsSemBindAExpr fa aa a)
-argsSemBindAExpr fa aa (Arcsin a)    = Arcsin (argsSemBindAExpr fa aa a)
+argsSemBindAExpr fa aa (Tan a)       = Tan    (argsSemBindAExpr fa aa a)
+argsSemBindAExpr fa aa (ACos a)      = ACos   (argsSemBindAExpr fa aa a)
+argsSemBindAExpr fa aa (ASin a)      = ASin   (argsSemBindAExpr fa aa a)
+argsSemBindAExpr fa aa (ATan a)      = ATan   (argsSemBindAExpr fa aa a)
 argsSemBindAExpr fa aa (SUlp a)      = SUlp   (argsSemBindAExpr fa aa a)
 argsSemBindAExpr fa aa (DUlp a)      = DUlp   (argsSemBindAExpr fa aa a)
 argsSemBindAExpr fa aa (StoR a)      = StoR   (argsSemBindFAExpr fa aa a)
@@ -477,6 +582,8 @@ argsSemBindAExpr _ _ d@(Double _)    = d
 argsSemBindAExpr _ _ Pi              = Pi
 argsSemBindAExpr fa aa (EFun f args) = EFun f (map (argsSemBindAExpr fa aa) args)
 argsSemBindAExpr fa aa (EE ee)       = EE (argsSemBindEExpr fa aa ee)
+argsSemBindAExpr fa aa FPrec         = FPrec
+argsSemBindAExpr fa aa (FExp fae)    = FExp (argsSemBindFAExpr fa aa fae)
 
 argsSemBindEExpr :: [VarId] -> CebS -> EExpr  -> EExpr
 argsSemBindEExpr fa aa (AE ae) = AE $ argsSemBindAExpr fa aa ae
@@ -495,8 +602,10 @@ argsSemBindEExpr fa aa (ErrNeg  r e)        = ErrNeg    (argsSemBindAExpr fa aa 
 argsSemBindEExpr fa aa (ErrAbs   r e)       = ErrAbs    (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
 argsSemBindEExpr fa aa (ErrSin    r e)      = ErrSin    (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
 argsSemBindEExpr fa aa (ErrCos    r e)      = ErrCos    (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
-argsSemBindEExpr fa aa (ErrArcsin r e)      = ErrArcsin (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
-argsSemBindEExpr fa aa (ErrArccos r e)      = ErrArccos (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
+argsSemBindEExpr fa aa (ErrTan    r e)      = ErrTan    (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
+argsSemBindEExpr fa aa (ErrAsin r e)        = ErrAsin (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
+argsSemBindEExpr fa aa (ErrAcos r e)        = ErrAcos (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
+argsSemBindEExpr fa aa (ErrAtan r e)        = ErrAtan (argsSemBindAExpr fa aa r)  (argsSemBindEExpr fa aa e)
 
 
 argsBindEExpr :: [VarId] -> [FAExpr] -> FPrec -> EExpr -> EExpr
@@ -516,8 +625,9 @@ argsBindEExpr fa aa fp (ErrAbs  r e)        = ErrAbs    (argsBindAExpr fa aa fp 
 argsBindEExpr fa aa fp (ErrNeg   r e)       = ErrNeg    (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
 argsBindEExpr fa aa fp (ErrSin    r e)      = ErrSin    (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
 argsBindEExpr fa aa fp (ErrCos    r e)      = ErrCos    (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
-argsBindEExpr fa aa fp (ErrArcsin r e)      = ErrArcsin (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
-argsBindEExpr fa aa fp (ErrArccos r e)      = ErrArccos (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
+argsBindEExpr fa aa fp (ErrTan    r e)      = ErrTan    (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
+argsBindEExpr fa aa fp (ErrAsin r e)      = ErrAsin (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
+argsBindEExpr fa aa fp (ErrAcos r e)      = ErrAcos (argsBindAExpr fa aa fp r)  (argsBindEExpr fa aa fp e)
 
 
 argsBindFAExpr :: [VarId] -> [FAExpr] -> FAExpr -> FAExpr
@@ -534,8 +644,10 @@ argsBindFAExpr fa aa (FSqrt a)      = FSqrt   (argsBindFAExpr fa aa a)
 argsBindFAExpr fa aa (FAbs a)       = FAbs    (argsBindFAExpr fa aa a)
 argsBindFAExpr fa aa (FSin a)       = FSin    (argsBindFAExpr fa aa a)
 argsBindFAExpr fa aa (FCos a)       = FCos    (argsBindFAExpr fa aa a)
-argsBindFAExpr fa aa (FArccos a)    = FArccos (argsBindFAExpr fa aa a)
-argsBindFAExpr fa aa (FArcsin a)    = FArcsin (argsBindFAExpr fa aa a)
+argsBindFAExpr fa aa (FTan a)       = FTan    (argsBindFAExpr fa aa a)
+argsBindFAExpr fa aa (FAsin a)      = FAsin (argsBindFAExpr fa aa a)
+argsBindFAExpr fa aa (FAcos a)      = FAcos (argsBindFAExpr fa aa a)
+argsBindFAExpr fa aa (FAtan a)      = FAtan (argsBindFAExpr fa aa a)
 argsBindFAExpr _  _  i@(FInt _)     = i
 argsBindFAExpr _  _  d@(FDouble _)  = d
 argsBindFAExpr fa aa (FEFun f args) = FEFun f (map (argsBindFAExpr fa aa) args)
@@ -557,8 +669,10 @@ argsSemBindFAExpr fa aa (FSqrt a)      = FSqrt   (argsSemBindFAExpr fa aa a)
 argsSemBindFAExpr fa aa (FAbs a)       = FAbs    (argsSemBindFAExpr fa aa a)
 argsSemBindFAExpr fa aa (FSin a)       = FSin    (argsSemBindFAExpr fa aa a)
 argsSemBindFAExpr fa aa (FCos a)       = FCos    (argsSemBindFAExpr fa aa a)
-argsSemBindFAExpr fa aa (FArccos a)    = FArccos (argsSemBindFAExpr fa aa a)
-argsSemBindFAExpr fa aa (FArcsin a)    = FArcsin (argsSemBindFAExpr fa aa a)
+argsSemBindFAExpr fa aa (FTan a)       = FTan    (argsSemBindFAExpr fa aa a)
+argsSemBindFAExpr fa aa (FAsin a)      = FAsin (argsSemBindFAExpr fa aa a)
+argsSemBindFAExpr fa aa (FAcos a)      = FAcos (argsSemBindFAExpr fa aa a)
+argsSemBindFAExpr fa aa (FAtan a)      = FAtan (argsSemBindFAExpr fa aa a)
 argsSemBindFAExpr _  _  i@(FInt _)     = i
 argsSemBindFAExpr _  _  d@(FDouble _)  = d
 argsSemBindFAExpr fa aa (FEFun f args) = FEFun f (map (argsSemBindFAExpr fa aa) args)
@@ -579,13 +693,14 @@ argsBindVar ((VarId y):ys) (a:as) fp x | x == ("r_"++y) = fae2real a
 argsBindSemFVar :: [VarId] -> CebS -> String -> FAExpr
 argsBindSemFVar [] [] x = FVar x
 argsBindSemFVar ((VarId y):ys) ((_,_,f,_,_,_):as) x | x == y = f
-                                                    | otherwise = argsBindSemFVar ys as x
+                                                    | otherwise = argsBindSemFVar ys as x                                         
                                                   
 argsBindSemVar :: [VarId] -> CebS -> String -> AExpr
 argsBindSemVar [] [] x = Var x
 argsBindSemVar ((VarId y):ys) ((_,_,_,a,e,_):as) x | x == ("r_"++y) = a
                                                    | x == ("e_"++y) = EE e
                                                    | otherwise = argsBindSemVar ys as x 
+
 
 argsBindStm :: [VarId] -> [FAExpr] -> Stm -> Stm
 argsBindStm vs aes (Let x ae stm)     = Let x (argsBindFAExpr vs aes ae) (argsBindStm vs aes stm)
@@ -597,96 +712,107 @@ argsBindStm vs aes (StmExpr ae)       = StmExpr (argsBindFAExpr vs aes ae)
 -- instantiation of expressions --
 ----------------------------------
 
-zeroErrBE  :: BExpr -> BExpr
-zeroErrBE (Or  b1 b2) = Or  (zeroErrBE b1) (zeroErrBE b2)
-zeroErrBE (And b1 b2) = And (zeroErrBE b1) (zeroErrBE b2)
-zeroErrBE (Not b)     = Not (zeroErrBE b)
-zeroErrBE (Eq  a1 a2) = Eq  (zeroErrAE a1) (zeroErrAE a2)
-zeroErrBE (Neq a1 a2) = Neq (zeroErrAE a1) (zeroErrAE a2)
-zeroErrBE (Lt  a1 a2) = Lt  (zeroErrAE a1) (zeroErrAE a2)
-zeroErrBE (LtE a1 a2) = LtE (zeroErrAE a1) (zeroErrAE a2)
-zeroErrBE (Gt  a1 a2) = Gt  (zeroErrAE a1) (zeroErrAE a2)
-zeroErrBE (GtE a1 a2) = GtE (zeroErrAE a1) (zeroErrAE a2)
-zeroErrBE BTrue  = BTrue
-zeroErrBE BFalse = BFalse
+zeroErrBE  ::[Char] -> BExpr -> BExpr
+zeroErrBE p (Or  b1 b2) = Or  (zeroErrBE p b1) (zeroErrBE p b2)
+zeroErrBE p (And b1 b2) = And (zeroErrBE p b1) (zeroErrBE p b2)
+zeroErrBE p (Not b)     = Not (zeroErrBE p b)
+zeroErrBE p (Eq  a1 a2) = Eq  (zeroErrAE p a1) (zeroErrAE p a2)
+zeroErrBE p (Neq a1 a2) = Neq (zeroErrAE p a1) (zeroErrAE p a2)
+zeroErrBE p (Lt  a1 a2) = Lt  (zeroErrAE p a1) (zeroErrAE p a2)
+zeroErrBE p (LtE a1 a2) = LtE (zeroErrAE p a1) (zeroErrAE p a2)
+zeroErrBE p (Gt  a1 a2) = Gt  (zeroErrAE p a1) (zeroErrAE p a2)
+zeroErrBE p (GtE a1 a2) = GtE (zeroErrAE p a1) (zeroErrAE p a2)
+zeroErrBE _ BTrue  = BTrue
+zeroErrBE _ BFalse = BFalse
 
-zeroErrFBE  :: FBExpr -> FBExpr
-zeroErrFBE (FOr  b1 b2) = FOr  (zeroErrFBE b1) (zeroErrFBE b2)
-zeroErrFBE (FAnd b1 b2) = FAnd (zeroErrFBE b1) (zeroErrFBE b2)
-zeroErrFBE (FNot b)     = FNot (zeroErrFBE b)
-zeroErrFBE (FEq  a1 a2) = FEq  (zeroErrFAE a1) (zeroErrFAE a2)
-zeroErrFBE (FNeq a1 a2) = FNeq (zeroErrFAE a1) (zeroErrFAE a2)
-zeroErrFBE (FLt  a1 a2) = FLt  (zeroErrFAE a1) (zeroErrFAE a2)
-zeroErrFBE (FLtE a1 a2) = FLtE (zeroErrFAE a1) (zeroErrFAE a2)
-zeroErrFBE (FGt  a1 a2) = FGt  (zeroErrFAE a1) (zeroErrFAE a2)
-zeroErrFBE (FGtE a1 a2) = FGtE (zeroErrFAE a1) (zeroErrFAE a2)
-zeroErrFBE FBTrue  = FBTrue
-zeroErrFBE FBFalse = FBFalse
+zeroErrFBE  ::[Char] -> FBExpr -> FBExpr
+zeroErrFBE p (FOr  b1 b2) = FOr  (zeroErrFBE p b1) (zeroErrFBE p b2)
+zeroErrFBE p (FAnd b1 b2) = FAnd (zeroErrFBE p b1) (zeroErrFBE p b2)
+zeroErrFBE p (FNot b)     = FNot (zeroErrFBE p b)
+zeroErrFBE p (FEq  a1 a2) = FEq  (zeroErrFAE p a1) (zeroErrFAE p a2)
+zeroErrFBE p (FNeq a1 a2) = FNeq (zeroErrFAE p a1) (zeroErrFAE p a2)
+zeroErrFBE p (FLt  a1 a2) = FLt  (zeroErrFAE p a1) (zeroErrFAE p a2)
+zeroErrFBE p (FLtE a1 a2) = FLtE (zeroErrFAE p a1) (zeroErrFAE p a2)
+zeroErrFBE p (FGt  a1 a2) = FGt  (zeroErrFAE p a1) (zeroErrFAE p a2)
+zeroErrFBE p (FGtE a1 a2) = FGtE (zeroErrFAE p a1) (zeroErrFAE p a2)
+zeroErrFBE _ FBTrue  = FBTrue
+zeroErrFBE _ FBFalse = FBFalse
 
-zeroErrEE :: EExpr -> EExpr
-zeroErrEE (ErrAdd ae1 ee1 ae2 ee2) = ErrAdd    (zeroErrAE ae1) (zeroErrEE ee1) (zeroErrAE ae2) (zeroErrEE ee2)
-zeroErrEE (ErrSub ae1 ee1 ae2 ee2) = ErrSub    (zeroErrAE ae1) (zeroErrEE ee1) (zeroErrAE ae2) (zeroErrEE ee2)
-zeroErrEE (ErrMul ae1 ee1 ae2 ee2) = ErrMul    (zeroErrAE ae1) (zeroErrEE ee1) (zeroErrAE ae2) (zeroErrEE ee2)
-zeroErrEE (ErrDiv ae1 ee1 ae2 ee2) = ErrDiv    (zeroErrAE ae1) (zeroErrEE ee1) (zeroErrAE ae2) (zeroErrEE ee2)
-zeroErrEE (ErrFloor  ae ee)        = ErrFloor  (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrFloor0  ae ee)       = ErrFloor0  (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrSqrt   ae ee)        = ErrSqrt   (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrSin    ae ee)        = ErrSin    (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrCos    ae ee)        = ErrCos    (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrArcsin ae ee)        = ErrArcsin (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrArccos ae ee)        = ErrArccos (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrNeg    ae ee)        = ErrNeg    (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (ErrAbs    ae ee)        = ErrAbs    (zeroErrAE ae)  (zeroErrEE ee)
-zeroErrEE (AE ae)                  = AE        (zeroErrAE ae)
+zeroErrEE ::[Char] -> EExpr -> EExpr
+zeroErrEE p (ErrAdd ae1 ee1 ae2 ee2) = ErrAdd    (zeroErrAE p ae1) (zeroErrEE p ee1) (zeroErrAE p ae2) (zeroErrEE p ee2)
+zeroErrEE p (ErrSub ae1 ee1 ae2 ee2) = ErrSub    (zeroErrAE p ae1) (zeroErrEE p ee1) (zeroErrAE p ae2) (zeroErrEE p ee2)
+zeroErrEE p (ErrMul ae1 ee1 ae2 ee2) = ErrMul    (zeroErrAE p ae1) (zeroErrEE p ee1) (zeroErrAE p ae2) (zeroErrEE p ee2)
+zeroErrEE p (ErrDiv ae1 ee1 ae2 ee2) = ErrDiv    (zeroErrAE p ae1) (zeroErrEE p ee1) (zeroErrAE p ae2) (zeroErrEE p ee2)
+zeroErrEE p (ErrFloor  ae ee)        = ErrFloor  (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrFloor0 ae ee)        = ErrFloor0 (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrSqrt   ae ee)        = ErrSqrt   (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrSin    ae ee)        = ErrSin    (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrCos    ae ee)        = ErrCos    (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrTan    ae ee)        = ErrTan    (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrAsin   ae ee)        = ErrAsin   (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrAcos   ae ee)        = ErrAcos   (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrAtan   ae ee)        = ErrAtan   (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrNeg    ae ee)        = ErrNeg    (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrAbs    ae ee)        = ErrAbs    (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (AE ae)                  = AE        (zeroErrAE p ae)
+zeroErrEE p (HalfUlp ae)             = HalfUlp   (zeroErrAE p ae)
+zeroErrEE p (ErrRat r)               = ErrRat r
+zeroErrEE p (ErrMulPow2 n ee)        = ErrMulPow2 n (zeroErrEE p ee)
 
-zeroErrAE :: AExpr -> AExpr
-zeroErrAE (Int n)        = Int n
-zeroErrAE (Double n)     = Double n
-zeroErrAE (Var x) | take 2 x == ("e_") = Int 0
-                  | otherwise          = Var x 
-zeroErrAE (Pi)                         = Pi
-zeroErrAE (Add ae1 ae2)  = Add    (zeroErrAE ae1) (zeroErrAE ae2)
-zeroErrAE (Sub ae1 ae2)  = Sub    (zeroErrAE ae1) (zeroErrAE ae2)
-zeroErrAE (Mul ae1 ae2)  = Mul    (zeroErrAE ae1) (zeroErrAE ae2)
-zeroErrAE (Div ae1 ae2)  = Div    (zeroErrAE ae1) (zeroErrAE ae2)
-zeroErrAE (Pow ae1 ae2)  = Pow    (zeroErrAE ae1) (zeroErrAE ae2)
-zeroErrAE (Mod ae1 ae2)  = Mod    (zeroErrAE ae1) (zeroErrAE ae2)
-zeroErrAE (Neg   ae)     = Neg    (zeroErrAE ae)
-zeroErrAE (Floor ae)     = Floor  (zeroErrAE ae)
-zeroErrAE (Sqrt  ae)     = Sqrt   (zeroErrAE ae)
-zeroErrAE (Abs   ae)     = Abs    (zeroErrAE ae)
-zeroErrAE (Sin   ae)     = Sin    (zeroErrAE ae)
-zeroErrAE (Cos   ae)     = Cos    (zeroErrAE ae)
-zeroErrAE (Arccos ae)    = Arccos (zeroErrAE ae)
-zeroErrAE (Arcsin ae)    = Arcsin (zeroErrAE ae)
-zeroErrAE (SUlp ae)      = SUlp   (zeroErrAE ae)
-zeroErrAE (DUlp ae)      = DUlp   (zeroErrAE ae)
-zeroErrAE (EE ee)        = EE     (zeroErrEE ee)
-zeroErrAE (EFun fun aes) = EFun fun (map zeroErrAE aes)
-zeroErrAE (StoR fae)     = StoR (zeroErrFAE fae)
-zeroErrAE (DtoR fae)     = DtoR (zeroErrFAE fae)
+zeroErrAE ::[Char] -> AExpr -> AExpr
+zeroErrAE _ (Int n)        = Int n
+zeroErrAE _ (Double n)     = Double n
+zeroErrAE p v@(Var x) | (take 2 x) == ("e_") = EE $ HalfUlp (Var $ "r_"++(drop 2 x)) -- Int 0
+                      | otherwise = Var x 
+zeroErrAE _ (Pi)           = Pi
+zeroErrAE p (Add ae1 ae2)  = Add    (zeroErrAE p ae1) (zeroErrAE p ae2)
+zeroErrAE p (Sub ae1 ae2)  = Sub    (zeroErrAE p ae1) (zeroErrAE p ae2)
+zeroErrAE p (Mul ae1 ae2)  = Mul    (zeroErrAE p ae1) (zeroErrAE p ae2)
+zeroErrAE p (Div ae1 ae2)  = Div    (zeroErrAE p ae1) (zeroErrAE p ae2)
+zeroErrAE p (Pow ae1 ae2)  = Pow    (zeroErrAE p ae1) (zeroErrAE p ae2)
+zeroErrAE p (Mod ae1 ae2)  = Mod    (zeroErrAE p ae1) (zeroErrAE p ae2)
+zeroErrAE p (Neg   ae)     = Neg    (zeroErrAE p ae)
+zeroErrAE p (Floor ae)     = Floor  (zeroErrAE p ae)
+zeroErrAE p (Sqrt  ae)     = Sqrt   (zeroErrAE p ae)
+zeroErrAE p (Abs   ae)     = Abs    (zeroErrAE p ae)
+zeroErrAE p (Sin   ae)     = Sin    (zeroErrAE p ae)
+zeroErrAE p (Cos   ae)     = Cos    (zeroErrAE p ae)
+zeroErrAE p (Tan   ae)     = Tan    (zeroErrAE p ae)
+zeroErrAE p (ASin ae)      = ASin   (zeroErrAE p ae)
+zeroErrAE p (ACos ae)      = ACos   (zeroErrAE p ae)
+zeroErrAE p (ATan ae)      = ATan   (zeroErrAE p ae)
+zeroErrAE p (SUlp ae)      = SUlp   (zeroErrAE p ae)
+zeroErrAE p (DUlp ae)      = DUlp   (zeroErrAE p ae)
+zeroErrAE p (EE ee)        = EE     (zeroErrEE p ee)
+zeroErrAE p (EFun fun aes) = EFun fun (map (zeroErrAE p) aes)
+zeroErrAE p (StoR fae)     = StoR (zeroErrFAE p fae)
+zeroErrAE p (DtoR fae)     = DtoR (zeroErrFAE p fae)
+zeroErrAE p FPrec          = FPrec
+zeroErrAE p (FExp fae)     = FExp (zeroErrFAE p fae)
 
-zeroErrFAE :: FAExpr -> FAExpr
-zeroErrFAE (FInt n)     = FInt n
-zeroErrFAE (FDouble n)  = FDouble n
-zeroErrFAE (FVar x)     = FVar x
-zeroErrFAE FPi          = FPi
-zeroErrFAE (FAdd a1 a2) = FAdd (zeroErrFAE a1) (zeroErrFAE a2) 
-zeroErrFAE (FSub a1 a2) = FSub (zeroErrFAE a1) (zeroErrFAE a2) 
-zeroErrFAE (FMul a1 a2) = FMul (zeroErrFAE a1) (zeroErrFAE a2) 
-zeroErrFAE (FDiv a1 a2) = FDiv (zeroErrFAE a1) (zeroErrFAE a2) 
-zeroErrFAE (FPow a1 a2) = FPow (zeroErrFAE a1) (zeroErrFAE a2) 
-zeroErrFAE (FMod a1 a2) = FMod (zeroErrFAE a1) (zeroErrFAE a2) 
-zeroErrFAE (FNeg    a)  = FNeg (zeroErrFAE a)
-zeroErrFAE (FFloor  a)  = FFloor (zeroErrFAE a)
-zeroErrFAE (FSqrt   a)  = FSqrt (zeroErrFAE a)
-zeroErrFAE (FAbs    a)  = FAbs (zeroErrFAE a)
-zeroErrFAE (FSin    a)  = FSin (zeroErrFAE a)
-zeroErrFAE (FCos    a)  = FCos (zeroErrFAE a)
-zeroErrFAE (FArccos a)  = FArccos (zeroErrFAE a)
-zeroErrFAE (FArcsin a)  = FArcsin (zeroErrFAE a)
-zeroErrFAE (FEFun fun aes) = FEFun fun (map zeroErrFAE aes)
-zeroErrFAE (RtoS a) = RtoS (zeroErrAE a)
-zeroErrFAE (RtoD a) = RtoD (zeroErrAE a)
+zeroErrFAE ::[Char] -> FAExpr -> FAExpr
+zeroErrFAE p (FInt n)     = FInt n
+zeroErrFAE p (FDouble n)  = FDouble n
+zeroErrFAE p (FVar x)     = FVar x
+zeroErrFAE p FPi          = FPi
+zeroErrFAE p (FAdd a1 a2) = FAdd   (zeroErrFAE p a1) (zeroErrFAE p a2) 
+zeroErrFAE p (FSub a1 a2) = FSub   (zeroErrFAE p a1) (zeroErrFAE p a2) 
+zeroErrFAE p (FMul a1 a2) = FMul   (zeroErrFAE p a1) (zeroErrFAE p a2) 
+zeroErrFAE p (FDiv a1 a2) = FDiv   (zeroErrFAE p a1) (zeroErrFAE p a2) 
+zeroErrFAE p (FPow a1 a2) = FPow   (zeroErrFAE p a1) (zeroErrFAE p a2) 
+zeroErrFAE p (FMod a1 a2) = FMod   (zeroErrFAE p a1) (zeroErrFAE p a2) 
+zeroErrFAE p (FNeg    a)  = FNeg   (zeroErrFAE p a)
+zeroErrFAE p (FFloor  a)  = FFloor (zeroErrFAE p a)
+zeroErrFAE p (FSqrt   a)  = FSqrt  (zeroErrFAE p a)
+zeroErrFAE p (FAbs    a)  = FAbs   (zeroErrFAE p a)
+zeroErrFAE p (FSin    a)  = FSin   (zeroErrFAE p a)
+zeroErrFAE p (FCos    a)  = FCos   (zeroErrFAE p a)
+zeroErrFAE p (FTan    a)  = FTan   (zeroErrFAE p a)
+zeroErrFAE p (FAsin a)    = FAsin  (zeroErrFAE p a)
+zeroErrFAE p (FAcos a)    = FAcos  (zeroErrFAE p a)
+zeroErrFAE p (FAtan a)    = FAtan  (zeroErrFAE p a)
+zeroErrFAE p (FEFun fun aes) = FEFun fun (map (zeroErrFAE p) aes)
+zeroErrFAE p (RtoS a)     = RtoS (zeroErrAE p a)
+zeroErrFAE p (RtoD a)     = RtoD (zeroErrAE p a)
 
 

@@ -1,0 +1,845 @@
+Require Import Flocq.Core.Fcore.
+Require Import Gappa.Gappa_library.
+Section Generated_by_Gappa.
+Variable _Mr : R.
+Definition f1 := Float2 (1) (2).
+Definition i1 := makepairF f1 f1.
+Notation p1 := (BND _Mr i1). (* BND(Mr, [4, 4]) *)
+Variable _MK : R.
+Definition f2 := Float2 (639871435056800071) (-59).
+Definition f3 := Float2 (79983929382100009) (-56).
+Definition i2 := makepairF f2 f3.
+Notation p2 := (BND _MK i2). (* BND(MK, [1.11, 1.11]) *)
+Definition s3 := (p1 /\ p2).
+Variable _Mx : R.
+Definition f4 := Float2 (230584300921369395) (-61).
+Definition f5 := Float2 (345876451382054093) (-60).
+Definition i3 := makepairF f4 f5.
+Notation p3 := (BND _Mx i3). (* BND(Mx, [0.1, 0.3]) *)
+Definition s2 := (s3 /\ p3).
+Notation _r := ((round radix2 (FLT_exp (-1074) (53)) rndNE)  _Mr).
+Notation _x := ((round radix2 (FLT_exp (-1074) (53)) rndNE)  _Mx).
+Notation r9 := ((_r * _x)%R).
+Notation r8 := ((round radix2 (FLT_exp (-1074) (53)) rndNE)  r9).
+Notation r14 := (Float1 (1)).
+Notation _K := ((round radix2 (FLT_exp (-1074) (53)) rndNE)  _MK).
+Notation r16 := ((_x / _K)%R).
+Notation r15 := ((round radix2 (FLT_exp (-1074) (53)) rndNE)  r16).
+Notation r13 := ((r14 + r15)%R).
+Notation r12 := ((round radix2 (FLT_exp (-1074) (53)) rndNE)  r13).
+Notation r7 := ((r8 / r12)%R).
+Notation _res := ((round radix2 (FLT_exp (-1074) (53)) rndNE)  r7).
+Notation r19 := ((_Mr * _Mx)%R).
+Notation r21 := ((_Mx / _MK)%R).
+Notation r20 := ((r14 + r21)%R).
+Notation _Mres := ((r19 / r20)%R).
+Notation r5 := ((_res - _Mres)%R).
+Notation r4 := ((Rabs r5)%R).
+Definition f6 := Float2 (0) (0).
+Definition f7 := Float2 (271443903541034735) (-109).
+Definition i4 := makepairF f6 f7.
+Notation p4 := (BND r4 i4). (* BND(|res - Mres|, [0, 4.18226e-16]) *)
+Definition s4 := (not p4).
+Definition s1 := (s2 /\ s4).
+Lemma l2 : s1 -> s4.
+ intros h0.
+ assert (h1 := h0).
+ exact (proj2 h1).
+Qed.
+Notation p5 := (ABS r5 i4). (* ABS(res - Mres, [0, 4.18226e-16]) *)
+Definition f8 := Float2 (-7) (-54).
+Definition i5 := makepairF f8 f7.
+Notation p6 := (BND r5 i5). (* BND(res - Mres, [-3.88578e-16, 4.18226e-16]) *)
+Notation r23 := ((_res - r7)%R).
+Notation r24 := ((r7 - _Mres)%R).
+Notation r22 := ((r23 + r24)%R).
+Notation p7 := (BND r22 i5). (* BND(res - float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) + (float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - Mres), [-3.88578e-16, 4.18226e-16]) *)
+Definition f9 := Float2 (-1) (-53).
+Definition f10 := Float2 (1) (-53).
+Definition i6 := makepairF f9 f10.
+Notation p8 := (BND r23 i6). (* BND(res - float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [-1.11022e-16, 1.11022e-16]) *)
+Definition f11 := Float2 (1) (-2).
+Definition f12 := Float2 (1) (1).
+Definition i7 := makepairF f11 f12.
+Notation p9 := (ABS r7 i7). (* ABS(float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [0.25, 2]) *)
+Definition f13 := Float2 (3) (-3).
+Definition i8 := makepairF f13 f12.
+Notation p10 := (ABS r8 i8). (* ABS(float<53,-1074,ne>(r * x), [0.375, 2]) *)
+Notation p11 := (BND r8 i8). (* BND(float<53,-1074,ne>(r * x), [0.375, 2]) *)
+Notation p12 := (BND r9 i8). (* BND(r * x, [0.375, 2]) *)
+Notation p13 := (BND _r i1). (* BND(r, [4, 4]) *)
+Lemma l15 : s1 -> s2.
+ intros h0.
+ assert (h1 := h0).
+ exact (proj1 h1).
+Qed.
+Lemma l14 : s1 -> s3.
+ intros h0.
+ assert (h1 := l15 h0).
+ exact (proj1 h1).
+Qed.
+Lemma l13 : s1 -> p1 (* BND(Mr, [4, 4]) *).
+ intros h0.
+ assert (h1 := l14 h0).
+ exact (proj1 h1).
+Qed.
+Lemma t1 : p1 -> p13.
+ intros h0.
+ refine (float_round_ne _ _ _Mr i1 i1 h0 _) ; finalize.
+Qed.
+Lemma l12 : s1 -> p13 (* BND(r, [4, 4]) *).
+ intros h0.
+ assert (h1 := l13 h0).
+ apply t1. exact h1.
+Qed.
+Definition f14 := Float2 (3602879701896397) (-55).
+Definition f15 := Float2 (1) (-1).
+Definition i9 := makepairF f14 f15.
+Notation p14 := (BND _x i9). (* BND(x, [0.1, 0.5]) *)
+Lemma l17 : s1 -> p3 (* BND(Mx, [0.1, 0.3]) *).
+ intros h0.
+ assert (h1 := l15 h0).
+ exact (proj2 h1).
+Qed.
+Definition f16 := Float2 (14411518807585587) (-57).
+Definition i10 := makepairF f16 f15.
+Notation p15 := (BND _Mx i10). (* BND(Mx, [0.1, 0.5]) *)
+Lemma t2 : p15 -> p14.
+ intros h0.
+ refine (float_round_ne _ _ _Mx i10 i9 h0 _) ; finalize.
+Qed.
+Lemma l16 : s1 -> p14 (* BND(x, [0.1, 0.5]) *).
+ intros h0.
+ assert (h1 := l17 h0).
+ apply t2. refine (subset _Mx i3 i10 h1 _) ; finalize.
+Qed.
+Definition f17 := Float2 (3) (-5).
+Definition i11 := makepairF f17 f15.
+Notation p16 := (BND _x i11). (* BND(x, [0.09375, 0.5]) *)
+Lemma t3 : p13 -> p16 -> p12.
+ intros h0 h1.
+ refine (mul_pp _r _x i1 i11 i8 h0 h1 _) ; finalize.
+Qed.
+Lemma l11 : s1 -> p12 (* BND(r * x, [0.375, 2]) *).
+ intros h0.
+ assert (h1 := l12 h0).
+ assert (h2 := l16 h0).
+ apply t3. exact h1. refine (subset _x i9 i11 h2 _) ; finalize.
+Qed.
+Lemma t4 : p12 -> p11.
+ intros h0.
+ refine (float_round_ne _ _ r9 i8 i8 h0 _) ; finalize.
+Qed.
+Lemma l10 : s1 -> p11 (* BND(float<53,-1074,ne>(r * x), [0.375, 2]) *).
+ intros h0.
+ assert (h1 := l11 h0).
+ apply t4. exact h1.
+Qed.
+Lemma t5 : p11 -> p10.
+ intros h0.
+ refine (abs_of_bnd_p r8 i8 i8 h0 _) ; finalize.
+Qed.
+Lemma l9 : s1 -> p10 (* ABS(float<53,-1074,ne>(r * x), [0.375, 2]) *).
+ intros h0.
+ assert (h1 := l10 h0).
+ apply t5. exact h1.
+Qed.
+Definition f18 := Float2 (1) (0).
+Definition f19 := Float2 (3) (-1).
+Definition i12 := makepairF f18 f19.
+Notation p17 := (ABS r12 i12). (* ABS(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [1, 1.5]) *)
+Notation p18 := (BND r12 i12). (* BND(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [1, 1.5]) *)
+Definition f20 := Float2 (39274634588240001) (-55).
+Definition i13 := makepairF f20 f19.
+Notation p19 := (BND r13 i13). (* BND(1 + float<53,-1074,ne>(x / K), [1.09009, 1.5]) *)
+Definition i14 := makepairF f18 f18.
+Notation p20 := (BND r14 i14). (* BND(1, [1, 1]) *)
+Lemma t6 : p20.
+ refine (constant1 _ i14 _) ; finalize.
+Qed.
+Lemma l21 : s1 -> p20 (* BND(1, [1, 1]) *).
+ intros h0.
+ apply t6.
+Qed.
+Definition f21 := Float2 (3245837569276033) (-55).
+Definition i15 := makepairF f21 f15.
+Notation p21 := (BND r15 i15). (* BND(float<53,-1074,ne>(x / K), [0.0900901, 0.5]) *)
+Notation p22 := (BND r16 i15). (* BND(x / K, [0.0900901, 0.5]) *)
+Definition f22 := Float2 (4998995586381251) (-52).
+Definition i16 := makepairF f22 f22.
+Notation p23 := (BND _K i16). (* BND(K, [1.11, 1.11]) *)
+Lemma l25 : s1 -> p2 (* BND(MK, [1.11, 1.11]) *).
+ intros h0.
+ assert (h1 := l14 h0).
+ exact (proj2 h1).
+Qed.
+Definition f23 := Float2 (159967858764200017) (-57).
+Definition i17 := makepairF f23 f22.
+Notation p24 := (BND _MK i17). (* BND(MK, [1.11, 1.11]) *)
+Lemma t7 : p24 -> p23.
+ intros h0.
+ refine (float_round_ne _ _ _MK i17 i16 h0 _) ; finalize.
+Qed.
+Lemma l24 : s1 -> p23 (* BND(K, [1.11, 1.11]) *).
+ intros h0.
+ assert (h1 := l25 h0).
+ apply t7. refine (subset _MK i2 i17 h1 _) ; finalize.
+Qed.
+Definition i18 := makepairF f18 f22.
+Notation p25 := (BND _K i18). (* BND(K, [1, 1.11]) *)
+Lemma t8 : p14 -> p25 -> p22.
+ intros h0 h1.
+ refine (div_pp _x _K i9 i18 i15 h0 h1 _) ; finalize.
+Qed.
+Lemma l23 : s1 -> p22 (* BND(x / K, [0.0900901, 0.5]) *).
+ intros h0.
+ assert (h1 := l16 h0).
+ assert (h2 := l24 h0).
+ apply t8. exact h1. refine (subset _K i16 i18 h2 _) ; finalize.
+Qed.
+Lemma t9 : p22 -> p21.
+ intros h0.
+ refine (float_round_ne _ _ r16 i15 i15 h0 _) ; finalize.
+Qed.
+Lemma l22 : s1 -> p21 (* BND(float<53,-1074,ne>(x / K), [0.0900901, 0.5]) *).
+ intros h0.
+ assert (h1 := l23 h0).
+ apply t9. exact h1.
+Qed.
+Lemma t10 : p20 -> p21 -> p19.
+ intros h0 h1.
+ refine (add r14 r15 i14 i15 i13 h0 h1 _) ; finalize.
+Qed.
+Lemma l20 : s1 -> p19 (* BND(1 + float<53,-1074,ne>(x / K), [1.09009, 1.5]) *).
+ intros h0.
+ assert (h1 := l21 h0).
+ assert (h2 := l22 h0).
+ apply t10. exact h1. exact h2.
+Qed.
+Notation p26 := (BND r13 i12). (* BND(1 + float<53,-1074,ne>(x / K), [1, 1.5]) *)
+Lemma t11 : p26 -> p18.
+ intros h0.
+ refine (float_round_ne _ _ r13 i12 i12 h0 _) ; finalize.
+Qed.
+Lemma l19 : s1 -> p18 (* BND(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [1, 1.5]) *).
+ intros h0.
+ assert (h1 := l20 h0).
+ apply t11. refine (subset r13 i13 i12 h1 _) ; finalize.
+Qed.
+Lemma t12 : p18 -> p17.
+ intros h0.
+ refine (abs_of_bnd_p r12 i12 i12 h0 _) ; finalize.
+Qed.
+Lemma l18 : s1 -> p17 (* ABS(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [1, 1.5]) *).
+ intros h0.
+ assert (h1 := l19 h0).
+ apply t12. exact h1.
+Qed.
+Lemma t13 : p10 -> p17 -> p9.
+ intros h0 h1.
+ refine (div_aa r8 r12 i8 i12 i7 h0 h1 _) ; finalize.
+Qed.
+Lemma l8 : s1 -> p9 (* ABS(float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [0.25, 2]) *).
+ intros h0.
+ assert (h1 := l9 h0).
+ assert (h2 := l18 h0).
+ apply t13. exact h1. exact h2.
+Qed.
+Lemma t14 : p9 -> p8.
+ intros h0.
+ refine (float_absolute_wide_ne _ _ r7 i7 i6 h0 _) ; finalize.
+Qed.
+Lemma l7 : s1 -> p8 (* BND(res - float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), [-1.11022e-16, 1.11022e-16]) *).
+ intros h0.
+ assert (h1 := l8 h0).
+ apply t14. exact h1.
+Qed.
+Definition f24 := Float2 (-5) (-54).
+Definition f25 := Float2 (199386309503106799) (-109).
+Definition i19 := makepairF f24 f25.
+Notation p27 := (BND r24 i19). (* BND(float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - Mres, [-2.77556e-16, 3.07203e-16]) *)
+Definition f26 := Float2 (-9) (-55).
+Definition f27 := Float2 (181124200074143563) (-109).
+Definition i20 := makepairF f26 f27.
+Notation p28 := (REL r7 _Mres i20). (* REL(float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), Mres, [-2.498e-16, 2.79066e-16]) *)
+Notation p29 := (REL r8 r19 i6). (* REL(float<53,-1074,ne>(r * x), Mr * Mx, [-1.11022e-16, 1.11022e-16]) *)
+Notation p30 := (r8 = r9). (* EQL(float<53,-1074,ne>(r * x), r * x) *)
+Notation p31 := (FIX r9 (-54)). (* FIX(r * x, -54) *)
+Notation p32 := (FIX _r (2)). (* FIX(r, 2) *)
+Notation p33 := (FIX _Mr (2)). (* FIX(Mr, 2) *)
+Notation p34 := (ABS _Mr i1). (* ABS(Mr, [4, 4]) *)
+Lemma t15 : p1 -> p34.
+ intros h0.
+ refine (abs_of_bnd_p _Mr i1 i1 h0 _) ; finalize.
+Qed.
+Lemma l33 : s1 -> p34 (* ABS(Mr, [4, 4]) *).
+ intros h0.
+ assert (h1 := l13 h0).
+ apply t15. exact h1.
+Qed.
+Lemma t16 : p34 -> p33.
+ intros h0.
+ refine (fix_of_singleton_bnd _Mr i1 (2) h0 _) ; finalize.
+Qed.
+Lemma l32 : s1 -> p33 (* FIX(Mr, 2) *).
+ intros h0.
+ assert (h1 := l33 h0).
+ apply t16. exact h1.
+Qed.
+Lemma t17 : p33 -> p32.
+ intros h0.
+ refine (fix_float_of_fix _ _ _ (2) (2) _Mr h0 _) ; finalize.
+Qed.
+Lemma l31 : s1 -> p32 (* FIX(r, 2) *).
+ intros h0.
+ assert (h1 := l32 h0).
+ apply t17. exact h1.
+Qed.
+Notation p35 := (FIX _x (-56)). (* FIX(x, -56) *)
+Notation p36 := (FLT _x (53)). (* FLT(x, 53) *)
+Lemma t18 : p36.
+ refine (flt_of_float _ _ _ (53) _ _) ; finalize.
+Qed.
+Lemma l35 : s1 -> p36 (* FLT(x, 53) *).
+ intros h0.
+ apply t18.
+Qed.
+Definition i21 := makepairF f17 f18.
+Notation p37 := (ABS _x i21). (* ABS(x, [0.09375, 1]) *)
+Notation p38 := (BND _x i21). (* BND(x, [0.09375, 1]) *)
+Lemma t19 : p38 -> p37.
+ intros h0.
+ refine (abs_of_bnd_p _x i21 i21 h0 _) ; finalize.
+Qed.
+Lemma l36 : s1 -> p37 (* ABS(x, [0.09375, 1]) *).
+ intros h0.
+ assert (h1 := l16 h0).
+ apply t19. refine (subset _x i9 i21 h1 _) ; finalize.
+Qed.
+Definition f28 := Float2 (1) (-4).
+Definition i22 := makepairF f28 f18.
+Notation p39 := (ABS _x i22). (* ABS(x, [0.0625, 1]) *)
+Lemma t20 : p36 -> p39 -> p35.
+ intros h0 h1.
+ refine (fix_of_flt_bnd _x i22 (-56) (53) h0 h1 _) ; finalize.
+Qed.
+Lemma l34 : s1 -> p35 (* FIX(x, -56) *).
+ intros h0.
+ assert (h1 := l35 h0).
+ assert (h2 := l36 h0).
+ apply t20. exact h1. refine (abs_subset _x i21 i22 h2 _) ; finalize.
+Qed.
+Lemma t21 : p32 -> p35 -> p31.
+ intros h0 h1.
+ refine (mul_fix _r _x (2) (-56) (-54) h0 h1 _) ; finalize.
+Qed.
+Lemma l30 : s1 -> p31 (* FIX(r * x, -54) *).
+ intros h0.
+ assert (h1 := l31 h0).
+ assert (h2 := l34 h0).
+ apply t21. exact h1. exact h2.
+Qed.
+Notation p40 := (FLT r9 (53)). (* FLT(r * x, 53) *)
+Notation p41 := (FLT _r (1)). (* FLT(r, 1) *)
+Notation p42 := (FLT _Mr (1)). (* FLT(Mr, 1) *)
+Lemma t22 : p34 -> p42.
+ intros h0.
+ refine (flt_of_singleton_bnd _Mr i1 (1) h0 _) ; finalize.
+Qed.
+Lemma l39 : s1 -> p42 (* FLT(Mr, 1) *).
+ intros h0.
+ assert (h1 := l33 h0).
+ apply t22. exact h1.
+Qed.
+Lemma t23 : p42 -> p41.
+ intros h0.
+ refine (flt_float_of_flt _ _ _ (1) (1) _Mr h0 _) ; finalize.
+Qed.
+Lemma l38 : s1 -> p41 (* FLT(r, 1) *).
+ intros h0.
+ assert (h1 := l39 h0).
+ apply t23. exact h1.
+Qed.
+Lemma t24 : p41 -> p36 -> p40.
+ intros h0 h1.
+ refine (mul_flt _r _x (1) (53) (53) h0 h1 _) ; finalize.
+Qed.
+Lemma l37 : s1 -> p40 (* FLT(r * x, 53) *).
+ intros h0.
+ assert (h1 := l38 h0).
+ assert (h2 := l35 h0).
+ apply t24. exact h1. exact h2.
+Qed.
+Lemma t25 : p31 -> p40 -> p30.
+ intros h0 h1.
+ refine (float_of_fix_flt _ r9 (-54) _ (53) _ h0 h1 _) ; finalize.
+Qed.
+Lemma l29 : s1 -> p30 (* EQL(float<53,-1074,ne>(r * x), r * x) *).
+ intros h0.
+ assert (h1 := l30 h0).
+ assert (h2 := l37 h0).
+ apply t25. exact h1. exact h2.
+Qed.
+Notation p43 := (REL r9 r19 i6). (* REL(r * x, Mr * Mx, [-1.11022e-16, 1.11022e-16]) *)
+Definition i23 := makepairF f6 f6.
+Notation p44 := (REL _r _Mr i23). (* REL(r, Mr, [0, 0]) *)
+Notation p45 := (_r = _Mr). (* EQL(r, Mr) *)
+Lemma t26 : p33 -> p42 -> p45.
+ intros h0 h1.
+ refine (float_of_fix_flt _ _Mr (2) _ (1) _ h0 h1 _) ; finalize.
+Qed.
+Lemma l42 : s1 -> p45 (* EQL(r, Mr) *).
+ intros h0.
+ assert (h1 := l32 h0).
+ assert (h2 := l39 h0).
+ apply t26. exact h1. exact h2.
+Qed.
+Notation p46 := (REL _Mr _Mr i23). (* REL(Mr, Mr, [0, 0]) *)
+Lemma t27 : p46.
+ refine (rel_refl _Mr i23 _) ; finalize.
+Qed.
+Lemma l43 : s1 -> p46 (* REL(Mr, Mr, [0, 0]) *).
+ intros h0.
+ apply t27.
+Qed.
+Lemma t28 : p45 -> p46 -> p44.
+ intros h0 h1.
+ refine (rel_rewrite_1 _r _Mr _Mr i23 h0 h1) ; finalize.
+Qed.
+Lemma l41 : s1 -> p44 (* REL(r, Mr, [0, 0]) *).
+ intros h0.
+ assert (h1 := l42 h0).
+ assert (h2 := l43 h0).
+ apply t28. exact h1. exact h2.
+Qed.
+Notation p47 := (REL _x _Mx i6). (* REL(x, Mx, [-1.11022e-16, 1.11022e-16]) *)
+Notation p48 := (ABS _Mx i22). (* ABS(Mx, [0.0625, 1]) *)
+Notation p49 := (BND _Mx i22). (* BND(Mx, [0.0625, 1]) *)
+Lemma t29 : p49 -> p48.
+ intros h0.
+ refine (abs_of_bnd_p _Mx i22 i22 h0 _) ; finalize.
+Qed.
+Lemma l45 : s1 -> p48 (* ABS(Mx, [0.0625, 1]) *).
+ intros h0.
+ assert (h1 := l17 h0).
+ apply t29. refine (subset _Mx i3 i22 h1 _) ; finalize.
+Qed.
+Lemma t30 : p48 -> p47.
+ intros h0.
+ refine (float_relative_ne _ _ _Mx i22 i6 h0 _) ; finalize.
+Qed.
+Lemma l44 : s1 -> p47 (* REL(x, Mx, [-1.11022e-16, 1.11022e-16]) *).
+ intros h0.
+ assert (h1 := l45 h0).
+ apply t30. exact h1.
+Qed.
+Lemma t31 : p44 -> p47 -> p43.
+ intros h0 h1.
+ refine (mul_rr _r _Mr _x _Mx i23 i6 i6 h0 h1 _) ; finalize.
+Qed.
+Lemma l40 : s1 -> p43 (* REL(r * x, Mr * Mx, [-1.11022e-16, 1.11022e-16]) *).
+ intros h0.
+ assert (h1 := l41 h0).
+ assert (h2 := l44 h0).
+ apply t31. exact h1. exact h2.
+Qed.
+Lemma t32 : p30 -> p43 -> p29.
+ intros h0 h1.
+ refine (rel_rewrite_1 r8 r9 r19 i6 h0 h1) ; finalize.
+Qed.
+Lemma l28 : s1 -> p29 (* REL(float<53,-1074,ne>(r * x), Mr * Mx, [-1.11022e-16, 1.11022e-16]) *).
+ intros h0.
+ assert (h1 := l29 h0).
+ assert (h2 := l40 h0).
+ apply t32. exact h1. exact h2.
+Qed.
+Definition f29 := Float2 (-218133212072431193) (-110).
+Definition f30 := Float2 (5) (-55).
+Definition i24 := makepairF f29 f30.
+Notation p50 := (REL r12 r20 i24). (* REL(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), 1 + Mx / MK, [-1.68044e-16, 1.38778e-16]) *)
+Definition f31 := Float2 (-132204841953884313) (-110).
+Definition f32 := Float2 (15) (-57).
+Definition i25 := makepairF f31 f32.
+Notation p51 := (REL r12 r13 i25). (* REL(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), 1 + float<53,-1074,ne>(x / K), [-1.01847e-16, 1.04083e-16]) *)
+Notation p52 := (NZR r13). (* NZR(1 + float<53,-1074,ne>(x / K)) *)
+Definition i26 := makepairF f18 f12.
+Notation p53 := (ABS r13 i26). (* ABS(1 + float<53,-1074,ne>(x / K), [1, 2]) *)
+Notation p54 := (BND r13 i26). (* BND(1 + float<53,-1074,ne>(x / K), [1, 2]) *)
+Lemma t33 : p54 -> p53.
+ intros h0.
+ refine (abs_of_bnd_p r13 i26 i26 h0 _) ; finalize.
+Qed.
+Lemma l49 : s1 -> p53 (* ABS(1 + float<53,-1074,ne>(x / K), [1, 2]) *).
+ intros h0.
+ assert (h1 := l20 h0).
+ apply t33. refine (subset r13 i13 i26 h1 _) ; finalize.
+Qed.
+Lemma t34 : p53 -> p52.
+ intros h0.
+ refine (nzr_of_abs r13 i26 h0 _) ; finalize.
+Qed.
+Lemma l48 : s1 -> p52 (* NZR(1 + float<53,-1074,ne>(x / K)) *).
+ intros h0.
+ assert (h1 := l49 h0).
+ apply t34. exact h1.
+Qed.
+Notation r26 := ((r12 - r13)%R).
+Notation r25 := ((r26 / r13)%R).
+Notation p55 := (BND r25 i25). (* BND((float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - (1 + float<53,-1074,ne>(x / K))) / (1 + float<53,-1074,ne>(x / K)), [-1.01847e-16, 1.04083e-16]) *)
+Notation p56 := (BND r26 i6). (* BND(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - (1 + float<53,-1074,ne>(x / K)), [-1.11022e-16, 1.11022e-16]) *)
+Lemma t35 : p53 -> p56.
+ intros h0.
+ refine (float_absolute_wide_ne _ _ r13 i26 i6 h0 _) ; finalize.
+Qed.
+Lemma l51 : s1 -> p56 (* BND(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - (1 + float<53,-1074,ne>(x / K)), [-1.11022e-16, 1.11022e-16]) *).
+ intros h0.
+ assert (h1 := l49 h0).
+ apply t35. exact h1.
+Qed.
+Definition i27 := makepairF f20 f12.
+Notation p57 := (BND r13 i27). (* BND(1 + float<53,-1074,ne>(x / K), [1.09009, 2]) *)
+Lemma t36 : p56 -> p57 -> p55.
+ intros h0 h1.
+ refine (div_op r26 r13 i6 i27 i25 h0 h1 _) ; finalize.
+Qed.
+Lemma l50 : s1 -> p55 (* BND((float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - (1 + float<53,-1074,ne>(x / K))) / (1 + float<53,-1074,ne>(x / K)), [-1.01847e-16, 1.04083e-16]) *).
+ intros h0.
+ assert (h1 := l51 h0).
+ assert (h2 := l20 h0).
+ apply t36. exact h1. refine (subset r13 i13 i27 h2 _) ; finalize.
+Qed.
+Lemma t37 : p52 -> p55 -> p51.
+ intros h0 h1.
+ refine (rel_of_nzr_bnd r12 r13 i25 h0 h1) ; finalize.
+Qed.
+Lemma l47 : s1 -> p51 (* REL(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), 1 + float<53,-1074,ne>(x / K), [-1.01847e-16, 1.04083e-16]) *).
+ intros h0.
+ assert (h1 := l48 h0).
+ assert (h2 := l50 h0).
+ apply t37. exact h1. exact h2.
+Qed.
+Definition f33 := Float2 (-171856740237093777) (-111).
+Definition f34 := Float2 (9) (-58).
+Definition i28 := makepairF f33 f34.
+Notation p58 := (REL r13 r20 i28). (* REL(1 + float<53,-1074,ne>(x / K), 1 + Mx / MK, [-6.61968e-17, 3.1225e-17]) *)
+Notation p59 := (REL r14 r14 i23). (* REL(1, 1, [0, 0]) *)
+Lemma t38 : p59.
+ refine (rel_refl r14 i23 _) ; finalize.
+Qed.
+Lemma l53 : s1 -> p59 (* REL(1, 1, [0, 0]) *).
+ intros h0.
+ apply t38.
+Qed.
+Definition f35 := Float2 (-201931669778585187) (-109).
+Definition i29 := makepairF f35 f30.
+Notation p60 := (REL r15 r21 i29). (* REL(float<53,-1074,ne>(x / K), Mx / MK, [-3.11125e-16, 1.38778e-16]) *)
+Notation p61 := (REL r15 r16 i6). (* REL(float<53,-1074,ne>(x / K), x / K, [-1.11022e-16, 1.11022e-16]) *)
+Notation p62 := (ABS r16 i22). (* ABS(x / K, [0.0625, 1]) *)
+Notation p63 := (ABS _K i12). (* ABS(K, [1, 1.5]) *)
+Notation p64 := (BND _K i12). (* BND(K, [1, 1.5]) *)
+Lemma t39 : p64 -> p63.
+ intros h0.
+ refine (abs_of_bnd_p _K i12 i12 h0 _) ; finalize.
+Qed.
+Lemma l57 : s1 -> p63 (* ABS(K, [1, 1.5]) *).
+ intros h0.
+ assert (h1 := l24 h0).
+ apply t39. refine (subset _K i16 i12 h1 _) ; finalize.
+Qed.
+Lemma t40 : p37 -> p63 -> p62.
+ intros h0 h1.
+ refine (div_aa _x _K i21 i12 i22 h0 h1 _) ; finalize.
+Qed.
+Lemma l56 : s1 -> p62 (* ABS(x / K, [0.0625, 1]) *).
+ intros h0.
+ assert (h1 := l36 h0).
+ assert (h2 := l57 h0).
+ apply t40. exact h1. exact h2.
+Qed.
+Lemma t41 : p62 -> p61.
+ intros h0.
+ refine (float_relative_ne _ _ r16 i22 i6 h0 _) ; finalize.
+Qed.
+Lemma l55 : s1 -> p61 (* REL(float<53,-1074,ne>(x / K), x / K, [-1.11022e-16, 1.11022e-16]) *).
+ intros h0.
+ assert (h1 := l56 h0).
+ apply t41. exact h1.
+Qed.
+Definition f36 := Float2 (-519496302962629061) (-111).
+Definition f37 := Float2 (7) (-58).
+Definition i30 := makepairF f36 f37.
+Notation p65 := (REL r16 r21 i30). (* REL(x / K, Mx / MK, [-2.00103e-16, 2.42861e-17]) *)
+Definition f38 := Float2 (25) (-58).
+Definition f39 := Float2 (462531853621834725) (-112).
+Definition i31 := makepairF f38 f39.
+Notation p66 := (REL _K _MK i31). (* REL(K, MK, [8.67362e-17, 8.90804e-17]) *)
+Notation p67 := (NZR _MK). (* NZR(MK) *)
+Notation p68 := (ABS _MK i26). (* ABS(MK, [1, 2]) *)
+Notation p69 := (BND _MK i26). (* BND(MK, [1, 2]) *)
+Lemma t42 : p69 -> p68.
+ intros h0.
+ refine (abs_of_bnd_p _MK i26 i26 h0 _) ; finalize.
+Qed.
+Lemma l61 : s1 -> p68 (* ABS(MK, [1, 2]) *).
+ intros h0.
+ assert (h1 := l25 h0).
+ apply t42. refine (subset _MK i2 i26 h1 _) ; finalize.
+Qed.
+Lemma t43 : p68 -> p67.
+ intros h0.
+ refine (nzr_of_abs _MK i26 h0 _) ; finalize.
+Qed.
+Lemma l60 : s1 -> p67 (* NZR(MK) *).
+ intros h0.
+ assert (h1 := l61 h0).
+ apply t43. exact h1.
+Qed.
+Notation r28 := ((_K - _MK)%R).
+Notation r27 := ((r28 / _MK)%R).
+Notation p70 := (BND r27 i31). (* BND((K - MK) / MK, [8.67362e-17, 8.90804e-17]) *)
+Definition f40 := Float2 (7) (-56).
+Definition f41 := Float2 (57) (-59).
+Definition i32 := makepairF f40 f41.
+Notation p71 := (BND r28 i32). (* BND(K - MK, [9.71445e-17, 9.88792e-17]) *)
+Lemma t44 : p23 -> p2 -> p71.
+ intros h0 h1.
+ refine (sub _K _MK i16 i2 i32 h0 h1 _) ; finalize.
+Qed.
+Lemma l63 : s1 -> p71 (* BND(K - MK, [9.71445e-17, 9.88792e-17]) *).
+ intros h0.
+ assert (h1 := l24 h0).
+ assert (h2 := l25 h0).
+ apply t44. exact h1. exact h2.
+Qed.
+Definition f42 := Float2 (143) (-7).
+Definition i33 := makepairF f2 f42.
+Notation p72 := (BND _MK i33). (* BND(MK, [1.11, 1.11719]) *)
+Lemma t45 : p71 -> p72 -> p70.
+ intros h0 h1.
+ refine (div_pp r28 _MK i32 i33 i31 h0 h1 _) ; finalize.
+Qed.
+Lemma l62 : s1 -> p70 (* BND((K - MK) / MK, [8.67362e-17, 8.90804e-17]) *).
+ intros h0.
+ assert (h1 := l63 h0).
+ assert (h2 := l25 h0).
+ apply t45. exact h1. refine (subset _MK i2 i33 h2 _) ; finalize.
+Qed.
+Lemma t46 : p67 -> p70 -> p66.
+ intros h0 h1.
+ refine (rel_of_nzr_bnd _K _MK i31 h0 h1) ; finalize.
+Qed.
+Lemma l59 : s1 -> p66 (* REL(K, MK, [8.67362e-17, 8.90804e-17]) *).
+ intros h0.
+ assert (h1 := l60 h0).
+ assert (h2 := l62 h0).
+ apply t46. exact h1. exact h2.
+Qed.
+Lemma t47 : p47 -> p66 -> p67 -> p65.
+ intros h0 h1 h2.
+ refine (div_rr _x _Mx _K _MK i6 i31 i30 h0 h1 h2 _) ; finalize.
+Qed.
+Lemma l58 : s1 -> p65 (* REL(x / K, Mx / MK, [-2.00103e-16, 2.42861e-17]) *).
+ intros h0.
+ assert (h1 := l44 h0).
+ assert (h2 := l59 h0).
+ assert (h3 := l60 h0).
+ apply t47. exact h1. exact h2. exact h3.
+Qed.
+Lemma t48 : p61 -> p65 -> p60.
+ intros h0 h1.
+ refine (compose r15 r16 r21 i6 i30 i29 h0 h1 _) ; finalize.
+Qed.
+Lemma l54 : s1 -> p60 (* REL(float<53,-1074,ne>(x / K), Mx / MK, [-3.11125e-16, 1.38778e-16]) *).
+ intros h0.
+ assert (h1 := l55 h0).
+ assert (h2 := l58 h0).
+ apply t48. exact h1. exact h2.
+Qed.
+Notation r29 := ((r14 / r20)%R).
+Definition f43 := Float2 (907619056818156129) (-60).
+Definition i34 := makepairF f43 f18.
+Notation p73 := (BND r29 i34). (* BND(1 / (1 + Mx / MK), [0.787234, 1]) *)
+Definition f44 := Float2 (314197076705920009) (-58).
+Definition f45 := Float2 (91532619453584135) (-56).
+Definition i35 := makepairF f44 f45.
+Notation p74 := (BND r20 i35). (* BND(1 + Mx / MK, [1.09009, 1.27027]) *)
+Definition f46 := Float2 (25966700554208265) (-58).
+Definition f47 := Float2 (19475025415656199) (-56).
+Definition i36 := makepairF f46 f47.
+Notation p75 := (BND r21 i36). (* BND(Mx / MK, [0.0900901, 0.27027]) *)
+Definition f48 := Float2 (115292150460684697) (-60).
+Definition i37 := makepairF f48 f5.
+Notation p76 := (BND _Mx i37). (* BND(Mx, [0.1, 0.3]) *)
+Definition f49 := Float2 (319935717528400035) (-58).
+Definition i38 := makepairF f49 f3.
+Notation p77 := (BND _MK i38). (* BND(MK, [1.11, 1.11]) *)
+Lemma t49 : p76 -> p77 -> p75.
+ intros h0 h1.
+ refine (div_pp _Mx _MK i37 i38 i36 h0 h1 _) ; finalize.
+Qed.
+Lemma l66 : s1 -> p75 (* BND(Mx / MK, [0.0900901, 0.27027]) *).
+ intros h0.
+ assert (h1 := l17 h0).
+ assert (h2 := l25 h0).
+ apply t49. refine (subset _Mx i3 i37 h1 _) ; finalize. refine (subset _MK i2 i38 h2 _) ; finalize.
+Qed.
+Lemma t50 : p20 -> p75 -> p74.
+ intros h0 h1.
+ refine (add r14 r21 i14 i36 i35 h0 h1 _) ; finalize.
+Qed.
+Lemma l65 : s1 -> p74 (* BND(1 + Mx / MK, [1.09009, 1.27027]) *).
+ intros h0.
+ assert (h1 := l21 h0).
+ assert (h2 := l66 h0).
+ apply t50. exact h1. exact h2.
+Qed.
+Definition i39 := makepairF f18 f45.
+Notation p78 := (BND r20 i39). (* BND(1 + Mx / MK, [1, 1.27027]) *)
+Lemma t51 : p20 -> p78 -> p73.
+ intros h0 h1.
+ refine (div_pp r14 r20 i14 i39 i34 h0 h1 _) ; finalize.
+Qed.
+Lemma l64 : s1 -> p73 (* BND(1 / (1 + Mx / MK), [0.787234, 1]) *).
+ intros h0.
+ assert (h1 := l21 h0).
+ assert (h2 := l65 h0).
+ apply t51. exact h1. refine (subset r20 i35 i39 h2 _) ; finalize.
+Qed.
+Notation p79 := (NZR r20). (* NZR(1 + Mx / MK) *)
+Notation p80 := (ABS r20 i26). (* ABS(1 + Mx / MK, [1, 2]) *)
+Notation p81 := (BND r20 i26). (* BND(1 + Mx / MK, [1, 2]) *)
+Lemma t52 : p81 -> p80.
+ intros h0.
+ refine (abs_of_bnd_p r20 i26 i26 h0 _) ; finalize.
+Qed.
+Lemma l68 : s1 -> p80 (* ABS(1 + Mx / MK, [1, 2]) *).
+ intros h0.
+ assert (h1 := l65 h0).
+ apply t52. refine (subset r20 i35 i26 h1 _) ; finalize.
+Qed.
+Lemma t53 : p80 -> p79.
+ intros h0.
+ refine (nzr_of_abs r20 i26 h0 _) ; finalize.
+Qed.
+Lemma l67 : s1 -> p79 (* NZR(1 + Mx / MK) *).
+ intros h0.
+ assert (h1 := l68 h0).
+ apply t53. exact h1.
+Qed.
+Lemma t54 : p59 -> p60 -> p73 -> p79 -> p58.
+ intros h0 h1 h2 h3.
+ refine (add_rr r14 r14 r15 r21 i23 i29 i34 i28 h0 h1 h2 h3 _) ; finalize.
+Qed.
+Lemma l52 : s1 -> p58 (* REL(1 + float<53,-1074,ne>(x / K), 1 + Mx / MK, [-6.61968e-17, 3.1225e-17]) *).
+ intros h0.
+ assert (h1 := l53 h0).
+ assert (h2 := l54 h0).
+ assert (h3 := l64 h0).
+ assert (h4 := l67 h0).
+ apply t54. exact h1. exact h2. exact h3. exact h4.
+Qed.
+Lemma t55 : p51 -> p58 -> p50.
+ intros h0 h1.
+ refine (compose r12 r13 r20 i25 i28 i24 h0 h1 _) ; finalize.
+Qed.
+Lemma l46 : s1 -> p50 (* REL(float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), 1 + Mx / MK, [-1.68044e-16, 1.38778e-16]) *).
+ intros h0.
+ assert (h1 := l47 h0).
+ assert (h2 := l52 h0).
+ apply t55. exact h1. exact h2.
+Qed.
+Lemma t56 : p29 -> p50 -> p79 -> p28.
+ intros h0 h1 h2.
+ refine (div_rr r8 r19 r12 r20 i6 i24 i20 h0 h1 h2 _) ; finalize.
+Qed.
+Lemma l27 : s1 -> p28 (* REL(float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)), Mres, [-2.498e-16, 2.79066e-16]) *).
+ intros h0.
+ assert (h1 := l28 h0).
+ assert (h2 := l46 h0).
+ assert (h3 := l67 h0).
+ apply t56. exact h1. exact h2. exact h3.
+Qed.
+Definition f50 := Float2 (634583241378644701) (-59).
+Definition i40 := makepairF f11 f50.
+Notation p82 := (BND _Mres i40). (* BND(Mres, [0.25, 1.10083]) *)
+Definition f51 := Float2 (345876451382054093) (-58).
+Definition i41 := makepairF f13 f51.
+Notation p83 := (BND r19 i41). (* BND(Mr * Mx, [0.375, 1.2]) *)
+Definition i42 := makepairF f17 f5.
+Notation p84 := (BND _Mx i42). (* BND(Mx, [0.09375, 0.3]) *)
+Lemma t57 : p1 -> p84 -> p83.
+ intros h0 h1.
+ refine (mul_pp _Mr _Mx i1 i42 i41 h0 h1 _) ; finalize.
+Qed.
+Lemma l70 : s1 -> p83 (* BND(Mr * Mx, [0.375, 1.2]) *).
+ intros h0.
+ assert (h1 := l13 h0).
+ assert (h2 := l17 h0).
+ apply t57. exact h1. refine (subset _Mx i3 i42 h2 _) ; finalize.
+Qed.
+Definition i43 := makepairF f44 f19.
+Notation p85 := (BND r20 i43). (* BND(1 + Mx / MK, [1.09009, 1.5]) *)
+Lemma t58 : p83 -> p85 -> p82.
+ intros h0 h1.
+ refine (div_pp r19 r20 i41 i43 i40 h0 h1 _) ; finalize.
+Qed.
+Lemma l69 : s1 -> p82 (* BND(Mres, [0.25, 1.10083]) *).
+ intros h0.
+ assert (h1 := l70 h0).
+ assert (h2 := l65 h0).
+ apply t58. exact h1. refine (subset r20 i35 i43 h2 _) ; finalize.
+Qed.
+Lemma t59 : p28 -> p82 -> p27.
+ intros h0 h1.
+ refine (error_of_rel_op r7 _Mres i20 i40 i19 h0 h1 _) ; finalize.
+Qed.
+Lemma l26 : s1 -> p27 (* BND(float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - Mres, [-2.77556e-16, 3.07203e-16]) *).
+ intros h0.
+ assert (h1 := l27 h0).
+ assert (h2 := l69 h0).
+ apply t59. exact h1. exact h2.
+Qed.
+Lemma t60 : p8 -> p27 -> p7.
+ intros h0 h1.
+ refine (add r23 r24 i6 i19 i5 h0 h1 _) ; finalize.
+Qed.
+Lemma l6 : s1 -> p7 (* BND(res - float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) + (float<53,-1074,ne>(r * x) / float<53,-1074,ne>(1 + float<53,-1074,ne>(x / K)) - Mres), [-3.88578e-16, 4.18226e-16]) *).
+ intros h0.
+ assert (h1 := l7 h0).
+ assert (h2 := l26 h0).
+ apply t60. exact h1. exact h2.
+Qed.
+Lemma t61 : p7 -> p6.
+ intros h0.
+ refine (sub_xals _ _ _ i5 h0) ; finalize.
+Qed.
+Lemma l5 : s1 -> p6 (* BND(res - Mres, [-3.88578e-16, 4.18226e-16]) *).
+ intros h0.
+ assert (h1 := l6 h0).
+ apply t61. exact h1.
+Qed.
+Lemma t62 : p6 -> p5.
+ intros h0.
+ refine (abs_of_bnd_o r5 i5 i4 h0 _) ; finalize.
+Qed.
+Lemma l4 : s1 -> p5 (* ABS(res - Mres, [0, 4.18226e-16]) *).
+ intros h0.
+ assert (h1 := l5 h0).
+ apply t62. exact h1.
+Qed.
+Lemma t63 : p5 -> p4.
+ intros h0.
+ refine (uabs_of_abs r5 i4 h0) ; finalize.
+Qed.
+Lemma l3 : s1 -> p4 (* BND(|res - Mres|, [0, 4.18226e-16]) *).
+ intros h0.
+ assert (h1 := l4 h0).
+ apply t63. exact h1.
+Qed.
+Lemma l1 : s1 -> False.
+ intros h0.
+ assert (h1 := l2 h0).
+ assert (h2 := l3 h0).
+ refine (simplify (Tatom false (Abnd 0%nat i4)) Tfalse (Abnd 0%nat i4) (List.cons r4 List.nil) h2 h1 _) ; finalize.
+Qed.
+End Generated_by_Gappa.

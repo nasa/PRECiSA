@@ -21,30 +21,31 @@ BEGIN
         iexpr:RealExpr = str2pvs[RealExpr](iexpr_str) IN
     print_output(numerical(maxdepth,prec,altdir_maxvar,0)(iexpr,ranges))
 
-  %% DEPRECATED replaced by fprint_concrete_lemma
-  fprint_lemma  ( sout : OStream )
-  	       ( lemma_str  : string,
-  	         expr_str   : string,
-                 var_ranges : list[[string,ProperInterval]],
-		 maxdepth   : nat,
-		 prec       : posreal): MACRO void =
-    LET (iexpr_str,ranges) = expr_vars(expr_str,var_ranges),
-        iexpr : RealExpr   = str2pvs[RealExpr](iexpr_str),
-	bound : real       = numerical(maxdepth,prec,altdir_maxvar,0)
-				      (iexpr,ranges)`ans`mm`ub IN
-      fprintf(sout,lemma_str, bound)
-
   fprint_concrete_lemma  ( sout : OStream )
   	       ( lemma_str  : string,
   	         expr_str   : string,
                  var_ranges : list[[string,ProperInterval]],
 		 maxdepth   : nat,
-		 prec       : posreal): MACRO real =
+		 prec       : posreal): real =
     LET (iexpr_str,ranges) = expr_vars(expr_str,var_ranges),
         iexpr : RealExpr   = str2pvs[RealExpr](iexpr_str),
 	bound : real       = numerical(maxdepth,prec,altdir_maxvar,0)
 				      (iexpr,ranges)`ans`mm`ub,
         dummy : void       = fprintf(sout,lemma_str, bound) IN
+    bound
+
+  concrete_bound  
+  	       ( expr_str   : string,
+                 var_ranges : list[[string,ProperInterval]],
+		 maxdepth   : nat,
+		 prec       : posreal): MACRO real =
+    LET (iexpr_str,ranges) = expr_vars(expr_str,var_ranges),
+        iexpr : RealExpr   = str2pvs[RealExpr](iexpr_str),
+	output             = numerical(maxdepth,prec,altdir_maxvar,0)
+				      (iexpr,ranges),
+	bound : real       = output`ans`mm`ub,
+        dummy : void       = print_output(output)
+	IN
     bound
 
   fprint_proof( sout : OStream )

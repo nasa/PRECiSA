@@ -1,0 +1,16 @@
+bbiaXp_div: THEORY
+BEGIN
+
+  IMPORTING interval_arith@interval
+  
+  R1,E1,R2,E2: VAR Interval
+
+  aeb_div_pre4(R1,E1,R2,E2:Interval): bool =
+	   NonNeg?(E1) AND
+	   NonNeg?(E2) AND
+	   Proper?(R2) AND
+	   Zeroless?(Sub(Mult(R2,R2),Mult(E2,Abs(R2)))) AND
+           (Gt(Sub(R2,E2),0) OR Lt(Add(R2,E2),0))
+  
+
+END bbiaXp_div

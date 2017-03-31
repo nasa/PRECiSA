@@ -1,0 +1,10 @@
+Constants
+  c1 = 0.954929658551372,
+  c2 = 0.12900613773279798;
+
+Variables
+  real z in [-2, 2];
+
+Expressions
+  sineOrder3 rnd64= c1 * z 
+                    - c2 * (z * z * z);

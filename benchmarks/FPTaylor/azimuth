@@ -1,0 +1,26 @@
+Constants
+  // Math.PI
+  pi = 3.14159265358979323846;
+
+Variables
+  real lat1 in [0, 0.4],
+  real lat2 in [0.5, 1],
+  real lon1 in [0, 3.14159265],
+  real lon2 in [-3.14159265, -0.5];
+	
+Definitions
+  dLon rnd64= lon2 - lon1,
+  f_lat1 rnd64= lat1,
+  f_lat2 rnd64= lat2,
+  s_lat1 = rnd(64, ne, 1.5)(sin(f_lat1)),
+  c_lat1 = rnd(64, ne, 1.5)(cos(f_lat1)),
+  s_lat2 = rnd(64, ne, 1.5)(sin(f_lat2)),
+  c_lat2 = rnd(64, ne, 1.5)(cos(f_lat2)),
+  s_dLon = rnd(64, ne, 1.5)(sin(dLon)),
+  c_dLon = rnd(64, ne, 1.5)(cos(dLon)),
+  y rnd64= c_lat2 * s_dLon,
+  x rnd64= c_lat1 * s_lat2 - s_lat1 * c_lat2 * c_dLon,
+  d rnd64= y / x;
+
+Expressions
+  azimuth = rnd(64, ne, 1.5)(atan(d));

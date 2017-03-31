@@ -1,0 +1,14 @@
+Constants
+  p = 3.5e7,
+  a = 0.401,
+  b = 42.7e-6,
+  t = 300,
+  n = 1000;
+
+Variables
+  float64 v in [0.1, 0.5];
+
+Expressions
+  carbonGas rnd64= (no_rnd(p) + no_rnd(a) * ((n / v) * (n / v))) * (v - n * no_rnd(b)) 
+                   - no_rnd(1.3806503e-23) * n * t;
+   

@@ -8,7 +8,7 @@ BEGIN
 
   aebounddp_sub_ia(R1,E1,R2,E2): Interval =
     If NonNeg?(E1) AND NonNeg?(E2)
-    THEN Add(Add(E1,E2),Div(Ulp(Add(Abs(Sub(R1,R2)),Add(E1,E2))),[|2|]))
+    THEN Add(Add(E1,E2),Div(Ulp_dp(Add(Abs(Sub(R1,R2)),Add(E1,E2))),[|2|]))
     ELSE EmptyInterval
     ENDIF
  

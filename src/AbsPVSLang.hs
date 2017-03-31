@@ -13,6 +13,7 @@ module AbsPVSLang
 where
 
 import PPExt
+import Numeric
 
 -- floating point precision --
 data FPrec = FPSingle | FPDouble
@@ -36,11 +37,16 @@ data EExpr
     | ErrSqrt   AExpr EExpr 
     | ErrSin    AExpr EExpr 
     | ErrCos    AExpr EExpr 
-    | ErrArcsin AExpr EExpr
-    | ErrArccos AExpr EExpr 
+    | ErrTan    AExpr EExpr 
+    | ErrAsin AExpr EExpr
+    | ErrAcos AExpr EExpr 
+    | ErrAtan AExpr EExpr
     | ErrNeg AExpr EExpr
     | ErrAbs AExpr EExpr
+    | ErrMulPow2 Integer EExpr
     | AE AExpr
+    | HalfUlp AExpr
+    | ErrRat Rational
     deriving (Eq, Ord, Show, Read)
 
 data AExpr
@@ -57,10 +63,12 @@ data AExpr
     | Abs AExpr
     | Sin AExpr
     | Cos AExpr
-    | Arccos AExpr
-    | Arcsin AExpr
-    | Int Int
-    | Double Double
+    | Tan AExpr
+    | ASin AExpr
+    | ACos AExpr
+    | ATan AExpr
+    | Int Integer
+    | Double Rational -- Double
     | EFun String [AExpr]
     | Var String
     | Pi
@@ -69,6 +77,8 @@ data AExpr
     | StoR FAExpr
     | DtoR FAExpr
     | EE EExpr
+    | FPrec
+    | FExp FAExpr
     deriving (Eq, Ord, Show, Read)
 
 data FAExpr
@@ -85,10 +95,12 @@ data FAExpr
     | FAbs FAExpr
     | FSin FAExpr
     | FCos FAExpr
-    | FArccos FAExpr
-    | FArcsin FAExpr
-    | FInt Int
-    | FDouble Double
+    | FTan FAExpr
+    | FAcos FAExpr
+    | FAsin FAExpr
+    | FAtan FAExpr
+    | FInt Integer
+    | FDouble Rational -- Double
     | FEFun String [FAExpr]
     | FVar String
     | FPi
@@ -201,8 +213,10 @@ fae2real (FSqrt a)      = Sqrt   (fae2real a)
 fae2real (FAbs a)       = Abs    (fae2real a)
 fae2real (FSin a)       = Sin    (fae2real a)
 fae2real (FCos a)       = Cos    (fae2real a)
-fae2real (FArccos a)    = Arccos (fae2real a)
-fae2real (FArcsin a)    = Arcsin (fae2real a)
+fae2real (FTan a)       = Tan    (fae2real a)
+fae2real (FAcos a)      = ACos (fae2real a)
+fae2real (FAsin a)      = ASin (fae2real a)
+fae2real (FAtan a)      = ATan (fae2real a)
 fae2real (FInt n)       = Int n
 fae2real (FDouble n)    = Double n
 fae2real (FEFun f args) = EFun f (map (\arg -> fae2real arg) args)
@@ -473,8 +487,10 @@ simplAExprAux (Abs (Abs a)) = Abs (simplAExprAux a)
 simplAExprAux (Abs a) = Abs (simplAExprAux a)
 simplAExprAux (Sin a) = Sin (simplAExprAux a)
 simplAExprAux (Cos a) = Cos (simplAExprAux a)
-simplAExprAux (Arccos a) = Arccos (simplAExprAux a)
-simplAExprAux (Arcsin a) = Arcsin (simplAExprAux a)
+simplAExprAux (Tan a) = Cos (simplAExprAux a)
+simplAExprAux (ACos a) = ACos (simplAExprAux a)
+simplAExprAux (ASin a) = ASin (simplAExprAux a)
+simplAExprAux (ATan a) = ATan (simplAExprAux a)
 simplAExprAux (Mod a1 a2) = Mod (simplAExprAux a1) (simplAExprAux a2)
 simplAExprAux (Int n) = Int n
 simplAExprAux (Double n) = Double n
@@ -544,8 +560,10 @@ simplFAExprAux (FAbs (FAbs a)) = FAbs (simplFAExprAux a)
 simplFAExprAux (FAbs a) = FAbs (simplFAExprAux a)
 simplFAExprAux (FSin a) = FSin (simplFAExprAux a)
 simplFAExprAux (FCos a) = FCos (simplFAExprAux a)
-simplFAExprAux (FArccos a) = FArccos (simplFAExprAux a)
-simplFAExprAux (FArcsin a) = FArcsin (simplFAExprAux a)
+simplFAExprAux (FTan a) = FTan (simplFAExprAux a)
+simplFAExprAux (FAcos a) = FAcos (simplFAExprAux a)
+simplFAExprAux (FAsin a) = FAsin (simplFAExprAux a)
+simplFAExprAux (FAtan a) = FAtan (simplFAExprAux a)
 simplFAExprAux (FMod a1 a2) = FMod (simplFAExprAux a1) (simplFAExprAux a2)
 simplFAExprAux (FInt n) = FInt n
 simplFAExprAux (FDouble n) = FDouble n
@@ -563,6 +581,12 @@ simplFAExprAux (RtoD a) = RtoD $ simplAExprAux a
 
 tupleD :: PPExt a => [a] -> Doc
 tupleD xs = parens $ hsep $ punctuate comma $ map prettyDoc xs
+
+showFullPrecision :: Double -> String
+showFullPrecision x = showFFloat Nothing x ""
+
+showRational :: Rational -> String
+showRational x = map (\c -> if c=='%' then '/'; else c) (show x)
 
 instance PPExt (NonVarId) where
     prettyDoc (NonVarId x) = text x
@@ -598,14 +622,27 @@ prEExpr (ErrSin r e)         FPSingle = text "aeboundsp_sin" <> (text "(" <> prA
                                                                          <+> prEExpr e FPSingle <> text ")")
 prEExpr (ErrCos r e)         FPSingle = text "aeboundsp_cos" <> (text "(" <> prAExpr r FPSingle <> comma
                                                                          <+> prEExpr e FPSingle <> text ")")
-prEExpr (ErrArccos r e)      FPSingle = text "aeboundsp_arccos" <> (text "(" <> prAExpr r FPSingle <> comma
+prEExpr (ErrTan r e)         FPSingle = text "aeboundsp_tan" <> (text "(" <> prAExpr r FPSingle <> comma
+                                                                         <+> prEExpr e FPSingle <> text ")")
+prEExpr (ErrAcos r e)      FPSingle = text "aeboundsp_acs" <> (text "(" <> prAExpr r FPSingle <> comma
                                                                             <+> prEExpr e FPSingle <> text ")")
-prEExpr (ErrArcsin r e)      FPSingle = text "aeboundsp_arcsin" <> (text "(" <> prAExpr r FPSingle <> comma
-                                                                            <+> prEExpr e FPSingle <> text ")")    
+prEExpr (ErrAsin r e)      FPSingle = text "aeboundsp_asn" <> (text "(" <> prAExpr r FPSingle <> comma
+                                                                            <+> prEExpr e FPSingle <> text ")")  
+prEExpr (ErrAtan r e)      FPSingle = text "aeboundsp_atn" <> (text "(" <> prAExpr r FPSingle <> comma
+                                                                            <+> prEExpr e FPSingle <> text ")")   
 prEExpr (ErrNeg r e)         FPSingle = text "aeboundsp_neg" <> (text "(" <> prAExpr r FPSingle<> comma
                                                                          <+> prEExpr e FPSingle <> text ")") 
 prEExpr (ErrAbs r e)         FPSingle = text "aeboundsp_abs" <> (text "(" <> prAExpr r FPSingle <> comma
                                                                          <+> prEExpr e FPSingle <> text ")") 
+
+prEExpr (ErrMulPow2 n e) FPSingle = text "aeboundsp_mul_p2" <> (text "(" <> integer n <> comma
+                                                                         <+> prEExpr e FPSingle <> text ")") 
+
+prEExpr (HalfUlp (Var x))          FPSingle = text "ulp_sp" <> (text "(" <> text x <> text ")/2") 
+--prEExpr (HalfUlp (Double n)) FPSingle = text "ulp_sp" <> (text "(" <> text (showRational n) <> text ")/2")  
+prEExpr (HalfUlp a)                 FPSingle        = error ("ppEEExpr: unexpected value in  HalfUlp" ++ show a)
+
+prEExpr (ErrRat r) FPSingle = parens $ text $ showRational r
 ---------------------
 prEExpr (ErrAdd r1 e1 r2 e2) FPDouble = text "aebounddp_add" <> (text "(" <> prAExpr r1 FPDouble <> comma
                                                                          <+> prEExpr e1 FPDouble <> comma
@@ -633,23 +670,36 @@ prEExpr (ErrSin r e)         FPDouble = text "aebounddp_sin" <> (text "(" <> prA
                                                                          <+> prEExpr e FPDouble <> text ")")
 prEExpr (ErrCos r e)         FPDouble = text "aebounddp_cos" <> (text "(" <> prAExpr r FPDouble <> comma
                                                                          <+> prEExpr e FPDouble <> text ")")
-prEExpr (ErrArccos r e)      FPDouble = text "aebounddp_arccos" <> (text "(" <> prAExpr r FPDouble <> comma
+prEExpr (ErrTan r e)         FPDouble = text "aebounddp_tan" <> (text "(" <> prAExpr r FPDouble <> comma
+                                                                         <+> prEExpr e FPDouble <> text ")")
+prEExpr (ErrAcos r e)      FPDouble = text "aebounddp_acs" <> (text "(" <> prAExpr r FPDouble <> comma
                                                                             <+> prEExpr e FPDouble <> text ")")
-prEExpr (ErrArcsin r e)      FPDouble = text "aebounddp_arcsin" <> (text "(" <> prAExpr r FPDouble <> comma
-                                                                            <+> prEExpr e FPDouble <> text ")")    
+prEExpr (ErrAsin r e)      FPDouble = text "aebounddp_asn" <> (text "(" <> prAExpr r FPDouble <> comma
+                                                                            <+> prEExpr e FPDouble <> text ")")  
+prEExpr (ErrAtan r e)      FPDouble = text "aebounddp_atn" <> (text "(" <> prAExpr r FPDouble <> comma
+                                                                            <+> prEExpr e FPDouble <> text ")")   
 prEExpr (ErrNeg r e)         FPDouble = text "aebounddp_neg" <> (text "(" <> prAExpr r FPDouble <> comma
                                                                          <+> prEExpr e FPDouble <> text ")") 
 prEExpr (ErrAbs r e)         FPDouble = text "aebounddp_abs" <> (text "(" <> prAExpr r FPDouble <> comma
                                                                          <+> prEExpr e FPDouble <> text ")") 
 
+prEExpr (ErrMulPow2 n e) FPDouble = text "aebounddp_mul_p2" <> (text "(" <> integer n <> comma
+                                                                         <+> prEExpr e FPDouble <> text ")") 
+
+prEExpr (HalfUlp (Var x))          FPDouble = text "ulp_dp" <> (text "(" <> text x <> text ")/2") 
+--prEExpr (HalfUlp (Double n)) FPDouble = text "ulp_dp" <> (text "(" <> text (showFullPrecision n) <> text ")/2") 
+prEExpr (HalfUlp a)                 FPDouble        = error ("ppEEExpr: unexpected value in  HalfUlp"++ show a)
+
+prEExpr (ErrRat r) FPDouble = parens $ text $ showRational r
+
 prAExpr :: AExpr -> FPrec -> Doc
 prAExpr (Pi)               _ = text "pi"
-prAExpr (Int i)            _ = prettyDoc i
-prAExpr (Double d)         _ = prettyDoc d
+prAExpr (Int i)            _ = integer i
+prAExpr (Double d)         _ = parens $ text $ showRational d
 prAExpr (Var x)            _ = text x
 prAExpr (EFun f [])        _ = text f
-prAExpr (Neg a@(Int i))    _ = text "-" <> prettyDoc i
-prAExpr (Neg a@(Double d)) _ = text "-" <> prettyDoc d
+prAExpr (Neg a@(Int i))    _ = text "-" <> integer i
+prAExpr (Neg a@(Double d)) _ = text "-" <> (text $ showRational d)
 prAExpr (Add a1 a2)   fp = parens $ prAExpr a1 fp <+> text "+" <+> prAExpr a2 fp
 prAExpr (Sub a1 a2)   fp = parens $ prAExpr a1 fp <+> text "-" <+> prAExpr a2 fp
 prAExpr (Mul a1 a2)   fp = parens $ prAExpr a1 fp <+> text "*" <+> prAExpr a2 fp
@@ -662,15 +712,19 @@ prAExpr (Sqrt a)      fp = text "sqrt" <> lparen <> prAExpr a fp <> rparen
 prAExpr (Abs a)       fp = text "abs" <> lparen <> prAExpr a fp <> rparen
 prAExpr (Sin a)       fp = text "sin" <> lparen <> prAExpr a fp <> rparen
 prAExpr (Cos a)       fp = text "cos" <> lparen <> prAExpr a fp <> rparen
-prAExpr (Arccos a)    fp = text "arccos" <> lparen <> prAExpr a fp <> rparen
-prAExpr (Arcsin a)    fp = text "arcsin" <> lparen <> prAExpr a fp <> rparen
+prAExpr (Tan a)       fp = text "tan" <> lparen <> prAExpr a fp <> rparen
+prAExpr (ASin a)      fp = text "asin" <> lparen <> prAExpr a fp <> rparen
+prAExpr (ACos a)      fp = text "acos" <> lparen <> prAExpr a fp <> rparen
+prAExpr (ATan a)      fp = text "atan" <> lparen <> prAExpr a fp <> rparen
 prAExpr (EFun f args) fp = text f <> (parens $ hsep $ punctuate comma $ map (\x -> prAExpr x fp) args)
 prAExpr (SUlp a)      fp = text "ulp_sp" <> lparen <> prAExpr a FPSingle <> rparen
 prAExpr (DUlp a)      fp = text "ulp_dp" <> lparen <> prAExpr a FPDouble <> rparen
 prAExpr (StoR a)      fp = text "StoR" <> lparen <> prFAExpr a FPSingle <> rparen
 prAExpr (DtoR a)      fp = text "DtoR" <> lparen <> prFAExpr a FPDouble <> rparen
 prAExpr (EE e)        fp = prEExpr e fp
-
+prAExpr (FPrec)       FPSingle = text "ieee754sp_prec"
+prAExpr (FPrec)       FPDouble = text "ieee754dp_prec"
+prAExpr (FExp fa)     fp = text "Fexp" <> parens (prFAExpr fa fp)
 
 prBExpr :: BExpr -> FPrec -> Doc
 prBExpr (Or e1 e2)  fp = parens $ prBExpr e1 fp <+> text "OR"  <+> prBExpr e2 fp 
@@ -705,10 +759,10 @@ prFCond (FBTrue)     fp = text "TRUE"
 prFCond (FBFalse)    fp = text "FALSE"
 
 prFAExpr :: FAExpr -> FPrec -> Doc
-prFAExpr (FInt i) _ = prettyDoc i
-prFAExpr (FDouble d) _ = prettyDoc d
-prFAExpr (FNeg a@(FInt i)) _ = text "-" <> prettyDoc i
-prFAExpr (FNeg a@(FDouble d)) _ = text "-" <> prettyDoc d
+prFAExpr (FInt i) _ = integer i
+prFAExpr (FDouble d) _ = parens $ text $ showRational d
+prFAExpr (FNeg a@(FInt i)) _ = text "-" <> integer i
+prFAExpr (FNeg a@(FDouble d)) _ = text "-" <> (text $ showRational d)
 prFAExpr (FVar x) _ = text x
 prFAExpr (FEFun f []) _ = text f
 prFAExpr (FEFun f args) fp = text f <> (parens $ hsep $ punctuate comma $ map (\x -> prFAExpr x fp) args)
@@ -726,8 +780,10 @@ prFAExpr (FSqrt a)    FPSingle = text "Ssqrt" <> lparen <> (prFAExpr a FPSingle)
 prFAExpr (FAbs a)     FPSingle = text "Sabs" <> lparen <> (prFAExpr a FPSingle) <> rparen
 prFAExpr (FSin a)     FPSingle = text "Ssin" <> lparen <> (prFAExpr a FPSingle) <> rparen
 prFAExpr (FCos a)     FPSingle = text "Scos" <> lparen <> (prFAExpr a FPSingle) <> rparen
-prFAExpr (FArccos a)  FPSingle = text "Sarccos" <> lparen <> (prFAExpr a FPSingle) <> rparen
-prFAExpr (FArcsin a)  FPSingle = text "Sarcsin" <> lparen <> (prFAExpr a FPSingle) <> rparen
+prFAExpr (FTan a)     FPSingle = text "Stan" <> lparen <> (prFAExpr a FPSingle) <> rparen
+prFAExpr (FAsin a)    FPSingle = text "Sasin" <> lparen <> (prFAExpr a FPSingle) <> rparen
+prFAExpr (FAcos a)    FPSingle = text "Sacos" <> lparen <> (prFAExpr a FPSingle) <> rparen
+prFAExpr (FAtan a)    FPSingle = text "Satan" <> lparen <> (prFAExpr a FPSingle) <> rparen
 prFAExpr (FPi)        FPSingle = text "Spi"
 prFAExpr (FAdd a1 a2) FPDouble = text "Dadd" <> parens ((prFAExpr a1 FPDouble) <> comma <+> (prFAExpr a2 FPDouble))
 prFAExpr (FSub a1 a2) FPDouble = text "Dsub" <> parens ((prFAExpr a1 FPDouble) <> comma <+> (prFAExpr a2 FPDouble))
@@ -740,7 +796,9 @@ prFAExpr (FSqrt a)    FPDouble = text "Dsqrt" <> lparen <> (prFAExpr a FPDouble)
 prFAExpr (FAbs a)     FPDouble = text "Dabs" <> lparen <> (prFAExpr a FPDouble) <> rparen
 prFAExpr (FSin a)     FPDouble = text "Dsin" <> lparen <> (prFAExpr a FPDouble) <> rparen
 prFAExpr (FCos a)     FPDouble = text "Dcos" <> lparen <> (prFAExpr a FPDouble) <> rparen
-prFAExpr (FArccos a)  FPDouble = text "Darccos" <> lparen <> (prFAExpr a FPDouble) <> rparen
-prFAExpr (FArcsin a)  FPDouble = text "Darcsin" <> lparen <> (prFAExpr a FPDouble) <> rparen
+prFAExpr (FTan a)     FPDouble = text "Dtan" <> lparen <> (prFAExpr a FPDouble) <> rparen
+prFAExpr (FAsin a)    FPDouble = text "Dasin" <> lparen <> (prFAExpr a FPDouble) <> rparen
+prFAExpr (FAcos a)    FPDouble = text "Dacos" <> lparen <> (prFAExpr a FPDouble) <> rparen
+prFAExpr (FAtan a)    FPDouble = text "Datan" <> lparen <> (prFAExpr a FPDouble) <> rparen
 prFAExpr (FPi)        FPDouble = text "Dpi"
 

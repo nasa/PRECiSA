@@ -2,9 +2,32 @@ interval_ulp_dp: THEORY
 BEGIN
 
   IMPORTING float@ieee754dp,
-  	    interval_ulp[unb_double, DtoR, RtoD, min_Dulp, ulp_dp]
+  	    interval_ulp
 
-  ULP_DP(expr: RealExpr): MACRO RealExpr =
-    interval_ulp[unb_double, DtoR, RtoD, min_Dulp, ulp_dp].ULP(expr)
+  Ulp_dp(I:Interval): Interval =
+    interval_ulp[unb_double, DtoR, RtoD, min_Dulp, ulp_dp].Ulp(I)
+
+  x: VAR real
+  X,Y: VAR Interval
+
+  Ulp_dp_proper: LEMMA
+    Proper?(X) IMPLIES Proper?(Ulp_dp(X))
+
+  Ulp_dp_inclusion : LEMMA
+    x ## X IMPLIES 
+    ulp_dp(x) ## Ulp_dp(X)
+
+  Ulp_dp_Inclusion : JUDGEMENT
+    Ulp_dp HAS_TYPE (Inclusion?(PreTrue,ulp_dp))
+
+  Ulp_dp_fundamental : LEMMA
+    Proper?(X) AND
+    X << Y IMPLIES
+    Ulp_dp(X) << Ulp_dp(Y)
+    
+  Ulp_dp_Fundamental : JUDGEMENT
+    Ulp_dp HAS_TYPE (Fundamental?(PreTrue))
+  
+  ULP_DP(expr: RealExpr): MACRO RealExpr = FUN(PreTrue,ulp_dp, Ulp_dp, expr)
 
 END interval_ulp_dp

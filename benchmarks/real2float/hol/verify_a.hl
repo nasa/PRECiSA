@@ -1,0 +1,87 @@
+needs "tests/utils.hl";;
+
+path := fptaylor_path ^ "/benchmarks/real2float/hol";;
+
+let add_result, get_result, print_results =
+  let results = ref [] in
+  let add name th time = 
+    let _ = results := !results @ [name, (th, time)] in th in
+  let get name = assoc name !results in
+  let print1 (name, (th, time)) =
+    let tm = rand (rand (snd (strip_forall (concl th)))) in
+      report (sprintf "%s (time = %f): %s" name time (string_of_term tm)) in
+  let print () =
+    let _ = map print1 !results in () in
+    add, get, print;;
+
+let pp = 10;;
+ 
+
+let form_th, bound_th, time = validate pp "doppler1_a.proof";;
+add_result "doppler1_a" (trans_bound bound_th `#1.087 * &10 ipow (-- &13)`) time;;
+
+let form_th, bound_th, time = validate pp "doppler2_a.proof";;
+add_result "doppler2_a" (trans_bound bound_th `#1.953 * &10 ipow (-- &13)`) time;;
+
+let form_th, bound_th, time = validate pp "doppler3_a.proof";;
+add_result "doppler3_a" (trans_bound bound_th `#5.892 * &10 ipow (-- &14)`) time;;
+
+let form_th, bound_th, time = validate pp "rigidBody1_a.proof";;
+add_result "rigidBody1_a" (trans_bound bound_th `#3.048 * &10 ipow (-- &13)`) time;;
+
+let form_th, bound_th, time = validate pp "rigidBody2_a.proof";;
+add_result "rigidBody2_a" (trans_bound bound_th `#3.898 * &10 ipow (-- &11)`) time;;
+
+let form_th, bound_th, time = validate pp "verhulst_a.proof";;
+add_result "verhulst_a" (trans_bound bound_th `#2.367 * &10 ipow (-- &16)`) time;;
+
+let form_th, bound_th, time = validate pp "carbonGas_a.proof";;
+add_result "carbonGas_a" (trans_bound bound_th `#8.957 * &10 ipow (-- &9)`) time;;
+
+let form_th, bound_th, time = validate pp "predPrey_a.proof";;
+add_result "predPrey_a" (trans_bound bound_th `#1.242 * &10 ipow (-- &16)`) time;;
+
+let form_th, bound_th, time = validate pp "kepler0_a.proof";;
+add_result "kepler0_a" (trans_bound bound_th `#7.996 * &10 ipow (-- &14)`) time;;
+
+let form_th, bound_th, time = validate pp "kepler1_a.proof";;
+add_result "kepler1_a" (trans_bound bound_th `#3.626 * &10 ipow (-- &13)`) time;;
+
+let form_th, bound_th, time = validate pp "kepler2_a.proof";;
+add_result "kepler2_a" (trans_bound bound_th `#1.909 * &10 ipow (-- &12)`) time;;
+
+let form_th, bound_th, time = validate pp "sineTaylor_a.proof";;
+add_result "sineTaylor_a" (trans_bound bound_th `#5.622 * &10 ipow (-- &16)`) time;;
+
+let form_th, bound_th, time = validate pp "sineOrder3_a.proof";;
+add_result "sineOrder3_a" (trans_bound bound_th `#6.685 * &10 ipow (-- &16)`) time;;
+
+let form_th, bound_th, time = validate pp "sqroot_a.proof";;
+add_result "sqroot_a" (trans_bound bound_th `#6.839 * &10 ipow (-- &16)`) time;;
+
+let form_th, bound_th, time = validate pp "floudas1_a.proof";;
+add_result "floudas1_a" (trans_bound bound_th `#4.619 * &10 ipow (-- &13)`) time;;
+
+let form_th, bound_th, time = validate pp "floudas2_a.proof";;
+add_result "floudas2_a" (trans_bound bound_th `#7.772 * &10 ipow (-- &16)`) time;;
+
+let form_th, bound_th, time = validate pp "floudas3_a.proof";;
+add_result "floudas3_a" (trans_bound bound_th `#1.502 * &10 ipow (-- &14)`) time;;
+
+let form_th, bound_th, time = validate pp "logexp_a.proof";;
+add_result "logexp_a" (trans_bound bound_th `#1.615 * &10 ipow (-- &15)`) time;;
+
+let form_th, bound_th, time = validate pp "sphere_a.proof";;
+add_result "sphere_a" (trans_bound bound_th `#7.772 * &10 ipow (-- &15)`) time;;
+
+(*
+(* 10267.6 *)
+let form_th, bound_th, time = validate pp "hartman3_a.proof";;
+add_result "hartman3_a" (trans_bound bound_th `#7.653 * &10 ipow (-- &15)`) time;;
+
+(* 188820.1 *)
+let form_th, bound_th, time = validate pp "hartman6_a.proof";;
+add_result "hartman6_a" (trans_bound bound_th `#1.698 * &10 ipow (-- &14)`) time;;
+*)
+
+print_results();;

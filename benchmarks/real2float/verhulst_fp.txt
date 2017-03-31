@@ -1,0 +1,5 @@
+Variables
+  float64 x in [0.1, 0.3];
+
+Expressions
+  verhulst rnd64= 4 * x / (1 + (x / no_rnd(1.11)));

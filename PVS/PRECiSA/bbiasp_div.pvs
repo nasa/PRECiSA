@@ -1,17 +1,10 @@
 bbiasp_div: THEORY
 BEGIN
 
-  IMPORTING interval_ulp_sp,
+  IMPORTING bbiaXp_div, interval_ulp_sp,
   	    float@aerr754sp_div
 
   R1,E1,R2,E2: VAR Interval
-
-  aeb_div_pre4(R1,E1,R2,E2:Interval): bool =
-	   NonNeg?(E1) AND
-	   NonNeg?(E2) AND
-	   Proper?(R2) AND
-	   Zeroless?(Sub(Mult(R2,R2),Mult(E2,Abs(R2)))) AND
-           (Gt(Sub(R2,E2),0) OR Lt(Add(R2,E2),0))
 
   aeb_div_pre4_predondition_j: JUDGEMENT
     aeb_div_pre4 HAS_TYPE (Precondition4?)
@@ -25,7 +18,7 @@ BEGIN
           Div(
 	   Add(Mult(Abs(R2),E1),Mult(Abs(R1),E2)),
 	   Sub(Mult(R2,R2),Mult(E2,Abs(R2)))),
-          Div(Ulp(Div(Add(Abs(R1),E1),Sub(Abs(R2),E2))),[|2|]))
+          Div(Ulp_sp(Div(Add(Abs(R1),E1),Sub(Abs(R2),E2))),[|2|]))
          
     ELSE EmptyInterval
     ENDIF
