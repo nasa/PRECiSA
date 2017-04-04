@@ -1,5 +1,5 @@
 # Program Round-off Error Certifier via Static Analysis
 PRECiSA
 # The following directories contain examples of PRECiSA generated PVS theories
-# CD2D_tau # 2-D air traffic conflict detection 
-# CPR      # ADS-B Compact Position Reporting
+CD2D_tau # 2-D air traffic conflict detection 
+CPR      # ADS-B Compact Position Reporting

@@ -1,0 +1,27 @@
+(cpr_rLat1_double
+ (rLat1_TCC1 0
+  (rLat1_TCC1-1 nil 3700241794
+   ("" (skeep) (("" (eval-formula -1) nil nil)) nil)
+   ((boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (bijective? const-decl "bool" functions nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (TRUE const-decl "bool" booleans nil))
+   shostak))
+ (rLat1_TCC2 0
+  (rLat1_TCC2-1 nil 3700241794 ("" (then (skeep) (eval-formula -1)))
+   ((TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil))
+   shostak))
+ (rLat1_TCC3 0
+  (rLat1_TCC3-1 nil 3700241794 ("" (then (skeep) (eval-formula -1)))
+   ((TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil))
+   shostak)))
+

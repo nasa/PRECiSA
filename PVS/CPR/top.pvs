@@ -1,0 +1,24 @@
+top: THEORY
+BEGIN
+
+  IMPORTING cpr_rLat1_double,
+  	    cert_cpr_rLat1_double,
+	    clgen_cpr_rLat1_double,
+	    clemmas_cpr_rLat1_double,
+
+	    cpr_dLat_double,
+	    cert_cpr_dLat_double,
+	    clgen_cpr_dLat_double,
+	    clemmas_cpr_dLat_double,
+
+ 	    cpr_rLat1_single,
+  	    cert_cpr_rLat1_single,
+	    clgen_cpr_rLat1_single,
+	    clemmas_cpr_rLat1_single,
+
+	    cpr_dLat_single,
+	    cert_cpr_dLat_single,
+	    clgen_cpr_dLat_single,
+	    clemmas_cpr_dLat_single
+
+END top

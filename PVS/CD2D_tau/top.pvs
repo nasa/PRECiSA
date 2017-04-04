@@ -1,0 +1,13 @@
+top: THEORY
+BEGIN
+
+  IMPORTING cd2d_tau_double,
+  	    cert_cd2d_tau_double,
+	    clgen_cd2d_tau_double,
+	    clemmas_cd2d_tau_double,
+	    cd2d_tau_single,
+  	    cert_cd2d_tau_single,
+	    clgen_cd2d_tau_single,
+	    clemmas_cd2d_tau_single
+
+END top

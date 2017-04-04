@@ -1,0 +1,20 @@
+clgen_top: THEORY
+BEGIN
+
+  IMPORTING clgen_cpr_rLat1_double,
+  	    % clgen_cpr_yz0_double,
+  	    clgen_cpr_dLat_double,
+	    clgen_cpr_rLat1_single,
+	    % clgen_cpr_yz0_single,
+  	    clgen_cpr_dLat_single
+
+  main: void =
+    clgen_cpr_rLat1_double.main
+    & printf("~%")
+    & clgen_cpr_dLat_double.main
+    & printf("~%")
+    & clgen_cpr_rLat1_single.main
+    & printf("~%")
+    & clgen_cpr_dLat_single.main
+
+END clgen_top

@@ -1,0 +1,9 @@
+clemmas_top: THEORY
+BEGIN
+
+  IMPORTING clemmas_cpr_rLat1_double,
+  	    clemmas_cpr_dLat_double,
+	    clemmas_cpr_rLat1_single,
+  	    clemmas_cpr_dLat_single
+
+END clemmas_top
