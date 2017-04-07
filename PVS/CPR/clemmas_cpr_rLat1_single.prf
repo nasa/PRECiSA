@@ -1,97 +1,16 @@
 (clemmas_cpr_rLat1_single
  (rLat1_c_0_TCC1 0
   (rLat1_c_0_TCC1-1 nil 3700302488 ("" (precisa-gen-cert-tcc) nil nil)
-   ((real_minus_real_is_real application-judgement "real" reals nil)
-    (mult_divides2 application-judgement "(divides(m))" divides nil)
-    (mult_divides1 application-judgement "(divides(n))" divides nil)
-    (even_times_int_is_even application-judgement "even_int" integers
-     nil)
-    (int_minus_int_is_int application-judgement "int" integers nil)
-    (posint_plus_nnint_is_posint application-judgement "posint"
-     integers nil)
-    (posrat_exp application-judgement "posrat" exponentiation nil)
-    (nnrat_exp application-judgement "nnrat" exponentiation nil)
-    (posint_exp application-judgement "posint" exponentiation nil)
-    (rat_minus_rat_is_rat application-judgement "rat" rationals nil)
-    (rat_plus_rat_is_rat application-judgement "rat" rationals nil)
-    (real_plus_real_is_real application-judgement "real" reals nil)
-    (minus_int_is_int application-judgement "int" integers nil)
-    (rat_times_rat_is_rat application-judgement "rat" rationals nil)
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil)
-    (posnat_expt application-judgement "posnat" exponentiation nil)
-    (aeboundsp_sub const-decl "nonneg_real" aerr754sp_sub "float/")
-    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
-    (ulp const-decl "posreal" float "float/")
-    (Fulp const-decl "real" float "float/")
-    (sub_ulp_bound const-decl "real" accum_err_sub "float/")
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (sub_aerr_bound const-decl "nonneg_real" accum_err_sub "float/")
-    (Ssub const-decl
-     "{f: unb_single | closest_single?(FtoR(f1) - FtoR(f2))(f)}"
-     ieee754sp_sub "float/")
-    (Fsub const-decl
-     "{f3: (Fcanonic?(b)) | Closest?(b)(FtoR(f1) - FtoR(f2), f3)}"
-     cr_sub "float/")
-    (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (above nonempty-type-eq-decl nil integers nil)
-    (Format type-eq-decl nil float "float/")
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (float type-eq-decl nil float "float/")
+   ((TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (bool nonempty-type-eq-decl nil booleans nil)
-    (Fbounded? const-decl "bool" float "float/")
-    (sp_closest? const-decl "bool" ieee754sp "float/")
-    (Fcanonic? const-decl "bool" float "float/")
-    (unb_single type-eq-decl nil ieee754sp "float/")
-    (closest_single? const-decl "bool" ieee754sp "float/")
-    (Fg const-decl
-     "{f3: (Fcanonic?(b)) | Closest?(b)(g(FtoR(f1), FtoR(f2)), f3)}"
-     binop_em_scheme "float/")
-    (StoR const-decl "real" ieee754sp "float/")
-    (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
-     ieee754sp "float/")
-    (RND_Max const-decl "(Fcanonic?(b))" float "float/")
-    (Fopp const-decl "float" float "float/")
-    (FtoR const-decl "real" float "float/")
-    (RND_Min const-decl "(Fcanonic?(b))" float "float/")
-    (vNum const-decl "posnat" float "float/")
-    (^ const-decl "real" exponentiation nil)
-    (single_precision_format const-decl "Format" ieee754sp "float/")
-    (NOT const-decl "[bool -> bool]" booleans nil))
+    (boolean nonempty-type-decl nil booleans nil)
+    (real_minus_real_is_real application-judgement "real" reals nil))
    nil))
  (rLat1_c_0_TCC2 0
   (rLat1_c_0_TCC2-1 nil 3700302488 ("" (precisa-gen-cert-tcc) nil nil)
-   ((posreal_plus_nnreal_is_posreal application-judgement "posreal"
-     real_types nil)
-    (even_plus_even_is_even application-judgement "even_int" integers
-     nil)
-    (posint_plus_nnint_is_posint application-judgement "posint"
-     integers nil)
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (nnreal_div_posreal_is_nnreal application-judgement "nnreal"
-     real_types nil)
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (rtos_canonicroundfun_exactrepconservation_j name-judgement
-     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
-         exact_rep_conservation[2]
-             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
-     "float/")
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil)
-    (FALSE const-decl "bool" booleans nil)
-    (TRUE const-decl "bool" booleans nil)
+   ((TRUE const-decl "bool" booleans nil)
     (id const-decl "(bijective?[T, T])" identity nil)
     (bijective? const-decl "bool" functions nil)
     (bool nonempty-type-eq-decl nil booleans nil)
@@ -100,27 +19,7 @@
    nil))
  (rLat1_c_0_TCC3 0
   (rLat1_c_0_TCC3-1 nil 3700302488 ("" (precisa-gen-cert-tcc) nil nil)
-   ((posreal_plus_nnreal_is_posreal application-judgement "posreal"
-     real_types nil)
-    (even_minus_odd_is_odd application-judgement "odd_int" integers
-     nil)
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (nnreal_div_posreal_is_nnreal application-judgement "nnreal"
-     real_types nil)
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (rtos_canonicroundfun_exactrepconservation_j name-judgement
-     "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
-         exact_rep_conservation[2]
-             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
-     "float/")
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil)
-    (FALSE const-decl "bool" booleans nil)
-    (TRUE const-decl "bool" booleans nil)
+   ((TRUE const-decl "bool" booleans nil)
     (id const-decl "(bijective?[T, T])" identity nil)
     (bijective? const-decl "bool" functions nil)
     (bool nonempty-type-eq-decl nil booleans nil)
@@ -258,6 +157,8 @@
      "PRECiSA/")
     (aeb_div_pre4_predondition_j name-judgement "(Precondition4?)"
      bbiasp_div "PRECiSA/")
+    (Any2_Precondition2 name-judgement "(Precondition2?)" interval
+     "interval_arith/")
     (AEB_ADD_j name-judgement
      "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
          Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
@@ -286,10 +187,9 @@
     (Inclusion? const-decl "bool" interval "interval_arith/")
     (Floor const-decl "Interval" interval "interval_arith/")
     (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Any2? const-decl "bool" interval "interval_arith/")
     (Inclusion4? const-decl "bool" interval "interval_arith/")
     (Any? const-decl "bool" interval "interval_arith/")
+    (Any2? const-decl "bool" interval "interval_arith/")
     (Any3? const-decl "bool" interval "interval_arith/")
     (aeb_div_pre4 const-decl "bool" bbiaXp_div "PRECiSA/")
     (aeboundsp_div_safe const-decl "real" bbiasp_div "PRECiSA/")
@@ -299,6 +199,7 @@
      "interval_arith/")
     (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
     (Inclusion2? const-decl "bool" interval "interval_arith/")
+    (Precondition2? const-decl "bool" interval "interval_arith/")
     (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
     (NonNeg? const-decl "bool" interval "interval_arith/")
     (aeboundsp_flr_safe const-decl "real" bbiasp_flr "PRECiSA/")
@@ -340,6 +241,7 @@
      real_defs nil)
     (nnreal_plus_nnreal_is_nnreal application-judgement "nnreal"
      real_types nil)
+    (<< const-decl "bool" interval "interval_arith/")
     ([\|\|] const-decl "Interval" interval "interval_arith/")
     (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
      ieee754sp "float/")
@@ -361,7 +263,6 @@
     (|##| const-decl "bool" interval "interval_arith/")
     (Proper? const-decl "bool" interval "interval_arith/")
     (ProperInterval type-eq-decl nil interval "interval_arith/")
-    (<< const-decl "bool" interval "interval_arith/")
     (even_times_int_is_even application-judgement "even_int" integers
      nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
@@ -608,6 +509,8 @@
      "PRECiSA/")
     (aeb_div_pre4_predondition_j name-judgement "(Precondition4?)"
      bbiasp_div "PRECiSA/")
+    (Any2_Precondition2 name-judgement "(Precondition2?)" interval
+     "interval_arith/")
     (AEB_ADD_j name-judgement
      "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
          Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
@@ -636,10 +539,9 @@
     (Inclusion? const-decl "bool" interval "interval_arith/")
     (Floor const-decl "Interval" interval "interval_arith/")
     (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Any2? const-decl "bool" interval "interval_arith/")
     (Inclusion4? const-decl "bool" interval "interval_arith/")
     (Any? const-decl "bool" interval "interval_arith/")
+    (Any2? const-decl "bool" interval "interval_arith/")
     (Any3? const-decl "bool" interval "interval_arith/")
     (aeb_div_pre4 const-decl "bool" bbiaXp_div "PRECiSA/")
     (aeboundsp_div_safe const-decl "real" bbiasp_div "PRECiSA/")
@@ -649,6 +551,7 @@
      "interval_arith/")
     (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
     (Inclusion2? const-decl "bool" interval "interval_arith/")
+    (Precondition2? const-decl "bool" interval "interval_arith/")
     (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
     (NonNeg? const-decl "bool" interval "interval_arith/")
     (aeboundsp_flr_t_safe const-decl "real" bbiasp_flr_t "PRECiSA/")
@@ -690,6 +593,7 @@
      real_defs nil)
     (nnreal_plus_nnreal_is_nnreal application-judgement "nnreal"
      real_types nil)
+    (<< const-decl "bool" interval "interval_arith/")
     ([\|\|] const-decl "Interval" interval "interval_arith/")
     (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
      ieee754sp "float/")
@@ -711,7 +615,6 @@
     (|##| const-decl "bool" interval "interval_arith/")
     (Proper? const-decl "bool" interval "interval_arith/")
     (ProperInterval type-eq-decl nil interval "interval_arith/")
-    (<< const-decl "bool" interval "interval_arith/")
     (even_times_int_is_even application-judgement "even_int" integers
      nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)

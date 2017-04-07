@@ -1,0 +1,41 @@
+bbiasp_atn: THEORY
+BEGIN
+
+  IMPORTING interval_ulp_sp,
+  	    float@aerr754sp_atn,
+	    interval_arith@interval_trig
+
+  R,E: VAR Interval
+  n  : VAR nat
+
+  aeboundsp_atn_ia(n)(R,E): Interval =
+    If NonNeg?(E)
+    THEN Add(E, Div(Ulp_sp(Atan(n)(Add(Abs(R),E))),[|2|]))
+    ELSE EmptyInterval
+    ENDIF
+ 
+  re1,re2: VAR RealExpr
+
+  x1,x2: VAR real
+
+  aeboundsp_atn_safe(r,e: real): real =
+    IF e >= 0
+    THEN aeboundsp_atn(r,e)
+    ELSE 1 ENDIF
+
+  AEB_ATN_inclusion_j: JUDGEMENT
+    aeboundsp_atn_ia(n)
+    HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aeboundsp_atn_safe))
+
+  AEB_ATN_fundmental_j: JUDGEMENT
+    aeboundsp_atn_ia(n)
+    HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
+
+  AEB_ATN(n)(re1,re2): MACRO RealExpr =
+    FUN2(Any?,
+         pre1to2b(NonNeg?),
+	 aeboundsp_atn_safe,
+	 aeboundsp_atn_ia(n),
+	 re1,re2)
+
+END bbiasp_atn

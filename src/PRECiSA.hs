@@ -316,6 +316,7 @@ varWithProgEE prog (ErrTan  a e)           = ErrTan    (varWithProgAE prog a) (v
 varWithProgEE prog (ErrAsin a e)           = ErrAsin   (varWithProgAE prog a) (varWithProgEE prog e)
 varWithProgEE prog (ErrAcos a e)           = ErrAcos   (varWithProgAE prog a) (varWithProgEE prog e)
 varWithProgEE prog (ErrAtan a e)           = ErrAtan   (varWithProgAE prog a) (varWithProgEE prog e)
+varWithProgEE prog (ErrAtanT a e)          = ErrAtanT  (varWithProgAE prog a) (varWithProgEE prog e)
 varWithProgEE prog (ErrNeg  a e)           = ErrNeg    (varWithProgAE prog a) (varWithProgEE prog e)
 varWithProgEE prog (ErrAbs  a e)           = ErrAbs    (varWithProgAE prog a) (varWithProgEE prog e)
 varWithProgEE prog (AE ae)                 = AE      (varWithProgAE prog ae)

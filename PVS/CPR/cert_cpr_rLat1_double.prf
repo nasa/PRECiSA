@@ -1,27 +1,7 @@
 (cert_cpr_rLat1_double
  (rLat1_0_TCC1 0
   (rLat1_0_TCC1-1 nil 3700302384 ("" (precisa-gen-cert-tcc) nil nil)
-   ((posreal_plus_nnreal_is_posreal application-judgement "posreal"
-     real_types nil)
-    (even_plus_even_is_even application-judgement "even_int" integers
-     nil)
-    (posint_plus_nnint_is_posint application-judgement "posint"
-     integers nil)
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (rtos_canonicroundfun_exactrepconservation_j name-judgement
-     "{RtoF: CanonicRoundingFun(double_precision_format, dp_closest?) |
-         exact_rep_conservation[2]
-             (double_precision_format, dp_closest?)(RtoF)}" ieee754dp
-     "float/")
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil)
-    (FALSE const-decl "bool" booleans nil)
-    (TRUE const-decl "bool" booleans nil)
+   ((TRUE const-decl "bool" booleans nil)
     (id const-decl "(bijective?[T, T])" identity nil)
     (bijective? const-decl "bool" functions nil)
     (bool nonempty-type-eq-decl nil booleans nil)
@@ -30,25 +10,7 @@
    nil))
  (rLat1_0_TCC2 0
   (rLat1_0_TCC2-1 nil 3700302384 ("" (precisa-gen-cert-tcc) nil nil)
-   ((posreal_plus_nnreal_is_posreal application-judgement "posreal"
-     real_types nil)
-    (even_minus_odd_is_odd application-judgement "odd_int" integers
-     nil)
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (rtos_canonicroundfun_exactrepconservation_j name-judgement
-     "{RtoF: CanonicRoundingFun(double_precision_format, dp_closest?) |
-         exact_rep_conservation[2]
-             (double_precision_format, dp_closest?)(RtoF)}" ieee754dp
-     "float/")
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil)
-    (FALSE const-decl "bool" booleans nil)
-    (TRUE const-decl "bool" booleans nil)
+   ((TRUE const-decl "bool" booleans nil)
     (id const-decl "(bijective?[T, T])" identity nil)
     (bijective? const-decl "bool" functions nil)
     (bool nonempty-type-eq-decl nil booleans nil)
@@ -303,12 +265,6 @@
          nil)
     (- const-decl "[numfield -> numfield]" number_fields nil)
     (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
-    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_gt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
     (Dsub_aerr formula-decl nil aerr754dp_sub "float/")
     (rLat1 const-decl "unb_double" cpr_rLat1_double nil))
@@ -569,13 +525,6 @@
          nil)
     (- const-decl "[numfield -> numfield]" number_fields nil)
     (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_gt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (FALSE const-decl "bool" booleans nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
     (Dsub_aerr formula-decl nil aerr754dp_sub "float/")
     (rLat1 const-decl "unb_double" cpr_rLat1_double nil))

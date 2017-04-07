@@ -1,0 +1,42 @@
+bbiasp_cos: THEORY
+BEGIN
+
+  IMPORTING interval_ulp_sp,
+  	    float@aerr754sp_cos,
+	    interval_arith@interval_trig
+
+  R,E: VAR Interval
+  n  : VAR nat
+
+  aeboundsp_cos_ia(n)(R,E): Interval =
+    If NonNeg?(E)
+    THEN Add(Min(E,[|2|]),
+    	     Div(Ulp_sp(Add(Abs(Cos(n)(R)),Min(E,[|2|]))),[|2|]))
+    ELSE EmptyInterval
+    ENDIF
+ 
+  re1,re2: VAR RealExpr
+
+  x1,x2: VAR real
+
+  aeboundsp_cos_safe(r,e: real): real =
+    IF e >= 0
+    THEN aeboundsp_cos(r,e)
+    ELSE 1 ENDIF
+
+  AEB_COS_inclusion_j: JUDGEMENT
+    aeboundsp_cos_ia(n)
+    HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aeboundsp_cos_safe))
+
+  AEB_COS_fundmental_j: JUDGEMENT
+    aeboundsp_cos_ia(n)
+    HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
+
+  AEB_COS(n)(re1,re2): MACRO RealExpr =
+    FUN2(Any?,
+         pre1to2b(NonNeg?),
+	 aeboundsp_cos_safe,
+	 aeboundsp_cos_ia(n),
+	 re1,re2)
+
+END bbiasp_cos

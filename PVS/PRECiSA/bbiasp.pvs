@@ -8,6 +8,9 @@ BEGIN
 	    bbiasp_flr, bbiasp_flr_t,
 	    bbiasp_sqt,
 	    bbiasp_neg,
+	    bbiasp_sin,
+	    bbiasp_cos,
+	    bbiasp_atn, bbiasp_atn_t,
   	    interval_arith@strategies
 
 END bbiasp

@@ -66,6 +66,7 @@
    (fun4?)]" IntervalExpr_adt "interval_arith/")
     (Precondition4? const-decl "bool" interval "interval_arith/")
     (Precondition3? const-decl "bool" interval "interval_arith/")
+    (Precondition2? const-decl "bool" interval "interval_arith/")
     (BREL adt-constructor-decl
      "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
@@ -130,14 +131,15 @@
      bbiasp_div "PRECiSA/")
     (Any3_Precondition3 name-judgement "(Precondition3?)" interval
      "interval_arith/")
+    (Any2_Precondition2 name-judgement "(Precondition2?)" interval
+     "interval_arith/")
     (Any_Precondition name-judgement "(Precondition?)" interval
      "interval_arith/")
     (Interval type-eq-decl nil interval "interval_arith/")
     (PRED type-eq-decl nil defined_types nil)
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Any2? const-decl "bool" interval "interval_arith/")
     (Inclusion4? const-decl "bool" interval "interval_arith/")
     (Any? const-decl "bool" interval "interval_arith/")
+    (Any2? const-decl "bool" interval "interval_arith/")
     (Any3? const-decl "bool" interval "interval_arith/")
     (aeb_div_pre4 const-decl "bool" bbiaXp_div "PRECiSA/")
     (aebounddp_div_safe const-decl "real" bbiadp_div "PRECiSA/")
@@ -149,20 +151,6 @@
      "interval_arith/")
     (Ulp_dp const-decl "Interval" interval_ulp_dp "PRECiSA/")
     (Fundamental? const-decl "bool" interval "interval_arith/")
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (<< const-decl "bool" interval "interval_arith/")
-    (even_times_int_is_even application-judgement "even_int" integers
-     nil)
-    (mult_divides1 application-judgement "(divides(n))" divides nil)
-    (mult_divides2 application-judgement "(divides(m))" divides nil)
-    (posint_exp application-judgement "posint" exponentiation nil)
-    (nnrat_exp application-judgement "nnrat" exponentiation nil)
-    (posrat_exp application-judgement "posrat" exponentiation nil)
-    (posint_plus_nnint_is_posint application-judgement "posint"
-     integers nil)
-    (int_minus_int_is_int application-judgement "int" integers nil)
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
@@ -173,10 +161,23 @@
     (vars_in_box formula-decl nil box "interval_arith/")
     (iar_47 skolem-const-decl "(brel?)" clemmas_cpr_dLat_double nil)
     (|##| const-decl "bool" interval "interval_arith/")
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
     (real_plus_real_is_real application-judgement "real" reals nil)
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
     (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (posint_exp application-judgement "posint" exponentiation nil)
+    (nnrat_exp application-judgement "nnrat" exponentiation nil)
+    (posrat_exp application-judgement "posrat" exponentiation nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (even_times_int_is_even application-judgement "even_int" integers
+     nil)
+    (mult_divides1 application-judgement "(divides(n))" divides nil)
+    (mult_divides2 application-judgement "(divides(m))" divides nil)
     (eval def-decl "real" interval_expr "interval_arith/")
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (cpr_dLat_double_r_I skolem-const-decl "real"

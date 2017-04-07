@@ -550,6 +550,8 @@
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (inclusion_Gt formula-decl nil interval "interval_arith/")
     (inclusion_Lt formula-decl nil interval "interval_arith/")
+    (Any2_Precondition2 name-judgement "(Precondition2?)" interval
+     "interval_arith/")
     (aebounddp_div_ia const-decl "Interval" bbiadp_div nil)
     (Inclusion4? const-decl "bool" interval "interval_arith/"))
    nil)
@@ -1658,12 +1660,6 @@
    nil nil))
  (AEB_DIV_TCC1 0
   (AEB_DIV_TCC1-1 nil 3683997757 ("" (subtype-tcc) nil nil)
-   ((<< const-decl "bool" interval "interval_arith/")
-    (Any2? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/"))
-   nil))
- (AEB_DIV_TCC2 0
-  (AEB_DIV_TCC2-1 nil 3699984722 ("" (subtype-tcc) nil nil)
    ((AEB_DIV_fundmental_j name-judgement
      "(Fundamental4?(Any?, Any2?, Any3?, aeb_div_pre4))" bbiadp_div
      nil)

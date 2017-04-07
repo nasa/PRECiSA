@@ -1,0 +1,41 @@
+bbiadp_atn: THEORY
+BEGIN
+
+  IMPORTING interval_ulp_dp,
+  	    float@aerr754dp_atn,
+	    interval_arith@interval_trig
+
+  R,E: VAR Interval
+  n  : VAR nat
+
+  aebounddp_atn_ia(n)(R,E): Interval =
+    If NonNeg?(E)
+    THEN Add(E, Div(Ulp_dp(Atan(n)(Add(Abs(R),E))),[|2|]))
+    ELSE EmptyInterval
+    ENDIF
+ 
+  re1,re2: VAR RealExpr
+
+  x1,x2: VAR real
+
+  aebounddp_atn_safe(r,e: real): real =
+    IF e >= 0
+    THEN aebounddp_atn(r,e)
+    ELSE 1 ENDIF
+
+  AEB_ATN_inclusion_j: JUDGEMENT
+    aebounddp_atn_ia(n)
+    HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aebounddp_atn_safe))
+
+  AEB_ATN_fundmental_j: JUDGEMENT
+    aebounddp_atn_ia(n)
+    HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
+
+  AEB_ATN(n)(re1,re2): MACRO RealExpr =
+    FUN2(Any?,
+         pre1to2b(NonNeg?),
+	 aebounddp_atn_safe,
+	 aebounddp_atn_ia(n),
+	 re1,re2)
+
+END bbiadp_atn

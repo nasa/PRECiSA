@@ -17,7 +17,7 @@ BEGIN
 
   aebounddp_sqt_ia(n)(R,E): Interval =
     If aeb_sqt_pre2(R,E)
-    THEN Add(Sqrt(n)(E), Div(Ulp_dp(Add(Abs(Sqrt(n)(R)),Sqrt(n)(E))),[|2|]))
+    THEN Add(Sqrt(n)(E), Div(Ulp_dp(Sqrt(n)(Add(R,E))),[|2|]))
     ELSE EmptyInterval
     ENDIF
  

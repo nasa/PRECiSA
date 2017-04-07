@@ -31,10 +31,10 @@ $ provethem all-theories
 The output of that command is
 
 ```
-PRECiSA                  [OK: 99 proofs]
+PRECiSA                  [OK: 123 proofs]
 CD2D_tau                 [OK: 104 proofs]
 CPR                      [OK: 38 proofs]
 
-*** Grand Totals: 241 proofs / 241 formulas. Missed: 0 formulas.
+*** Grand Totals: 265 proofs / 265 formulas. Missed: 0 formulas.
 *** Number of libraries: 3
 ```

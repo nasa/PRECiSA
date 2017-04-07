@@ -1,7 +1,29 @@
 (cert_cpr_dLat_single
  (dLat_0_TCC1 0
   (dLat_0_TCC1-1 nil 3700302489 ("" (precisa-gen-cert-tcc) nil nil)
-   ((le_realorder name-judgement "RealOrder" real_orders "reals/")
+   ((boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (>= const-decl "bool" reals nil)
+    (nonneg_real nonempty-type-eq-decl nil real_types nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (above nonempty-type-eq-decl nil integers nil)
+    (Format type-eq-decl nil float "float/")
+    (int nonempty-type-eq-decl nil integers nil)
+    (float type-eq-decl nil float "float/")
+    (Fcanonic? const-decl "bool" float "float/")
+    (single_precision_format const-decl "Format" ieee754sp "float/")
+    (unb_single type-eq-decl nil ieee754sp "float/")
+    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (le_realorder name-judgement "RealOrder" real_orders "reals/")
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
     (rtos_canonicroundfun_exactrepconservation_j name-judgement
@@ -9,12 +31,14 @@
          exact_rep_conservation[2]
              (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
      "float/")
+    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (real_gt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
     (lt_realorder name-judgement "RealOrder" real_orders "reals/")
     (real_lt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
     (posreal_plus_nnreal_is_posreal application-judgement "posreal"
      real_types nil)
-    (real_plus_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil))
    nil))
  (dLat_0 0

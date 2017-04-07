@@ -41,6 +41,7 @@ data EExpr
     | ErrAsin AExpr EExpr
     | ErrAcos AExpr EExpr 
     | ErrAtan AExpr EExpr
+    | ErrAtanT   AExpr EExpr 
     | ErrNeg AExpr EExpr
     | ErrAbs AExpr EExpr
     | ErrMulPow2 Integer EExpr
@@ -630,6 +631,8 @@ prEExpr (ErrAsin r e)      FPSingle = text "aeboundsp_asn" <> (text "(" <> prAEx
                                                                             <+> prEExpr e FPSingle <> text ")")  
 prEExpr (ErrAtan r e)      FPSingle = text "aeboundsp_atn" <> (text "(" <> prAExpr r FPSingle <> comma
                                                                             <+> prEExpr e FPSingle <> text ")")   
+prEExpr (ErrAtanT r e)      FPSingle = text "aeboundsp_atn_t" <> (text "(" <> prAExpr r FPSingle <> comma
+                                                                            <+> prEExpr e FPSingle <> text ")")  
 prEExpr (ErrNeg r e)         FPSingle = text "aeboundsp_neg" <> (text "(" <> prAExpr r FPSingle<> comma
                                                                          <+> prEExpr e FPSingle <> text ")") 
 prEExpr (ErrAbs r e)         FPSingle = text "aeboundsp_abs" <> (text "(" <> prAExpr r FPSingle <> comma
@@ -677,7 +680,9 @@ prEExpr (ErrAcos r e)      FPDouble = text "aebounddp_acs" <> (text "(" <> prAEx
 prEExpr (ErrAsin r e)      FPDouble = text "aebounddp_asn" <> (text "(" <> prAExpr r FPDouble <> comma
                                                                             <+> prEExpr e FPDouble <> text ")")  
 prEExpr (ErrAtan r e)      FPDouble = text "aebounddp_atn" <> (text "(" <> prAExpr r FPDouble <> comma
-                                                                            <+> prEExpr e FPDouble <> text ")")   
+                                                                            <+> prEExpr e FPDouble <> text ")")  
+prEExpr (ErrAtanT r e)      FPDouble = text "aebounddp_atn_t" <> (text "(" <> prAExpr r FPDouble <> comma
+                                                                            <+> prEExpr e FPDouble <> text ")")    
 prEExpr (ErrNeg r e)         FPDouble = text "aebounddp_neg" <> (text "(" <> prAExpr r FPDouble <> comma
                                                                          <+> prEExpr e FPDouble <> text ")") 
 prEExpr (ErrAbs r e)         FPDouble = text "aebounddp_abs" <> (text "(" <> prAExpr r FPDouble <> comma

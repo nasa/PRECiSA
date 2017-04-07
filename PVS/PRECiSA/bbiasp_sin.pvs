@@ -1,0 +1,42 @@
+bbiasp_sin: THEORY
+BEGIN
+
+  IMPORTING interval_ulp_sp,
+  	    float@aerr754sp_sin,
+	    interval_arith@interval_trig
+
+  R,E: VAR Interval
+  n  : VAR nat
+
+  aeboundsp_sin_ia(n)(R,E): Interval =
+    If NonNeg?(E)
+    THEN Add(Min(E,[|2|]),
+    	     Div(Ulp_sp(Add(Abs(Sin(n)(R)),Min(E,[|2|]))),[|2|]))
+    ELSE EmptyInterval
+    ENDIF
+ 
+  re1,re2: VAR RealExpr
+
+  x1,x2: VAR real
+
+  aeboundsp_sin_safe(r,e: real): real =
+    IF e >= 0
+    THEN aeboundsp_sin(r,e)
+    ELSE 1 ENDIF
+
+  AEB_SIN_inclusion_j: JUDGEMENT
+    aeboundsp_sin_ia(n)
+    HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aeboundsp_sin_safe))
+
+  AEB_SIN_fundmental_j: JUDGEMENT
+    aeboundsp_sin_ia(n)
+    HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
+
+  AEB_SIN(n)(re1,re2): MACRO RealExpr =
+    FUN2(Any?,
+         pre1to2b(NonNeg?),
+	 aeboundsp_sin_safe,
+	 aeboundsp_sin_ia(n),
+	 re1,re2)
+
+END bbiasp_sin

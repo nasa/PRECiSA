@@ -101,6 +101,7 @@ data PVStree = SIntR
              | SAsinR EExpr AExpr FAExpr PVStree
              | SAcosR EExpr AExpr FAExpr PVStree
              | SAtanR EExpr AExpr FAExpr PVStree
+             | SAtanTR EExpr AExpr FAExpr PVStree
              | SMulPow2R EExpr AExpr FAExpr PVStree Integer
              | SUnTest  EExpr AExpr AExpr AExpr PVStree -- unstable test
              -------------------------------------------------------
@@ -136,6 +137,7 @@ data PVStree = SIntR
              | DAsinR EExpr AExpr FAExpr PVStree
              | DAcosR EExpr AExpr FAExpr PVStree
              | DAtanR EExpr AExpr FAExpr PVStree
+             | DAtanTR EExpr AExpr FAExpr PVStree
              | DMulPow2R EExpr AExpr FAExpr PVStree Integer
              | DUnTest  EExpr AExpr AExpr AExpr PVStree -- unstable test
     deriving (Show)             
@@ -476,7 +478,25 @@ instance PPExt (PVStree) where
         $$ text "%|- (assert-condition))))))"
     prettyDoc (SAtanR e i f t) =
         text "%|- (then"
-        $$ text "%|- (lemma \"Satn_aerr\")"
+        $$ text "%|- (lemma \"Satan_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPSingle <> text "\""
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPSingle <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (then (aerr-assert) (fail))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
+    prettyDoc (SAtanTR e i f t) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Satan_t_aerr\")"
         $$ text "%|- (let ((new-label (freshname \"l\")))"
         $$ text "%|-    (then (label new-label -1)"
         $$ text "%|- (branch (with-tccs (inst new-label"
@@ -824,7 +844,25 @@ instance PPExt (PVStree) where
         $$ text "%|- (assert-condition))))))"
     prettyDoc (DAtanR e i f t) =
         text "%|- (then"
-        $$ text "%|- (lemma \"Datn_aerr\")"
+        $$ text "%|- (lemma \"Datan_aerr\")"
+        $$ text "%|- (let ((new-label (freshname \"l\")))"
+        $$ text "%|-    (then (label new-label -1)"
+        $$ text "%|- (branch (with-tccs (inst new-label"
+        $$ text "%|-    " <> text "\"" <> prEExpr e FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> prAExpr i FPDouble <> text "\""
+        $$ text "%|-    " <> text "\"" <> prFAExpr f FPDouble <> text "\""
+        $$ text "%|- ))" 
+        $$ text "%|- ((branch"
+        $$ text "%|- (split -1)"
+        $$ text "%|- ("
+        $$ text "%|- (then (aerr-assert) (fail))"
+        $$ prettyDoc t
+        $$ text "%|- (assert-condition)"
+        $$ text "%|- ))"
+        $$ text "%|- (assert-condition))))))"
+    prettyDoc (DAtanTR e i f t) =
+        text "%|- (then"
+        $$ text "%|- (lemma \"Datan_t_aerr\")"
         $$ text "%|- (let ((new-label (freshname \"l\")))"
         $$ text "%|-    (then (label new-label -1)"
         $$ text "%|- (branch (with-tccs (inst new-label"

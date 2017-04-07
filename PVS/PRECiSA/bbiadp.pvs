@@ -8,6 +8,9 @@ BEGIN
 	    bbiadp_flr, bbiadp_flr_t,
 	    bbiadp_sqt,
 	    bbiadp_neg,
+	    bbiadp_sin,
+	    bbiadp_cos,
+	    bbiadp_atn, bbiadp_atn_t,
   	    interval_arith@strategies
 
 END bbiadp

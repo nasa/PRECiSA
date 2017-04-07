@@ -1,0 +1,49 @@
+bbiadp_atn_t: THEORY
+BEGIN
+
+  IMPORTING interval_ulp_dp,
+  	    float@aerr754dp_atn,
+	    interval_arith@interval_trig
+
+  R,E: VAR Interval
+  n  : VAR nat
+
+  aeb_atn_t_pre2(R,E:Interval): bool =
+    NonNeg?(E) AND lt(E,Abs(R))
+
+  aeb_atn_t_pre2_predondition_j: JUDGEMENT
+    aeb_atn_t_pre2 HAS_TYPE (Precondition2?)
+
+  aebounddp_atn_t_ia(n)(R,E): Interval =
+    If aeb_atn_t_pre2(R,E)
+    THEN Add( Div(E,Add([|1|],Min( Mult(Sub(R,E),Sub(R,E)),
+    	      			   Mult(Add(R,E),Add(R,E))))),
+    	      Div(Ulp_dp(Atan(n)(Add(Abs(R),E))),[|2|]))
+    ELSE EmptyInterval
+    ENDIF
+ 
+  re1,re2: VAR RealExpr
+
+  x1,x2: VAR real
+
+  aebounddp_atn_t_safe(r,e: real): real =
+    IF e >= 0
+    THEN aebounddp_atn_t(r,e)
+    ELSE 1 ENDIF
+
+  AEB_ATN_T_inclusion_j: JUDGEMENT
+    aebounddp_atn_t_ia(n)
+    HAS_TYPE (Inclusion2?(Any?,aeb_atn_t_pre2,aebounddp_atn_t_safe))
+
+  AEB_ATN_T_fundmental_j: JUDGEMENT
+    aebounddp_atn_t_ia(n)
+    HAS_TYPE (Fundamental2?(Any?,aeb_atn_t_pre2))
+
+  AEB_ATN_T(n)(re1,re2): MACRO RealExpr =
+    FUN2(Any?,
+         aeb_atn_t_pre2,
+	 aebounddp_atn_t_safe,
+	 aebounddp_atn_t_ia(n),
+	 re1,re2)
+
+END bbiadp_atn_t

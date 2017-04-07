@@ -260,7 +260,7 @@ aexprSem (FCos a)    i env fp = lub semCos    [aexprSem a i env fp] fp
 aexprSem (FTan a)    i env fp = lub semTan    [aexprSem a i env fp] fp
 aexprSem (FAsin a)   i env fp = lub semAsin   [aexprSem a i env fp] fp
 aexprSem (FAcos a)   i env fp = lub semAcos   [aexprSem a i env fp] fp
-aexprSem (FAtan a)   i env fp = lub semAtan   [aexprSem a i env fp] fp
+aexprSem (FAtan a)   i env fp = (lub semAtan  [aexprSem a i env fp] fp) ++ (lub semAtanT  [aexprSem a i env fp] fp)
 
 aexprSem f i env fp = error ("aexprSem "++ (render $ prFAExpr f fp)++": not implemented yet")
 
@@ -473,6 +473,34 @@ semCos [(c,g,f,r,e,t)] fp =
                     FPSingle -> (SUlp, SCosR)
                     FPDouble -> (DUlp, DCosR)
 
+semAtan :: CebS -> FPrec -> Ceb 
+semAtan [(c,g,f,r,e,t)] fp = 
+   (And c catan,
+    g,
+    FAtan f,
+    ATan r,
+    ErrAtan r e,
+    rule e r f t) 
+  where
+    catan = GtE (EE e) (Abs r)
+    (ulp, rule) = case fp of
+                    FPSingle -> (SUlp, SAtanR)
+                    FPDouble -> (DUlp, DAtanR)
+
+semAtanT :: CebS -> FPrec -> Ceb 
+semAtanT [(c,g,f,r,e,t)] fp = 
+   (And c catan,
+    g,
+    FAtan f,
+    ATan r,
+    ErrAtanT r e,
+    rule e r f t) 
+  where
+    catan = Lt (EE e) (Abs r)
+    (ulp, rule) = case fp of
+                    FPSingle -> (SUlp, SAtanTR)
+                    FPDouble -> (DUlp, DAtanTR)                    
+
 semTan :: CebS -> FPrec -> Ceb 
 semTan [(c,g,f,r,e,t)] fp = error "semTan: niy"
 
@@ -482,18 +510,7 @@ semAsin [(c,g,f,r,e,t)] fp = error "semAsin: niy"
 semAcos :: CebS -> FPrec -> Ceb 
 semAcos [(c,g,f,r,e,t)] fp =error "semAcos: niy"     
 
-semAtan :: CebS -> FPrec -> Ceb 
-semAtan [(c,g,f,r,e,t)] fp = 
-   (c,
-    g,
-    FAtan f,
-    ATan r,
-    ErrAtan r e,
-    rule e r f t) 
-  where
-    (ulp, rule) = case fp of
-                    FPSingle -> (SUlp, SAtanR)
-                    FPDouble -> (DUlp, DAtanR)
+
 
 -----------------------
 -- Arguments binding --
@@ -752,6 +769,7 @@ zeroErrEE p (ErrTan    ae ee)        = ErrTan    (zeroErrAE p ae)  (zeroErrEE p 
 zeroErrEE p (ErrAsin   ae ee)        = ErrAsin   (zeroErrAE p ae)  (zeroErrEE p ee)
 zeroErrEE p (ErrAcos   ae ee)        = ErrAcos   (zeroErrAE p ae)  (zeroErrEE p ee)
 zeroErrEE p (ErrAtan   ae ee)        = ErrAtan   (zeroErrAE p ae)  (zeroErrEE p ee)
+zeroErrEE p (ErrAtanT   ae ee)       = ErrAtanT   (zeroErrAE p ae)  (zeroErrEE p ee)
 zeroErrEE p (ErrNeg    ae ee)        = ErrNeg    (zeroErrAE p ae)  (zeroErrEE p ee)
 zeroErrEE p (ErrAbs    ae ee)        = ErrAbs    (zeroErrAE p ae)  (zeroErrEE p ee)
 zeroErrEE p (AE ae)                  = AE        (zeroErrAE p ae)
