@@ -13,4 +13,9 @@ BEGIN
 	    bbiasp_atn, bbiasp_atn_t,
   	    interval_arith@strategies
 
+  % The following constant is used by the strategies to check if all the re-
+  % quired theories have been imported in the current context.
+  %
+  PrecisaSP__: Unit
+
 END bbiasp

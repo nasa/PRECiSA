@@ -13,4 +13,9 @@ BEGIN
 	    bbiadp_atn, bbiadp_atn_t,
   	    interval_arith@strategies
 
+  % The following constant is used by the strategies to check if all the re-
+  % quired theories have been imported in the current context.
+  %
+  PrecisaDP__: Unit
+
 END bbiadp
