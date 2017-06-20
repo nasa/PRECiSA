@@ -1,6 +1,6 @@
 (cert_sineOrder3
  (sineOrder3_0 0
-  (sineOrder3_0-1 nil 3699198048
+  (sineOrder3_0-1 nil 3706901904
    (""
     (then (skeep) (expand "sineOrder3" :assert? none) (try-simp-ite)
      (then (lemma "Dsub_aerr")
@@ -83,7 +83,7 @@
                    (assert-condition))))))
              (assert-condition)))
            (assert-condition)))))))
-    nil nil)
+    nil)
    ((real_plus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)

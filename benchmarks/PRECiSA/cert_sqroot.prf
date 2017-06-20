@@ -1,6 +1,6 @@
 (cert_sqroot
  (sqroot_0 0
-  (sqroot_0-1 nil 3699198048
+  (sqroot_0-1 nil 3706901903
    (""
     (then (skeep) (expand "sqroot" :assert? none) (try-simp-ite)
      (then (lemma "Dadd_aerr")
@@ -306,7 +306,7 @@
                    (assert-condition))))))
              (assert-condition)))
            (assert-condition)))))))
-    nil nil)
+    nil)
    ((real_plus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)

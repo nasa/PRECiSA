@@ -1,10 +1,29 @@
 (clemmas_sqroot
  (sqroot_c_0 0
-  (sqroot_c_0-1 nil 3699381720
-   ("" (prove-concrete-lemma$ sqroot_0) nil nil)
+  (sqroot_c_0-1 nil 3706901904
+   ("" (prove-concrete-lemma$ sqroot_0) nil)
    ((real_plus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (<= const-decl "bool" reals nil)
+    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (aebounddp_sub const-decl "nonneg_real" aerr754dp_sub "float/")
+    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
+    (sqroot const-decl "unb_double" sqroot nil)
+    (DtoR const-decl "real" ieee754dp "float/")
+    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
+         nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (nnrat_div_posrat_is_nnrat application-judgement "nonneg_rat"
+     rationals nil)
+    (real_le_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (le_realorder name-judgement "RealOrder" real_orders "reals/")
     (IntervalExpr type-decl nil IntervalExpr_adt "interval_arith/")
     (realorder? const-decl "bool" real_orders "reals/")
     (RealOrder type-eq-decl nil real_orders "reals/")
@@ -139,7 +158,7 @@
      box "interval_arith/")
     (length_singleton formula-decl nil more_list_props "structures/")
     (vars_in_box formula-decl nil box "interval_arith/")
-    (iar_378 skolem-const-decl "(brel?)" clemmas_sqroot nil)
+    (iar_234 skolem-const-decl "(brel?)" clemmas_sqroot nil)
     (|##| const-decl "bool" interval "interval_arith/")
     (real_lt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
@@ -204,26 +223,8 @@
     (every adt-def-decl "boolean" list_adt nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
-    (listn_0 name-judgement "listn(0)" simple_bandb "interval_arith/")
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (nnrat_div_posrat_is_nnrat application-judgement "nonneg_rat"
-     rationals nil)
-    (= const-decl "[T, T -> boolean]" equalities nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (- const-decl "[numfield -> numfield]" number_fields nil)
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (DtoR const-decl "real" ieee754dp "float/")
-    (sqroot const-decl "unb_double" sqroot nil)
-    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
-    (aebounddp_sub const-decl "nonneg_real" aerr754dp_sub "float/")
-    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
-    (<= const-decl "bool" reals nil)
+    (listn_0 name-judgement "listn[real](0)" simple_bandb
+     "interval_arith/")
     (nnreal_div_posreal_is_nnreal application-judgement "nnreal"
      real_types nil)
     (posrat_div_posrat_is_posrat application-judgement "posrat"

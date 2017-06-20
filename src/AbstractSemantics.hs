@@ -199,11 +199,6 @@ aexprSem (FDouble n) _ _ fp = [(BTrue, FBTrue, expr, Double n, AE $ Int 0, rule)
                     FPDouble -> (RtoD $ Double n, DDoubleR)
 
 aexprSem (FPi) _ _ fp = error "aexprSem Pi: niy"
---[(BTrue, FBTrue, expr, Double pi, AE $ Int 0, rule)] --- TODO: change (0,0) with the symbolic error -- Div (ulp Pi) (Int 2),
---  where
---    (expr, ulp, rule) = case fp of
---                        FPSingle -> (RtoS $ Pi, SUlp, SPiR)
---                        FPDouble -> (RtoD $ Pi, DUlp, DPiR)
 
 aexprSem (FVar x) _ env fp =
   case (lookup x env) of
@@ -225,20 +220,19 @@ aexprSem (FEFun f actArgs) i env fp =
 aexprSem (FAdd a1 a2) i env fp = lub semAdd [(aexprSem a1 i env fp),(aexprSem a2 i env fp)] fp
 
 aexprSem (FSub a1 a2) i env fp = lub semSub [(aexprSem a1 i env fp),(aexprSem a2 i env fp)] fp
---                              ++ binLub semPrecSub a1 a2 (aexprSem a1 i env spec fun fp) (aexprSem a2 i env spec fun fp) fp
 
-aexprSem (FMul an@(FInt n) a)         i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul an@(FDouble n) a)      i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul a an@(FInt n))         i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul a an@(FDouble n))      i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul an@(RtoD(Int n)) a)    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul an@(RtoD(Double n)) a) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul a an@(RtoD(Int n)))    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul a an@(RtoD(Double n))) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul an@(RtoS(Int n)) a)    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul an@(RtoS(Double n)) a) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul a an@(RtoS(Int n)))    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
-aexprSem (FMul a an@(RtoS(Double n))) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)++(lub semMulPow2over [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(FInt n) a)         i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(FDouble n) a)      i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(FInt n))         i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(FDouble n))      i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoD(Int n)) a)    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoD(Double n)) a) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoD(Int n)))    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoD(Double n))) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoS(Int n)) a)    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul an@(RtoS(Double n)) a) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoS(Int n)))    i env fp | (isPow2 (fromInteger n))  = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
+aexprSem (FMul a an@(RtoS(Double n))) i env fp | (isPow2 (fromRational n)) = (lub semMulPow2 [(aexprSem an i env fp),(aexprSem a i env fp)] fp)
 
 aexprSem (FMul a1 a2) i env fp = lub semMul [(aexprSem a1 i env fp),(aexprSem a2 i env fp)] fp
 
@@ -352,32 +346,6 @@ semMulPow2 [(BTrue,FBTrue,f1,Double m,_,_),(c2,g2,f2,r2,e2,t2)] fp =
              FPSingle -> SMulPow2R
              FPDouble -> DMulPow2R 
 semMulPow2 _ _ = error "semMulPow2: something went wrong!"
-
-semMulPow2over :: CebS -> FPrec -> Ceb
-semMulPow2over [(BTrue,FBTrue,f1,Int m,e1,t1),(c2,g2,f2,r2,e2,t2)] fp =
-  (simplBExprFix $ And c2 (GtE (Int n) (Sub FPrec (FExp f2))),
-    g2,
-    FMul f1 f2,
-    Mul (Int m) r2,
-    ErrMul (Int m) e1 r2 e2,
-    rule e1 e2 (Int m) r2 f1 f2 t1 t2)
-  where
-    n = round $ logBase 2 (fromIntegral m)
-    rule = case fp of
-             FPSingle -> SMulR
-             FPDouble -> DMulR
-semMulPow2over [(BTrue,FBTrue,f1,Double m,e1,t1),(c2,g2,f2,r2,e2,t2)] fp =
-  (simplBExprFix $ And c2 (GtE (Int n) (Sub FPrec (FExp f2))),
-    g2,
-    FMul f1 f2,
-    Mul (Double m) r2,
-    ErrMul (Double m) e1 r2 e2,
-    rule e1 e2 (Double m) r2 f1 f2 t1 t2)
-  where
-    n = round $ logBase 2 (realToFrac m)
-    rule = case fp of
-             FPSingle -> SMulR
-             FPDouble -> DMulR
 
 semDiv :: CebS -> FPrec -> Ceb 
 semDiv [(c1,g1,f1,r1,e1,t1),(c2,g2,f2,r2,e2,t2)] fp =

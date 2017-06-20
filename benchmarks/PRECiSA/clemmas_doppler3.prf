@@ -1,20 +1,52 @@
 (clemmas_doppler3
  (dop1_c_0_TCC1 0
-  (dop1_c_0_TCC1-1 nil 3699380204 ("" (precisa-gen-cert-tcc) nil nil)
+  (dop1_c_0_TCC1-1 nil 3706901747 ("" (precisa-gen-cert-tcc) nil)
    ((real_minus_real_is_real application-judgement "real" reals nil))
    nil))
  (dop1_c_0 0
-  (dop1_c_0-1 nil 3699380209
-   ("" (prove-concrete-lemma$ dop1_0) nil nil)
+  (dop1_c_0-1 nil 3706901904 ("" (prove-concrete-lemma$ dop1_0) nil)
    ((real_div_nzreal_is_real application-judgement "real" reals nil)
     (minus_real_is_real application-judgement "real" reals nil)
     (real_plus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
-    (nnreal_plus_posreal_is_posreal application-judgement "posreal"
-     real_types nil)
-    (> const-decl "bool" reals nil)
-    (iar_334 skolem-const-decl "(brel?)" clemmas_doppler3 nil)
+    (RtoD const-decl "{f: unb_double | closest_double?(x1)(f)}"
+     ieee754dp "float/")
+    (Dadd const-decl
+     "{f: unb_double | closest_double?(FtoR(f1) + FtoR(f2))(f)}"
+     ieee754dp_add "float/")
+    (Dmul const-decl
+     "{f: unb_double | closest_double?(FtoR(f1) * FtoR(f2))(f)}"
+     ieee754dp_mul "float/")
+    (FtoR const-decl "real" float "float/")
+    (closest_double? const-decl "bool" ieee754dp "float/")
+    (Fbounded? const-decl "bool" float "float/")
+    (DtoR const-decl "real" ieee754dp "float/")
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
+    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (< const-decl "bool" reals nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (<= const-decl "bool" reals nil)
+    (aebounddp_div const-decl "nonneg_real" aerr754dp_div "float/")
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (aebounddp_neg const-decl "nonneg_real" aerr754dp_neg "float/")
+    (dop1 const-decl "unb_double" doppler3 nil)
+    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
+         nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (rtos_canonicroundfun_exactrepconservation_j name-judgement
+     "{RtoF: CanonicRoundingFun(double_precision_format, dp_closest?) |
+         exact_rep_conservation[2]
+             (double_precision_format, dp_closest?)(RtoF)}" ieee754dp
+     "float/")
+    (real_le_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (le_realorder name-judgement "RealOrder" real_orders "reals/")
     (FUN adt-constructor-decl
      "[[pre: (Precondition?), opf: [real -> real],
   {F: [Interval -> Interval] |
@@ -134,14 +166,15 @@
      bbiasp_div "PRECiSA/")
     (Any3_Precondition3 name-judgement "(Precondition3?)" interval
      "interval_arith/")
+    (Any2_Precondition2 name-judgement "(Precondition2?)" interval
+     "interval_arith/")
     (Any_Precondition name-judgement "(Precondition?)" interval
      "interval_arith/")
     (Interval type-eq-decl nil interval "interval_arith/")
     (PRED type-eq-decl nil defined_types nil)
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Any2? const-decl "bool" interval "interval_arith/")
     (Inclusion4? const-decl "bool" interval "interval_arith/")
     (Any? const-decl "bool" interval "interval_arith/")
+    (Any2? const-decl "bool" interval "interval_arith/")
     (Any3? const-decl "bool" interval "interval_arith/")
     (aeb_div_pre4 const-decl "bool" bbiaXp_div "PRECiSA/")
     (aebounddp_div_safe const-decl "real" bbiadp_div "PRECiSA/")
@@ -149,6 +182,7 @@
     (Fundamental4? const-decl "bool" interval "interval_arith/")
     (Inclusion2? const-decl "bool" interval "interval_arith/")
     (Precondition? const-decl "bool" interval "interval_arith/")
+    (Precondition2? const-decl "bool" interval "interval_arith/")
     (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
     (NonNeg? const-decl "bool" interval "interval_arith/")
     (aebounddp_neg_safe const-decl "real" bbiadp_neg "PRECiSA/")
@@ -159,31 +193,31 @@
      "interval_arith/")
     (Ulp_dp const-decl "Interval" interval_ulp_dp "PRECiSA/")
     (Fundamental? const-decl "bool" interval "interval_arith/")
-    (<< const-decl "bool" interval "interval_arith/")
-    (even_times_int_is_even application-judgement "even_int" integers
-     nil)
-    (mult_divides1 application-judgement "(divides(n))" divides nil)
-    (mult_divides2 application-judgement "(divides(m))" divides nil)
+    (interval_soundness formula-decl nil interval_bandb
+     "interval_arith/")
+    (sound? const-decl "bool" interval_bandb "interval_arith/")
+    (vars_in_box_rec def-decl
+     "{b: bool | b = (FORALL (k: subrange(i, n - 1)): vs(k) ## nth(box, k - i))}"
+     box "interval_arith/")
+    (vars_in_box formula-decl nil box "interval_arith/")
+    (iar_222 skolem-const-decl "(brel?)" clemmas_doppler3 nil)
+    (|##| const-decl "bool" interval "interval_arith/")
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
     (posint_exp application-judgement "posint" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (posint_plus_nnint_is_posint application-judgement "posint"
      integers nil)
     (int_minus_int_is_int application-judgement "int" integers nil)
-    (interval_soundness formula-decl nil interval_bandb
-     "interval_arith/")
-    (sound? const-decl "bool" interval_bandb "interval_arith/")
-    (minus_nzrat_is_nzrat application-judgement "nzrat" rationals nil)
-    (abs_le formula-decl nil abs_lems "reals/")
-    (vars_in_box_rec def-decl
-     "{b: bool | b = (FORALL (k: subrange(i, n - 1)): vs(k) ## nth(box, k - i))}"
-     box "interval_arith/")
-    (vars_in_box formula-decl nil box "interval_arith/")
-    (iar_332 skolem-const-decl "(brel?)" clemmas_doppler3 nil)
-    (|##| const-decl "bool" interval "interval_arith/")
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
+    (even_times_int_is_even application-judgement "even_int" integers
+     nil)
+    (mult_divides1 application-judgement "(divides(n))" divides nil)
+    (mult_divides2 application-judgement "(divides(m))" divides nil)
     (eval def-decl "real" interval_expr "interval_arith/")
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (doppler3_r_U skolem-const-decl "real" clemmas_doppler3 nil)
@@ -235,47 +269,11 @@
     (every adt-def-decl "boolean" list_adt nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
-    (listn_0 name-judgement "listn(0)" simple_bandb "interval_arith/")
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (rtos_canonicroundfun_exactrepconservation_j name-judgement
-     "{RtoF: CanonicRoundingFun(double_precision_format, dp_closest?) |
-         exact_rep_conservation[2]
-             (double_precision_format, dp_closest?)(RtoF)}" ieee754dp
-     "float/")
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (dop1 const-decl "unb_double" doppler3 nil)
-    (aebounddp_neg const-decl "nonneg_real" aerr754dp_neg "float/")
-    (- const-decl "[numfield -> numfield]" number_fields nil)
-    (aebounddp_div const-decl "nonneg_real" aerr754dp_div "float/")
-    (<= const-decl "bool" reals nil)
-    (NOT const-decl "[bool -> bool]" booleans nil)
-    (OR const-decl "[bool, bool -> bool]" booleans nil)
-    (< const-decl "bool" reals nil)
-    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
-    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
-    (= const-decl "[T, T -> boolean]" equalities nil)
-    (DtoR const-decl "real" ieee754dp "float/")
-    (Fbounded? const-decl "bool" float "float/")
-    (closest_double? const-decl "bool" ieee754dp "float/")
-    (FtoR const-decl "real" float "float/")
-    (Dmul const-decl
-     "{f: unb_double | closest_double?(FtoR(f1) * FtoR(f2))(f)}"
-     ieee754dp_mul "float/")
-    (Dadd const-decl
-     "{f: unb_double | closest_double?(FtoR(f1) + FtoR(f2))(f)}"
-     ieee754dp_add "float/")
-    (RtoD const-decl "{f: unb_double | closest_double?(x1)(f)}"
-     ieee754dp "float/")
+    (listn_0 name-judgement "listn[real](0)" simple_bandb
+     "interval_arith/")
+    (> const-decl "bool" reals nil)
+    (nnreal_plus_posreal_is_posreal application-judgement "posreal"
+     real_types nil)
     (minus_even_is_even application-judgement "even_int" integers nil)
     (minus_nzint_is_nzint application-judgement "nzint" integers nil)
     (nnreal_div_posreal_is_nnreal application-judgement "nnreal"

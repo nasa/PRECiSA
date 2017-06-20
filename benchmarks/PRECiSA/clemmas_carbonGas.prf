@@ -1,7 +1,7 @@
 (clemmas_carbonGas
  (carbonGas_c_0 0
-  (carbonGas_c_0-1 nil 3699377638
-   ("" (prove-concrete-lemma$ carbonGas_0) nil nil)
+  (carbonGas_c_0-1 nil 3706901904
+   ("" (prove-concrete-lemma$ carbonGas_0) nil)
    ((real_plus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (nzreal_times_nzreal_is_nzreal application-judgement "nzreal"
@@ -9,13 +9,27 @@
     (nzreal_div_nzreal_is_nzreal application-judgement "nzreal"
      real_types nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
-    (> const-decl "bool" reals nil)
-    (iar_287 skolem-const-decl "(brel?)" clemmas_carbonGas nil)
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (< const-decl "bool" reals nil)
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (DtoR const-decl "real" ieee754dp "float/")
+    (<= const-decl "bool" reals nil)
+    (aebounddp_sub const-decl "nonneg_real" aerr754dp_sub "float/")
+    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
+    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
+    (aebounddp_div const-decl "nonneg_real" aerr754dp_div "float/")
+    (carbonGas const-decl "unb_double" carbonGas nil)
+    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
+         nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (iar_285 skolem-const-decl "(brel?)" clemmas_carbonGas nil)
-    (iar_283 skolem-const-decl "(brel?)" clemmas_carbonGas nil)
+    (le_realorder name-judgement "RealOrder" real_orders "reals/")
     (FUN adt-constructor-decl
      "[[pre: (Precondition?), opf: [real -> real],
   {F: [Interval -> Interval] |
@@ -54,6 +68,7 @@
    (fun4?)]" IntervalExpr_adt "interval_arith/")
     (Precondition4? const-decl "bool" interval "interval_arith/")
     (Precondition3? const-decl "bool" interval "interval_arith/")
+    (Precondition2? const-decl "bool" interval "interval_arith/")
     (BREL adt-constructor-decl
      "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
@@ -106,6 +121,8 @@
      "PRECiSA/")
     (aeb_div_pre4_predondition_j name-judgement "(Precondition4?)"
      bbiasp_div "PRECiSA/")
+    (Any2_Precondition2 name-judgement "(Precondition2?)" interval
+     "interval_arith/")
     (AEB_ADD_j name-judgement
      "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
          Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
@@ -138,10 +155,9 @@
      "interval_arith/")
     (Interval type-eq-decl nil interval "interval_arith/")
     (PRED type-eq-decl nil defined_types nil)
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Any2? const-decl "bool" interval "interval_arith/")
     (Inclusion4? const-decl "bool" interval "interval_arith/")
     (Any? const-decl "bool" interval "interval_arith/")
+    (Any2? const-decl "bool" interval "interval_arith/")
     (Any3? const-decl "bool" interval "interval_arith/")
     (aeb_div_pre4 const-decl "bool" bbiaXp_div "PRECiSA/")
     (aebounddp_div_safe const-decl "real" bbiadp_div "PRECiSA/")
@@ -153,13 +169,6 @@
      "interval_arith/")
     (Ulp_dp const-decl "Interval" interval_ulp_dp "PRECiSA/")
     (Fundamental? const-decl "bool" interval "interval_arith/")
-    (<< const-decl "bool" interval "interval_arith/")
-    (posint_exp application-judgement "posint" exponentiation nil)
-    (nnrat_exp application-judgement "nnrat" exponentiation nil)
-    (posrat_exp application-judgement "posrat" exponentiation nil)
-    (posint_plus_nnint_is_posint application-judgement "posint"
-     integers nil)
-    (int_minus_int_is_int application-judgement "int" integers nil)
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
@@ -168,11 +177,22 @@
     (vars_in_box_rec def-decl
      "{b: bool | b = (FORALL (k: subrange(i, n - 1)): vs(k) ## nth(box, k - i))}"
      box "interval_arith/")
-    (iar_281 skolem-const-decl "(brel?)" clemmas_carbonGas nil)
+    (iar_201 skolem-const-decl "(brel?)" clemmas_carbonGas nil)
     (|##| const-decl "bool" interval "interval_arith/")
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (posint_exp application-judgement "posint" exponentiation nil)
+    (nnrat_exp application-judgement "nnrat" exponentiation nil)
+    (posrat_exp application-judgement "posrat" exponentiation nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
     (eval def-decl "real" interval_expr "interval_arith/")
     (beval def-decl "bool" interval_bexpr "interval_arith/")
-    (minus_odd_is_odd application-judgement "odd_int" integers nil)
     (carbonGas_r_V skolem-const-decl "real" clemmas_carbonGas nil)
     (list2array def-decl "T" array2list "structures/")
     (vars_in_box? const-decl "bool" box "interval_arith/")
@@ -220,31 +240,9 @@
     (every adt-def-decl "boolean" list_adt nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
-    (listn_0 name-judgement "listn(0)" simple_bandb "interval_arith/")
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (= const-decl "[T, T -> boolean]" equalities nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (- const-decl "[numfield -> numfield]" number_fields nil)
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (carbonGas const-decl "unb_double" carbonGas nil)
-    (aebounddp_div const-decl "nonneg_real" aerr754dp_div "float/")
-    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
-    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
-    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (aebounddp_sub const-decl "nonneg_real" aerr754dp_sub "float/")
-    (<= const-decl "bool" reals nil)
-    (DtoR const-decl "real" ieee754dp "float/")
-    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (< const-decl "bool" reals nil)
-    (OR const-decl "[bool, bool -> bool]" booleans nil)
-    (NOT const-decl "[bool -> bool]" booleans nil)
+    (listn_0 name-judgement "listn[real](0)" simple_bandb
+     "interval_arith/")
+    (> const-decl "bool" reals nil)
     (nnreal_div_posreal_is_nnreal application-judgement "nnreal"
      real_types nil)
     (mult_divides2 application-judgement "(divides(m))" divides nil)

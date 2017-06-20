@@ -1,10 +1,38 @@
 (clemmas_rigidbody2
  (rigidBody2_c_0 0
-  (rigidBody2_c_0-1 nil 3699377937
-   ("" (prove-concrete-lemma$ rigidBody2_0) nil nil)
+  (rigidBody2_c_0-1 nil 3706901904
+   ("" (prove-concrete-lemma$ rigidBody2_0) nil)
    ((real_plus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (nnreal_times_nnreal_is_nnreal application-judgement "nnreal"
+     real_types nil)
+    (<= const-decl "bool" reals nil)
+    (aebounddp_sub const-decl "nonneg_real" aerr754dp_sub "float/")
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (^ const-decl "real" exponentiation nil)
+    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
+    (rigidBody2 const-decl "unb_double" rigidbody2 nil)
+    (DtoR const-decl "real" ieee754dp "float/")
+    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
+         nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (expt_x1 formula-decl nil exponentiation nil)
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (real_le_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (le_realorder name-judgement "RealOrder" real_orders "reals/")
     (IntervalExpr type-decl nil IntervalExpr_adt "interval_arith/")
     (realorder? const-decl "bool" real_orders "reals/")
     (RealOrder type-eq-decl nil real_orders "reals/")
@@ -130,17 +158,11 @@
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
-    (minus_nzrat_is_nzrat application-judgement "nzrat" rationals nil)
-    (abs_le formula-decl nil abs_lems "reals/")
-    (minus_real_is_real application-judgement "real" reals nil)
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
     (vars_in_box_rec def-decl
      "{b: bool | b = (FORALL (k: subrange(i, n - 1)): vs(k) ## nth(box, k - i))}"
      box "interval_arith/")
     (vars_in_box formula-decl nil box "interval_arith/")
-    (iar_316 skolem-const-decl "(brel?)" clemmas_rigidbody2 nil)
+    (iar_213 skolem-const-decl "(brel?)" clemmas_rigidbody2 nil)
     (|##| const-decl "bool" interval "interval_arith/")
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posrat_exp application-judgement "posrat" exponentiation nil)
@@ -202,35 +224,8 @@
     (every adt-def-decl "boolean" list_adt nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
-    (listn_0 name-judgement "listn(0)" simple_bandb "interval_arith/")
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (expt_x1 formula-decl nil exponentiation nil)
-    (= const-decl "[T, T -> boolean]" equalities nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (- const-decl "[numfield -> numfield]" number_fields nil)
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (DtoR const-decl "real" ieee754dp "float/")
-    (rigidBody2 const-decl "unb_double" rigidbody2 nil)
-    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
-    (^ const-decl "real" exponentiation nil)
-    (OR const-decl "[bool, bool -> bool]" booleans nil)
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
-    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (aebounddp_sub const-decl "nonneg_real" aerr754dp_sub "float/")
-    (<= const-decl "bool" reals nil)
-    (nnreal_times_nnreal_is_nnreal application-judgement "nnreal"
-     real_types nil)
+    (listn_0 name-judgement "listn[real](0)" simple_bandb
+     "interval_arith/")
     (posrat_div_posrat_is_posrat application-judgement "posrat"
      rationals nil)
     (int_minus_int_is_int application-judgement "int" integers nil)
@@ -262,265 +257,5 @@
     (double_precision_format const-decl "Format" ieee754dp "float/")
     (unb_double type-eq-decl nil ieee754dp "float/")
     (rigidBody2_0 formula-decl nil cert_rigidbody2 nil))
-   shostak))
- (rigidBody2_c_1 0
-  (rigidBody2_c_1-1 nil 3699377937
-   ("" (prove-concrete-lemma$ rigidBody2_1) nil nil)
-   ((real_plus_real_is_real application-judgement "real" reals nil)
-    (real_times_real_is_real application-judgement "real" reals nil)
-    (real_minus_real_is_real application-judgement "real" reals nil)
-    (<= const-decl "bool" reals nil)
-    (aebounddp_sub const-decl "nonneg_real" aerr754dp_sub "float/")
-    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (aebounddp_add const-decl "nonneg_real" aerr754dp_add "float/")
-    (aebounddp_mul const-decl "nonneg_real" aerr754dp_mul "float/")
-    (rigidBody2 const-decl "unb_double" rigidbody2 nil)
-    (DtoR const-decl "real" ieee754dp "float/")
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (- const-decl "[numfield -> numfield]" number_fields nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (= const-decl "[T, T -> boolean]" equalities nil)
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (listn_0 name-judgement "listn(0)" simple_bandb "interval_arith/")
-    (Maybe type-decl nil Maybe "structures/")
-    (list type-decl nil list_adt nil)
-    (every adt-def-decl "boolean" list_adt nil)
-    (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (bnot? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (band? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (bor? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (bimplies? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (bincludes? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (bite? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (bletin? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (BoolExpr type-eq-decl nil IntervalExpr_adt "interval_arith/")
-    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
-    (cons? adt-recognizer-decl "[list -> boolean]" list_adt nil)
-    (some? adt-recognizer-decl "[Maybe -> boolean]" Maybe
-     "structures/")
-    (NOT const-decl "[bool -> bool]" booleans nil)
-    (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
-    (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
-    (Box type-eq-decl nil box "interval_arith/")
-    (ProperBox? const-decl "bool" box "interval_arith/")
-    (ProperBox type-eq-decl nil box "interval_arith/")
-    (DirVar type-eq-decl nil branch_and_bound "structures/")
-    (stack type-eq-decl nil stack "structures/")
-    (length def-decl "nat" list_props nil)
-    (DirVarStack type-eq-decl nil branch_and_bound "structures/")
-    (DirVarSelector type-eq-decl nil branch_and_bound "structures/")
-    (Output type-eq-decl nil branch_and_bound "structures/")
-    (interval const-decl "Output" interval_bandb "interval_arith/")
-    (alt_max const-decl "DirVar" gbandb_boolexpr "interval_arith/")
-    (cons adt-constructor-decl "[[T, list] -> (cons?)]" list_adt nil)
-    ([\|\|] const-decl "Interval" interval "interval_arith/")
-    (null? adt-recognizer-decl "[list -> boolean]" list_adt nil)
-    (null adt-constructor-decl "(null?)" list_adt nil)
-    (Some adt-constructor-decl "[T -> (some?)]" Maybe "structures/")
-    (FALSE const-decl "bool" booleans nil)
-    (Env type-eq-decl nil box "interval_arith/")
-    (vars_in_box? const-decl "bool" box "interval_arith/")
-    (list2array def-decl "T" array2list "structures/")
-    (rigidbody2_r_X1 skolem-const-decl "real" clemmas_rigidbody2 nil)
-    (rigidbody2_r_X3 skolem-const-decl "real" clemmas_rigidbody2 nil)
-    (rigidbody2_r_X2 skolem-const-decl "real" clemmas_rigidbody2 nil)
-    (beval def-decl "bool" interval_bexpr "interval_arith/")
-    (eval def-decl "real" interval_expr "interval_arith/")
-    (mult_divides2 application-judgement "(divides(m))" divides nil)
-    (mult_divides1 application-judgement "(divides(n))" divides nil)
-    (even_times_int_is_even application-judgement "even_int" integers
-     nil)
-    (posint_plus_nnint_is_posint application-judgement "posint"
-     integers nil)
-    (posrat_exp application-judgement "posrat" exponentiation nil)
-    (nnrat_exp application-judgement "nnrat" exponentiation nil)
-    (posint_exp application-judgement "posint" exponentiation nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (|##| const-decl "bool" interval "interval_arith/")
-    (iar_319 skolem-const-decl "(brel?)" clemmas_rigidbody2 nil)
-    (vars_in_box formula-decl nil box "interval_arith/")
-    (vars_in_box_rec def-decl
-     "{b: bool | b = (FORALL (k: subrange(i, n - 1)): vs(k) ## nth(box, k - i))}"
-     box "interval_arith/")
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (minus_real_is_real application-judgement "real" reals nil)
-    (abs_le formula-decl nil abs_lems "reals/")
-    (minus_nzrat_is_nzrat application-judgement "nzrat" rationals nil)
-    (sound? const-decl "bool" interval_bandb "interval_arith/")
-    (interval_soundness formula-decl nil interval_bandb
-     "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_dp const-decl "Interval" interval_ulp_dp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_SUB_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aebounddp_sub_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiadp_sub "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aebounddp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiadp_add "PRECiSA/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aebounddp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiadp_mul "PRECiSA/")
-    (Ulp_dp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_dp))"
-     interval_ulp_dp "PRECiSA/")
-    (Ulp_dp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_dp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
-    (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
-     IntervalExpr_adt "interval_arith/")
-    (aebounddp_mul_ia const-decl "Interval" bbiadp_mul "PRECiSA/")
-    (aebounddp_mul_safe const-decl "real" bbiadp_mul "PRECiSA/")
-    (aebounddp_add_ia const-decl "Interval" bbiadp_add "PRECiSA/")
-    (aebounddp_add_safe const-decl "real" bbiadp_add "PRECiSA/")
-    (X const-decl "RealExpr" interval_expr "interval_arith/")
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
-     IntervalExpr_adt "interval_arith/")
-    (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
-     IntervalExpr_adt "interval_arith/")
-    (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
-     IntervalExpr_adt "interval_arith/")
-    (aebounddp_sub_ia const-decl "Interval" bbiadp_sub "PRECiSA/")
-    (aebounddp_sub_safe const-decl "real" bbiadp_sub "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (BREL adt-constructor-decl
-     "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
-     "interval_arith/")
-    (brel? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (RealExpr type-eq-decl nil IntervalExpr_adt "interval_arith/")
-    (fun4? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (letin? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (fun2? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (fun? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (div? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (pow? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (sq? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (mult? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (sub? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (neg? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (abs? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (add? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (varidx? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (const? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (OR const-decl "[bool, bool -> bool]" booleans nil)
-    (RealOrder type-eq-decl nil real_orders "reals/")
-    (realorder? const-decl "bool" real_orders "reals/")
-    (IntervalExpr type-decl nil IntervalExpr_adt "interval_arith/")
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil)
-    (int_minus_int_is_int application-judgement "int" integers nil)
-    (nnreal_div_posreal_is_nnreal application-judgement "nnreal"
-     real_types nil)
-    (minus_odd_is_odd application-judgement "odd_int" integers nil)
-    (ulp_dp const-decl "nonneg_real" ieee754dp "float/")
-    (/ const-decl "[numfield, nznum -> numfield]" number_fields nil)
-    (nznum nonempty-type-eq-decl nil number_fields nil)
-    (/= const-decl "boolean" notequal nil)
-    (numfield nonempty-type-eq-decl nil number_fields nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (>= const-decl "bool" reals nil)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (float type-eq-decl nil float "float/")
-    (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (above nonempty-type-eq-decl nil integers nil)
-    (Format type-eq-decl nil float "float/")
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (Fcanonic? const-decl "bool" float "float/")
-    (double_precision_format const-decl "Format" ieee754dp "float/")
-    (unb_double type-eq-decl nil ieee754dp "float/")
-    (rigidBody2_1 formula-decl nil cert_rigidbody2 nil))
    shostak)))
 
