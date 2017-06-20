@@ -14,19 +14,8 @@ AND (((((turbine1_r_R * turbine1_r_R) /= 0) AND (DtoR(Dmul(R, R)) /= 0)) AND (((
 AND TRUE
 AND turbine1_r_V ## [|-4.5,0.3|] AND  turbine1_r_W ## [|0.4,0.9|] AND  turbine1_r_R ## [|3.8,7.8|]
 IMPLIES
-abs(DtoR(turbine1(V, W, R)) - ((((3 + 2) / (turbine1_r_R * turbine1_r_R)) - ((((1 / 8) * (3 - (2 * turbine1_r_V))) * (turbine1_r_W * (turbine1_r_W * (turbine1_r_R * turbine1_r_R)))) / (1 - turbine1_r_V))) - -9 / 2))<= 28281257526257441301220940493925381515774282201210231219305201142736219545715880416561101046760869638497711/959818014627438032449005940384504364589733380781285906709149447779494509886128145896333666544171101094034376109326336000
+abs(DtoR(turbine1(V, W, R)) - ((((3 + 2) / (turbine1_r_R * turbine1_r_R)) - ((((1 / 8) * (3 - (2 * turbine1_r_V))) * (turbine1_r_W * (turbine1_r_W * (turbine1_r_R * turbine1_r_R)))) / (1 - turbine1_r_V))) - -9 / 2))<= 486500997741402987441331370522477779619656720694337074854202010624415605865152535457260862281611788004270121/20915388383707605296244978659509368984009342613597454738150775597489061227793295951096808778463911120150996304034109849600
  %|- turbine1_c_0 : PROOF 
  %|-   (prove-concrete-lemma$ turbine1_0) 
- %|- QED 
-turbine1_c_1 : LEMMA
-FORALL(turbine1_r_V, turbine1_r_W, turbine1_r_R: real, V, W, R: unb_double):
-abs(DtoR(V) - turbine1_r_V)<=ulp_dp(turbine1_r_V)/2 AND abs(DtoR(W) - turbine1_r_W)<=ulp_dp(turbine1_r_W)/2 AND abs(DtoR(R) - turbine1_r_R)<=ulp_dp(turbine1_r_R)/2
-AND (((((turbine1_r_R * turbine1_r_R) /= 0) AND (DtoR(Dmul(R, R)) /= 0)) AND ((((turbine1_r_R * turbine1_r_R) + aebounddp_mul(turbine1_r_R, ulp_dp(turbine1_r_R)/2, turbine1_r_R, ulp_dp(turbine1_r_R)/2)) < 0) OR (((turbine1_r_R * turbine1_r_R) - aebounddp_mul(turbine1_r_R, ulp_dp(turbine1_r_R)/2, turbine1_r_R, ulp_dp(turbine1_r_R)/2)) > 0))) AND ((((1 >= (ieee754dp_prec - Fexp(V))) AND ((1 - turbine1_r_V) /= 0)) AND (DtoR(Dsub(RtoD(1), V)) /= 0)) AND ((((1 - turbine1_r_V) + aebounddp_sub(1, 0, turbine1_r_V, ulp_dp(turbine1_r_V)/2)) < 0) OR (((1 - turbine1_r_V) - aebounddp_sub(1, 0, turbine1_r_V, ulp_dp(turbine1_r_V)/2)) > 0))))
-AND TRUE
-AND turbine1_r_V ## [|-4.5,0.3|] AND  turbine1_r_W ## [|0.4,0.9|] AND  turbine1_r_R ## [|3.8,7.8|]
-IMPLIES
-abs(DtoR(turbine1(V, W, R)) - ((((3 + 2) / (turbine1_r_R * turbine1_r_R)) - ((((1 / 8) * (3 - (2 * turbine1_r_V))) * (turbine1_r_W * (turbine1_r_W * (turbine1_r_R * turbine1_r_R)))) / (1 - turbine1_r_V))) - -9 / 2))<= 14425301723891565208036511589107113756788401174021026668487515176562039203281183845783653186978708775767507/479909007313719016224502970192252182294866690390642953354574723889747254943064072948166833272085550547017188054663168000
- %|- turbine1_c_1 : PROOF 
- %|-   (prove-concrete-lemma$ turbine1_1) 
  %|- QED 
 END clemmas_turbine1 

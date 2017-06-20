@@ -1,10 +1,10 @@
 (cert_doppler3
  (dop1_0_TCC1 0
-  (dop1_0_TCC1-1 nil 3699198022 ("" (precisa-gen-cert-tcc) nil nil)
+  (dop1_0_TCC1-1 nil 3706901668 ("" (precisa-gen-cert-tcc) nil)
    ((real_minus_real_is_real application-judgement "real" reals nil))
    nil))
  (dop1_0_TCC2 0
-  (dop1_0_TCC2-1 nil 3699452949 ("" (precisa-gen-cert-tcc) nil nil)
+  (dop1_0_TCC2-1 nil 3706901668 ("" (precisa-gen-cert-tcc) nil)
    ((times_div1 formula-decl nil real_props nil)
     (div_times formula-decl nil real_props nil)
     (add_div formula-decl nil real_props nil)
@@ -54,7 +54,7 @@
      real_types nil))
    nil))
  (dop1_0 0
-  (dop1_0-1 nil 3699198047
+  (dop1_0-1 nil 3706901903
    (""
     (then (skeep) (expand "dop1" :assert? none) (try-simp-ite)
      (then (lemma "Ddiv_aerr")
@@ -275,7 +275,7 @@
                    (assert-condition))))))
              (assert-condition)))
            (assert-condition)))))))
-    nil nil)
+    nil)
    ((real_div_nzreal_is_real application-judgement "real" reals nil)
     (minus_real_is_real application-judgement "real" reals nil)
     (real_plus_real_is_real application-judgement "real" reals nil)
