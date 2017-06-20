@@ -113,33 +113,34 @@ get the time PRECiSA takes to generate concrete bounds in PVSio,
 without incurring in the type-checking time penalty for every example,
 PVSio needs to be run in interactive mode as follows.
 
-* Run PVS.
+1. Run PVS.
 
-* Load the file `clgen_<example>.pvs` into PVS .
+1. Load the file `clgen_<example>.pvs` into PVS .
 
-* Type-ccheck the file (M-x typecheck). The step for the first example
+1. Type-ccheck the file (M-x typecheck). The step for the first example
  take much longer than the other, since it has to type-check the
  PRECiSA framework.
 
-* Open PVSio, e.g., issue the following Emacs command `M-x pvsio`
+1. Open PVSio, e.g., issue the following Emacs command `M-x pvsio`
 
-* In the PVSio read-eval loop, type 
+1. In the PVSio read-eval loop, type 
 ```
 PVSio> timing;
 ```
-* In the PVSio read-eval loop, type
+
+1. In the PVSio read-eval loop, type
 ```
 PVSio> main;
 ```
 
-* Record the time reported by PVSio labeled `real time`.
+1. Record the time reported by PVSio labeled `real time`.
 
-* In the PVSio read-eval loop, type
+1. In the PVSio read-eval loop, type
 ```
 PVSio> exit;
 ```
 
-* Go to 2, but load another example. In this case, type-checking will take significantly less time.
+1. Go to 2, but load another example. In this case, type-checking will take significantly less time.
 
 License
 -------
