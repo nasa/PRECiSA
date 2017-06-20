@@ -127,12 +127,10 @@ PVSio needs to be run in interactive mode as follows.
 ```
 PVSio> timing;
 ```
-
 1. In the PVSio read-eval loop, type
 ```
 PVSio> main;
 ```
-
 1. Record the time reported by PVSio labeled `real time`.
 
 1. In the PVSio read-eval loop, type
