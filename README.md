@@ -124,21 +124,21 @@ PVSio needs to be run in interactive mode as follows.
 1. Open PVSio, e.g., issue the following Emacs command `M-x pvsio`.
 
 1. In the PVSio read-eval loop, type 
-  ```
-  PVSio> timing;
-  ```
+    ```	
+    PVSio> timing;
+    ```	
 
 1. In the PVSio read-eval loop, type
-  ```
-  PVSio> main;
-  ```
+    ```	
+    PVSio> main;
+    ```	
 
 1. Record the time reported by PVSio labeled `real time`.
 
 1. In the PVSio read-eval loop, type
-  ```
-  PVSio> exit;
-  ```
+    ```	
+    PVSio> exit;
+    ```	
 
 1. Load another example. In this case, type-checking will take significantly less time.
 
