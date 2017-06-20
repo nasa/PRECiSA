@@ -117,8 +117,8 @@ PVSio needs to be run in interactive mode as follows.
 
 1. Load the file `clgen_<example>.pvs` into PVS .
 
-1. Type-ccheck the file (M-x typecheck). The step for the first example
- take much longer than the other, since it has to type-check the
+1. Type-check the file (M-x typecheck). For the first example, this step
+ takes much longer than the others, since it has to type-check the
  PRECiSA framework.
 
 1. Open PVSio, e.g., issue the following Emacs command `M-x pvsio`.
