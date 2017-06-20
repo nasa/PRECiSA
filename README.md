@@ -121,24 +121,26 @@ PVSio needs to be run in interactive mode as follows.
  take much longer than the other, since it has to type-check the
  PRECiSA framework.
 
-1. Open PVSio, e.g., issue the following Emacs command `M-x pvsio`
+1. Open PVSio, e.g., issue the following Emacs command `M-x pvsio`.
 
 1. In the PVSio read-eval loop, type 
-```
+  ```
 PVSio> timing;
-```
+  ```
+
 1. In the PVSio read-eval loop, type
-```
+  ```
 PVSio> main;
-```
+  ```
+
 1. Record the time reported by PVSio labeled `real time`.
 
 1. In the PVSio read-eval loop, type
-```
+  ```
 PVSio> exit;
-```
+  ```
 
-1. Go to 2, but load another example. In this case, type-checking will take significantly less time.
+1. Load another example. In this case, type-checking will take significantly less time.
 
 License
 -------
