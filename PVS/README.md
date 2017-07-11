@@ -25,7 +25,7 @@ To re-prove the PVS PRECiSA development and the provided examples `CD2D_tau`
 and `CPR`, type the following command in a Unix shell.
 
 ```
-$ provethem all-theories
+$ provethem
 ```
 
 The output of that command is

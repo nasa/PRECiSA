@@ -1,4 +1,5 @@
 # Program Round-off Error Certifier via Static Analysis
+: --log --dir summaries
 PRECiSA
 # The following directories contain examples of PRECiSA generated PVS theories
 CD2D_tau # 2-D air traffic conflict detection 

@@ -1,3 +1,33 @@
+(defparameter *precisa-builtin*
+  '(;; Single floating-point operations require PRECiSA@bbiasp.PrecisaSP__
+    ("ulp_sp" "interval_ulp_sp.ULP_SP" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_add" "bbiasp_add.AEB_ADD" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_sub" "bbiasp_sub.AEB_SUB" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_mul" "bbiasp_mul.AEB_MUL" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_div" "bbiasp_div.AEB_DIV" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_flr" "bbiasp_flr.AEB_FLR" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_flr_t" "bbiasp_flr_t.AEB_FLR_T" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_sqt" "bbiasp_sqt.AEB_SQT" "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_sin" ("bbiasp_sin.AEB_SIN") "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_cos" ("bbiasp_cos.AEB_COS") "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_atn" ("bbiasp_atn.AEB_ATN") "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_atn_t" ("bbiasp_atn_t.AEB_ATN_T") "PRECiSA@bbiasp.PrecisaSP__")
+    ("aeboundsp_neg" "bbiasp_neg.AEB_NEG" "PRECiSA@bbiasp.PrecisaSP__")
+    ;; Double floating-point operations require PRECiSA@bbiadp.PrecisaDP__
+    ("ulp_dp" "interval_ulp_dp.ULP_DP" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_add" "bbiadp_add.AEB_ADD" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_sub" "bbiadp_sub.AEB_SUB" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_mul" "bbiadp_mul.AEB_MUL" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_div" "bbiadp_div.AEB_DIV" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_flr" "bbiadp_flr.AEB_FLR" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_flr_t" "bbiadp_flr_t.AEB_FLR_T" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_sqt" "bbiadp_sqt.AEB_SQT" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_sin" ("bbiadp_sin.AEB_SIN") "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_cos" ("bbiadp_cos.AEB_COS") "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_atn" ("bbiadp_atn.AEB_ATN") "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_atn_t" ("bbiadp_atn_t.AEB_ATN_T") "PRECiSA@bbiadp.PrecisaDP__")
+    ("aebounddp_neg" "bbiadp_neg.AEB_NEG" "PRECiSA@bbiadp.PrecisaDP__")))
+
 (defun unconj-expr-rec (expr)
   (if (is-infix-operator expr 'AND)
       (append (unconj-expr-rec (args1 expr))
@@ -288,22 +318,24 @@
   "Applying lemmas: ~%~{~a~%~}")
 
 (defstep connect-ineqs__ (fnum1 fnum2 &optional (precision 3) maxdepth)
-  (with-fresh-labels ((l1 fnum1) (l2 fnum2))
-   (spread
-   (with-tccs (invoke (case "%1 <= %2") (! l1 2) (! l2 2)))
-   ((then
-     (with-fresh-names ((freshname (! l1 1))) (assert))
+  (let ((subs *precisa-builtin*))
+    (with-fresh-labels
+     ((l1 fnum1) (l2 fnum2))
+     (spread
+      (with-tccs (invoke (case "%1 <= %2") (! l1 2) (! l2 2)))
+      ((then
+	(with-fresh-names ((freshname (! l1 1))) (assert))
 	;; if the replace didn't close the branch, then is useless to try to 
 	;; close the rest of the branches.
-     (fail))
-    (then
-     (let ((forms (loop for fnum in (map-fnums-arg *)
-			when (let ((form (manip-get-formula fnum)))
-			       (and (infix-application? form)
-				    (eq (id (operator form)) '|##|)))
-			collect fnum)) (forms (cons 1 forms)))
-       (hide-all-but forms))
-     (interval :precision precision :maxdepth maxdepth)))))
+	(fail))
+       (then
+	(let ((forms (loop for fnum in (map-fnums-arg *)
+			   when (let ((form (manip-get-formula fnum)))
+				  (and (infix-application? form)
+				       (eq (id (operator form)) '|##|)))
+			   collect fnum)) (forms (cons 1 forms)))
+	  (hide-all-but forms))
+	(interval :subs subs :precision precision :maxdepth maxdepth))))))
   "[PRECiSA] Try to close a branch introducing an explicit link in the transitivity of an inequality."
   "Closing branch using transitivity of <=.")
 
