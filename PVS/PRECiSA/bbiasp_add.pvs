@@ -43,7 +43,7 @@ BEGIN
                    AND Fundamental4?( Any?, pre1to2b(NonNeg?), Any3?,
 		       		      pre1to4d(NonNeg?) ) (F)}
 
-  AEB_ADD(re1,re2,re3,re4): MACRO RealExpr =
+  AEB_ADD(re1,re2,re3,re4): RealExpr =
     FUN4(Any?,pre1to2b(NonNeg?),Any3?,pre1to4d(NonNeg?),
 	 aeboundsp_add_safe,
 	 aeboundsp_add_ia,

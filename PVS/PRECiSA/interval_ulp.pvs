@@ -55,6 +55,6 @@ BEGIN
     
   IMPORTING interval_expr
  
-  ULP(expr: RealExpr): MACRO RealExpr = FUN(PreTrue,ulp,Ulp,expr)
+  ULP(expr: RealExpr): RealExpr = FUN(PreTrue,ulp,Ulp,expr)
 
 END interval_ulp

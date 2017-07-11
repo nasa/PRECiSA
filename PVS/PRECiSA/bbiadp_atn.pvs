@@ -31,7 +31,7 @@ BEGIN
     aebounddp_atn_ia(n)
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
 
-  AEB_ATN(n)(re1,re2): MACRO RealExpr =
+  AEB_ATN(n)(re1,re2): RealExpr =
     FUN2(Any?,
          pre1to2b(NonNeg?),
 	 aebounddp_atn_safe,

@@ -1,5 +1,31 @@
 (defparameter *precisa-builtin*
   '(;; Single floating-point operations require PRECiSA@bbiasp.PrecisaSP__
+    ("*expand*" ("interval_ulp_sp.ULP_SP"
+		 "bbiasp_add.AEB_ADD"
+		 "bbiasp_sub.AEB_SUB"
+		 "bbiasp_mul.AEB_MUL"
+		 "bbiasp_div.AEB_DIV"
+		 "bbiasp_flr.AEB_FLR"
+		 "bbiasp_flr_t.AEB_FLR_T"
+		 "bbiasp_sqt.AEB_SQT"
+		 "bbiasp_sin.AEB_SIN"
+		 "bbiasp_cos.AEB_COS"
+		 "bbiasp_atn.AEB_ATN"
+		 "bbiasp_atn_t.AEB_ATN_T"
+		 "bbiasp_neg.AEB_NEG"
+		 "interval_ulp_dp.ULP_DP"
+		 "bbiadp_add.AEB_ADD"
+		 "bbiadp_sub.AEB_SUB"
+		 "bbiadp_mul.AEB_MUL"
+		 "bbiadp_div.AEB_DIV"
+		 "bbiadp_flr.AEB_FLR"
+		 "bbiadp_flr_t.AEB_FLR_T"
+		 "bbiadp_sqt.AEB_SQT"
+		 "bbiadp_sin.AEB_SIN"
+		 "bbiadp_cos.AEB_COS"
+		 "bbiadp_atn.AEB_ATN"
+		 "bbiadp_atn_t.AEB_ATN_T"
+		 "bbiadp_neg.AEB_NEG"))
     ("ulp_sp" "interval_ulp_sp.ULP_SP" "PRECiSA@bbiasp.PrecisaSP__")
     ("aeboundsp_add" "bbiasp_add.AEB_ADD" "PRECiSA@bbiasp.PrecisaSP__")
     ("aeboundsp_sub" "bbiasp_sub.AEB_SUB" "PRECiSA@bbiasp.PrecisaSP__")
@@ -27,6 +53,22 @@
     ("aebounddp_atn" ("bbiadp_atn.AEB_ATN") "PRECiSA@bbiadp.PrecisaDP__")
     ("aebounddp_atn_t" ("bbiadp_atn_t.AEB_ATN_T") "PRECiSA@bbiadp.PrecisaDP__")
     ("aebounddp_neg" "bbiadp_neg.AEB_NEG" "PRECiSA@bbiadp.PrecisaDP__")))
+
+(defstrat precisa (&optional 
+		   (fnums 1) (precision 3) maxdepth sat?
+		   vars 
+		   dirvar
+		   verbose?
+		   label
+		   (equiv? t)
+		   (tccs? t))
+  (let ((subs *precisa-builtin*))
+    (interval :fnums fnums :precision precision :maxdepth maxdepth
+	      :sat? sat? :vars vars :subs subs :dirvar dirvar
+	      :verbose? verbose? :label label :equiv? equiv? :tccs? tccs?))
+  "[PRECiSA] Interval strategy for PRECiSA")
+  
+
 
 (defun unconj-expr-rec (expr)
   (if (is-infix-operator expr 'AND)
@@ -318,24 +360,23 @@
   "Applying lemmas: ~%~{~a~%~}")
 
 (defstep connect-ineqs__ (fnum1 fnum2 &optional (precision 3) maxdepth)
-  (let ((subs *precisa-builtin*))
-    (with-fresh-labels
-     ((l1 fnum1) (l2 fnum2))
-     (spread
-      (with-tccs (invoke (case "%1 <= %2") (! l1 2) (! l2 2)))
-      ((then
-	(with-fresh-names ((freshname (! l1 1))) (assert))
-	;; if the replace didn't close the branch, then is useless to try to 
-	;; close the rest of the branches.
-	(fail))
-       (then
-	(let ((forms (loop for fnum in (map-fnums-arg *)
-			   when (let ((form (manip-get-formula fnum)))
-				  (and (infix-application? form)
-				       (eq (id (operator form)) '|##|)))
-			   collect fnum)) (forms (cons 1 forms)))
-	  (hide-all-but forms))
-	(interval :subs subs :precision precision :maxdepth maxdepth))))))
+  (with-fresh-labels
+   ((l1 fnum1) (l2 fnum2))
+   (spread
+    (with-tccs (invoke (case "%1 <= %2") (! l1 2) (! l2 2)))
+    ((then
+      (with-fresh-names ((freshname (! l1 1))) (assert))
+      ;; if the replace didn't close the branch, then is useless to try to 
+      ;; close the rest of the branches.
+      (fail))
+     (then
+      (let ((forms (loop for fnum in (map-fnums-arg *)
+			 when (let ((form (manip-get-formula fnum)))
+				(and (infix-application? form)
+				     (eq (id (operator form)) '|##|)))
+			 collect fnum)) (forms (cons 1 forms)))
+	(hide-all-but forms))
+      (precisa :precision precision :maxdepth maxdepth)))))
   "[PRECiSA] Try to close a branch introducing an explicit link in the transitivity of an inequality."
   "Closing branch using transitivity of <=.")
 

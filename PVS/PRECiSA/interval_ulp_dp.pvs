@@ -28,6 +28,6 @@ BEGIN
   Ulp_dp_Fundamental : JUDGEMENT
     Ulp_dp HAS_TYPE (Fundamental?(PreTrue))
   
-  ULP_DP(expr: RealExpr): MACRO RealExpr = FUN(PreTrue,ulp_dp, Ulp_dp, expr)
+  ULP_DP(expr: RealExpr): RealExpr = FUN(PreTrue,ulp_dp, Ulp_dp, expr)
 
 END interval_ulp_dp

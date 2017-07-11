@@ -39,7 +39,7 @@ BEGIN
     aebounddp_atn_t_ia(n)
     HAS_TYPE (Fundamental2?(Any?,aeb_atn_t_pre2))
 
-  AEB_ATN_T(n)(re1,re2): MACRO RealExpr =
+  AEB_ATN_T(n)(re1,re2): RealExpr =
     FUN2(Any?,
          aeb_atn_t_pre2,
 	 aebounddp_atn_t_safe,

@@ -32,7 +32,7 @@ BEGIN
     aebounddp_sin_ia(n)
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
 
-  AEB_SIN(n)(re1,re2): MACRO RealExpr =
+  AEB_SIN(n)(re1,re2): RealExpr =
     FUN2(Any?,
          pre1to2b(NonNeg?),
 	 aebounddp_sin_safe,

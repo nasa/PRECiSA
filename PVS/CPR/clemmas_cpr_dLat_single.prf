@@ -36,121 +36,55 @@
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
     (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
-    (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
-     IntervalExpr_adt "interval_arith/")
-    (aeboundsp_sub_ia const-decl "Interval" bbiasp_sub "PRECiSA/")
-    (aeboundsp_sub_safe const-decl "real" bbiasp_sub "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (X const-decl "RealExpr" interval_expr "interval_arith/")
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
-     IntervalExpr_adt "interval_arith/")
-    (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (BREL adt-constructor-decl
-     "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
-     "interval_arith/")
-    (brel? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (RealExpr type-eq-decl nil IntervalExpr_adt "interval_arith/")
-    (fun4? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (letin? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (fun2? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (fun? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (div? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (pow? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (sq? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (mult? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (sub? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (neg? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (abs? adt-recognizer-decl "[IntervalExpr -> boolean]"
-     IntervalExpr_adt "interval_arith/")
-    (add? adt-recognizer-decl "[IntervalExpr -> boolean]"
+    (IntervalExpr type-decl nil IntervalExpr_adt "interval_arith/")
+    (realorder? const-decl "bool" real_orders "reals/")
+    (RealOrder type-eq-decl nil real_orders "reals/")
+    (const? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
     (varidx? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
-    (const? adt-recognizer-decl "[IntervalExpr -> boolean]"
+    (add? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
-    (RealOrder type-eq-decl nil real_orders "reals/")
-    (realorder? const-decl "bool" real_orders "reals/")
-    (IntervalExpr type-decl nil IntervalExpr_adt "interval_arith/")
-    (TRUE const-decl "bool" booleans nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (bijective? const-decl "bool" functions nil)
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_SUB_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_sub_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_sub "PRECiSA/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
+    (abs? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (neg? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (sub? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (mult? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (sq? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (pow? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (div? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (fun? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (fun2? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (letin? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (fun4? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (RealExpr type-eq-decl nil IntervalExpr_adt "interval_arith/")
+    (brel? adt-recognizer-decl "[IntervalExpr -> boolean]"
+     IntervalExpr_adt "interval_arith/")
+    (BREL adt-constructor-decl
+     "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
-    (AEB_DIV_inclusion_j name-judgement
-     "(Inclusion4?(Any?, Any2?, Any3?, aeb_div_pre4, aeboundsp_div_safe))"
-     bbiasp_div "PRECiSA/")
-    (AEB_DIV_fundmental_j name-judgement
-     "(Fundamental4?(Any?, Any2?, Any3?, aeb_div_pre4))" bbiasp_div
-     "PRECiSA/")
-    (aeb_div_pre4_predondition_j name-judgement "(Precondition4?)"
-     bbiasp_div "PRECiSA/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (Any2_Precondition2 name-judgement "(Precondition2?)" interval
-     "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (Any2? const-decl "bool" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (aeb_div_pre4 const-decl "bool" bbiaXp_div "PRECiSA/")
-    (aeboundsp_div_safe const-decl "real" bbiasp_div "PRECiSA/")
-    (aeboundsp_div_ia const-decl "Interval" bbiasp_div "PRECiSA/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
+    (AEB_DIV const-decl "RealExpr" bbiasp_div "PRECiSA/")
+    (r2E const-decl "RealExpr" interval_expr "interval_arith/")
+    (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
+     IntervalExpr_adt "interval_arith/")
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (X const-decl "RealExpr" interval_expr "interval_arith/")
+    (AEB_SUB const-decl "RealExpr" bbiasp_sub "PRECiSA/")
+    (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
+     IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
@@ -164,6 +98,8 @@
     (real_lt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
     (lt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (aeboundsp_sub_safe const-decl "real" bbiasp_sub "PRECiSA/")
+    (aeboundsp_div_safe const-decl "real" bbiasp_div "PRECiSA/")
     (real_plus_real_is_real application-judgement "real" reals nil)
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
@@ -202,6 +138,7 @@
     (ProperBox type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (some? adt-recognizer-decl "[Maybe -> boolean]" Maybe
@@ -226,10 +163,14 @@
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
     (every adt-def-decl "boolean" list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
+    (bijective? const-decl "bool" functions nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (TRUE const-decl "bool" booleans nil)
     (> const-decl "bool" reals nil)
     (posreal_plus_nnreal_is_posreal application-judgement "posreal"
      real_types nil)

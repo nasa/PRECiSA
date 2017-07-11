@@ -2,10 +2,14 @@
  (max_c_0 0
   (max_c_0-1 nil 3700238757 ("" (prove-concrete-lemma$ max_0) nil nil)
    ((real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -31,6 +35,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -64,32 +69,12 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -179,10 +164,14 @@
  (max_c_1 0
   (max_c_1-1 nil 3700238757 ("" (prove-concrete-lemma$ max_1) nil nil)
    ((real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -208,6 +197,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -241,32 +231,12 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -356,10 +326,14 @@
  (max_c_2 0
   (max_c_2-1 nil 3700238757 ("" (prove-concrete-lemma$ max_2) nil nil)
    ((real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -385,6 +359,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -420,21 +395,6 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
@@ -444,12 +404,7 @@
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
@@ -545,10 +500,14 @@
  (max_c_3 0
   (max_c_3-1 nil 3700238757 ("" (prove-concrete-lemma$ max_3) nil nil)
    ((real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -574,6 +533,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -609,21 +569,6 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
@@ -633,12 +578,7 @@
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
@@ -782,32 +722,12 @@
      "interval_arith/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (TRUE const-decl "bool" booleans nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (bijective? const-decl "bool" functions nil)
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
@@ -841,6 +761,7 @@
     (ProperBox type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (NOT const-decl "[bool -> bool]" booleans nil)
@@ -866,10 +787,14 @@
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
     (every adt-def-decl "boolean" list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
+    (bijective? const-decl "bool" functions nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (TRUE const-decl "bool" booleans nil)
     (le_realorder name-judgement "RealOrder" real_orders "reals/")
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
@@ -958,32 +883,12 @@
      "interval_arith/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (TRUE const-decl "bool" booleans nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (bijective? const-decl "bool" functions nil)
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
@@ -1017,6 +922,7 @@
     (ProperBox type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (NOT const-decl "[bool -> bool]" booleans nil)
@@ -1042,10 +948,14 @@
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
     (every adt-def-decl "boolean" list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
+    (bijective? const-decl "bool" functions nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (TRUE const-decl "bool" booleans nil)
     (le_realorder name-judgement "RealOrder" real_orders "reals/")
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
@@ -1144,12 +1054,7 @@
      IntervalExpr_adt "interval_arith/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (integer_pred const-decl "[rational -> boolean]" integers nil)
@@ -1159,21 +1064,6 @@
      "interval_arith/")
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
-    (TRUE const-decl "bool" booleans nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (bijective? const-decl "bool" functions nil)
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
@@ -1209,6 +1099,7 @@
     (ProperBox type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (NOT const-decl "[bool -> bool]" booleans nil)
@@ -1234,10 +1125,14 @@
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
     (every adt-def-decl "boolean" list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
+    (bijective? const-decl "bool" functions nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (TRUE const-decl "bool" booleans nil)
     (nnreal_plus_nnreal_is_nnreal application-judgement "nnreal"
      real_types nil)
     (minus_even_is_even application-judgement "even_int" integers nil)
@@ -1332,12 +1227,7 @@
      IntervalExpr_adt "interval_arith/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (integer_pred const-decl "[rational -> boolean]" integers nil)
@@ -1347,21 +1237,6 @@
      "interval_arith/")
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
-    (TRUE const-decl "bool" booleans nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (bijective? const-decl "bool" functions nil)
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
     (sound? const-decl "bool" interval_bandb "interval_arith/")
@@ -1397,6 +1272,7 @@
     (ProperBox type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (NOT const-decl "[bool -> bool]" booleans nil)
@@ -1422,10 +1298,14 @@
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
     (every adt-def-decl "boolean" list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (list type-decl nil list_adt nil)
     (Maybe type-decl nil Maybe "structures/")
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
+    (bijective? const-decl "bool" functions nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (TRUE const-decl "bool" booleans nil)
     (nnreal_plus_nnreal_is_nnreal application-judgement "nnreal"
      real_types nil)
     (minus_even_is_even application-judgement "even_int" integers nil)
@@ -1501,10 +1381,14 @@
    ((minus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -1530,6 +1414,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -1566,6 +1451,9 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -1577,83 +1465,12 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Fundamental2? const-decl "bool" interval "interval_arith/")
-    (aeboundsp_neg_ia const-decl "Interval" bbiasp_neg "PRECiSA/")
-    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (Inclusion2? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (AEB_NEG_fundmental_j name-judgement
-     "(Fundamental2?(Any?, pre1to2b(NonNeg?)))" bbiasp_neg "PRECiSA/")
-    (AEB_NEG_inclusion_j name-judgement
-     "(Inclusion2?(Any?, pre1to2b(NonNeg?), aeboundsp_neg_safe))"
-     bbiasp_neg "PRECiSA/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
@@ -1662,14 +1479,7 @@
      IntervalExpr_adt "interval_arith/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN2 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?),
-  opf2: [[real, real] -> real],
-  {F: [[Interval, Interval] -> Interval] |
-           Inclusion2?(pre1, pre2, opf2)(F) AND
-            Fundamental2?(pre1, pre2)(F)},
-  RealExpr, RealExpr] ->
-   (fun2?)]" IntervalExpr_adt "interval_arith/")
+    (AEB_NEG const-decl "RealExpr" bbiasp_neg "PRECiSA/")
     (BREL adt-constructor-decl
      "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
@@ -1769,10 +1579,14 @@
  (tau_c_2 0
   (tau_c_2-1 nil 3700238757 ("" (prove-concrete-lemma$ tau_2) nil nil)
    ((real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -1798,6 +1612,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -1834,6 +1649,9 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -1845,56 +1663,6 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Fundamental2? const-decl "bool" interval "interval_arith/")
-    (aeboundsp_neg_ia const-decl "Interval" bbiasp_neg "PRECiSA/")
-    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (Inclusion2? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (AEB_NEG_fundmental_j name-judgement
-     "(Fundamental2?(Any?, pre1to2b(NonNeg?)))" bbiasp_neg "PRECiSA/")
-    (AEB_NEG_inclusion_j name-judgement
-     "(Inclusion2?(Any?, pre1to2b(NonNeg?), aeboundsp_neg_safe))"
-     bbiasp_neg "PRECiSA/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (NEG adt-constructor-decl "[RealExpr -> (neg?)]" IntervalExpr_adt
      "interval_arith/")
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
@@ -1902,46 +1670,18 @@
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
      "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN2 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?),
-  opf2: [[real, real] -> real],
-  {F: [[Interval, Interval] -> Interval] |
-           Inclusion2?(pre1, pre2, opf2)(F) AND
-            Fundamental2?(pre1, pre2)(F)},
-  RealExpr, RealExpr] ->
-   (fun2?)]" IntervalExpr_adt "interval_arith/")
+    (AEB_NEG const-decl "RealExpr" bbiasp_neg "PRECiSA/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -2234,10 +1974,14 @@
   (tau_c_4-1 nil 3700238757 ("" (prove-concrete-lemma$ tau_4) nil nil)
    ((real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -2263,6 +2007,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -2301,6 +2046,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -2312,82 +2059,20 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (BREL adt-constructor-decl
      "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
@@ -2488,10 +2173,14 @@
   (tau_c_5-1 nil 3700238757 ("" (prove-concrete-lemma$ tau_5) nil nil)
    ((real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -2517,6 +2206,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -2555,6 +2245,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -2566,82 +2258,20 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (BREL adt-constructor-decl
      "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
@@ -2742,10 +2372,14 @@
   (tau_c_6-1 nil 3700238757 ("" (prove-concrete-lemma$ tau_6) nil nil)
    ((real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -2771,6 +2405,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -2809,6 +2444,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -2820,82 +2457,20 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (BREL adt-constructor-decl
      "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
@@ -2996,10 +2571,14 @@
   (tau_c_7-1 nil 3700238757 ("" (prove-concrete-lemma$ tau_7) nil nil)
    ((real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -3025,6 +2604,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -3063,6 +2643,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -3074,82 +2656,20 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (BREL adt-constructor-decl
      "[[RealOrder, RealExpr, RealExpr] -> (brel?)]" IntervalExpr_adt
      "interval_arith/")
@@ -3249,10 +2769,14 @@
  (tau_c_8 0
   (tau_c_8-1 nil 3700238757 ("" (prove-concrete-lemma$ tau_8) nil nil)
    ((real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -3278,6 +2802,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -3316,6 +2841,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -3327,84 +2854,22 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
      "interval_arith/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -3512,10 +2977,14 @@
    ((minus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -3541,6 +3010,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -3581,6 +3051,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (|##| const-decl "bool" interval "interval_arith/")
     (iar_664 skolem-const-decl "(brel?)" clemmas_cd2d_tau_single nil)
     (vars_in_box formula-decl nil box "interval_arith/")
@@ -3590,86 +3062,24 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (NEG adt-constructor-decl "[RealExpr -> (neg?)]" IntervalExpr_adt
      "interval_arith/")
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
      "interval_arith/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -3774,10 +3184,14 @@
   (tau_c_10-1 nil 3700238757
    ("" (prove-concrete-lemma$ tau_10) nil nil)
    ((real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -3803,6 +3217,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -3841,6 +3256,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (ub_interval formula-decl nil interval "interval_arith/")
     (lb_interval formula-decl nil interval "interval_arith/")
     (|##| const-decl "bool" interval "interval_arith/")
@@ -3852,84 +3269,22 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
      "interval_arith/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -4038,10 +3393,14 @@
    ((minus_real_is_real application-judgement "real" reals nil)
     (real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -4067,6 +3426,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -4107,6 +3467,8 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (|##| const-decl "bool" interval "interval_arith/")
     (iar_670 skolem-const-decl "(brel?)" clemmas_cd2d_tau_single nil)
     (vars_in_box formula-decl nil box "interval_arith/")
@@ -4116,86 +3478,24 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (NEG adt-constructor-decl "[RealExpr -> (neg?)]" IntervalExpr_adt
      "interval_arith/")
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
      IntervalExpr_adt "interval_arith/")
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
      "interval_arith/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -4488,10 +3788,14 @@
    ("" (prove-concrete-lemma$ tau_13) nil nil)
    ((real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -4517,6 +3821,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -4557,6 +3862,9 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (|##| const-decl "bool" interval "interval_arith/")
     (iar_676 skolem-const-decl "(brel?)" clemmas_cd2d_tau_single nil)
     (vars_in_box formula-decl nil box "interval_arith/")
@@ -4566,56 +3874,6 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Fundamental2? const-decl "bool" interval "interval_arith/")
-    (aeboundsp_neg_ia const-decl "Interval" bbiasp_neg "PRECiSA/")
-    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (Inclusion2? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (AEB_NEG_fundmental_j name-judgement
-     "(Fundamental2?(Any?, pre1to2b(NonNeg?)))" bbiasp_neg "PRECiSA/")
-    (AEB_NEG_inclusion_j name-judgement
-     "(Inclusion2?(Any?, pre1to2b(NonNeg?), aeboundsp_neg_safe))"
-     bbiasp_neg "PRECiSA/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (NEG adt-constructor-decl "[RealExpr -> (neg?)]" IntervalExpr_adt
      "interval_arith/")
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
@@ -4623,46 +3881,18 @@
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
      "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN2 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?),
-  opf2: [[real, real] -> real],
-  {F: [[Interval, Interval] -> Interval] |
-           Inclusion2?(pre1, pre2, opf2)(F) AND
-            Fundamental2?(pre1, pre2)(F)},
-  RealExpr, RealExpr] ->
-   (fun2?)]" IntervalExpr_adt "interval_arith/")
+    (AEB_NEG const-decl "RealExpr" bbiasp_neg "PRECiSA/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl
@@ -4769,10 +3999,14 @@
    ("" (prove-concrete-lemma$ tau_14) nil nil)
    ((real_times_real_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
+    (TRUE const-decl "bool" booleans nil)
+    (id const-decl "(bijective?[T, T])" identity nil)
+    (bijective? const-decl "bool" functions nil)
     (listn_0 name-judgement "listn[real](0)" simple_bandb
      "interval_arith/")
     (Maybe type-decl nil Maybe "structures/")
     (list type-decl nil list_adt nil)
+    (PRED type-eq-decl nil defined_types nil)
     (every adt-def-decl "boolean" list_adt nil)
     (bconst? adt-recognizer-decl "[IntervalExpr -> boolean]"
      IntervalExpr_adt "interval_arith/")
@@ -4798,6 +4032,7 @@
     (NOT const-decl "[bool -> bool]" booleans nil)
     (val adt-accessor-decl "[(some?) -> T]" Maybe "structures/")
     (IntervalOutput type-eq-decl nil gbandb_boolexpr "interval_arith/")
+    (Interval type-eq-decl nil interval "interval_arith/")
     (Box type-eq-decl nil box "interval_arith/")
     (ProperBox? const-decl "bool" box "interval_arith/")
     (ProperBox type-eq-decl nil box "interval_arith/")
@@ -4838,6 +4073,9 @@
     (posrat_exp application-judgement "posrat" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posint_exp application-judgement "posint" exponentiation nil)
+    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
+    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
+    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
     (|##| const-decl "bool" interval "interval_arith/")
     (iar_679 skolem-const-decl "(brel?)" clemmas_cd2d_tau_single nil)
     (vars_in_box formula-decl nil box "interval_arith/")
@@ -4847,56 +4085,6 @@
     (sound? const-decl "bool" interval_bandb "interval_arith/")
     (interval_soundness formula-decl nil interval_bandb
      "interval_arith/")
-    (Fundamental? const-decl "bool" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp "PRECiSA/")
-    (PreTrue const-decl "(Precondition?)" interval_expr
-     "interval_arith/")
-    (Inclusion? const-decl "bool" interval "interval_arith/")
-    (Fundamental2? const-decl "bool" interval "interval_arith/")
-    (aeboundsp_neg_ia const-decl "Interval" bbiasp_neg "PRECiSA/")
-    (aeboundsp_neg_safe const-decl "real" bbiasp_neg "PRECiSA/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (Inclusion2? const-decl "bool" interval "interval_arith/")
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (AEB_NEG_fundmental_j name-judgement
-     "(Fundamental2?(Any?, pre1to2b(NonNeg?)))" bbiasp_neg "PRECiSA/")
-    (AEB_NEG_inclusion_j name-judgement
-     "(Inclusion2?(Any?, pre1to2b(NonNeg?), aeboundsp_neg_safe))"
-     bbiasp_neg "PRECiSA/")
-    (Any3_Precondition3 name-judgement "(Precondition3?)" interval
-     "interval_arith/")
-    (AEB_ADD_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_add_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_add "PRECiSA/")
-    (AEB_MUL_j name-judgement
-     "{F: [[Interval, Interval, Interval, Interval] -> Interval] |
-         Inclusion4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?),
-                     aeboundsp_mul_safe)
-                    (F)
-          AND
-          Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?))
-                       (F)}" bbiasp_mul "PRECiSA/")
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp "PRECiSA/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp "PRECiSA/")
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (NEG adt-constructor-decl "[RealExpr -> (neg?)]" IntervalExpr_adt
      "interval_arith/")
     (SUB adt-constructor-decl "[[RealExpr, RealExpr] -> (sub?)]"
@@ -4904,46 +4092,18 @@
     (ABS adt-constructor-decl "[RealExpr -> (abs?)]" IntervalExpr_adt
      "interval_arith/")
     (r2E const-decl "RealExpr" interval_expr "interval_arith/")
-    (FUN adt-constructor-decl
-     "[[pre: (Precondition?), opf: [real -> real],
-  {F: [Interval -> Interval] |
-           Inclusion?(pre, opf)(F) AND Fundamental?(pre)(F)},
-  RealExpr] ->
-   (fun?)]" IntervalExpr_adt "interval_arith/")
+    (ULP_SP const-decl "RealExpr" interval_ulp_sp "PRECiSA/")
     (DIV adt-constructor-decl "[[RealExpr, RealExpr] -> (div?)]"
      IntervalExpr_adt "interval_arith/")
-    (aeboundsp_mul_ia const-decl "Interval" bbiasp_mul "PRECiSA/")
-    (aeboundsp_mul_safe const-decl "real" bbiasp_mul "PRECiSA/")
-    (aeboundsp_add_ia const-decl "Interval" bbiasp_add "PRECiSA/")
-    (aeboundsp_add_safe const-decl "real" bbiasp_add "PRECiSA/")
-    (pre1to4d const-decl "(Precondition4?)" interval "interval_arith/")
-    (Any3? const-decl "bool" interval "interval_arith/")
-    (FUN4 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?), pre3: (Precondition3?),
-  pre4: (Precondition4?), opf4: [[real, real, real, real] -> real],
-  {F: [[Interval, Interval, Interval, Interval] -> Interval] |
-           Inclusion4?(pre1, pre2, pre3, pre4, opf4)(F) AND
-            Fundamental4?(pre1, pre2, pre3, pre4)(F)},
-  RealExpr, RealExpr, RealExpr, RealExpr] ->
-   (fun4?)]" IntervalExpr_adt "interval_arith/")
-    (Fundamental4? const-decl "bool" interval "interval_arith/")
-    (Inclusion4? const-decl "bool" interval "interval_arith/")
-    (Precondition4? const-decl "bool" interval "interval_arith/")
-    (Precondition3? const-decl "bool" interval "interval_arith/")
+    (AEB_MUL const-decl "RealExpr" bbiasp_mul "PRECiSA/")
+    (AEB_ADD const-decl "RealExpr" bbiasp_add "PRECiSA/")
     (X const-decl "RealExpr" interval_expr "interval_arith/")
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (MULT adt-constructor-decl "[[RealExpr, RealExpr] -> (mult?)]"
      IntervalExpr_adt "interval_arith/")
-    (FUN2 adt-constructor-decl
-     "[[pre1: (Precondition?), pre2: (Precondition2?),
-  opf2: [[real, real] -> real],
-  {F: [[Interval, Interval] -> Interval] |
-           Inclusion2?(pre1, pre2, opf2)(F) AND
-            Fundamental2?(pre1, pre2)(F)},
-  RealExpr, RealExpr] ->
-   (fun2?)]" IntervalExpr_adt "interval_arith/")
+    (AEB_NEG const-decl "RealExpr" bbiasp_neg "PRECiSA/")
     (ADD adt-constructor-decl "[[RealExpr, RealExpr] -> (add?)]"
      IntervalExpr_adt "interval_arith/")
     (BREL adt-constructor-decl

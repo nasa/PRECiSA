@@ -44,7 +44,7 @@ BEGIN
     aeboundsp_div_ia
     HAS_TYPE (Fundamental4?(Any?,Any2?, Any3?,aeb_div_pre4))
 
-  AEB_DIV(re1,re2,re3,re4): MACRO RealExpr =
+  AEB_DIV(re1,re2,re3,re4): RealExpr =
     FUN4(Any?,Any2?,Any3?,aeb_div_pre4,
 	 aeboundsp_div_safe,aeboundsp_div_ia,re1,re2,re3,re4)
 

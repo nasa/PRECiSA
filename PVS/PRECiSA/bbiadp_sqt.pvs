@@ -38,7 +38,7 @@ BEGIN
     aebounddp_sqt_ia(n)
     HAS_TYPE (Fundamental2?(Any?,aeb_sqt_pre2))
 
-  AEB_SQT(n)(re1,re2): MACRO RealExpr =
+  AEB_SQT(n)(re1,re2): RealExpr =
     FUN2(Any?,
          aeb_sqt_pre2,
 	 aebounddp_sqt_safe,

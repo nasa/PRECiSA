@@ -30,7 +30,7 @@ BEGIN
     aebounddp_flr_t_ia
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
 
-  AEB_FLR_T(re1,re2): MACRO RealExpr =
+  AEB_FLR_T(re1,re2): RealExpr =
     FUN2(Any?,pre1to2b(NonNeg?),aebounddp_flr_t_safe,aebounddp_flr_t_ia,re1,re2)
 
 END bbiadp_flr_t
