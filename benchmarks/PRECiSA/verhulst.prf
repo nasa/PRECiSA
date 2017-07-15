@@ -1,6 +1,6 @@
-(verhustl
+(verhulst
  (verhulst_TCC1 0
-  (verhulst_TCC1-1 nil 3699197500
+  (verhulst_TCC1-1 nil 3709036632
    ("" (skeep) (("" (eval-formula -1) nil nil)) nil)
    ((boolean nonempty-type-decl nil booleans nil)
     (bool nonempty-type-eq-decl nil booleans nil)
@@ -9,7 +9,7 @@
     (TRUE const-decl "bool" booleans nil))
    nil))
  (verhulst_TCC2 0
-  (verhulst_TCC2-1 nil 3699197500 ("" (subtype-tcc) nil nil)
+  (verhulst_TCC2-1 nil 3709036632 ("" (subtype-tcc) nil nil)
    ((/ const-decl "[numfield, nznum -> numfield]" number_fields nil)
     (nznum nonempty-type-eq-decl nil number_fields nil)
     (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)

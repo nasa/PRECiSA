@@ -134,6 +134,12 @@
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
     (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
     (posint_exp application-judgement "posint" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posrat_exp application-judgement "posrat" exponentiation nil)
@@ -354,6 +360,12 @@
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
     (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
     (posint_exp application-judgement "posint" exponentiation nil)
     (nnrat_exp application-judgement "nnrat" exponentiation nil)
     (posrat_exp application-judgement "posrat" exponentiation nil)

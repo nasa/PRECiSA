@@ -254,12 +254,11 @@
     (- const-decl "[numfield -> numfield]" number_fields nil)
     (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
          nil)
-    (cos const-decl "real" sincos_def "trig_fnd/")
+    (cos const-decl "real" sincos_def "trig/")
     (Abs_inclusion formula-decl nil interval "interval_arith/")
     (Cos_inclusion formula-decl nil interval_trig "interval_arith/")
     (real_plus_real_is_real application-judgement "real" reals nil)
-    (cos_range application-judgement "trig_range" sincos_def
-     "trig_fnd/")
+    (cos_range application-judgement "real_abs_le1" sincos "trig/")
     (Ulp_dp_inclusion formula-decl nil interval_ulp_dp nil)
     (Div_inclusion formula-decl nil interval "interval_arith/")
     (Min_inclusion formula-decl nil interval "interval_arith/")

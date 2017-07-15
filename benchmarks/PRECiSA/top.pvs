@@ -2,7 +2,7 @@ top: THEORY
 BEGIN
 
   IMPORTING cert_carbonGas,
-  	    cert_verhustl,
+  	    cert_verhulst,
 	    cert_predPrey,
 	    cert_rigidbody1,
 	    cert_rigidbody2,
@@ -16,7 +16,7 @@ BEGIN
 	    cert_sine,
 	    cert_sineOrder3,
 	    clgen_carbonGas,
-  	    clgen_verhustl,
+  	    clgen_verhulst,
 	    clgen_predPrey,
 	    clgen_rigidbody1,
 	    clgen_rigidbody2,
@@ -30,7 +30,7 @@ BEGIN
 	    clgen_sine,
 	    clgen_sineOrder3,
 	    clemmas_carbonGas,
-  	    clemmas_verhustl,
+  	    clemmas_verhulst,
 	    clemmas_predPrey,
 	    clemmas_rigidbody1,
 	    clemmas_rigidbody2,

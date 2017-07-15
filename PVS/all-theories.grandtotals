@@ -1,16 +1,16 @@
 Processing PRECiSA/top.pvs. Writing output to file summaries/PRECiSA.summary
 Logging PVS information in summaries/PRECiSA.log
-Grand Totals: 123 proofs, 123 attempted, 123 succeeded (104.89 s)
+Grand Totals: 123 proofs, 123 attempted, 123 succeeded (104.24 s);;; GC:;;; Finished GC
 
 Processing CD2D_tau/top.pvs. Writing output to file summaries/CD2D_tau.summary
 Logging PVS information in summaries/CD2D_tau.log
-Grand Totals: 104 proofs, 104 attempted, 104 succeeded (679.46 s);;; GC:;;; Finished GC
+Grand Totals: 104 proofs, 104 attempted, 104 succeeded (696.01 s);;; GC:;;; Finished GC
 
 Processing CPR/top.pvs. Writing output to file summaries/CPR.summary
 Logging PVS information in summaries/CPR.log
-Grand Totals: 38 proofs, 38 attempted, 38 succeeded (81.36 s)
+Grand Totals: 38 proofs, 38 attempted, 38 succeeded (86.84 s)
 
-PVS_LIBRARY_PATH=/Users/cmunoz/src/PRECiSA/PRECiSA.git/PVS:/Users/cmunoz/src/DAIDALUS/RELEASE/WellClear.git/PVS:/Users/cmunoz/local/PVS/nasalib
+PVS_LIBRARY_PATH=/Users/cmunoz/src/PRECiSA/PRECiSA.git/PVS:/Users/cmunoz/local/PVS/nasalib
 PRECiSA                  [OK: 123 proofs]
 CD2D_tau                 [OK: 104 proofs]
 CPR                      [OK: 38 proofs]

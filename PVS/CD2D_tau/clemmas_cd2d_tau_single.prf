@@ -1441,6 +1441,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -1639,6 +1645,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -2036,6 +2048,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -2235,6 +2253,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -2434,6 +2458,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -2633,6 +2663,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -2831,6 +2867,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -3041,6 +3083,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -3246,6 +3294,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -3457,6 +3511,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -3852,6 +3912,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
@@ -4063,6 +4129,12 @@
      clemmas_cd2d_tau_single nil)
     (beval def-decl "bool" interval_bexpr "interval_arith/")
     (eval def-decl "real" interval_expr "interval_arith/")
+    (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
+     nil)
+    (pi_bound name-judgement
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+    (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
+     atan_approx "trig/")
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (even_times_int_is_even application-judgement "even_int" integers
