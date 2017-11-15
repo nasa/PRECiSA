@@ -203,6 +203,7 @@
      interval_ulp_dp nil)
     (nnreal_plus_nnreal_is_nnreal application-judgement "nnreal"
      real_types nil)
+    (TRUE const-decl "bool" booleans nil)
     (minus_odd_is_odd application-judgement "odd_int" integers nil)
     (real_plus_real_is_real application-judgement "real" reals nil)
     (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
@@ -219,7 +220,6 @@
     (AND const-decl "[bool, bool -> bool]" booleans nil)
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (real_gt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
     (gt_realorder name-judgement "RealOrder" real_orders "reals/")

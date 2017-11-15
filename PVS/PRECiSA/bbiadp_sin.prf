@@ -167,7 +167,10 @@
         nil))
       nil))
     nil)
-   ((aebounddp_sin_safe const-decl "real" bbiadp_sin nil)
+   ((TRUE const-decl "bool" booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (aebounddp_sin_safe const-decl "real" bbiadp_sin nil)
     (NOT const-decl "[bool -> bool]" booleans nil)
     (Add_inclusion formula-decl nil interval "interval_arith/")
     (sin_ulp_bound const-decl "real" accum_err_sin "float/")
@@ -210,13 +213,11 @@
     (Interval type-eq-decl nil interval "interval_arith/")
     (x2 skolem-const-decl "real" bbiadp_sin nil)
     (>= const-decl "bool" reals nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
     (real nonempty-type-from-decl nil reals nil)
     (real_pred const-decl "[number_field -> boolean]" reals nil)
     (number_field nonempty-type-from-decl nil number_fields nil)
     (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)
-    (boolean nonempty-type-decl nil booleans nil)
     (number nonempty-type-decl nil numbers nil)
     (dp_closest?_closestroundingpred_j name-judgement
      "ClosestRoundingPred[2](double_precision_format)" ieee754dp
@@ -273,7 +274,6 @@
      "interval_arith/")
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (min const-decl "{p: real | p <= m AND p <= n}" real_defs nil)
     (<= const-decl "bool" reals nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)

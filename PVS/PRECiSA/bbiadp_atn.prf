@@ -112,7 +112,10 @@
         nil))
       nil))
     nil)
-   ((aebounddp_atn_safe const-decl "real" bbiadp_atn nil)
+   ((TRUE const-decl "bool" booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (aebounddp_atn_safe const-decl "real" bbiadp_atn nil)
     (NOT const-decl "[bool -> bool]" booleans nil)
     (Add_inclusion formula-decl nil interval "interval_arith/")
     (atn_ulp_bound const-decl "real" accum_err_atn "float/")
@@ -154,13 +157,11 @@
     (Interval type-eq-decl nil interval "interval_arith/")
     (x2 skolem-const-decl "real" bbiadp_atn nil)
     (>= const-decl "bool" reals nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
     (real nonempty-type-from-decl nil reals nil)
     (real_pred const-decl "[number_field -> boolean]" reals nil)
     (number_field nonempty-type-from-decl nil number_fields nil)
     (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)
-    (boolean nonempty-type-decl nil booleans nil)
     (number nonempty-type-decl nil numbers nil)
     (dp_closest?_closestroundingpred_j name-judgement
      "ClosestRoundingPred[2](double_precision_format)" ieee754dp
@@ -220,7 +221,6 @@
      "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (Div_inclusion formula-decl nil interval "interval_arith/")
     (aebounddp_atn const-decl "nonneg_real" aerr754dp_atn "float/")
     (Ge const-decl "bool" interval "interval_arith/")
@@ -335,7 +335,10 @@
         nil))
       nil))
     nil)
-   ((Ge const-decl "bool" interval "interval_arith/")
+   ((TRUE const-decl "bool" booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (Ge const-decl "bool" interval "interval_arith/")
     (<< const-decl "bool" interval "interval_arith/")
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
@@ -369,8 +372,6 @@
     (Precondition2? const-decl "bool" interval "interval_arith/")
     (Precondition? const-decl "bool" interval "interval_arith/")
     (PRED type-eq-decl nil defined_types nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (boolean nonempty-type-decl nil booleans nil)
     (Interval type-eq-decl nil interval "interval_arith/")
     (real nonempty-type-from-decl nil reals nil)
     (Zeroless_Precondition name-judgement "(Precondition?)" interval
@@ -382,7 +383,6 @@
     (Ulp_dp_fundamental formula-decl nil interval_ulp_dp nil)
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
-    (TRUE const-decl "bool" booleans nil)
     (Div_fundamental formula-decl nil interval "interval_arith/")
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
      "interval_arith/")
