@@ -70,7 +70,7 @@ Examples of possible input for the decision pahts are the following:
    example(X,Y): [True, True]
    ```
 
-More examples can be found in the [PRECiSA benchmarks folder](https://github.com/nasa/PRECiSA/tree/master/benchmarks/PRECiSA).
+More examples can be found in the [PRECiSA benchmarks folder](PRECiSA/benchmarks).
 
 The analysis performed by PRECiSA results in one upper-bound of the floating-point round-off error for each decision path of interest, an overall upper-bound for the decision paths not of interest, and an overall upper-bound for the unstable test cases (when real and floating-point flows diverge).
 Additionally, PRECiSA generates two PVS theories:
@@ -195,3 +195,4 @@ If you have any question or problem, please contact:
 * [Laura Titolo](laura.titolo@nianet.org) (for PRECiSA)
 * [Mariano Moscato](mariano.moscato@nianet.org) (for PVS)
 * [Marco A. Feliu](marco.feliu@nianet.org) (for Kodiak)
+* [Cesar A. Munoz](cesar.a.munoz@nasa.gov) (PRECiSA @ NASA)
