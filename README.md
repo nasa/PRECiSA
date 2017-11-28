@@ -1,6 +1,6 @@
 PRECiSA
 -------------
-PRECiSA 2.0 (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
+PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
 [Here](http://precisa.nianet.org/) you can try the PRECiSA web-interface and find more information on the tool.
 
 The input to PRECiSA are the following files:
@@ -158,6 +158,10 @@ $ proveit -sc num_cert_example.pvs
 ### PVS basic troubleshooting ###
 If the PVS verification is not behaving as expected, try cleaning the PVS binaries in the NASA PVS library. Simply run cleanbin-all in the NASA PVS library folder of your installation and try again.
 
+## Version
+
+*PRECiSA v-2.0* (November 2017)
+
 Contact information
 -------------------
 If you have any question or problem, please contact:
@@ -167,10 +171,10 @@ If you have any question or problem, please contact:
 * [Marco A. Feliu](mailto:marco.feliu@nianet.org) (for Kodiak)
 * [C&eacute;sar A. Mu&ntilde;oz](http://shemesh.larc.nasa.gov/people/cam) (PRECiSA @ NASA)
 
-### License
+### License and Copyright Notice
 
 The code in this repository is released under NASA's Open Source
-Agreement.  See the directory [`LICENSES`](LICENSES); see also the copyright notice at the end of this file. 
+Agreement.  See the directory [`LICENSES`](LICENSES).
 
 <pre>
 
