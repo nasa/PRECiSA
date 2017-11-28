@@ -8,7 +8,7 @@ BEGIN
 
   aebounddp_add_ia(R1,E1,R2,E2): Interval =
     If NonNeg?(E1) AND NonNeg?(E2)
-    THEN Add(Add(E1,E2),Div(Ulp_dp(Add(Add(Abs(R1),Abs(R2)),Add(E1,E2))),[|2|]))
+    THEN Add(Add(E1,E2),Div(Ulp_dp(Add(Abs(Add(R1,R2)),Add(E1,E2))),[|2|]))
     ELSE EmptyInterval
     ENDIF
  
@@ -43,7 +43,7 @@ BEGIN
                    AND Fundamental4?( Any?, pre1to2b(NonNeg?), Any3?,
 		       		      pre1to4d(NonNeg?) ) (F)}
 
-  AEB_ADD(re1,re2,re3,re4): RealExpr =
+  AEB_ADD(re1,re2,re3,re4):  RealExpr =
     FUN4(Any?,pre1to2b(NonNeg?),Any3?,pre1to4d(NonNeg?),
 	 aebounddp_add_safe,
 	 aebounddp_add_ia,

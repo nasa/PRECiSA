@@ -1,0 +1,12 @@
+kepler1: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+kepler1 (X1,X2,X3,X4: unb_double):unb_double = 
+    Dsub(Dadd(Dadd(Dmul(X1,Dmul(X4,Dsub(Dadd(Dadd(Dneg(X1), X2 ), X3), X4))),
+         Dmul(X2, Dadd(Dadd(Dsub(X1,X2), X3), X4))),
+		 Dmul(X3,Dadd(Dsub(Dadd(X1,X2),X3), X4))),
+		 Dsub(Dmul(X2,Dmul(X3,X4)),Dsub(Dmul(X1, X3),Dsub(Dmul(X1,X2),X4)))
+		 )
+
+END kepler1

@@ -1,0 +1,1 @@
+hartman6 (X1,X2,X3,X4,X5,X6) : X1 in [0, 1], X2 in [0, 1], X3 in [0, 1], X4 in [0, 1], X5 in [0, 1], X6 in [0, 1]

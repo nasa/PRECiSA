@@ -28,7 +28,7 @@ BEGIN
     aeboundsp_neg_ia
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
 
-  AEB_NEG(re1,re2): RealExpr =
+  AEB_NEG(re1,re2):  RealExpr =
     FUN2(Any?,pre1to2b(NonNeg?),aeboundsp_neg_safe,aeboundsp_neg_ia,re1,re2)
 
 END bbiasp_neg

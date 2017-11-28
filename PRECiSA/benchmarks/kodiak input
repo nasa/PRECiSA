@@ -1,0 +1,170 @@
+azimuth:
+azimuth(Lat1,Lon1,Lat2,Lon2): Lat1 in [0, 0.4], Lat2 in [0.5, 1], Lon1 in [0, 3.14159265], Lon2 in [-3.14159265, -0.5]
+
+aebounddp_atn(((Sin(Lat2) * Sin((Lon2 - Lon1))) / ((Cos(Lat1) * Sin(Lat2)) - (Sin(Lat1) * (Cos(Lat2) * Cos((Lon2 - Lon1)))))), aebounddp_div((Sin(Lat2) * Sin((Lon2 - Lon1))), aebounddp_mul(Sin(Lat2), aebounddp_sin(Lat2, DUlp(Lat2)/val(2)), Sin((Lon2 - Lon1)), aebounddp_sin((Lon2 - Lon1), aebounddp_sub(Lon2, DUlp(Lon2)/val(2), Lon1, DUlp(Lon1)/val(2)))), ((Cos(Lat1) * Sin(Lat2)) - (Sin(Lat1) * (Cos(Lat2) * Cos((Lon2 - Lon1))))), aebounddp_sub((Cos(Lat1) * Sin(Lat2)), aebounddp_mul(Cos(Lat1), aebounddp_cos(Lat1, DUlp(Lat1)/val(2)), Sin(Lat2), aebounddp_sin(Lat2, DUlp(Lat2)/val(2))), (Sin(Lat1) * (Cos(Lat2) * Cos((Lon2 - Lon1)))), aebounddp_mul(Sin(Lat1), aebounddp_sin(Lat1, DUlp(Lat1)/val(2)), (Cos(Lat2) * Cos((Lon2 - Lon1))), aebounddp_mul(Cos(Lat2), aebounddp_cos(Lat2, DUlp(Lat2)/val(2)), Cos((Lon2 - Lon1)), aebounddp_cos((Lon2 - Lon1), aebounddp_sub(Lon2, DUlp(Lon2)/val(2), Lon1, DUlp(Lon1)/val(2))))))))
+
+
+
+carbonGas:
+carbonGas (V) : V in [0.1, 0.5]
+
+aebounddp_sub(((val(35000000) + ((val(rat(401,1000))) * ((val(1000) / V) * (val(1000) / V)))) * (V - (val(1000) * (val(rat(427,10000000)))))), aebounddp_mul((val(35000000) + ((val(rat(401,1000))) * ((val(1000) / V) * (val(1000) / V)))), aebounddp_add(val(35000000), val(0), ((val(rat(401,1000))) * ((val(1000) / V) * (val(1000) / V))), aebounddp_mul((val(rat(401,1000))), val(Interval(0.000000000000000023092638912203255,0.000000000000000023092638912203258)), ((val(1000) / V) * (val(1000) / V)), aebounddp_mul((val(1000) / V), aebounddp_div(val(1000), val(0), V, DUlp(V)/val(2)), (val(1000) / V), aebounddp_div(val(1000), val(0), V, DUlp(V)/val(2))))), (V - (val(1000) * (val(rat(427,10000000))))), aebounddp_sub(V, DUlp(V)/val(2), (val(1000) * (val(rat(427,10000000)))), aebounddp_mul(val(1000), val(0), (val(rat(427,10000000))), val(Interval(0.000000000000000000001138238808762182,0.0000000000000000000011382388087621821))))), (val(Interval(0.000000000000000000000013806502999999998,0.000000000000000000000013806503)) * (val(1000) * val(300))), aebounddp_mul(val(Interval(0.000000000000000000000013806502999999998,0.000000000000000000000013806503)), val(Interval(0.0000000000000000000000000000000000000010032183894256426,0.0000000000000000000000000000000000000010032183894256427)), (val(1000) * val(300)), aebounddp_mul(val(1000), val(0), val(300), val(0))))
+
+
+doppler1:
+dop1(U,V,T): U in [-100, 100],
+             V in [20, 20000],
+             T in [-30, 50]
+
+aebounddp_div(((-((val(rat(1657,5))) + ((val(rat(3,5))) * T))) * V), aebounddp_mul((-((val(rat(1657,5))) + ((val(rat(3,5))) * T))), aebounddp_neg(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2)))), V, DUlp(V)/val(2)), ((((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U) * (((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U)), aebounddp_mul((((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U), aebounddp_add(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2))), U, DUlp(U)/val(2)), (((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U), aebounddp_add(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2))), U, DUlp(U)/val(2))))
+
+
+
+doppler2:
+dop2(U,V,T): U in [-125, 125],
+             V in [15, 25000],
+             T in [-40, 60]
+
+aebounddp_div(((-((val(rat(1657,5))) + ((val(rat(3,5))) * T))) * V), aebounddp_mul((-((val(rat(1657,5))) + ((val(rat(3,5))) * T))), aebounddp_neg(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2)))), V, DUlp(V)/val(2)), ((((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U) * (((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U)), aebounddp_mul((((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U), aebounddp_add(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2))), U, DUlp(U)/val(2)), (((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U), aebounddp_add(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2))), U, DUlp(U)/val(2))))
+
+
+
+doppler3:
+dop3(U,V,T): U in [-30, 120],
+             V in [320, 20300],
+             T in [-50, 30]
+	
+
+aebounddp_div(((-((val(rat(1657,5))) + ((val(rat(3,5))) * T))) * V), aebounddp_mul((-((val(rat(1657,5))) + ((val(rat(3,5))) * T))), aebounddp_neg(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2)))), V, DUlp(V)/val(2)), ((((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U) * (((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U)), aebounddp_mul((((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U), aebounddp_add(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2))), U, DUlp(U)/val(2)), (((val(rat(1657,5))) + ((val(rat(3,5))) * T)) + U), aebounddp_add(((val(rat(1657,5))) + ((val(rat(3,5))) * T)), aebounddp_add((val(rat(1657,5))), val(Interval(0.000000000000022737367544323204,0.000000000000022737367544323207)), ((val(rat(3,5))) * T), aebounddp_mul((val(rat(3,5))), val(Interval(0.00000000000000002220446049250313,0.000000000000000022204460492503132)), T, DUlp(T)/val(2))), U, DUlp(U)/val(2))))
+
+
+
+predatorPrey:
+predatorPrey(X) : X in [0.1,0.3]
+
+aebounddp_div((val(4) * (X * X)), aebounddp_mul_p2(2, aebounddp_mul(X, DUlp(X)/val(2), X, DUlp(X)/val(2))), (val(1) + ((X / (val(rat(111,100)))) * (X / (val(rat(111,100)))))), aebounddp_add(val(1), val(0), ((X / (val(rat(111,100)))) * (X / (val(rat(111,100))))), aebounddp_mul((X / (val(rat(111,100)))), aebounddp_div(X, DUlp(X)/val(2), (val(rat(111,100))), val(Interval(0.00000000000000009769962616701376,0.00000000000000009769962616701378))), (X / (val(rat(111,100)))), aebounddp_div(X, DUlp(X)/val(2), (val(rat(111,100))), val(Interval(0.00000000000000009769962616701376,0.00000000000000009769962616701378))))))
+
+
+
+rigidBody1:
+rigidBody1(X1,X2,X3): X1 in [-15, 15], X2 in [-15, 15], X3 in [-15, 15]
+
+aebounddp_sub(((((-X1) * X2) - (val(2) * (X2 * X3))) - X1), aebounddp_sub((((-X1) * X2) - (val(2) * (X2 * X3))), aebounddp_sub(((-X1) * X2), aebounddp_mul((-X1), aebounddp_neg(X1, DUlp(X1)/val(2)), X2, DUlp(X2)/val(2)), (val(2) * (X2 * X3)), aebounddp_mul_p2(1, aebounddp_mul(X2, DUlp(X2)/val(2), X3, DUlp(X3)/val(2)))), X1, DUlp(X1)/val(2)), X3, DUlp(X3)/val(2))
+
+
+
+rigidBody2:
+rigidBody2(X1,X2,X3): X1 in [-15, 15], X2 in [-15, 15], X3 in [-15, 15]
+
+aebounddp_sub(((((val(2) * (X1 * (X2 * X3))) + (val(3) * (X3 * X3))) - (X2 * (X1 * (X2 * X3)))) + (val(3) * (X3 * X3))), aebounddp_add((((val(2) * (X1 * (X2 * X3))) + (val(3) * (X3 * X3))) - (X2 * (X1 * (X2 * X3)))), aebounddp_sub(((val(2) * (X1 * (X2 * X3))) + (val(3) * (X3 * X3))), aebounddp_add((val(2) * (X1 * (X2 * X3))), aebounddp_mul_p2(1, aebounddp_mul(X1, DUlp(X1)/val(2), (X2 * X3), aebounddp_mul(X2, DUlp(X2)/val(2), X3, DUlp(X3)/val(2)))), (val(3) * (X3 * X3)), aebounddp_mul(val(3), val(0), (X3 * X3), aebounddp_mul(X3, DUlp(X3)/val(2), X3, DUlp(X3)/val(2)))), (X2 * (X1 * (X2 * X3))), aebounddp_mul(X2, DUlp(X2)/val(2), (X1 * (X2 * X3)), aebounddp_mul(X1, DUlp(X1)/val(2), (X2 * X3), aebounddp_mul(X2, DUlp(X2)/val(2), X3, DUlp(X3)/val(2))))), (val(3) * (X3 * X3)), aebounddp_mul(val(3), val(0), (X3 * X3), aebounddp_mul(X3, DUlp(X3)/val(2), X3, DUlp(X3)/val(2)))), X2, DUlp(X2)/val(2))
+
+
+
+sine:
+sine(X): X in [-1.57079632679, 1.57079632679]
+
+aebounddp_sub(X, DUlp(X)/val(2), (((X * (X * X)) / val(6)) + (((X * (X * (X * (X * X)))) / val(120)) - ((X * (X * (X * (X * (X * (X * X)))))) / val(5040)))), aebounddp_add(((X * (X * X)) / val(6)), aebounddp_div((X * (X * X)), aebounddp_mul(X, DUlp(X)/val(2), (X * X), aebounddp_mul(X, DUlp(X)/val(2), X, DUlp(X)/val(2))), val(6), val(0)), (((X * (X * (X * (X * X)))) / val(120)) - ((X * (X * (X * (X * (X * (X * X)))))) / val(5040))), aebounddp_sub(((X * (X * (X * (X * X)))) / val(120)), aebounddp_div((X * (X * (X * (X * X)))), aebounddp_mul(X, DUlp(X)/val(2), (X * (X * (X * X))), aebounddp_mul(X, DUlp(X)/val(2), (X * (X * X)), aebounddp_mul(X, DUlp(X)/val(2), (X * X), aebounddp_mul(X, DUlp(X)/val(2), X, DUlp(X)/val(2))))), val(120), val(0)), ((X * (X * (X * (X * (X * (X * X)))))) / val(5040)), aebounddp_div((X * (X * (X * (X * (X * (X * X)))))), aebounddp_mul(X, DUlp(X)/val(2), (X * (X * (X * (X * (X * X))))), aebounddp_mul(X, DUlp(X)/val(2), (X * (X * (X * (X * X)))), aebounddp_mul(X, DUlp(X)/val(2), (X * (X * (X * X))), aebounddp_mul(X, DUlp(X)/val(2), (X * (X * X)), aebounddp_mul(X, DUlp(X)/val(2), (X * X), aebounddp_mul(X, DUlp(X)/val(2), X, DUlp(X)/val(2))))))), val(5040), val(0)))))
+
+
+
+sineOrder3:
+sineOrder3(Z): Z in [-2, 2]
+
+aebounddp_sub((val(Interval(0.9549296585513719,0.954929658551372)) * Z), aebounddp_mul(val(Interval(0.9549296585513719,0.954929658551372)), val(Interval(0.000000000000000018138181374524718,0.00000000000000001813818137452472)), Z, DUlp(Z)/val(2)), (val(Interval(0.12900613773279795,0.12900613773279798)) * (Z * (Z * Z))), aebounddp_mul(val(Interval(0.12900613773279795,0.12900613773279798)), val(Interval(0.000000000000000001909627083041414,0.0000000000000000019096270830414143)), (Z * (Z * Z)), aebounddp_mul(Z, DUlp(Z)/val(2), (Z * Z), aebounddp_mul(Z, DUlp(Z)/val(2), Z, DUlp(Z)/val(2)))))
+
+
+
+sqroot:
+sqroot(Y): Y in [0, 1]
+
+aebounddp_add(val(1), val(0), (((val(rat(1,2))) * Y) - (((val(rat(1,8))) * (Y * Y)) + (((val(rat(1,16))) * (Y * (Y * Y))) - ((val(rat(5,128))) * (Y * (Y * (Y * Y))))))), aebounddp_sub(((val(rat(1,2))) * Y), aebounddp_mul((val(rat(1,2))), (val(rat(0,1))), Y, DUlp(Y)/val(2)), (((val(rat(1,8))) * (Y * Y)) + (((val(rat(1,16))) * (Y * (Y * Y))) - ((val(rat(5,128))) * (Y * (Y * (Y * Y)))))), aebounddp_add(((val(rat(1,8))) * (Y * Y)), aebounddp_mul((val(rat(1,8))), (val(rat(0,1))), (Y * Y), aebounddp_mul(Y, DUlp(Y)/val(2), Y, DUlp(Y)/val(2))), (((val(rat(1,16))) * (Y * (Y * Y))) - ((val(rat(5,128))) * (Y * (Y * (Y * Y))))), aebounddp_sub(((val(rat(1,16))) * (Y * (Y * Y))), aebounddp_mul((val(rat(1,16))), (val(rat(0,1))), (Y * (Y * Y)), aebounddp_mul(Y, DUlp(Y)/val(2), (Y * Y), aebounddp_mul(Y, DUlp(Y)/val(2), Y, DUlp(Y)/val(2)))), ((val(rat(5,128))) * (Y * (Y * (Y * Y)))), aebounddp_mul((val(rat(5,128))), (val(rat(0,1))), (Y * (Y * (Y * Y))), aebounddp_mul(Y, DUlp(Y)/val(2), (Y * (Y * Y)), aebounddp_mul(Y, DUlp(Y)/val(2), (Y * Y), aebounddp_mul(Y, DUlp(Y)/val(2), Y, DUlp(Y)/val(2)))))))))
+
+
+
+sphere:
+sphere(R,X,Lat,Lon): R in [0, 10], X in [-10, 10], Lat in [-1.570796, 1.570796], Lon in [-3.14159265, 3.14159265]
+
+aebounddp_add(X, DUlp(X)/val(2), (R * (Sin(Lat) * Cos(Lon))), aebounddp_mul(R, DUlp(R)/val(2), (Sin(Lat) * Cos(Lon)), aebounddp_mul(Sin(Lat), aebounddp_sin(Lat, DUlp(Lat)/val(2)), Cos(Lon), aebounddp_cos(Lon, DUlp(Lon)/val(2)))))
+
+
+
+turbine1:
+turbine1(V,W,R): V in [-4.5, -0.3], W in [0.4, 0.9], R in [3.8, 7.8]
+
+aebounddp_sub((((val(3) + val(2)) / (R * R)) - ((((val(rat(1,8))) * (val(3) - (val(2) * V))) * (W * (W * (R * R)))) / (val(1) - V))), aebounddp_sub(((val(3) + val(2)) / (R * R)), aebounddp_div((val(3) + val(2)), aebounddp_add(val(3), val(0), val(2), val(0)), (R * R), aebounddp_mul(R, DUlp(R)/val(2), R, DUlp(R)/val(2))), ((((val(rat(1,8))) * (val(3) - (val(2) * V))) * (W * (W * (R * R)))) / (val(1) - V)), aebounddp_div((((val(rat(1,8))) * (val(3) - (val(2) * V))) * (W * (W * (R * R)))), aebounddp_mul(((val(rat(1,8))) * (val(3) - (val(2) * V))), aebounddp_mul((val(rat(1,8))), (val(rat(0,1))), (val(3) - (val(2) * V)), aebounddp_sub(val(3), val(0), (val(2) * V), aebounddp_mul_p2(1, DUlp(V)/val(2)))), (W * (W * (R * R))), aebounddp_mul(W, DUlp(W)/val(2), (W * (R * R)), aebounddp_mul(W, DUlp(W)/val(2), (R * R), aebounddp_mul(R, DUlp(R)/val(2), R, DUlp(R)/val(2))))), (val(1) - V), aebounddp_sub(val(1), val(0), V, DUlp(V)/val(2)))), (-(val(rat(9,2)))), (val(rat(0,1))))
+
+
+
+turbine2:
+turbine2(V,W,R): V in [-4.5, -0.3], W in [0.4, 0.9], R in [3.8, 7.8]
+
+aebounddp_sub(((val(6) * V) - (((val(rat(1,2))) * (V * ((W * W) * (R * R)))) / (val(1) - V))), aebounddp_sub((val(6) * V), aebounddp_mul(val(6), val(0), V, DUlp(V)/val(2)), (((val(rat(1,2))) * (V * ((W * W) * (R * R)))) / (val(1) - V)), aebounddp_div(((val(rat(1,2))) * (V * ((W * W) * (R * R)))), aebounddp_mul((val(rat(1,2))), (val(rat(0,1))), (V * ((W * W) * (R * R))), aebounddp_mul(V, DUlp(V)/val(2), ((W * W) * (R * R)), aebounddp_mul((W * W), aebounddp_mul(W, DUlp(W)/val(2), W, DUlp(W)/val(2)), (R * R), aebounddp_mul(R, DUlp(R)/val(2), R, DUlp(R)/val(2))))), (val(1) - V), aebounddp_sub(val(1), val(0), V, DUlp(V)/val(2)))), (val(rat(5,2))), (val(rat(0,1))))
+
+
+
+turbine3:
+turbine3(V,W,R): V in [-4.5, -0.3], W in [0.4, 0.9], R in [3.8, 7.8]
+
+aebounddp_sub((val(3) - ((val(2) / (R * R)) - (((val(rat(1,8))) * ((val(1) + (val(2) * V)) * ((W * W) * (R * R)))) / (val(1) - V)))), aebounddp_sub(val(3), val(0), ((val(2) / (R * R)) - (((val(rat(1,8))) * ((val(1) + (val(2) * V)) * ((W * W) * (R * R)))) / (val(1) - V))), aebounddp_sub((val(2) / (R * R)), aebounddp_div(val(2), val(0), (R * R), aebounddp_mul(R, DUlp(R)/val(2), R, DUlp(R)/val(2))), (((val(rat(1,8))) * ((val(1) + (val(2) * V)) * ((W * W) * (R * R)))) / (val(1) - V)), aebounddp_div(((val(rat(1,8))) * ((val(1) + (val(2) * V)) * ((W * W) * (R * R)))), aebounddp_mul((val(rat(1,8))), (val(rat(0,1))), ((val(1) + (val(2) * V)) * ((W * W) * (R * R))), aebounddp_mul((val(1) + (val(2) * V)), aebounddp_add(val(1), val(0), (val(2) * V), aebounddp_mul_p2(1, DUlp(V)/val(2))), ((W * W) * (R * R)), aebounddp_mul((W * W), aebounddp_mul(W, DUlp(W)/val(2), W, DUlp(W)/val(2)), (R * R), aebounddp_mul(R, DUlp(R)/val(2), R, DUlp(R)/val(2))))), (val(1) - V), aebounddp_sub(val(1), val(0), V, DUlp(V)/val(2))))), (val(rat(1,2))), (val(rat(0,1))))
+
+
+
+jet:
+jet(X1,X2): X1 in [-5, 5], X2 in [-20, 5]
+
+aebounddp_add(X1, DUlp(X1)/val(2), (X1 + ((X1 * (X1 * X1)) + (((val(2) * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))))) * (((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))) - val(3))) + (((X1 * (X1 * ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6)))) * ((X1 * X1) + val(1))) + ((val(3) * (X1 * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))))) + (val(3) * (((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)) / ((X1 * X1) + val(1))))))))), aebounddp_add(X1, DUlp(X1)/val(2), ((X1 * (X1 * X1)) + (((val(2) * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))))) * (((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))) - val(3))) + (((X1 * (X1 * ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6)))) * ((X1 * X1) + val(1))) + ((val(3) * (X1 * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))))) + (val(3) * (((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)) / ((X1 * X1) + val(1)))))))), aebounddp_add((X1 * (X1 * X1)), aebounddp_mul(X1, DUlp(X1)/val(2), (X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2))), (((val(2) * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))))) * (((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))) - val(3))) + (((X1 * (X1 * ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6)))) * ((X1 * X1) + val(1))) + ((val(3) * (X1 * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))))) + (val(3) * (((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)) / ((X1 * X1) + val(1))))))), aebounddp_add(((val(2) * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))))) * (((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))) - val(3))), aebounddp_mul((val(2) * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))))), aebounddp_mul_p2(1, aebounddp_mul(X1, DUlp(X1)/val(2), ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))), aebounddp_div((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1), aebounddp_sub(((val(3) * (X1 * X1)) + (val(2) * X2)), aebounddp_add((val(3) * (X1 * X1)), aebounddp_mul(val(3), val(0), (X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2))), (val(2) * X2), aebounddp_mul_p2(1, DUlp(X2)/val(2))), X1, DUlp(X1)/val(2)), ((X1 * X1) + val(1)), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), val(1), val(0))))), (((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))) - val(3)), aebounddp_sub(((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))), aebounddp_div((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1), aebounddp_sub(((val(3) * (X1 * X1)) + (val(2) * X2)), aebounddp_add((val(3) * (X1 * X1)), aebounddp_mul(val(3), val(0), (X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2))), (val(2) * X2), aebounddp_mul_p2(1, DUlp(X2)/val(2))), X1, DUlp(X1)/val(2)), ((X1 * X1) + val(1)), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), val(1), val(0))), val(3), val(0))), (((X1 * (X1 * ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6)))) * ((X1 * X1) + val(1))) + ((val(3) * (X1 * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))))) + (val(3) * (((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)) / ((X1 * X1) + val(1)))))), aebounddp_add(((X1 * (X1 * ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6)))) * ((X1 * X1) + val(1))), aebounddp_mul((X1 * (X1 * ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6)))), aebounddp_mul(X1, DUlp(X1)/val(2), (X1 * ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6))), aebounddp_mul(X1, DUlp(X1)/val(2), ((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))) - val(6)), aebounddp_sub((val(4) * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))), aebounddp_mul_p2(2, aebounddp_div((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1), aebounddp_sub(((val(3) * (X1 * X1)) + (val(2) * X2)), aebounddp_add((val(3) * (X1 * X1)), aebounddp_mul(val(3), val(0), (X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2))), (val(2) * X2), aebounddp_mul_p2(1, DUlp(X2)/val(2))), X1, DUlp(X1)/val(2)), ((X1 * X1) + val(1)), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), val(1), val(0)))), val(6), val(0)))), ((X1 * X1) + val(1)), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), val(1), val(0))), ((val(3) * (X1 * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))))) + (val(3) * (((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)) / ((X1 * X1) + val(1))))), aebounddp_add((val(3) * (X1 * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))))), aebounddp_mul(val(3), val(0), (X1 * (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))))), aebounddp_mul(X1, DUlp(X1)/val(2), (X1 * ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1)))), aebounddp_mul(X1, DUlp(X1)/val(2), ((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1) / ((X1 * X1) + val(1))), aebounddp_div((((val(3) * (X1 * X1)) + (val(2) * X2)) - X1), aebounddp_sub(((val(3) * (X1 * X1)) + (val(2) * X2)), aebounddp_add((val(3) * (X1 * X1)), aebounddp_mul(val(3), val(0), (X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2))), (val(2) * X2), aebounddp_mul_p2(1, DUlp(X2)/val(2))), X1, DUlp(X1)/val(2)), ((X1 * X1) + val(1)), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), val(1), val(0)))))), (val(3) * (((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)) / ((X1 * X1) + val(1)))), aebounddp_mul(val(3), val(0), (((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)) / ((X1 * X1) + val(1))), aebounddp_div(((val(3) * (X1 * X1)) + ((val(2) * X2) - X1)), aebounddp_add((val(3) * (X1 * X1)), aebounddp_mul(val(3), val(0), (X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2))), ((val(2) * X2) - X1), aebounddp_sub((val(2) * X2), aebounddp_mul_p2(1, DUlp(X2)/val(2)), X1, DUlp(X1)/val(2))), ((X1 * X1) + val(1)), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), val(1), val(0))))))))))
+
+
+
+himmilbeau:
+himmilbeau (X1,X2) :  X1 in [-5, 5], X2 in [-5, 5]
+
+aebounddp_add(((((X1 * X1) + X2) - val(11)) * (((X1 * X1) + X2) - val(11))), aebounddp_mul((((X1 * X1) + X2) - val(11)), aebounddp_sub(((X1 * X1) + X2), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), X2, DUlp(X2)/val(2)), val(11), val(0)), (((X1 * X1) + X2) - val(11)), aebounddp_sub(((X1 * X1) + X2), aebounddp_add((X1 * X1), aebounddp_mul(X1, DUlp(X1)/val(2), X1, DUlp(X1)/val(2)), X2, DUlp(X2)/val(2)), val(11), val(0))), (((X1 + (X2 * X2)) - val(7)) * ((X1 + (X2 * X2)) - val(7))), aebounddp_mul(((X1 + (X2 * X2)) - val(7)), aebounddp_sub((X1 + (X2 * X2)), aebounddp_add(X1, DUlp(X1)/val(2), (X2 * X2), aebounddp_mul(X2, DUlp(X2)/val(2), X2, DUlp(X2)/val(2))), val(7), val(0)), ((X1 + (X2 * X2)) - val(7)), aebounddp_sub((X1 + (X2 * X2)), aebounddp_add(X1, DUlp(X1)/val(2), (X2 * X2), aebounddp_mul(X2, DUlp(X2)/val(2), X2, DUlp(X2)/val(2))), val(7), val(0))))
+
+
+
+t_div_t1:
+t_div_t1(T) : T in [0, 999]
+
+aebounddp_div(T, DUlp(T)/val(2), (T + val(1)), aebounddp_add(T, DUlp(T)/val(2), val(1), val(0)))
+
+
+
+kepler0:
+kepler0(X1,X2,X3,X4,X5,X6) : 
+  X1 in [4, 6.36],
+  X2 in [4, 6.36],
+  X3 in [4, 6.36],
+  X4 in [4, 6.36],
+  X5 in [4, 6.36],
+  X6 in [4, 6.36]
+
+aebounddp_add(((((X2 * X5) + (X3 * X6)) - (X2 * X3)) - (X5 * X6)), aebounddp_sub((((X2 * X5) + (X3 * X6)) - (X2 * X3)), aebounddp_sub(((X2 * X5) + (X3 * X6)), aebounddp_add((X2 * X5), aebounddp_mul(X2, DUlp(X2)/val(2), X5, DUlp(X5)/val(2)), (X3 * X6), aebounddp_mul(X3, DUlp(X3)/val(2), X6, DUlp(X6)/val(2))), (X2 * X3), aebounddp_mul(X2, DUlp(X2)/val(2), X3, DUlp(X3)/val(2))), (X5 * X6), aebounddp_mul(X5, DUlp(X5)/val(2), X6, DUlp(X6)/val(2))), (X1 * ((((((-X1) + X2) + X3) - X4) + X5) + X6)), aebounddp_mul(X1, DUlp(X1)/val(2), ((((((-X1) + X2) + X3) - X4) + X5) + X6), aebounddp_add((((((-X1) + X2) + X3) - X4) + X5), aebounddp_add(((((-X1) + X2) + X3) - X4), aebounddp_sub((((-X1) + X2) + X3), aebounddp_add(((-X1) + X2), aebounddp_add((-X1), aebounddp_neg(X1, DUlp(X1)/val(2)), X2, DUlp(X2)/val(2)), X3, DUlp(X3)/val(2)), X4, DUlp(X4)/val(2)), X5, DUlp(X5)/val(2)), X6, DUlp(X6)/val(2))))
+
+
+
+kepler1:
+kepler1(X1,X2,X3,X4) : 
+  X1 in [4, 6.36],
+  X2 in [4, 6.36],
+  X3 in [4, 6.36],
+  X4 in [4, 6.36]
+
+aebounddp_sub((((X1 * (X4 * ((((-X1) + X2) + X3) - X4))) + (X2 * (((X1 - X2) + X3) + X4))) + (X3 * (((X1 + X2) - X3) + X4))), aebounddp_add(((X1 * (X4 * ((((-X1) + X2) + X3) - X4))) + (X2 * (((X1 - X2) + X3) + X4))), aebounddp_add((X1 * (X4 * ((((-X1) + X2) + X3) - X4))), aebounddp_mul(X1, DUlp(X1)/val(2), (X4 * ((((-X1) + X2) + X3) - X4)), aebounddp_mul(X4, DUlp(X4)/val(2), ((((-X1) + X2) + X3) - X4), aebounddp_sub((((-X1) + X2) + X3), aebounddp_add(((-X1) + X2), aebounddp_add((-X1), aebounddp_neg(X1, DUlp(X1)/val(2)), X2, DUlp(X2)/val(2)), X3, DUlp(X3)/val(2)), X4, DUlp(X4)/val(2)))), (X2 * (((X1 - X2) + X3) + X4)), aebounddp_mul(X2, DUlp(X2)/val(2), (((X1 - X2) + X3) + X4), aebounddp_add(((X1 - X2) + X3), aebounddp_add((X1 - X2), aebounddp_sub(X1, DUlp(X1)/val(2), X2, DUlp(X2)/val(2)), X3, DUlp(X3)/val(2)), X4, DUlp(X4)/val(2)))), (X3 * (((X1 + X2) - X3) + X4)), aebounddp_mul(X3, DUlp(X3)/val(2), (((X1 + X2) - X3) + X4), aebounddp_add(((X1 + X2) - X3), aebounddp_sub((X1 + X2), aebounddp_add(X1, DUlp(X1)/val(2), X2, DUlp(X2)/val(2)), X3, DUlp(X3)/val(2)), X4, DUlp(X4)/val(2)))), ((X2 * (X3 * X4)) - ((X1 * X3) - ((X1 * X2) - X4))), aebounddp_sub((X2 * (X3 * X4)), aebounddp_mul(X2, DUlp(X2)/val(2), (X3 * X4), aebounddp_mul(X3, DUlp(X3)/val(2), X4, DUlp(X4)/val(2))), ((X1 * X3) - ((X1 * X2) - X4)), aebounddp_sub((X1 * X3), aebounddp_mul(X1, DUlp(X1)/val(2), X3, DUlp(X3)/val(2)), ((X1 * X2) - X4), aebounddp_sub((X1 * X2), aebounddp_mul(X1, DUlp(X1)/val(2), X2, DUlp(X2)/val(2)), X4, DUlp(X4)/val(2)))))
+
+
+
+
+kepler2:
+kepler2(X1,X2,X3,X4,X5,X6) : 
+  X1 in [4, 6.36],
+  X2 in [4, 6.36],
+  X3 in [4, 6.36],
+  X4 in [4, 6.36],
+  X5 in [4, 6.36],
+  X6 in [4, 6.36]
+
+aebounddp_sub(((((X1 * (X4 * ((((((-X1) + X2) + X3) - X4) + X5) + X6))) + (X2 * (X5 * (X1 - (X2 + (X3 + (X4 - (X5 + X6)))))))) + (X3 * (X6 * (X1 + (X2 - (X3 + (X4 + (X5 - X6)))))))) - (((X2 * X3) * X4) - ((X1 * X3) * X5))), aebounddp_sub((((X1 * (X4 * ((((((-X1) + X2) + X3) - X4) + X5) + X6))) + (X2 * (X5 * (X1 - (X2 + (X3 + (X4 - (X5 + X6)))))))) + (X3 * (X6 * (X1 + (X2 - (X3 + (X4 + (X5 - X6)))))))), aebounddp_add(((X1 * (X4 * ((((((-X1) + X2) + X3) - X4) + X5) + X6))) + (X2 * (X5 * (X1 - (X2 + (X3 + (X4 - (X5 + X6)))))))), aebounddp_add((X1 * (X4 * ((((((-X1) + X2) + X3) - X4) + X5) + X6))), aebounddp_mul(X1, DUlp(X1)/val(2), (X4 * ((((((-X1) + X2) + X3) - X4) + X5) + X6)), aebounddp_mul(X4, DUlp(X4)/val(2), ((((((-X1) + X2) + X3) - X4) + X5) + X6), aebounddp_add((((((-X1) + X2) + X3) - X4) + X5), aebounddp_add(((((-X1) + X2) + X3) - X4), aebounddp_sub((((-X1) + X2) + X3), aebounddp_add(((-X1) + X2), aebounddp_add((-X1), aebounddp_neg(X1, DUlp(X1)/val(2)), X2, DUlp(X2)/val(2)), X3, DUlp(X3)/val(2)), X4, DUlp(X4)/val(2)), X5, DUlp(X5)/val(2)), X6, DUlp(X6)/val(2)))), (X2 * (X5 * (X1 - (X2 + (X3 + (X4 - (X5 + X6))))))), aebounddp_mul(X2, DUlp(X2)/val(2), (X5 * (X1 - (X2 + (X3 + (X4 - (X5 + X6)))))), aebounddp_mul(X5, DUlp(X5)/val(2), (X1 - (X2 + (X3 + (X4 - (X5 + X6))))), aebounddp_sub(X1, DUlp(X1)/val(2), (X2 + (X3 + (X4 - (X5 + X6)))), aebounddp_add(X2, DUlp(X2)/val(2), (X3 + (X4 - (X5 + X6))), aebounddp_add(X3, DUlp(X3)/val(2), (X4 - (X5 + X6)), aebounddp_sub(X4, DUlp(X4)/val(2), (X5 + X6), aebounddp_add(X5, DUlp(X5)/val(2), X6, DUlp(X6)/val(2))))))))), (X3 * (X6 * (X1 + (X2 - (X3 + (X4 + (X5 - X6))))))), aebounddp_mul(X3, DUlp(X3)/val(2), (X6 * (X1 + (X2 - (X3 + (X4 + (X5 - X6)))))), aebounddp_mul(X6, DUlp(X6)/val(2), (X1 + (X2 - (X3 + (X4 + (X5 - X6))))), aebounddp_add(X1, DUlp(X1)/val(2), (X2 - (X3 + (X4 + (X5 - X6)))), aebounddp_sub(X2, DUlp(X2)/val(2), (X3 + (X4 + (X5 - X6))), aebounddp_add(X3, DUlp(X3)/val(2), (X4 + (X5 - X6)), aebounddp_add(X4, DUlp(X4)/val(2), (X5 - X6), aebounddp_sub(X5, DUlp(X5)/val(2), X6, DUlp(X6)/val(2))))))))), (((X2 * X3) * X4) - ((X1 * X3) * X5)), aebounddp_sub(((X2 * X3) * X4), aebounddp_mul((X2 * X3), aebounddp_mul(X2, DUlp(X2)/val(2), X3, DUlp(X3)/val(2)), X4, DUlp(X4)/val(2)), ((X1 * X3) * X5), aebounddp_mul((X1 * X3), aebounddp_mul(X1, DUlp(X1)/val(2), X3, DUlp(X3)/val(2)), X5, DUlp(X5)/val(2)))), (((X1 * X2) * X6) - ((X4 * X5) * X6)), aebounddp_sub(((X1 * X2) * X6), aebounddp_mul((X1 * X2), aebounddp_mul(X1, DUlp(X1)/val(2), X2, DUlp(X2)/val(2)), X6, DUlp(X6)/val(2)), ((X4 * X5) * X6), aebounddp_mul((X4 * X5), aebounddp_mul(X4, DUlp(X4)/val(2), X5, DUlp(X5)/val(2)), X6, DUlp(X6)/val(2))))
+
+
+

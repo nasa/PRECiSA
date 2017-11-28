@@ -1,6 +1,0 @@
-(extra-load-from-lib "interval_arith" "pvs-strategies")
-(extra-load-from-lib "PRECiSA" "pvs-strategies")
-
-(defattach |precIOsa.precisa_builtin| ()
-  "PRECiSA builtins"
-   *precisa-builtin*)

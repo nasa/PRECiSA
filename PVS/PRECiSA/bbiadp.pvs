@@ -11,6 +11,8 @@ BEGIN
 	    bbiadp_sin,
 	    bbiadp_cos,
 	    bbiadp_atn, bbiadp_atn_t,
+	    bbiadp_exp,
+	    bbiadp_ln,
   	    interval_arith@strategies
 
   % The following constant is used by the strategies to check if all the re-

@@ -1,0 +1,10 @@
+himmilbeau: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+himmilbeau (X1, X2: unb_double):unb_double =
+Dadd(
+Dmul(Dsub(Dadd(Dmul(X1,X1), X2),RtoD(11)), Dsub(Dadd(Dmul(X1,X1), X2),RtoD(11))),
+Dmul(Dsub(Dadd(X1,Dmul(X2,X2)), RtoD(7)),Dsub(Dadd(X1,Dmul(X2,X2)), RtoD(7))))
+
+END himmilbeau

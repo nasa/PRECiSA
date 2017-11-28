@@ -1,0 +1,42 @@
+bbiasp_exp: THEORY
+BEGIN
+
+  IMPORTING interval_ulp_sp,
+  	    float@aerr754sp_exp,
+	    interval_arith@interval_lnexp
+
+  R,E: VAR Interval
+  n  : VAR nat
+
+  aeboundsp_exp_ia(n)(R,E): Interval =
+    If NonNeg?(E)
+    THEN Add(Mult(Sub(Exp(n)(E),[|1|]),Exp(n)(R)),
+    	     Div(Ulp_sp(Exp(n)(Add(R,E))),[|2|]))
+    ELSE EmptyInterval
+    ENDIF
+ 
+  re1,re2: VAR RealExpr
+
+  x1,x2: VAR real
+
+  aeboundsp_exp_safe(r,e: real): real =
+    IF e >= 0
+    THEN aeboundsp_exp(r,e)
+    ELSE 1 ENDIF
+
+  AEB_EXP_inclusion_j: JUDGEMENT
+    aeboundsp_exp_ia(n)
+    HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aeboundsp_exp_safe))
+
+  AEB_EXP_fundmental_j: JUDGEMENT
+    aeboundsp_exp_ia(n)
+    HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
+
+  AEB_EXP(n)(re1,re2):  RealExpr =
+    FUN2(Any?,
+         pre1to2b(NonNeg?),
+	 aeboundsp_exp_safe,
+	 aeboundsp_exp_ia(n),
+	 re1,re2)
+
+END bbiasp_exp

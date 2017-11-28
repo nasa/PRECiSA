@@ -1,7 +1,8 @@
 precIOsa: THEORY
 BEGIN
 
-  IMPORTING interval_arith@strategies
+  IMPORTING interval_arith@strategies,
+  	    interval_arith@interval_io
 
   precisa_builtin: list[IASubstitution]
 

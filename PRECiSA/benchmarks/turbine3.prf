@@ -1,0 +1,12 @@
+(turbine3
+ (turbine3_TCC1 0
+  (turbine3_TCC1-1 nil 3718646123
+   ("" (then (skeep* :preds? t) (assert) (eval-formulas :quiet? t))
+    nil)
+   nil nil))
+ (turbine3_TCC2 0
+  (turbine3_TCC2-1 nil 3718646123
+   ("" (then (skeep* :preds? t) (assert) (eval-formulas :quiet? t))
+    nil)
+   nil nil)))
+

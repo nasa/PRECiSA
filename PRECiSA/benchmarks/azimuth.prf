@@ -1,0 +1,9 @@
+(azimuth
+ (azimuth_TCC1 0
+  (azimuth_TCC1-1 nil 3718646051
+   ("" (then (skeep* :preds? t) (assert) (eval-formulas :quiet? t))
+    nil)
+   ((real_minus_real_is_real application-judgement "real" reals nil)
+    (real_times_real_is_real application-judgement "real" reals nil))
+   nil)))
+

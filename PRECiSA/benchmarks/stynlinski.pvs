@@ -1,0 +1,24 @@
+stynlinski: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+stynlinski(X,Y: unb_double): unb_double =
+    IF (Y <= RtoD(0)) THEN
+		IF (X <= RtoD(0)) THEN
+            Dadd(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.83079), X), Dadd(Dmul(RtoD(0.786996), Dmul(X,X)), Dsub(Dmul(RtoD(2.83079),Y),
+            Dadd(Dmul(RtoD(0.000000000000000107939),Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+    	ELSE
+            Dsub(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.33079), X), Dadd(Dmul(RtoD(0.786996), Dmul(X,X)), Dadd(Dmul(RtoD(2.83079),Y),
+            Dadd(Dmul(RtoD(0.00000000000000091748),Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+      	ENDIF
+    ELSE
+    	IF (X <= RtoD(0)) THEN
+            Dadd(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.83079),X), Dsub(Dmul(RtoD(0.786996), Dmul(X,X)), Dadd(Dmul(RtoD(2.33079),Y),
+            Dadd(Dmul(RtoD(0.000000000000000323816), Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+        ELSE
+            Dsub(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.33079),X), Dsub(Dmul(RtoD(0.786996),Dmul(X,X)),
+            Dadd(Dmul(RtoD(2.33079),Y), Dadd(Dmul(RtoD(0.00000000000000172702), Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+        ENDIF
+    ENDIF     
+
+END stynlinski

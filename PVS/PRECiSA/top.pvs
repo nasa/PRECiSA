@@ -14,6 +14,8 @@ BEGIN
 	    bbiasp_sin,
 	    bbiasp_cos,
 	    bbiasp_atn, bbiasp_atn_t,
+	    bbiasp_ln,
+	    bbiasp_exp,
 	    bbiasp,
             % Double Precision 
 	    interval_ulp_dp,  % Extension for the Branch and Bound algorithm
@@ -27,6 +29,8 @@ BEGIN
 	    bbiadp_sin,
 	    bbiadp_cos,
 	    bbiadp_atn, bbiadp_atn_t,
+	    bbiadp_ln,
+	    bbiadp_exp,
 	    bbiadp,
             precIOsa,
             strategies
