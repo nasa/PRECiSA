@@ -192,7 +192,7 @@ Contact information
 -------------------
 If you have any question or problem, please contact:
 
-* [Laura Titolo](laura.titolo@nianet.org) (for PRECiSA)
-* [Mariano Moscato](mariano.moscato@nianet.org) (for PVS)
-* [Marco A. Feliu](marco.feliu@nianet.org) (for Kodiak)
-* [Cesar A. Munoz](cesar.a.munoz@nasa.gov) (PRECiSA @ NASA)
+* [Laura Titolo](mailto:laura.titolo@nianet.org) (for PRECiSA)
+* [Mariano Moscato](mailto:mariano.moscato@nianet.org) (for PVS)
+* [Marco A. Feliu](mailto:marco.feliu@nianet.org) (for Kodiak)
+* [C&eacute;sar A. Mu&ntilde;oz](http://shemesh.larc.nasa.gov/people/cam) (PRECiSA @ NASA)
