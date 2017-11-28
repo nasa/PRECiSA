@@ -1,7 +1,0 @@
-cpr_rLat1_single: THEORY
-BEGIN
-IMPORTING float@aerr754sp
-
-rLat1 (YZ, Lat: unb_single): unb_single = Smul(Sdiv(RtoS(360), Ssub(RtoS(60), RtoS(1))), Sadd(Sdiv(YZ, RtoS(131072)), Sfloor(Sdiv(Lat, Sdiv(RtoS(360), Ssub(RtoS(60), RtoS(1)))))))
-
-END cpr_rLat1_single

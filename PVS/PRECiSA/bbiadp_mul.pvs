@@ -48,8 +48,68 @@ BEGIN
                    AND Fundamental4?( Any?, pre1to2b(NonNeg?), Any3?,
 		       		      pre1to4d(NonNeg?) ) (F)}
 
-  AEB_MUL(re1,re2,re3,re4): RealExpr =
+  AEB_MUL(re1,re2,re3,re4):  RealExpr =
     FUN4(Any?,pre1to2b(NonNeg?),Any3?,pre1to4d(NonNeg?),aebounddp_mul_safe,
       aebounddp_mul_ia,re1,re2,re3,re4)
+
+  % --- special cases: multiplication by power of two
+
+  % Contrary to the cases of the trigonometric functions where n represents the
+  % precision used to calculate the function, here n represents the power of 
+  % two participating in the multiplication.
+  
+  aebounddp_mul_p2l_ia(n:nat)(E1): Interval =
+    If NonNeg?(E1) 
+    THEN Mult([|2^n|],E1)
+    ELSE EmptyInterval
+    ENDIF
+
+  aebounddp_mul_p2l_safe(n:nat)(x1): real =
+    IF x1 < 0 THEN 1
+    ELSE aebounddp_mul_p2l(n,x1) ENDIF
+
+  n: VAR nat
+
+  AEB_MUL_P2L_inclusion_j: JUDGEMENT
+    aebounddp_mul_p2l_ia(n)
+    HAS_TYPE (Inclusion?( NonNeg?,
+			  aebounddp_mul_p2l_safe(n)))
+
+
+  AEB_MUL_P2L_j: JUDGEMENT
+    aebounddp_mul_p2l_ia(n)
+    HAS_TYPE {F: [Interval -> Interval] |
+             	   Inclusion?( NonNeg?, aebounddp_mul_p2l_safe(n) ) (F)
+                   AND Fundamental?( NonNeg? ) (F)}
+
+  AEB_MUL_P2L(n)(re1):  RealExpr =
+    FUN(NonNeg?,aebounddp_mul_p2l_safe(n),aebounddp_mul_p2l_ia(n),re1)
+
+  %
+
+  aebounddp_mul_p2r_ia(n:nat)(E1): Interval =
+    If NonNeg?(E1) 
+    THEN Mult(E1,[|2^n|])
+    ELSE EmptyInterval
+    ENDIF
+
+  aebounddp_mul_p2r_safe(n:nat)(x1): real =
+    IF x1 < 0 THEN 1
+    ELSE aebounddp_mul_p2r(n,x1) ENDIF
+
+  AEB_MUL_P2R_inclusion_j: JUDGEMENT
+    aebounddp_mul_p2r_ia(n)
+    HAS_TYPE (Inclusion?( NonNeg?,
+			  aebounddp_mul_p2r_safe(n)))
+
+
+  AEB_MUL_P2R_j: JUDGEMENT
+    aebounddp_mul_p2r_ia(n)
+    HAS_TYPE {F: [Interval -> Interval] |
+             	   Inclusion?( NonNeg?, aebounddp_mul_p2r_safe(n) ) (F)
+                   AND Fundamental?( NonNeg? ) (F)}
+
+  AEB_MUL_P2R(n)(re1):  RealExpr =
+    FUN(NonNeg?,aebounddp_mul_p2r_safe(n),aebounddp_mul_p2r_ia(n),re1)
 
 END bbiadp_mul

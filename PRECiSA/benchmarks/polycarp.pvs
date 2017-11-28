@@ -1,0 +1,10 @@
+polycarp: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+	polycarp (P_i_x,P_i_y,S_x,S_y,BUFF: unb_double) : unb_double =
+		IF (P_i_y >= Dsub(S_y,BUFF) AND Dabs(Dsub(P_i_x,S_x))<BUFF)
+		THEN Dsub(P_i_x,Dmul(RtoD(2),BUFF))
+        ELSE P_i_x ENDIF
+
+END polycarp

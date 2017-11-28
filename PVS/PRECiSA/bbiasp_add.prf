@@ -81,64 +81,59 @@
                                       (split 1)
                                       (("1"
                                         (with-tccs
-                                         (use "Ulp_sp_inclusion"))
+                                         (lemma "Ulp_sp_inclusion"))
                                         (("1"
-                                          (assert)
+                                          (inst? -1 :where 1)
                                           (("1"
-                                            (hide 2)
+                                            (assert)
                                             (("1"
-                                              (lemma "Add_inclusion")
+                                              (hide 2)
                                               (("1"
-                                                (inst
-                                                 -1
-                                                 "Add(Abs(X1), Abs(X3))"
-                                                 "Add(X2, X4)"
-                                                 "abs(x1) + abs(x3)"
-                                                 "x2 + x4")
+                                                (expand
+                                                 "add_ulp_bound")
                                                 (("1"
-                                                  (assert)
+                                                  (lemma
+                                                   "Add_inclusion")
                                                   (("1"
-                                                    (hide 2)
+                                                    (inst
+                                                     -1
+                                                     "Abs(Add(X1,X3))"
+                                                     "Add(X2, X4)"
+                                                     "abs(x1 + x3)"
+                                                     "x2 + x4")
                                                     (("1"
-                                                      (split 1)
+                                                      (assert)
                                                       (("1"
-                                                        (with-tccs
-                                                         (use
-                                                          "Add_inclusion"))
+                                                        (hide 2)
                                                         (("1"
-                                                          (assert)
+                                                          (split 1)
                                                           (("1"
-                                                            (hide 2)
+                                                            (use
+                                                             "Abs_inclusion")
                                                             (("1"
-                                                              (split 1)
+                                                              (assert)
                                                               (("1"
-                                                                (use
-                                                                 "Abs_inclusion")
+                                                                (hide
+                                                                 2)
                                                                 (("1"
-                                                                  (assert)
-                                                                  nil
-                                                                  nil))
-                                                                nil)
-                                                               ("2"
-                                                                (with-tccs
-                                                                 (use
-                                                                  "Abs_inclusion"))
-                                                                (("2"
-                                                                  (assert)
-                                                                  nil
+                                                                  (use
+                                                                   "Add_inclusion")
+                                                                  (("1"
+                                                                    (assert)
+                                                                    nil
+                                                                    nil))
                                                                   nil))
                                                                 nil))
                                                               nil))
+                                                            nil)
+                                                           ("2"
+                                                            (use
+                                                             "Add_inclusion")
+                                                            (("2"
+                                                              (assert)
+                                                              nil
+                                                              nil))
                                                             nil))
-                                                          nil))
-                                                        nil)
-                                                       ("2"
-                                                        (with-tccs
-                                                         (use
-                                                          "Add_inclusion"))
-                                                        (("2"
-                                                          (assert)
-                                                          nil
                                                           nil))
                                                         nil))
                                                       nil))
@@ -194,29 +189,26 @@
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
     (Ge const-decl "bool" interval "interval_arith/")
-    (nnreal_plus_nnreal_is_nnreal application-judgement "nnreal"
-     real_types nil)
-    (real_plus_real_is_real application-judgement "real" reals nil)
     (aeboundsp_add const-decl "nonneg_real" aerr754sp_add "float/")
     (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
     (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
-    (NonNeg_Add application-judgement "(NonNeg?)" interval
      "interval_arith/")
     (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
      interval_ulp_sp nil)
     (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
      interval_ulp_sp nil)
+    (real_plus_real_is_real application-judgement "real" reals nil)
     (Zeroless_Precondition name-judgement "(Precondition?)" interval
      "interval_arith/")
     (Abs_inclusion formula-decl nil interval "interval_arith/")
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
+         nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
     (Ulp_sp_inclusion formula-decl nil interval_ulp_sp nil)
     (Div_inclusion formula-decl nil interval "interval_arith/")
     (Add_inclusion formula-decl nil interval "interval_arith/")
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (- const-decl "[numfield -> numfield]" number_fields nil)
-    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (add_ulp_bound const-decl "nonneg_real" accum_err_add "float/")
     (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
     (/ const-decl "[numfield, nznum -> numfield]" number_fields nil)
     (nznum nonempty-type-eq-decl nil number_fields nil)
@@ -259,6 +251,8 @@
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
     (TRUE const-decl "bool" booleans nil)
+    (nnreal_plus_nnreal_is_nnreal application-judgement "nnreal"
+     real_types nil)
     (sp_closest?_closestroundingpred_j name-judgement
      "ClosestRoundingPred[2](single_precision_format)" ieee754sp
      "float/")
@@ -523,31 +517,17 @@
                                                   (split)
                                                   (("1"
                                                     (use
-                                                     "Add_fundamental")
+                                                     "Abs_fundamental")
                                                     (("1"
                                                       (assert)
                                                       (("1"
-                                                        (split 1)
+                                                        (hide 2)
                                                         (("1"
-                                                          (hide 2)
+                                                          (use
+                                                           "Add_fundamental")
                                                           (("1"
-                                                            (use
-                                                             "Abs_fundamental")
-                                                            (("1"
-                                                              (assert)
-                                                              nil
-                                                              nil))
-                                                            nil))
-                                                          nil)
-                                                         ("2"
-                                                          (hide 2)
-                                                          (("2"
-                                                            (use
-                                                             "Abs_fundamental")
-                                                            (("2"
-                                                              (assert)
-                                                              nil
-                                                              nil))
+                                                            (assert)
+                                                            nil
                                                             nil))
                                                           nil))
                                                         nil))
@@ -643,8 +623,6 @@
     (r2i_Nneg application-judgement "(NonNeg?)" interval
      "interval_arith/")
     (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
-    (NonNeg_Add application-judgement "(NonNeg?)" interval
-     "interval_arith/")
     (aeboundsp_add_ia const-decl "Interval" bbiasp_add nil)
     (boolean nonempty-type-decl nil booleans nil)
     (bool nonempty-type-eq-decl nil booleans nil)

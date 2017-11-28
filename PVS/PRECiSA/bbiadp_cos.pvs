@@ -32,7 +32,7 @@ BEGIN
     aebounddp_cos_ia(n)
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
 
-  AEB_COS(n)(re1,re2): RealExpr =
+  AEB_COS(n)(re1,re2):  RealExpr =
     FUN2(Any?,
          pre1to2b(NonNeg?),
 	 aebounddp_cos_safe,

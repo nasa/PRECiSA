@@ -1,0 +1,36 @@
+hartman6: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+hartman6 (X1,X2,X3,X4,X5,X6: unb_double):unb_double =
+LET E1 = Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X1, RtoD(0.1312)), Dsub(X1, RtoD(0.1312)))),
+              Dadd(Dmul(RtoD(3.0),  Dmul(Dsub(X2, RtoD(0.1696)), Dsub(X2, RtoD(0.1696)))),
+                   Dadd(Dmul(RtoD(17.0), Dmul(Dsub(X3, RtoD(0.5569)), Dsub(X3, RtoD(0.5569)))),
+                        Dadd(Dmul(RtoD(3.5),  Dmul(Dsub(X4, RtoD(0.0124)), Dsub(X4, RtoD(0.0124)))),
+                             Dadd(Dmul(RtoD(1.7),  Dmul(Dsub(X5, RtoD(0.8283)), Dsub(X5, RtoD(0.8283)))),
+                                  Dmul(RtoD(8.0),  Dmul(Dsub(X6, RtoD(0.5886)), Dsub(X6, RtoD(0.5886)))))))))
+IN
+LET E2 = Dadd(Dmul(RtoD(0.05), Dmul(Dsub(X1, RtoD(0.2329)), Dsub(X1, RtoD(0.2329)))),
+              Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X2, RtoD(0.4135)), Dsub(X2, RtoD(0.4135)))),
+                   Dadd(Dmul(RtoD(17.0), Dmul(Dsub(X3, RtoD(0.8307)), Dsub(X3, RtoD(0.8307)))),
+                        Dadd(Dmul(RtoD(0.1),  Dmul(Dsub(X4, RtoD(0.3736)), Dsub(X4, RtoD(0.3736)))),
+                             Dadd(Dmul(RtoD(8.0),  Dmul(Dsub(X5, RtoD(0.1004)), Dsub(X5, RtoD(0.1004)))),
+                                  Dmul(RtoD(14.0), Dmul(Dsub(X6, RtoD(0.9991)), Dsub(X6, RtoD(0.9991)))))))))
+IN
+LET E3 = Dadd(Dmul(RtoD(3.0 ), Dmul(Dsub(X1, RtoD(0.2348)), Dsub(X1, RtoD(0.2348)))),
+              Dadd(Dmul(RtoD(3.5 ), Dmul(Dsub(X2, RtoD(0.1451)), Dsub(X2, RtoD(0.1451)))),
+                   Dadd(Dmul(RtoD(1.7 ), Dmul(Dsub(X3, RtoD(0.3522)), Dsub(X3, RtoD(0.3522)))),
+                        Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X4, RtoD(0.2883)), Dsub(X4, RtoD(0.2883)))),
+                             Dadd(Dmul(RtoD(17.0), Dmul(Dsub(X5, RtoD(0.3047)), Dsub(X5, RtoD(0.3047)))),
+                                  Dmul(RtoD(8.0 ), Dmul(Dsub(X6, RtoD(0.665 )), Dsub(X6, RtoD(0.665 )))))))))
+IN 
+LET E4 = Dadd(Dmul(RtoD(17.0), Dmul(Dsub(X1, RtoD(0.4047)), Dsub(X1, RtoD(0.4047)))),
+              Dadd(Dmul(RtoD(8.0 ), Dmul(Dsub(X2, RtoD(0.8828)), Dsub(X2, RtoD(0.8828)))),
+                   Dadd(Dmul(RtoD(0.05), Dmul(Dsub(X3, RtoD(0.8732)), Dsub(X3, RtoD(0.8732)))),
+                        Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X4, RtoD(0.5743)), Dsub(X4, RtoD(0.5743)))),
+                             Dadd(Dmul(RtoD(0.1 ), Dmul(Dsub(X5, RtoD(0.1091)), Dsub(X5, RtoD(0.1091)))),
+                                  Dmul(RtoD(14.0), Dmul(Dsub(X6, RtoD(0.0381)), Dsub(X6, RtoD(0.0381)))))))))
+IN
+Dneg(Dadd(Dmul(RtoD(1.0), Dexp(Dneg(E1))), Dadd(Dmul(RtoD(1.2), Dexp(Dneg(E2))), Dadd(Dmul(RtoD(3.0), Dexp(Dneg(E3))), Dmul(RtoD(3.2), Dexp(Dneg(E4)))))))
+
+END hartman6

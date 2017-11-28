@@ -1,19 +1,16 @@
-Processing PRECiSA/top.pvs. Writing output to file summaries/PRECiSA.summary
-Logging PVS information in summaries/PRECiSA.log
-Grand Totals: 123 proofs, 123 attempted, 123 succeeded (104.24 s);;; GC:;;; Finished GC
+Processing PRECiSA/top.pvs. Writing output to file ./PRECiSA.summary
+Grand Totals: 123 proofs, 123 attempted, 123 succeeded (104.00 s);;; GC:;;; Finished GC
 
-Processing CD2D_tau/top.pvs. Writing output to file summaries/CD2D_tau.summary
-Logging PVS information in summaries/CD2D_tau.log
-Grand Totals: 104 proofs, 104 attempted, 104 succeeded (696.01 s);;; GC:;;; Finished GC
+Processing CD2D_tau/top.pvs. Writing output to file ./CD2D_tau.summary
+Grand Totals: 102 proofs, 102 attempted, 102 succeeded (651.02 s);;; GC:;;; Finished GC
 
-Processing CPR/top.pvs. Writing output to file summaries/CPR.summary
-Logging PVS information in summaries/CPR.log
-Grand Totals: 38 proofs, 38 attempted, 38 succeeded (86.84 s)
+Processing CPR/top.pvs. Writing output to file ./CPR.summary
+Grand Totals: 38 proofs, 38 attempted, 38 succeeded (86.37 s)
 
-PVS_LIBRARY_PATH=/Users/cmunoz/src/PRECiSA/PRECiSA.git/PVS:/Users/cmunoz/local/PVS/nasalib
+PVS_LIBRARY_PATH=/Users/marianomoscato/PVS/PVS/nasalib:~/nasa/PRECiSA/PVS
 PRECiSA                  [OK: 123 proofs]
-CD2D_tau                 [OK: 104 proofs]
+CD2D_tau                 [OK: 102 proofs]
 CPR                      [OK: 38 proofs]
 
-*** Grand Totals: 265 proofs / 265 formulas. Missed: 0 formulas.
+*** Grand Totals: 263 proofs / 263 formulas. Missed: 0 formulas.
 *** Number of libraries: 3

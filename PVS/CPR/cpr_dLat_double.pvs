@@ -1,8 +1,0 @@
-cpr_dLat_double: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-   dLat (I: unb_double | DtoR(Dsub(RtoD(60), I)) /= 0): unb_double =
-     Ddiv(RtoD(360), Dsub(RtoD(60), I))
-   
-END cpr_dLat_double

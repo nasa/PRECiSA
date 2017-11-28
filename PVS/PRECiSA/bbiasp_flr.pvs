@@ -8,7 +8,7 @@ BEGIN
 
   aeboundsp_flr_ia(R,E): Interval =
     If NonNeg?(E)
-    THEN Add(Add(E,[|1|]), Div(Ulp_sp(Add(Abs(Floor(R)),Add(E,[|1|]))),[|2|]))
+    THEN Add(E,[|1|])
     ELSE EmptyInterval
     ENDIF
  
@@ -28,7 +28,7 @@ BEGIN
     aeboundsp_flr_ia
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
 
-  AEB_FLR(re1,re2): RealExpr =
+  AEB_FLR(re1,re2):  RealExpr =
     FUN2(Any?,pre1to2b(NonNeg?),aeboundsp_flr_safe,aeboundsp_flr_ia,re1,re2)
 
 END bbiasp_flr

@@ -1,7 +1,0 @@
-verhulst: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-verhulst(X: unb_double | DtoR(Dadd(RtoD(1),Ddiv(X,RtoD(1.11)))) /= 0):unb_double =
-  Ddiv(Dmul(RtoD(4),X),Dadd(RtoD(1),Ddiv(X,RtoD(1.11))))
-END verhulst

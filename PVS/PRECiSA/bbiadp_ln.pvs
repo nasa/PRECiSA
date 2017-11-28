@@ -1,0 +1,56 @@
+bbiadp_ln: THEORY
+BEGIN
+
+  IMPORTING interval_ulp_dp,
+  	    float@aerr754dp_ln,
+	    interval_arith@interval_lnexp,
+	    interval_arith@interval_props
+
+  R,E: VAR Interval
+  n  : VAR nat
+
+  aeb_lgn_pre2(R1,E1:Interval): bool =
+	   NonNeg?(E1) AND
+	   Proper?(R1) AND
+	   Proper?(E1) AND
+           Pos?(Sub(R1,E1))
+
+  aeb_lgn_pre2_is_enough_for_aebounddp_ln_ia_tccs: LEMMA
+    FORALL(R1:ProperInterval,E1:ProperInterval | NonNeg?(E1)):
+      Pos?(Sub(R1,E1)) IMPLIES (Pos?(R1) AND Pos?(Sub([|1|],Div(E1,R1))))
+
+  aeb_lgn_pre2_predondition_j: JUDGEMENT
+    aeb_lgn_pre2 HAS_TYPE (Precondition2?)
+
+  aebounddp_ln_ia(n)(R,E): Interval =
+    If aeb_lgn_pre2(R,E)
+    THEN Add(Neg(Ln(n)(Sub([|1|],Div(E,R)))),
+    	     Div(Ulp_dp(Max(Abs(Ln(n)(Sub(R,E))),Abs(Ln(n)(Add(R,E))))),[|2|]))
+    ELSE EmptyInterval
+    ENDIF
+ 
+  re1,re2: VAR RealExpr
+
+  x1,x2: VAR real
+
+  aebounddp_ln_safe(r,e: real): real =
+    IF e >= 0 AND 0<r-e
+    THEN aebounddp_ln(r,e)
+    ELSE 1 ENDIF
+
+  AEB_LN_inclusion_j: JUDGEMENT
+    aebounddp_ln_ia(n)
+    HAS_TYPE (Inclusion2?(Any?,aeb_lgn_pre2,aebounddp_ln_safe))
+
+  AEB_LN_fundmental_j: JUDGEMENT
+    aebounddp_ln_ia(n)
+    HAS_TYPE (Fundamental2?(Any?,aeb_lgn_pre2))
+
+  AEB_LN(n)(re1,re2):  RealExpr =
+    FUN2(Any?,
+         aeb_lgn_pre2,
+	 aebounddp_ln_safe,
+	 aebounddp_ln_ia(n),
+	 re1,re2)
+
+END bbiadp_ln

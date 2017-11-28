@@ -1,0 +1,10 @@
+(doppler1_real
+ (dop1_real_TCC1 0
+  (dop1_real_TCC1-1 nil 3718646061
+   ("" (skeep* :preds? t) (("" (assert) nil nil)) nil)
+   ((posrat_div_posrat_is_posrat application-judgement "posrat"
+     rationals nil)
+    (real_times_real_is_real application-judgement "real" reals nil)
+    (real_plus_real_is_real application-judgement "real" reals nil))
+   nil)))
+

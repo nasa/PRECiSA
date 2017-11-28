@@ -1,0 +1,9 @@
+(jet_real
+ (jet_real_TCC1 0
+  (jet_real_TCC1-1 nil 3719600519
+   ("" (skeep* :preds? t) (("" (assert) nil nil)) nil)
+   ((real_minus_real_is_real application-judgement "real" reals nil)
+    (real_plus_real_is_real application-judgement "real" reals nil)
+    (real_times_real_is_real application-judgement "real" reals nil))
+   nil)))
+

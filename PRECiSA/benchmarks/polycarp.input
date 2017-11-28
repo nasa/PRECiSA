@@ -1,0 +1,1 @@
+polycarp (P_i_x,P_i_y,S_x,S_y,BUFF): P_i_x in [1,10], P_i_y in [1,10], S_x in [1,10], S_y in [1,10] ,BUFF in [0.1, 0.3]
