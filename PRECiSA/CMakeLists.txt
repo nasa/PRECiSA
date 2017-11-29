@@ -15,8 +15,8 @@ ENDIF (DEFINED ENV{KODIAK_LIB})
 
 FIND_PATH(KODIAK_LIBRARY_DIR
   NAMES
-  libKodiak.so
-  libKodiak.dylib
+  libkodiak.so
+  libkodiak.dylib
   PATHS
   $ENV{KODIAK_LIB}
   )
