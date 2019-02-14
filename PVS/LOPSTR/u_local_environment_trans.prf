@@ -1,0 +1,45 @@
+(u_local_environment_trans
+ (t1ToT2_var_index_id_TCC1 0
+  (t1ToT2_var_index_id_TCC1-1 nil 3755878145
+   ("" (use "t1ToT2_fpvar_rvar") nil nil)
+   ((t1ToT2_fpvar_rvar formula-decl nil u_local_environment_trans nil))
+   nil))
+ (translatedFrom?_TCC1 0
+  (translatedFrom?_TCC1-1 nil 3755598270 ("" (subtype-tcc) nil nil)
+   ((below type-eq-decl nil naturalnumbers nil)
+    (size const-decl "nat" u_local_environment nil)
+    (LocalEnvironment nonempty-type-decl nil u_local_environment nil)
+    (<< formal-const-decl "(strict_well_founded?[T2])"
+     u_local_environment_trans nil)
+    (strict_well_founded? const-decl "bool" orders nil)
+    (pred type-eq-decl nil defined_types nil)
+    (index2 formal-const-decl "[(variable?2) -> nat]"
+     u_local_environment_trans nil)
+    (variable?2 formal-const-decl "PRED[T2]" u_local_environment_trans
+     nil)
+    (PRED type-eq-decl nil defined_types nil)
+    (T2 formal-nonempty-type-decl nil u_local_environment_trans nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (>= const-decl "bool" reals nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (< const-decl "bool" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number nonempty-type-decl nil numbers nil)
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil))
+   nil))
+ (translate_TCC1 0
+  (translate_TCC1-1 nil 3755598270
+   ("" (use "translation_function_existence") nil nil)
+   ((translation_function_existence formula-decl nil
+     u_local_environment_trans nil))
+   nil)))
+

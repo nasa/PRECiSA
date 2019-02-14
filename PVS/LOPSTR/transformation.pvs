@@ -1,0 +1,254 @@
+transformation[
+  Operator            : TYPE+,
+  RealNumber          : TYPE+,
+  lt_r                : (strict_total_order?[RealNumber]),
+  applyFun_r          : [[Operator,RealNumber,RealNumber]->RealNumber],
+  FloatingPointNumber : TYPE+,
+  lt_fp               : (strict_total_order?[FloatingPointNumber]),
+  applyFun_fp         : [[Operator,FloatingPointNumber,FloatingPointNumber]->FloatingPointNumber],
+  FtoR 		      : [FloatingPointNumber -> RealNumber],
+  (IMPORTING program[Operator,RealNumber,FloatingPointNumber,FtoR],
+  	     semantics
+  	       [Operator,RealNumber,lt_r,applyFun_r,FloatingPointNumber,lt_fp,applyFun_fp,FtoR])
+
+  fpBExprRestriction  : PRED[FPBExpr],
+
+  beta_plus,beta_minus: [InputRestriction, env:FPLocalEnvironment
+  		      	 -> [{form: FPBExpr | bounded_by?(env)(form)} -> FPBExpr]]
+] : THEORY
+BEGIN
+  ASSUMING
+
+    X,Y: VAR FloatingPointNumber
+    rX,rY: VAR RealNumber
+  
+    lt_fp_lt_r
+    : ASSUMPTION
+      lt_fp(X,Y) = lt_r(FtoR(X),FtoR(Y))
+
+    inputRest: VAR InputRestriction
+
+    RestrictedFPBExpr: TYPE = (fpBExprRestriction)
+
+    fpLocalEnv : VAR FPLocalEnvironment
+
+    beta_plus_preserves_wellformedness: ASSUMPTION
+    FORALL( phi_fp : RestrictedFPBExpr | bounded_by?(fpLocalEnv)(phi_fp),
+    	    nargs  : nat )
+    : wellFormed?(phi_fp, nargs, size(fpLocalEnv))
+      IMPLIES wellFormed?(beta_plus(inputRest,fpLocalEnv)(phi_fp), nargs, size(fpLocalEnv))
+  
+    beta_minus_preserves_wellformedness: ASSUMPTION
+    FORALL( phi_fp : RestrictedFPBExpr | bounded_by?(fpLocalEnv)(phi_fp),
+    	    nargs  : nat )
+    : wellFormed?(phi_fp, nargs, size(fpLocalEnv))
+      IMPLIES wellFormed?(beta_minus(inputRest,fpLocalEnv)(phi_fp), nargs, size(fpLocalEnv))
+  
+    beta_plus_prop: ASSUMPTION
+      FORALL( nargs      : nat,
+   	      fpParamEnv : ValidInput(inputRest),
+	      fpLocalEnv : FPLocalEnvironment,
+      	      phi_fp     : RestrictedFPBExpr | bounded_by?(fpLocalEnv)(phi_fp),
+   	      rLocalEnv  : RLocalEnvironment
+	      		   | consistentLocalEnvironments?(fpLocalEnv,rLocalEnv) AND
+	      		     bounded_by?(rLocalEnv)(FtoR(phi_fp)) ):
+        val(fpParamEnv,fpLocalEnv)(beta_plus(inputRest,fpLocalEnv)(phi_fp))
+        IMPLIES ( val(fpParamEnv,fpLocalEnv)(phi_fp) AND
+	  	  val(FtoR(fpParamEnv),rLocalEnv)(FtoR(phi_fp)) )
+
+    beta_minus_prop: ASSUMPTION
+      FORALL( nargs	 : nat,
+   	      fpParamEnv : ValidInput(inputRest),
+	      fpLocalEnv : FPLocalEnvironment,
+      	      phi_fp     : RestrictedFPBExpr | bounded_by?(fpLocalEnv)(phi_fp),
+   	      rLocalEnv  : RLocalEnvironment
+	      		   | consistentLocalEnvironments?(fpLocalEnv,rLocalEnv) AND
+	      		     bounded_by?(rLocalEnv)(FtoR(phi_fp)) ):
+        val(fpParamEnv,fpLocalEnv)(beta_minus(inputRest,fpLocalEnv)(phi_fp))
+        IMPLIES ( val(fpParamEnv,fpLocalEnv)(FPNot(phi_fp)) AND
+	  	  val(FtoR(fpParamEnv),rLocalEnv)(RNot(FtoR(phi_fp))) )
+
+  ENDASSUMING
+
+  beta_plus_evaluable: LEMMA
+    FORALL( phi_fp     : RestrictedFPBExpr,
+    	    fpLocalEnv : FPLocalEnvironment | bounded_by?(fpLocalEnv)(phi_fp) ):
+  	bounded_by?(fpLocalEnv)(beta_plus(inputRest,fpLocalEnv)(phi_fp))
+
+  beta_minus_evaluable: LEMMA
+    FORALL( phi_fp     : RestrictedFPBExpr,
+    	    fpLocalEnv : FPLocalEnvironment | bounded_by?(fpLocalEnv)(phi_fp) )
+    : bounded_by?(fpLocalEnv)(beta_minus(inputRest,fpLocalEnv)(phi_fp))
+
+  % Restriction notion extended to statements
+
+  fpStmtRestriction(st: FPStmt): RECURSIVE bool
+  = CASES st OF
+      WARNING: TRUE,
+      ITE(guard,thenb,elseb): fpBExprRestriction(guard) AND
+      			      fpStmtRestriction(thenb) AND
+			      fpStmtRestriction(elseb),
+      			      
+      AEXPR(aexpr): TRUE,
+      LETIN(aexpr,body): fpStmtRestriction(body)
+    ENDCASES
+  MEASURE st BY <<
+
+  RestrictedFPStmt: TYPE = (fpStmtRestriction)
+
+  inductive_stmt_restriction: LEMMA
+    FORALL(stmt: RestrictedFPStmt, substmt: FPStmt | subterm(substmt, stmt)):
+      fpStmtRestriction(substmt)
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Transformation
+  %                                                            %
+  %------------------------------------------------------------%
+
+  % Statement transformation
+
+  tau(inputRest,fpLocalEnv)(st: FPStmt | bounded_by?(fpLocalEnv)(st)): RECURSIVE FPStmt
+  = CASES st OF
+      ITE(guard,thenb,elseb): ITE( beta_plus(inputRest,fpLocalEnv)(guard),
+             		      	   tau(inputRest,fpLocalEnv)(thenb),
+  				   ITE( beta_minus(inputRest,fpLocalEnv)(guard),
+              	  		   	tau(inputRest,fpLocalEnv)(elseb),
+              	  			WARNING))
+      ,
+      LETIN(expr,body): LETIN(expr,tau(inputRest,cons(expr,fpLocalEnv))(body))
+      ELSE st
+    ENDCASES
+  MEASURE st BY <<
+
+  % Some properties about the transformation
+
+  tau_conserves_well_formed: LEMMA
+   FORALL(stmt:RestrictedFPStmt| bounded_by?(fpLocalEnv)(stmt), nargs:nat):
+    wellFormed?(stmt,nargs,size(fpLocalEnv))
+    IMPLIES wellFormed?(tau(inputRest,fpLocalEnv)(stmt),nargs,size(fpLocalEnv))
+  AUTO_REWRITE+ tau_conserves_well_formed
+
+  tau_preserves_evaluable: LEMMA
+   FORALL( fpLocalEnv : FPLocalEnvironment,
+    	    stmt      : RestrictedFPStmt | bounded_by?(fpLocalEnv)(stmt))
+   : bounded_by?(fpLocalEnv)(stmt) IMPLIES bounded_by?(fpLocalEnv)(tau(inputRest,fpLocalEnv)(stmt))
+
+  fp_evaluable_in_stmt_evaluable_tau_ceb: LEMMA
+    FORALL( fpLocalEnv : FPLocalEnvironment,
+    	    stmt       : RestrictedFPStmt ):
+      bounded_by?(fpLocalEnv)(stmt)
+      IMPLIES FORALL( nargs   : nat,
+      	    	      env     : (validEnvironmentForStmt) |
+		                   wellFormed?(stmt,nargs,length(env)) AND
+				   semanticallyConsistent?(env,fpLocalEnv) AND
+				   wellFormed?(env,nargs,length(env)),
+		      tau_ceb : (sem(nargs, env)(tau(inputRest,fpLocalEnv)(stmt))) ):
+                bounded_by?(fpLocalEnv)(fpconds(tau_ceb))
+
+  % Program Transformation
+
+  tau
+  (inputRest)
+  (pgm: (wellFormedProgram?))
+  : FPProgram
+  = pgm WITH [ body := tau(inputRest,FPEmptyLocalEnv)(body(pgm)) ]
+
+  %
+
+  IMPORTING domain_props[Operator,RealNumber,lt_r,applyFun_r,FloatingPointNumber,lt_fp,applyFun_fp,FtoR]
+  
+  stability_implication
+  ( inputRest  : InputRestriction,
+    fpParamEnv : ValidInput(inputRest),
+    fpLocalEnv : FPLocalEnvironment,
+    rLocalEnv  : RLocalEnvironment | consistentLocalEnvironments?(fpLocalEnv,rLocalEnv) )
+  ( ceb_trans : CEB | bounded_by?(fpLocalEnv)(fpconds(ceb_trans)),
+    ceb_orig  : CEB | bounded_by?(fpLocalEnv)(fpconds(ceb_orig)) AND
+    	      	      bounded_by?(rLocalEnv)(rconds(ceb_orig)) )
+  : MACRO bool
+  = val(fpParamEnv,fpLocalEnv)(fpconds(ceb_trans))
+    IMPLIES ( val(FtoR(fpParamEnv),rLocalEnv)(rconds(ceb_orig)) AND
+      	      val(fpParamEnv,fpLocalEnv)(fpconds(ceb_orig)) )
+
+  stable_correct?(inputRest)(pgm:(wellFormedProgram?) | fpStmtRestriction(body(pgm))): bool =
+    FORALL( ceb_trans  : (sem(tau(inputRest)(pgm))) | fpresult(ceb_trans) /= FPBottom,
+    	    fpParamEnv : ValidInput(inputRest)	):
+      EXISTS(ceb_orig: (sem(pgm)) | stable?(ceb_orig)):
+        stability_implication(inputRest,fpParamEnv,FPEmptyLocalEnv,REmptyLocalEnv)(ceb_trans,ceb_orig)
+        AND
+        fpresult(ceb_orig) = fpresult(ceb_trans)
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Correctness of the transformation (stable case)	       %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  statement_correctness_condition_stable : LEMMA
+  FORALL
+  ( stmt      : RestrictedFPStmt,
+    ceb_trans : CEB,
+    nargs     : nat,
+    env       : (validEnvironmentForStmt) | wellFormed?(stmt,nargs,length(env)) AND
+    	      				    wellFormed?(env,nargs,length(env)),
+    % 
+    fpParamEnv : ValidInput(inputRest),
+    fpLocalEnv : FPLocalEnvironment | bounded_by?(fpLocalEnv)(stmt) AND
+      		   		      semanticallyConsistent?(env, fpLocalEnv),
+    rLocalEnv  : RLocalEnvironment  | consistentLocalEnvironments?(fpLocalEnv,rLocalEnv) )
+  : sem(nargs,env)(tau(inputRest,fpLocalEnv)(stmt))(ceb_trans) AND
+    fpresult(ceb_trans) /= FPBottom
+    IMPLIES EXISTS (ceb_orig: CEB):
+              stable?(ceb_orig) AND
+       	      sem(nargs,env)(stmt)(ceb_orig) AND
+              stability_implication(inputRest,fpParamEnv,fpLocalEnv,rLocalEnv)(ceb_trans,ceb_orig) AND
+              fpresult(ceb_orig) = fpresult(ceb_trans)
+
+  program_correctness_condition_stable: THEOREM
+    FORALL(pgm: (wellFormedProgram?)): fpStmtRestriction(body(pgm)) IMPLIES  stable_correct?(inputRest)(pgm)
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Correctness of the transformation (unstable case)	       %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  unstable_correct?(pgm:(wellFormedProgram?) | fpStmtRestriction(body(pgm))): bool =
+    FORALL ( ceb_orig   : (sem(pgm)) 	| NOT stable?(ceb_orig),
+    	     inputRest  : InputRestriction,
+   	     fpParamEnv : ValidInput(inputRest) |
+	       val(fpParamEnv,FPEmptyLocalEnv)(fpconds(ceb_orig)) AND
+	       val(FtoR(fpParamEnv),REmptyLocalEnv)(rconds(ceb_orig)) )
+    : EXISTS(ceb_trans: (sem(tau(inputRest)(pgm))))
+      : val(fpParamEnv,FPEmptyLocalEnv)(fpconds(ceb_trans)) AND
+        fpresult(ceb_trans) = FPBottom
+  
+  statement_correctness_condition_unstable : LEMMA
+    FORALL ( stmt       : RestrictedFPStmt,
+             ceb_orig   : CEB,
+             nargs      : nat,
+      	     env        : (validEnvironmentForStmt) |
+	       wellFormed?(stmt,nargs,length(env)) AND wellFormed?(env,nargs,length(env)),
+   	   fpParamEnv : ValidInput(inputRest),
+	   fpLocalEnv : FPLocalEnvironment |
+	     bounded_by?(fpLocalEnv)(fpconds(ceb_orig)) AND
+	     bounded_by?(fpLocalEnv)(stmt) AND
+	     semanticallyConsistent?(env, fpLocalEnv),
+   	   rLocalEnv  : RLocalEnvironment | bounded_by?(rLocalEnv)(rconds(ceb_orig)) AND
+	       val(fpParamEnv,fpLocalEnv)(fpconds(ceb_orig)) AND
+	       val(FtoR(fpParamEnv),rLocalEnv)(rconds(ceb_orig)) AND
+	       consistentLocalEnvironments?(fpLocalEnv,rLocalEnv) )
+    : sem(nargs,env)(stmt)(ceb_orig) AND
+      NOT stable?(ceb_orig)
+      IMPLIES EXISTS (ceb_trans: CEB  | bounded_by?(fpLocalEnv)(fpconds(ceb_trans)) ):
+                sem(nargs,env)(tau(inputRest,fpLocalEnv)(stmt))(ceb_trans) AND
+		val(fpParamEnv,fpLocalEnv)(fpconds(ceb_trans)) AND
+          	fpresult(ceb_trans) = FPBottom
+
+  program_correctness_condition_unstable
+  : THEOREM
+    FORALL(pgm: (wellFormedProgram?))
+    : fpStmtRestriction(body(pgm)) IMPLIES unstable_correct?(pgm)
+
+END transformation

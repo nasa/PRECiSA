@@ -1,0 +1,1842 @@
+(domain (IMP_expressions_semantics_TCC1 0
+         (IMP_expressions_semantics_TCC1-1 nil 3756579265
+          ("" (use "lt_fp_lt_r") nil nil)
+          ((lt_fp_lt_r formula-decl nil domain nil)) nil))
+        (subset_dom 0
+         (subset_dom-1 nil 3753873680
+          ("" (skeep :preds? t)
+           (("" (expand "finite_nonempty?")
+             (("" (flatten)
+               (("" (split 2)
+                 (("1" (use "finite_subset[CEB]")
+                   (("1" (assert) nil nil)) nil)
+                  ("2" (grind) nil nil))
+                 nil))
+               nil))
+             nil))
+           nil)
+          ((finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (not_empty_nonempty formula-decl nil more_set_defs
+            "sets_aux/")
+           (subset_is_partial_order name-judgement
+            "(partial_order?[set[T]])" sets_lemmas nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (set type-eq-decl nil sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (finite_set type-eq-decl nil finite_sets nil)
+           (Domain type-eq-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (finite_subset formula-decl nil finite_sets nil)
+           (member const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (injective? const-decl "bool" functions nil)
+           (subset? const-decl "bool" sets nil))
+          nil))
+        (appears?_ceb_int_def 0
+         (appears?_ceb_int_def-1 nil 3754570642 ("" (grind) nil nil)
+          ((FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (appears? const-decl "bool" expressions nil)
+           (FtoR def-decl "RAExpr" expressions nil)
+           (appears? const-decl "bool" expressions nil)
+           (appears? const-decl "bool" domain nil))
+          shostak))
+        (appears?_dom_int_def 0
+         (appears?_dom_int_def-1 nil 3754570756
+          ("" (expand "appears?" 1 1) (("" (propax) nil nil)) nil)
+          ((appears? const-decl "bool" domain nil)) shostak))
+        (propagated_dom_is_partial_propagation 0
+         (propagated_dom_is_partial_propagation-1 nil 3732018913
+          ("" (skeep* :preds? t)
+           (("" (lemma "map_set_alt_def[CEB,CEB]")
+             (("" (inst? -1 :where 1)
+               (("" (inst? -1 :where -2)
+                 (("" (flatten) (("" (inst? -2) nil nil)) nil)) nil))
+               nil))
+             nil))
+           nil)
+          ((CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (map_set_alt_def formula-decl nil more_set_props
+            "sets_aux/")
+           (FPAnd adt-constructor-decl
+            "[[FPBExpr, FPBExpr] -> (FPAnd?)]" expressions nil)
+           (FPAnd? adt-recognizer-decl "[FPBExpr -> boolean]"
+            expressions nil)
+           (RAnd adt-constructor-decl "[[RBExpr, RBExpr] -> (RAnd?)]"
+            expressions nil)
+           (RAnd? adt-recognizer-decl "[RBExpr -> boolean]" expressions
+            nil)
+           (make_ceb const-decl "CEB" domain nil)
+           (map const-decl "setof[T2]" more_set_props "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (setof type-eq-decl nil defined_types nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (TRUE const-decl "bool" booleans nil))
+          shostak))
+        (propagated_dom_includes_propagation 0
+         (propagated_dom_includes_propagation-1 nil 3732020111
+          ("" (skeep* :preds? t)
+           (("" (lemma "map_set_alt_def[CEB,CEB]")
+             (("" (inst? -1 :where 1)
+               ((""
+                 (inst -1
+                  "LAMBDA(ceb:CEB):propagate_into(ceb,rexpr,fpexpr)")
+                 (("" (flatten) (("" (inst? -1) nil nil)) nil)) nil))
+               nil))
+             nil))
+           nil)
+          ((CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (map_set_alt_def formula-decl nil more_set_props
+            "sets_aux/")
+           (FPAnd adt-constructor-decl
+            "[[FPBExpr, FPBExpr] -> (FPAnd?)]" expressions nil)
+           (FPAnd? adt-recognizer-decl "[FPBExpr -> boolean]"
+            expressions nil)
+           (RAnd adt-constructor-decl "[[RBExpr, RBExpr] -> (RAnd?)]"
+            expressions nil)
+           (RAnd? adt-recognizer-decl "[RBExpr -> boolean]" expressions
+            nil)
+           (make_ceb const-decl "CEB" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (setof type-eq-decl nil defined_types nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (TRUE const-decl "bool" booleans nil))
+          shostak))
+        (propag_TCC1 0
+         (propag_TCC1-1 nil 3731411560
+          ("" (assert)
+           (("" (skeep)
+             (("" (split 1)
+               (("1" (skeep :preds? t)
+                 (("1" (expand "propagate_into_dom")
+                   (("1" (expand "map") (("1" (propax) nil nil)) nil))
+                   nil))
+                 nil)
+                ("2" (skeep :preds? t)
+                 (("2"
+                   (inst 1 "make_ceb(RAnd
+                      (rexpr, rconds(ceb)),
+                  FPAnd
+                      (fpexpr, fpconds(ceb)),
+                  rresult(ceb), fpresult(ceb), stable?(ceb))")
+                   (("2" (expand "propagate_into_dom")
+                     (("2" (expand "map") (("2" (grind) nil nil)) nil))
+                     nil))
+                   nil))
+                 nil))
+               nil))
+             nil))
+           nil)
+          ((rexpr skolem-const-decl
+            "RBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]"
+            domain nil)
+           (fpexpr skolem-const-decl
+            "FPBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]"
+            domain nil)
+           (sceb skolem-const-decl "Domain" domain nil)
+           (ceb skolem-const-decl "(sceb)" domain nil)
+           (FPAnd adt-constructor-decl
+            "[[FPBExpr, FPBExpr] -> (FPAnd?)]" expressions nil)
+           (FPAnd? adt-recognizer-decl "[FPBExpr -> boolean]"
+            expressions nil)
+           (RAnd adt-constructor-decl "[[RBExpr, RBExpr] -> (RAnd?)]"
+            expressions nil)
+           (RAnd? adt-recognizer-decl "[RBExpr -> boolean]" expressions
+            nil)
+           (make_ceb const-decl "CEB" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (map const-decl "setof[T2]" more_set_props "sets_aux/")
+           (propagate_into_dom macro-decl "Domain" domain nil))
+          shostak))
+        (propag_def 0
+         (propag_def-1 nil 3753460888
+          ("" (skeep :preds? t)
+           (("" (invoke (typepred "%1") (! -2 0))
+             (("" (inst -2 "ceb")
+               (("" (skeep -2 :preds? t)
+                 (("" (inst + "ceb_1")
+                   (("" (replace -3 :hide? t)
+                     (("" (expand "make_ceb") (("" (propax) nil nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil))
+             nil))
+           nil)
+          ((boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (set type-eq-decl nil sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (make_ceb const-decl "CEB" domain nil)
+           (RAnd? adt-recognizer-decl "[RBExpr -> boolean]" expressions
+            nil)
+           (RAnd adt-constructor-decl "[[RBExpr, RBExpr] -> (RAnd?)]"
+            expressions nil)
+           (FPAnd? adt-recognizer-decl "[FPBExpr -> boolean]"
+            expressions nil)
+           (FPAnd adt-constructor-decl
+            "[[FPBExpr, FPBExpr] -> (FPAnd?)]" expressions nil)
+           (propag const-decl "{result: Domain |
+         (FORALL (ceb2: (result)):
+            EXISTS (ceb: (sceb)):
+              ceb2 =
+               make_ceb(RAnd(rexpr, rconds(ceb)),
+                        FPAnd(fpexpr, fpconds(ceb)), rresult(ceb),
+                        fpresult(ceb), stable?(ceb)))
+          AND
+          (FORALL (ceb: (sceb)):
+             EXISTS (ceb2: (result)):
+               ceb2 =
+                make_ceb(RAnd(rexpr, rconds(ceb)),
+                         FPAnd(fpexpr, fpconds(ceb)), rresult(ceb),
+                         fpresult(ceb), stable?(ceb)))}" domain nil)
+           (dom skolem-const-decl "Domain" domain nil)
+           (rform skolem-const-decl
+            "RBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]"
+            domain nil)
+           (fpform skolem-const-decl
+            "FPBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]"
+            domain nil)
+           (ceb skolem-const-decl "CEB" domain nil))
+          shostak))
+        (propag_def_r 0
+         (propag_def_r-1 nil 3755349650
+          ("" (skeep :preds? t)
+           (("" (invoke (typepred "%1") (! -2 0))
+             (("" (inst -2 "ceb")
+               (("" (skeep -2 :preds? t)
+                 (("" (inst + "ceb_1")
+                   (("" (replace -3 :hide? t)
+                     (("" (expand "make_ceb") (("" (propax) nil nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil))
+             nil))
+           nil)
+          ((boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (set type-eq-decl nil sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (make_ceb const-decl "CEB" domain nil)
+           (RAnd? adt-recognizer-decl "[RBExpr -> boolean]" expressions
+            nil)
+           (RAnd adt-constructor-decl "[[RBExpr, RBExpr] -> (RAnd?)]"
+            expressions nil)
+           (FPAnd? adt-recognizer-decl "[FPBExpr -> boolean]"
+            expressions nil)
+           (FPAnd adt-constructor-decl
+            "[[FPBExpr, FPBExpr] -> (FPAnd?)]" expressions nil)
+           (propag const-decl "{result: Domain |
+         (FORALL (ceb2: (result)):
+            EXISTS (ceb: (sceb)):
+              ceb2 =
+               make_ceb(RAnd(rexpr, rconds(ceb)),
+                        FPAnd(fpexpr, fpconds(ceb)), rresult(ceb),
+                        fpresult(ceb), stable?(ceb)))
+          AND
+          (FORALL (ceb: (sceb)):
+             EXISTS (ceb2: (result)):
+               ceb2 =
+                make_ceb(RAnd(rexpr, rconds(ceb)),
+                         FPAnd(fpexpr, fpconds(ceb)), rresult(ceb),
+                         fpresult(ceb), stable?(ceb)))}" domain nil)
+           (dom skolem-const-decl "Domain" domain nil)
+           (rform skolem-const-decl
+            "RBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]"
+            domain nil)
+           (fpform skolem-const-decl
+            "FPBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]"
+            domain nil)
+           (ceb skolem-const-decl "CEB" domain nil))
+          nil))
+        (wellFormed?_ceb_is_wellFormed?_fconds 0
+         (wellFormed?_ceb_is_wellFormed?_fconds-1 nil 3753463503
+          ("" (grind) nil nil)
+          ((wellFormed? const-decl "bool" domain nil)) shostak))
+        (wellFormed?_dom_iff_every_ceb_is_wellFormed? 0
+         (wellFormed?_dom_iff_every_ceb_is_wellFormed?-1 nil 3753462521
+          ("" (grind) nil nil)
+          ((wellFormed? const-decl "bool" domain nil)
+           (wellFormed? const-decl "bool" domain nil))
+          shostak))
+        (max_local_index_ceb_def 0
+         (max_local_index_ceb_def-1 nil 3753604053
+          ("" (expand "maxFreeLocalIndex" 1 2) (("" (propax) nil nil))
+           nil)
+          ((maxFreeLocalIndex const-decl "upfrom(-1)" domain nil))
+          shostak))
+        (maxFreeLocalIndex_TCC1 0
+         (maxFreeLocalIndex_TCC1-1 nil 3753604049 ("" (tcc))
+          ((boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (set type-eq-decl nil sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (injective? const-decl "bool" functions nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (maxFreeLocalIndex const-decl "upfrom(-1)" domain nil))
+          nil))
+        (maxFreeLocalIndex_TCC2 0
+         (maxFreeLocalIndex_TCC2-1 nil 3753614963
+          ("" (skeep)
+           (("" (split 2)
+             (("1" (skeep) (("1" (grind) nil nil)) nil)
+              ("2" (inst 1 "choose(dom)") nil nil))
+             nil))
+           nil)
+          ((finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (real_le_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (remove const-decl "set" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (rest const-decl "set" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil)
+           (maxFreeLocalIndex const-decl "upfrom(-1)" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (choose const-decl "(p)" sets nil)
+           (nonempty? const-decl "bool" sets nil))
+          nil))
+        (maxFreeLocalIndex_TCC3 0
+         (maxFreeLocalIndex_TCC3-1 nil 3753614963 ("" (tcc) nil nil)
+          ((boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (set type-eq-decl nil sets nil)
+           (Domain type-eq-decl nil domain nil)
+           (member const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (rest const-decl "set" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (remove const-decl "set" sets nil)
+           (injective? const-decl "bool" functions nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (finite_remove application-judgement "finite_set"
+            finite_sets nil))
+          shostak))
+        (maxFreeLocalIndex_TCC4 0
+         (maxFreeLocalIndex_TCC4-1 nil 3753614963
+          ("" (skeep)
+           (("" (use "card_rest[CEB]") (("" (assert) nil nil)) nil))
+           nil)
+          ((card_rest formula-decl nil finite_sets nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (finite_set type-eq-decl nil finite_sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (set type-eq-decl nil sets nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (real_lt_is_strict_total_order name-judgement
+            "(strict_total_order?[real])" real_props nil))
+          shostak))
+        (maxFreeLocalIndex_TCC5 0
+         (maxFreeLocalIndex_TCC5-1 nil 3753622678
+          ("" (skeep)
+           (("" (split 3)
+             (("1" (skeep)
+               (("1" (typepred "v(rest[CEB](dom))")
+                 (("1" (typepred "ceb") (("1" (grind) nil nil)) nil))
+                 nil))
+               nil)
+              ("2" (typepred "v(rest[CEB](dom))")
+               (("1" (skeep -3)
+                 (("1" (replace -3 :hide? t :dir rl)
+                   (("1"
+                     (case "maxFreeLocalIndex(choose[CEB](dom)) <= maxFreeLocalIndex(ceb)")
+                     (("1" (inst 1 "ceb")
+                       (("1" (grind) nil nil)
+                        ("2" (typepred "ceb")
+                         (("2" (lemma "rest_member[CEB]")
+                           (("2" (inst -1 "dom" "ceb")
+                             (("2" (expand "member")
+                               (("2" (propax) nil nil)) nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil)
+                      ("2" (inst 2 "choose(dom)")
+                       (("2" (grind) nil nil)) nil))
+                     nil))
+                   nil))
+                 nil)
+                ("2" (rewrite "rest_finite_nonempty?[CEB]")
+                 (("2" (rewrite "card_rest[CEB]")
+                   (("2" (assert) nil nil)) nil))
+                 nil))
+               nil)
+              ("3" (typepred "v(rest[CEB](dom))")
+               (("3" (grind) nil nil)) nil))
+             nil))
+           nil)
+          ((rest const-decl "set" sets nil)
+           (maxFreeLocalIndex const-decl "upfrom(-1)" domain nil)
+           (<= const-decl "bool" reals nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (upfrom nonempty-type-eq-decl nil integers nil)
+           (- const-decl "[numfield -> numfield]" number_fields nil)
+           (numfield nonempty-type-eq-decl nil number_fields nil)
+           (card const-decl "{n: nat | n = Card(S)}" finite_sets nil)
+           (Card const-decl "nat" finite_sets nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (nat nonempty-type-eq-decl nil naturalnumbers nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (finite_set type-eq-decl nil finite_sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (< const-decl "bool" reals nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (>= const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (member const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (remove const-decl "set" sets nil)
+           (real_lt_is_strict_total_order name-judgement
+            "(strict_total_order?[real])" real_props nil)
+           (rat_max application-judgement
+            "{s: rat | s >= q AND s >= r}" real_defs nil)
+           (int_max application-judgement
+            "{k: int | i <= k AND j <= k}" real_defs nil)
+           (real_le_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (minus_odd_is_odd application-judgement "odd_int" integers
+            nil)
+           (real_ge_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (max const-decl "{p: real | p >= m AND p >= n}" real_defs
+                nil)
+           (finite_remove application-judgement "finite_set"
+            finite_sets nil)
+           (choose const-decl "(p)" sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (ceb skolem-const-decl "(dom)" domain nil)
+           (dom skolem-const-decl "Domain" domain nil)
+           (IF const-decl "[boolean, T, T -> T]" if_def nil)
+           (rest_finite_nonempty? judgement-tcc nil more_set_defs
+            "sets_aux/")
+           (int_minus_int_is_int application-judgement "int" integers
+            nil)
+           (card_rest formula-decl nil finite_sets nil)
+           (rest_member formula-decl nil sets_lemmas nil)
+           (FALSE const-decl "bool" booleans nil)
+           (ceb skolem-const-decl "(rest[CEB](dom))" domain nil))
+          nil))
+        (max_local_index_dom_def 0
+         (max_local_index_dom_def-1 nil 3753805484
+          ("" (skeep)
+           (("" (typepred "maxFreeLocalIndex(dom)")
+             (("" (split 1)
+               (("1" (propax) nil nil) ("2" (propax) nil nil)) nil))
+             nil))
+           nil)
+          ((maxFreeLocalIndex def-decl "{m: upfrom(-1) |
+         (FORALL (ceb: (dom)): maxFreeLocalIndex(ceb) <= m) AND
+          (EXISTS (ceb: (dom)): maxFreeLocalIndex(ceb) = m)}" domain
+            nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (maxFreeLocalIndex const-decl "upfrom(-1)" domain nil)
+           (<= const-decl "bool" reals nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (upfrom nonempty-type-eq-decl nil integers nil)
+           (- const-decl "[numfield -> numfield]" number_fields nil)
+           (numfield nonempty-type-eq-decl nil number_fields nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (>= const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil))
+          shostak))
+        (max_local_index_dom_ge_ceb 0
+         (max_local_index_dom_ge_ceb-1 nil 3753606076
+          ("" (skeep :preds? t)
+           (("" (typepred "maxFreeLocalIndex(dom)")
+             (("" (inst -2 "ceb") nil nil)) nil))
+           nil)
+          ((maxFreeLocalIndex def-decl "{m: upfrom(-1) |
+         (FORALL (ceb: (dom)): maxFreeLocalIndex(ceb) <= m) AND
+          (EXISTS (ceb: (dom)): maxFreeLocalIndex(ceb) = m)}" domain
+            nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (maxFreeLocalIndex const-decl "upfrom(-1)" domain nil)
+           (<= const-decl "bool" reals nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (upfrom nonempty-type-eq-decl nil integers nil)
+           (- const-decl "[numfield -> numfield]" number_fields nil)
+           (numfield nonempty-type-eq-decl nil number_fields nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (>= const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil))
+          shostak))
+        (maxParamIndex_TCC1 0
+         (maxParamIndex_TCC1-1 nil 3755000240
+          ("" (subtype-tcc) nil nil)
+          ((boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (set type-eq-decl nil sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (injective? const-decl "bool" functions nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (maxParamIndex const-decl "upfrom(-1)" domain nil))
+          nil))
+        (maxParamIndex_TCC2 0
+         (maxParamIndex_TCC2-2 nil 3755000415
+          ("" (skeep)
+           (("" (split 2)
+             (("1" (skeep) (("1" (grind) nil nil)) nil)
+              ("2" (inst 1 "choose(dom)") nil nil))
+             nil))
+           nil)
+          ((finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (real_le_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (remove const-decl "set" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (rest const-decl "set" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil)
+           (maxParamIndex const-decl "upfrom(-1)" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (choose const-decl "(p)" sets nil)
+           (nonempty? const-decl "bool" sets nil))
+          nil)
+         (maxParamIndex_TCC2-1 nil 3755000240
+          ("" (subtype-tcc) nil nil) nil nil))
+        (maxParamIndex_TCC3 0
+         (maxParamIndex_TCC3-3 nil 3755000553
+          ("" (skeep)
+           (("" (split 3)
+             (("1" (skeep)
+               (("1" (typepred "v(rest[CEB](dom))")
+                 (("1" (typepred "ceb") (("1" (grind) nil nil)) nil))
+                 nil))
+               nil)
+              ("2" (typepred "v(rest[CEB](dom))")
+               (("1" (skeep -3)
+                 (("1" (replace -3 :hide? t :dir rl)
+                   (("1"
+                     (case "maxParamIndex(choose[CEB](dom)) <= maxParamIndex(ceb)")
+                     (("1" (inst 1 "ceb")
+                       (("1" (grind) nil nil)
+                        ("2" (typepred "ceb")
+                         (("2" (lemma "rest_member[CEB]")
+                           (("2" (inst -1 "dom" "ceb")
+                             (("2" (expand "member")
+                               (("2" (propax) nil nil)) nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil)
+                      ("2" (inst 2 "choose(dom)")
+                       (("2" (grind) nil nil)) nil))
+                     nil))
+                   nil))
+                 nil)
+                ("2" (rewrite "rest_finite_nonempty?[CEB]")
+                 (("2" (rewrite "card_rest[CEB]")
+                   (("2" (assert) nil nil)) nil))
+                 nil))
+               nil)
+              ("3" (typepred "v(rest[CEB](dom))")
+               (("3" (grind) nil nil)) nil))
+             nil))
+           nil)
+          ((rest const-decl "set" sets nil)
+           (maxParamIndex const-decl "upfrom(-1)" domain nil)
+           (<= const-decl "bool" reals nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (upfrom nonempty-type-eq-decl nil integers nil)
+           (- const-decl "[numfield -> numfield]" number_fields nil)
+           (numfield nonempty-type-eq-decl nil number_fields nil)
+           (card const-decl "{n: nat | n = Card(S)}" finite_sets nil)
+           (Card const-decl "nat" finite_sets nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (nat nonempty-type-eq-decl nil naturalnumbers nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (finite_set type-eq-decl nil finite_sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (< const-decl "bool" reals nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (>= const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (member const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (remove const-decl "set" sets nil)
+           (real_lt_is_strict_total_order name-judgement
+            "(strict_total_order?[real])" real_props nil)
+           (rat_max application-judgement
+            "{s: rat | s >= q AND s >= r}" real_defs nil)
+           (int_max application-judgement
+            "{k: int | i <= k AND j <= k}" real_defs nil)
+           (real_le_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (minus_odd_is_odd application-judgement "odd_int" integers
+            nil)
+           (real_ge_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (max const-decl "{p: real | p >= m AND p >= n}" real_defs
+                nil)
+           (finite_remove application-judgement "finite_set"
+            finite_sets nil)
+           (choose const-decl "(p)" sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (ceb skolem-const-decl "(dom)" domain nil)
+           (dom skolem-const-decl "Domain" domain nil)
+           (IF const-decl "[boolean, T, T -> T]" if_def nil)
+           (rest_finite_nonempty? judgement-tcc nil more_set_defs
+            "sets_aux/")
+           (int_minus_int_is_int application-judgement "int" integers
+            nil)
+           (card_rest formula-decl nil finite_sets nil)
+           (rest_member formula-decl nil sets_lemmas nil)
+           (FALSE const-decl "bool" booleans nil)
+           (ceb skolem-const-decl "(rest[CEB](dom))" domain nil))
+          nil)
+         (maxParamIndex_TCC3-2 nil 3755000442 ("" (tcc) nil nil) nil
+          nil)
+         (maxParamIndex_TCC3-1 nil 3755000240
+          ("" (subtype-tcc) nil nil) nil nil))
+        (max_param_index_dom_def 0
+         (max_param_index_dom_def-1 nil 3755000266
+          ("" (skeep)
+           (("" (typepred "maxParamIndex(dom)")
+             (("" (split 1)
+               (("1" (propax) nil nil) ("2" (propax) nil nil)) nil))
+             nil))
+           nil)
+          ((maxParamIndex def-decl "{m: upfrom(-1) |
+         (FORALL (ceb: (dom)): maxParamIndex(ceb) <= m) AND
+          (EXISTS (ceb: (dom)): maxParamIndex(ceb) = m)}" domain nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (maxParamIndex const-decl "upfrom(-1)" domain nil)
+           (<= const-decl "bool" reals nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (upfrom nonempty-type-eq-decl nil integers nil)
+           (- const-decl "[numfield -> numfield]" number_fields nil)
+           (numfield nonempty-type-eq-decl nil number_fields nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (>= const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil))
+          nil))
+        (max_param_index_dom_ge_ceb 0
+         (max_param_index_dom_ge_ceb-1 nil 3755000284
+          ("" (skeep :preds? t)
+           (("" (typepred "maxParamIndex(dom)")
+             (("" (inst -2 "ceb") nil nil)) nil))
+           nil)
+          ((maxParamIndex def-decl "{m: upfrom(-1) |
+         (FORALL (ceb: (dom)): maxParamIndex(ceb) <= m) AND
+          (EXISTS (ceb: (dom)): maxParamIndex(ceb) = m)}" domain nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (maxParamIndex const-decl "upfrom(-1)" domain nil)
+           (<= const-decl "bool" reals nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (upfrom nonempty-type-eq-decl nil integers nil)
+           (- const-decl "[numfield -> numfield]" number_fields nil)
+           (numfield nonempty-type-eq-decl nil number_fields nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (>= const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil))
+          nil))
+        (wellFormed?_dom_int_def 0
+         (wellFormed?_dom_int_def-1 nil 3754999641
+          ("" (skeep)
+           ((""
+             (rewrite "wellFormed?_dom_iff_every_ceb_is_wellFormed?")
+             (("" (iff)
+               (("" (split 1)
+                 (("1" (flatten)
+                   (("1" (split 1)
+                     (("1" (use "max_local_index_dom_def")
+                       (("1" (flatten)
+                         (("1"
+                           (skeep -2 :but (("ceb" "cebl")) :preds? t)
+                           (("1" (replace -3 :hide? t :dir rl)
+                             (("1" (inst -3 "cebl")
+                               (("1"
+                                 (expand "wellFormed?")
+                                 (("1"
+                                   (expand "maxFreeLocalIndex" 1)
+                                   (("1"
+                                     (rewrite
+                                      "wellFormed?_form_int_def")
+                                     (("1" (assert) nil nil))
+                                     nil))
+                                   nil))
+                                 nil))
+                               nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil)
+                      ("2" (use "max_param_index_dom_def")
+                       (("2" (flatten)
+                         (("2"
+                           (skeep -2 :but (("ceb" "cebp")) :preds? t)
+                           (("2" (replace -3 :hide? t :dir rl)
+                             (("2" (inst -3 "cebp")
+                               (("2"
+                                 (expand "wellFormed?")
+                                 (("2"
+                                   (expand "maxParamIndex" 1)
+                                   (("2"
+                                     (rewrite
+                                      "wellFormed?_form_int_def")
+                                     (("2" (assert) nil nil))
+                                     nil))
+                                   nil))
+                                 nil))
+                               nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil))
+                     nil))
+                   nil)
+                  ("2" (flatten)
+                   (("2" (use "max_param_index_dom_ge_ceb")
+                     (("2" (skeep)
+                       (("2" (inst -1 "ceb")
+                         (("2" (use "max_local_index_dom_ge_ceb")
+                           (("2" (expand "wellFormed?")
+                             (("2" (expand "maxParamIndex" -2 1)
+                               (("2"
+                                 (expand "maxFreeLocalIndex" -1 1)
+                                 (("2"
+                                   (use "wellFormed?_form_int_def")
+                                   (("2" (assert) nil nil))
+                                   nil))
+                                 nil))
+                               nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil))
+             nil))
+           nil)
+          ((wellFormed?_dom_iff_every_ceb_is_wellFormed? formula-decl
+            nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (set type-eq-decl nil sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (number nonempty-type-decl nil numbers nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (>= const-decl "bool" reals nil)
+           (nat nonempty-type-eq-decl nil naturalnumbers nil)
+           (wellFormed? const-decl "bool" domain nil)
+           (wellFormed?_form_int_def formula-decl nil expressions nil)
+           (real_lt_is_strict_total_order name-judgement
+            "(strict_total_order?[real])" real_props nil)
+           (maxFreeLocalIndex const-decl "upfrom(-1)" domain nil)
+           (max_local_index_dom_def formula-decl nil domain nil)
+           (maxParamIndex const-decl "upfrom(-1)" domain nil)
+           (max_param_index_dom_def formula-decl nil domain nil)
+           (max_param_index_dom_ge_ceb formula-decl nil domain nil)
+           (real_le_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (max_local_index_dom_ge_ceb formula-decl nil domain nil))
+          shostak))
+        (rest_stable_dom 0
+         (rest_stable_dom-1 nil 3753871099
+          ("" (skeep :preds? t)
+           (("" (expand "stable_domain?")
+             (("" (skeep 2 :preds? t)
+               (("" (inst -3 "ceb") (("" (grind) nil nil)) nil)) nil))
+             nil))
+           nil)
+          ((finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (rest_finite_nonempty? application-judgement
+            "(finite_nonempty?)" more_set_defs "sets_aux/")
+           (stable_domain? const-decl "boolean" domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (set type-eq-decl nil sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (empty? const-decl "bool" sets nil)
+           (rest const-decl "set" sets nil)
+           (ceb skolem-const-decl "(rest[CEB](dom))" domain nil)
+           (dom skolem-const-decl
+            "{dom: (stable_domain?) | NOT empty?(rest(dom))}" domain
+            nil)
+           (nonempty? const-decl "bool" sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (injective? const-decl "bool" functions nil)
+           (remove const-decl "set" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (member const-decl "bool" sets nil))
+          nil))
+        (stable_ceb_filter_TCC1 0
+         (stable_ceb_filter_TCC1-1 nil 3753820992
+          ("" (skeep :preds? t)
+           (("" (split 1)
+             (("1" (lemma "subset_dom")
+               (("1"
+                 (inst -1 "d" "{ceb: CEB | d(ceb) AND stable?(ceb)}")
+                 (("1" (assert)
+                   (("1" (split 1)
+                     (("1" (grind) nil nil)
+                      ("2" (expand "empty?")
+                       (("2" (skeep -3)
+                         (("2" (inst -1 "ceb")
+                           (("2" (expand "member")
+                             (("2" (assert) nil nil)) nil))
+                           nil))
+                         nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil)
+              ("2" (grind) nil nil))
+             nil))
+           nil)
+          ((Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (set type-eq-decl nil sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (nonempty? const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (injective? const-decl "bool" functions nil)
+           (subset? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil)
+           (subset_is_partial_order name-judgement
+            "(partial_order?[set[T]])" sets_lemmas nil)
+           (subset_dom formula-decl nil domain nil))
+          nil))
+        (make_unstable_ceb_from_TCC1 0
+         (make_unstable_ceb_from_TCC1-1 nil 3753820992
+          ("" (subtype-tcc) nil nil)
+          ((make_ceb const-decl "CEB" domain nil)
+           (is_unstable_from? const-decl "bool" domain nil))
+          nil))
+        (make_unstable_domain_from_ceb_and_dom_TCC1 0
+         (make_unstable_domain_from_ceb_and_dom_TCC1-1 nil 3753820992
+          ("" (skeep)
+           (("" (expand "make_unstable_ceb_from")
+             (("" (expand "make_ceb")
+               (("" (expand "is_unstable_from?")
+                 (("" (expand "singleton")
+                   (("" (apply-extensionality)
+                     (("" (hide 2)
+                       (("" (iff)
+                         (("" (split 1)
+                           (("1" (flatten)
+                             (("1" (inst 1 "choose(domr)")
+                               (("1" (grind) nil nil)) nil))
+                             nil)
+                            ("2" (flatten)
+                             (("2" (skeep :preds? t)
+                               (("2"
+                                 (grind)
+                                 (("2"
+                                   (apply-extensionality 2)
+                                   nil
+                                   nil))
+                                 nil))
+                               nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil))
+             nil))
+           nil)
+          ((make_unstable_ceb_from const-decl
+            "(is_unstable_from?(cebl, cebr))" domain nil)
+           (is_unstable_from? const-decl "bool" domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (FALSE const-decl "bool" booleans nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (choose const-decl "(p)" sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (set type-eq-decl nil sets nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (remove const-decl "set" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (rest const-decl "set" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil)
+           (singleton const-decl "(singleton?)" sets nil)
+           (make_ceb const-decl "CEB" domain nil))
+          nil))
+        (make_unstable_domain_from_ceb_and_dom_TCC2 0
+         (make_unstable_domain_from_ceb_and_dom_TCC2-1 nil 3753820992
+          ("" (skeep)
+           (("" (use "rest_stable_dom")
+             (("" (expand "stable_domain?")
+               (("" (flatten) (("" (assert) nil nil)) nil)) nil))
+             nil))
+           nil)
+          ((rest_stable_dom judgement-tcc nil domain nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (set type-eq-decl nil sets nil)
+           (empty? const-decl "bool" sets nil)
+           (rest const-decl "set" sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (domr skolem-const-decl "(stable_domain?)" domain nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil))
+          nil))
+        (make_unstable_domain_from_ceb_and_dom_TCC3 0
+         (make_unstable_domain_from_ceb_and_dom_TCC3-1 nil 3753820992
+          ("" (skeep)
+           (("" (use "card_rest[CEB]")
+             (("" (assert) (("" (grind) nil nil)) nil)) nil))
+           nil)
+          ((card_rest formula-decl nil finite_sets nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (finite_set type-eq-decl nil finite_sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (set type-eq-decl nil sets nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (member const-decl "bool" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (rest const-decl "set" sets nil)
+           (real_lt_is_strict_total_order name-judgement
+            "(strict_total_order?[real])" real_props nil))
+          nil))
+        (make_unstable_domain_from_ceb_and_dom_TCC4 0
+         (make_unstable_domain_from_ceb_and_dom_TCC4-1 nil 3753820992
+          ("" (skeep :preds? t)
+           (("" (typepred "v(cebl, rest[CEB](domr))")
+             (("1" (replace -2 :hide? t)
+               (("1" (apply-extensionality 2)
+                 (("1" (hide 3)
+                   (("1" (iff)
+                     (("1" (split 1)
+                       (("1" (flatten)
+                         (("1" (expand "add")
+                           (("1" (expand "member")
+                             (("1" (split -1)
+                               (("1"
+                                 (expand "make_unstable_ceb_from")
+                                 (("1"
+                                   (expand "make_ceb")
+                                   (("1"
+                                     (expand "is_unstable_from?")
+                                     (("1"
+                                       (replace -1 :hide? t :dir rl)
+                                       (("1"
+                                         (assert)
+                                         (("1"
+                                           (inst 1 "choose(domr)")
+                                           nil
+                                           nil))
+                                         nil))
+                                       nil))
+                                     nil))
+                                   nil))
+                                 nil)
+                                ("2"
+                                 (expand "is_unstable_from?")
+                                 (("2"
+                                   (skeep -1 :preds? t)
+                                   (("2"
+                                     (assert)
+                                     (("2"
+                                       (inst 2 "cebr")
+                                       (("1" (assert) nil nil)
+                                        ("2"
+                                         (hide-all-but (-1 1))
+                                         (("2" (grind) nil nil))
+                                         nil))
+                                       nil))
+                                     nil))
+                                   nil))
+                                 nil))
+                               nil))
+                             nil))
+                           nil))
+                         nil)
+                        ("2" (flatten)
+                         (("2" (skeep -1 :preds? t)
+                           (("2" (expand "is_unstable_from?" -2)
+                             (("2" (flatten)
+                               (("2"
+                                 (expand "add")
+                                 (("2"
+                                   (flatten)
+                                   (("2"
+                                     (expand "member")
+                                     (("2"
+                                       (expand "is_unstable_from?")
+                                       (("2"
+                                         (use "choose_rest_or[CEB]")
+                                         (("2"
+                                           (expand "member")
+                                           (("2"
+                                             (split -1)
+                                             (("1"
+                                               (inst 3 "cebr")
+                                               (("1" (assert) nil nil))
+                                               nil)
+                                              ("2"
+                                               (hide 3)
+                                               (("2"
+                                                 (expand
+                                                  "make_unstable_ceb_from")
+                                                 (("2"
+                                                   (expand "make_ceb")
+                                                   (("2"
+                                                     (apply-extensionality
+                                                      2)
+                                                     nil
+                                                     nil))
+                                                   nil))
+                                                 nil))
+                                               nil))
+                                             nil))
+                                           nil))
+                                         nil))
+                                       nil))
+                                     nil))
+                                   nil))
+                                 nil))
+                               nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil)
+              ("2" (use "rest_stable_dom")
+               (("2" (expand "stable_domain?")
+                 (("2" (flatten) (("2" (assert) nil nil)) nil)) nil))
+               nil))
+             nil))
+           nil)
+          ((rest const-decl "set" sets nil)
+           (is_unstable_from? const-decl "bool" domain nil)
+           (card const-decl "{n: nat | n = Card(S)}" finite_sets nil)
+           (Card const-decl "nat" finite_sets nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (nat nonempty-type-eq-decl nil naturalnumbers nil)
+           (>= const-decl "bool" reals nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (finite_set type-eq-decl nil finite_sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (< const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (nonempty? const-decl "bool" sets nil)
+           (add const-decl "(nonempty?)" sets nil)
+           (make_unstable_ceb_from const-decl
+            "(is_unstable_from?(cebl, cebr))" domain nil)
+           (choose const-decl "(p)" sets nil)
+           (choose_rest_or formula-decl nil sets_lemmas nil)
+           (cebr skolem-const-decl "(domr)" domain nil)
+           (FALSE const-decl "bool" booleans nil)
+           (member const-decl "bool" sets nil)
+           (remove const-decl "set" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (cebr skolem-const-decl "(rest[CEB](domr))" domain nil)
+           (domr skolem-const-decl "(stable_domain?)" domain nil)
+           (make_ceb const-decl "CEB" domain nil)
+           (finite_nonempty?_add application-judgement
+            "(finite_nonempty?)" more_set_defs "sets_aux/")
+           (nonempty_add_finite application-judgement
+            "non_empty_finite_set" finite_sets nil)
+           (rest_stable_dom judgement-tcc nil domain nil))
+          nil))
+        (make_unstable_domain_TCC1 0
+         (make_unstable_domain_TCC1-1 nil 3753820992
+          ("" (skeep)
+           ((""
+             (typepred
+              "make_unstable_domain_from_ceb_and_dom(choose[CEB](doml), domr)")
+             (("" (replace -2 :hide? t)
+               (("" (apply-extensionality 1)
+                 (("" (hide 2)
+                   (("" (iff)
+                     (("" (split 1)
+                       (("1" (flatten) (("1" (grind) nil nil)) nil)
+                        ("2" (flatten)
+                         (("2" (skeep -1 :preds? t)
+                           (("2" (inst 1 "cebr")
+                             (("2" (grind) nil nil)) nil))
+                           nil))
+                         nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil))
+             nil))
+           nil)
+          ((choose const-decl "(p)" sets nil)
+           (nonempty? const-decl "bool" sets nil)
+           (make_unstable_domain_from_ceb_and_dom def-decl
+            "{dom: Domain |
+         dom =
+          ({ceb: CEB |
+              EXISTS (cebr: (domr)): is_unstable_from?(cebl, cebr)(ceb)})}"
+            domain nil)
+           (is_unstable_from? const-decl "bool" domain nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (nat nonempty-type-eq-decl nil naturalnumbers nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (>= const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (real_ge_is_total_order name-judgement
+            "(total_order?[real])" real_props nil)
+           (remove const-decl "set" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (rest const-decl "set" sets nil)
+           (empty? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (injective? const-decl "bool" functions nil))
+          nil))
+        (make_unstable_domain_TCC2 0
+         (make_unstable_domain_TCC2-1 nil 3753820992
+          ("" (skeep :preds? t)
+           (("" (use "rest_stable_dom")
+             (("" (expand "stable_domain?")
+               (("" (flatten) (("" (assert) nil nil)) nil)) nil))
+             nil))
+           nil)
+          ((rest_stable_dom judgement-tcc nil domain nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (CEB type-eq-decl nil domain nil)
+           (set type-eq-decl nil sets nil)
+           (empty? const-decl "bool" sets nil)
+           (rest const-decl "set" sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (doml skolem-const-decl "(stable_domain?)" domain nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil))
+          nil))
+        (make_unstable_domain_TCC3 0
+         (make_unstable_domain_TCC3-1 nil 3753868221
+          ("" (skeep :preds? t)
+           (("" (rewrite "card_rest[CEB]")
+             (("1" (assert) nil nil) ("2" (grind) nil nil)) nil))
+           nil)
+          ((card_rest formula-decl nil finite_sets nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (set type-eq-decl nil sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (finite_set type-eq-decl nil finite_sets nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (Domain type-eq-decl nil domain nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (RAExprDomain type-decl nil domain nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (CEB type-eq-decl nil domain nil)
+           (int_minus_int_is_int application-judgement "int" integers
+            nil)
+           (real_lt_is_strict_total_order name-judgement
+            "(strict_total_order?[real])" real_props nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (nonempty? const-decl "bool" sets nil)
+           (injective? const-decl "bool" functions nil)
+           (empty? const-decl "bool" sets nil)
+           (member const-decl "bool" sets nil))
+          nil))
+        (make_unstable_domain_TCC4 0
+         (make_unstable_domain_TCC4-2 nil 3753871385
+          ("" (skeep :preds? t)
+           (("" (typepred "v(rest[CEB](doml), domr)")
+             (("1" (replace -2 :hide? t)
+               (("1"
+                 (typepred
+                  "make_unstable_domain_from_ceb_and_dom(choose[CEB](doml), domr)")
+                 (("1" (replace -2 :hide? t)
+                   (("1" (expand "union")
+                     (("1" (apply-extensionality)
+                       (("1" (hide 3)
+                         (("1" (iff)
+                           (("1" (split 1)
+                             (("1" (flatten)
+                               (("1"
+                                 (expand "member")
+                                 (("1"
+                                   (split -1)
+                                   (("1"
+                                     (skeep -1 :preds? t)
+                                     (("1"
+                                       (inst 1 "choose(doml)" "cebr")
+                                       nil
+                                       nil))
+                                     nil)
+                                    ("2"
+                                     (skeep :preds? t)
+                                     (("2"
+                                       (inst 1 "cebl" "cebr")
+                                       (("2"
+                                         (hide-all-but (-1 1))
+                                         (("2" (grind) nil nil))
+                                         nil))
+                                       nil))
+                                     nil))
+                                   nil))
+                                 nil))
+                               nil)
+                              ("2" (flatten)
+                               (("2"
+                                 (expand "member")
+                                 (("2"
+                                   (skeep -1 :preds? t)
+                                   (("2"
+                                     (use "choose_rest_or[CEB]")
+                                     (("2"
+                                       (expand "member")
+                                       (("2"
+                                         (split -1)
+                                         (("1"
+                                           (inst 2 "cebl" "cebr")
+                                           nil
+                                           nil)
+                                          ("2"
+                                           (replace
+                                            -1
+                                            :hide?
+                                            t
+                                            :dir
+                                            rl)
+                                           (("2"
+                                             (inst 1 "cebr")
+                                             nil
+                                             nil))
+                                           nil))
+                                         nil))
+                                       nil))
+                                     nil))
+                                   nil))
+                                 nil))
+                               nil))
+                             nil))
+                           nil))
+                         nil))
+                       nil))
+                     nil))
+                   nil))
+                 nil))
+               nil)
+              ("2" (rewrite "rest_finite_nonempty?")
+               (("2" (use "rest_stable_dom") nil nil)) nil))
+             nil))
+           nil)
+          ((rest const-decl "set" sets nil)
+           (is_unstable_from? const-decl "bool" domain nil)
+           (card const-decl "{n: nat | n = Card(S)}" finite_sets nil)
+           (Card const-decl "nat" finite_sets nil)
+           (= const-decl "[T, T -> boolean]" equalities nil)
+           (nat nonempty-type-eq-decl nil naturalnumbers nil)
+           (>= const-decl "bool" reals nil)
+           (int nonempty-type-eq-decl nil integers nil)
+           (integer_pred const-decl "[rational -> boolean]" integers
+                         nil)
+           (rational nonempty-type-from-decl nil rationals nil)
+           (rational_pred const-decl "[real -> boolean]" rationals nil)
+           (finite_set type-eq-decl nil finite_sets nil)
+           (is_finite const-decl "bool" finite_sets nil)
+           (< const-decl "bool" reals nil)
+           (real nonempty-type-from-decl nil reals nil)
+           (real_pred const-decl "[number_field -> boolean]" reals nil)
+           (number_field nonempty-type-from-decl nil number_fields nil)
+           (number_field_pred const-decl "[number -> boolean]"
+            number_fields nil)
+           (number nonempty-type-decl nil numbers nil)
+           (stable_domain? const-decl "boolean" domain nil)
+           (Domain type-eq-decl nil domain nil)
+           (finite_nonempty? const-decl "bool" more_set_defs
+            "sets_aux/")
+           (set type-eq-decl nil sets nil)
+           (CEB type-eq-decl nil domain nil)
+           (RAExprDomain type-decl nil domain nil)
+           (RBExpr type-decl nil expressions nil)
+           (FPAExprDomain type-decl nil domain nil)
+           (FPBExpr type-decl nil expressions nil)
+           (FtoR formal-const-decl
+            "[FloatingPointNumber -> RealNumber]" domain nil)
+           (FloatingPointNumber formal-nonempty-type-decl nil domain
+            nil)
+           (RealNumber formal-nonempty-type-decl nil domain nil)
+           (Operator formal-nonempty-type-decl nil domain nil)
+           (NOT const-decl "[bool -> bool]" booleans nil)
+           (bool nonempty-type-eq-decl nil booleans nil)
+           (boolean nonempty-type-decl nil booleans nil)
+           (finite_rest application-judgement "finite_set" finite_sets
+            nil)
+           (AND const-decl "[bool, bool -> bool]" booleans nil)
+           (make_unstable_domain_from_ceb_and_dom def-decl
+            "{dom: Domain |
+         dom =
+          ({ceb: CEB |
+              EXISTS (cebr: (domr)): is_unstable_from?(cebl, cebr)(ceb)})}"
+            domain nil)
+           (nonempty? const-decl "bool" sets nil)
+           (choose const-decl "(p)" sets nil)
+           (union const-decl "set" sets nil)
+           (remove const-decl "set" sets nil)
+           (/= const-decl "boolean" notequal nil)
+           (empty? const-decl "bool" sets nil)
+           (cebl skolem-const-decl "(rest[CEB](doml))" domain nil)
+           (doml skolem-const-decl "(stable_domain?)" domain nil)
+           (choose_rest_or formula-decl nil sets_lemmas nil)
+           (cebl skolem-const-decl "(doml)" domain nil)
+           (member const-decl "bool" sets nil)
+           (OR const-decl "[bool, bool -> bool]" booleans nil)
+           (union_finite_nonempty_j application-judgement
+            "(finite_nonempty?)" more_set_defs "sets_aux/")
+           (rest_stable_dom judgement-tcc nil domain nil)
+           (rest_finite_nonempty? judgement-tcc nil more_set_defs
+            "sets_aux/"))
+          nil)
+         (make_unstable_domain_TCC4-1 nil 3753868221
+          ("" (subtype-tcc) nil nil) nil nil)))
+

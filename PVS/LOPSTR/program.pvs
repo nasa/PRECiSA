@@ -1,0 +1,309 @@
+program[
+  Operator            : TYPE+,
+  RealNumber          : TYPE+,
+  FloatingPointNumber : TYPE+,
+  FtoR 		      : [FloatingPointNumber -> RealNumber]
+]: THEORY BEGIN
+
+  % Statements
+
+  IMPORTING expressions[Operator,RealNumber,FloatingPointNumber,FtoR]
+
+  expr,expr1,expr2: VAR FPAExpr
+  form: VAR FPBExpr
+  vidx : VAR DeBruijnIndex
+
+  %
+  %  LETIN(expr,body) constructs are to be interpreted in the following way:
+  %  - any variable v(i) is bound by expr if there are i LETINs between
+  %    v(i) and the top of the body.
+  %
+  %  Examples:
+  %
+  %    LETIN(expr, AEXPR(Variable(0)) \equiv expr
+  %
+  %    LETIN(expr, AEXPR(Variable(1)) \equiv Variable(1)
+  %
+  %    LETIN(exprA,
+  %      ITE( LT(AEXPR(Variable(0)), Constant(42)) , 
+  %        LETIN(exprB, OP(AEXPR(Variable(0)), AEXPR(Variable(1))) ) ,
+  %        LETIN(exprC, OP(AEXPR(Variable(0)), AEXPR(Variable(1))) ) )
+  %
+  %    \equiv
+  %
+  %    1.  ITE( LT(exprA, Constant(42)) , 
+  %    2.    OP(exprB, exprA) ) ,
+  %    3.    OP(exprC, exprA) ) )
+  %
+  %    note that exprA binds Variable(0) in line 1 and Variable(1) in lines 2 and 3.
+  %
+  FPStmt: DATATYPE
+  BEGIN
+    WARNING: Warning?
+    ITE(guard:FPBExpr,thenBranch,elseBranch: FPStmt): IfThenElse?
+    AEXPR(expr:FPAExpr): AExpr?
+    LETIN(expr:FPAExpr,body:FPStmt): LetIn?
+  END FPStmt
+
+  stmt,stmt1,stmt2: VAR FPStmt
+
+  subterm_reflexibility: LEMMA
+    FORALL(a:FPStmt): subterm(a,a)
+  AUTO_REWRITE+ subterm_reflexibility
+
+  subterm_transitivity: LEMMA
+    FORALL(a,b,c: FPStmt): subterm(a,b) AND subterm(b,c) IMPLIES subterm(a,c)
+
+  %
+  
+  appears_in?(expr, stmt)
+  : RECURSIVE bool
+  = CASES stmt OF
+      ITE(g,t,e): appears_in?(expr,g) OR appears_in?(expr,t) OR appears_in?(expr,e),
+      LETIN(e,b): subterm(expr,e) OR appears_in?(expr,b),
+      AEXPR(e)  : subterm(expr,e),
+      WARNING   : FALSE
+    ENDCASES
+  MEASURE stmt BY <<
+
+  appears_in?_int_def_ite
+  : LEMMA
+    appears_in?(expr, ITE(form,stmt1,stmt2))
+    = ( appears_in?(expr,form) OR appears_in?(expr,stmt1) OR appears_in?(expr,stmt2) )
+
+  appears_in?_int_def_letin
+  : LEMMA
+    appears_in?(expr1, LETIN(expr2,stmt))
+    = ( subterm(expr1,expr2) OR appears_in?(expr1,stmt) )
+
+  appears_in?_int_def_aexpr
+  : LEMMA
+    appears_in?(expr1, AEXPR(expr2)) = ( subterm(expr1,expr2) )
+
+  %
+
+  appears_in?(phi: FPBExpr, stmt: FPStmt)
+  : RECURSIVE bool
+  = CASES stmt OF
+      ITE(g,t,e): g = phi OR appears_in?(phi,t) OR appears_in?(phi,e),
+      LETIN(e,b): appears_in?(phi,b)
+      ELSE FALSE
+    ENDCASES
+  MEASURE stmt BY <<
+
+  %
+
+  % Return the maximum parameter index present in the statement, -1 if the statement
+  % has no parameters.
+  maxParamIndex(stmt: FPStmt)
+  : RECURSIVE int
+  = CASES stmt OF
+      ITE(g,t,e) : max(maxParamIndex(g),max(maxParamIndex(t),maxParamIndex(e))),
+      AEXPR(a)   : maxParamIndex(a), 
+      LETIN(a,b) : max(maxParamIndex(a),maxParamIndex(b))
+      ELSE -1
+    ENDCASES
+  MEASURE stmt BY <<
+
+  max_param_index_stmt__ite: LEMMA
+    maxParamIndex(ITE(form,stmt1,stmt2))
+    = max(maxParamIndex(form),max(maxParamIndex(stmt1),maxParamIndex(stmt2)))
+
+  max_param_index_stmt__aexpr: LEMMA
+    maxParamIndex(AEXPR(expr)) = maxParamIndex(expr)
+
+  max_param_index_stmt__letin: LEMMA
+    maxParamIndex(LETIN(expr,stmt)) = max(maxParamIndex(expr),maxParamIndex(stmt))
+
+  %
+  % A variable appears free in a statement if any of its appareances
+  % is not bounded by a LET-IN declaration, i.e., if the amount of nested
+  % LET-INs that surrounds the appearence is less than its index number.
+  %
+
+  appearsFree?(stmt)(declaredLocalsCount: nat, local: (FPVariable?))
+  : RECURSIVE bool
+  = CASES stmt OF
+      ITE(g,t,e) : appearsFree?(g)(declaredLocalsCount,local) OR
+      		   appearsFree?(t)(declaredLocalsCount,local) OR
+		   appearsFree?(e)(declaredLocalsCount,local),
+      AEXPR(a)   : appearsFree?(a)(declaredLocalsCount,local),
+      LETIN(a,b) : appearsFree?(a)(declaredLocalsCount,local) OR
+      		   appearsFree?(b)(declaredLocalsCount+1,local)
+      ELSE FALSE
+    ENDCASES
+  MEASURE stmt BY <<
+
+  local: VAR (FPVariable?)
+
+  appearsFree?_stmt_int_def_ite
+  : LEMMA
+    FORALL(alreadyDeclaredLocalsCount: nat)
+    : appearsFree?(ITE(form,stmt1,stmt2))(alreadyDeclaredLocalsCount, local)
+      = ( appearsFree?(form)(alreadyDeclaredLocalsCount, local)
+          OR appearsFree?(stmt1)(alreadyDeclaredLocalsCount, local)
+          OR appearsFree?(stmt2)(alreadyDeclaredLocalsCount, local) )
+
+  appearsFree?_stmt_int_def_aexpr
+  : LEMMA
+    FORALL(alreadyDeclaredLocalsCount: nat)
+    : appearsFree?(AEXPR(expr))(alreadyDeclaredLocalsCount, local)
+      = appearsFree?(expr)(alreadyDeclaredLocalsCount, local)
+
+  appearsFree?_stmt_int_def_letin
+  : LEMMA
+    FORALL(alreadyDeclaredLocalsCount: nat)
+    : appearsFree?(LETIN(expr,stmt))(alreadyDeclaredLocalsCount, local)
+      = ( appearsFree?(expr)(alreadyDeclaredLocalsCount, local)
+          OR appearsFree?(stmt)(1+alreadyDeclaredLocalsCount, local) )
+
+  n : VAR nat
+
+  appearsFree?_inc_var
+  : LEMMA
+    appearsFree?(stmt)(n, FPVariable(vidx+1))
+    IMPLIES appearsFree?(stmt)(n+1, FPVariable(vidx))
+
+  appearsFree?_dec_var
+  : LEMMA
+    appearsFree?(stmt)(n+1, FPVariable(vidx))
+    IMPLIES appearsFree?(stmt)(n, FPVariable(vidx+1))
+
+  %
+
+  appearsFree?(stmt)(local: (FPVariable?))
+  : bool
+  = appearsFree?(stmt)(0,local)
+
+  appearsFree?_stmt_locals_count_def
+  : LEMMA
+    appearsFree?(stmt)(local) = appearsFree?(stmt)(0,local)
+
+  appearsFree?_1_stmt_int_def_ite
+  : LEMMA
+    appearsFree?(ITE(form,stmt1,stmt2))(local)
+    = ( appears?(form)(local)
+        OR appearsFree?(stmt1)(local)
+        OR appearsFree?(stmt2)(local) )
+
+  appearsFree?_1_stmt_int_def_aexpr
+  : LEMMA
+    appearsFree?(AEXPR(expr))(local)
+    = appears?(expr)(local)
+
+  %
+  % Maximum Free Local Index
+  %
+
+  maximumFreeLocalIndex?(stmt)(vidx: upfrom(-1))
+  : MACRO bool
+  =  IF ( EXISTS(local: (FPVariable?)): appearsFree?(stmt)(local) )
+     THEN ( EXISTS(local: (FPVariable?) | appearsFree?(stmt)(local)): index(local) = vidx ) AND
+     	  ( FORALL(local: (FPVariable?) | appearsFree?(stmt)(local)): index(local) <= vidx )
+     ELSE vidx = -1 ENDIF
+
+  % Returns the maximum *free* local index in stmt
+  maxFreeLocalIndex(stmt: FPStmt)
+  : RECURSIVE (maximumFreeLocalIndex?(stmt))
+  = CASES stmt OF
+      ITE(g,t,e) : max(maxFreeLocalIndex(g),max(maxFreeLocalIndex(t),maxFreeLocalIndex(e))),
+      AEXPR(a)   : maxFreeLocalIndex(a), 
+      LETIN(a,b) : IF maxFreeLocalIndex(b) <= 0 THEN maxFreeLocalIndex(a)
+      		   ELSE max(maxFreeLocalIndex(a),maxFreeLocalIndex(b)-1) ENDIF
+      ELSE -1
+    ENDCASES
+  MEASURE stmt BY <<
+
+  max_local_index_def
+  : LEMMA
+    maximumFreeLocalIndex?(stmt)(maxFreeLocalIndex(stmt))
+
+  max_local_index_stmt__ite: LEMMA
+    maxFreeLocalIndex(ITE(form,stmt1,stmt2))
+    = max(maxFreeLocalIndex(form),max(maxFreeLocalIndex(stmt1),maxFreeLocalIndex(stmt2)))
+
+  max_local_index_stmt__aexpr: LEMMA
+    maxFreeLocalIndex(AEXPR(expr)) = maxFreeLocalIndex(expr)
+
+  max_local_index_stmt_def__letin: LEMMA
+    maxFreeLocalIndex(LETIN(expr,stmt))
+    = IF maxFreeLocalIndex(stmt) <= 0 THEN maxFreeLocalIndex(expr)
+      ELSE max(maxFreeLocalIndex(expr),maxFreeLocalIndex(stmt)-1) ENDIF
+
+  % Program
+
+  FPProgram : TYPE = [# body: FPStmt, nargs: nat #]
+
+  % Wellformedness
+
+  wellFormed?(stmt:FPStmt, nargs, nlocals:nat)
+  : INDUCTIVE bool =
+    CASES stmt OF
+      WARNING: TRUE,
+      ITE(phi,A,B)    : wellFormed?(phi,nargs,nlocals) AND
+      		        wellFormed?(A,nargs,nlocals) AND
+  		        wellFormed?(B,nargs,nlocals),
+      AEXPR(expr)     : wellFormed?(expr,nargs,nlocals),
+      LETIN(expr,body): wellFormed?(expr,nargs,nlocals) AND
+      			wellFormed?(body,nargs,nlocals + 1)
+    ENDCASES
+
+  nargs, nlocals: VAR nat
+
+  well_formed_ite
+  : LEMMA
+    FORALL(nargs, nlocals:nat,phi:FPBExpr,A,B:FPStmt):
+      wellFormed?(ITE(phi,A,B), nargs, nlocals)
+      = ( wellFormed?(phi, nargs, nlocals) AND
+      	  wellFormed?(A, nargs, nlocals) AND
+	  wellFormed?(B, nargs, nlocals) )
+      
+  well_formed_ite_guard: LEMMA
+    FORALL(nargs, nlocals:nat,phi:FPBExpr,A,B:FPStmt):
+      wellFormed?(ITE(phi,A,B), nargs, nlocals)
+      IMPLIES wellFormed?(phi, nargs, nlocals)
+
+  well_formed_ite_then: LEMMA
+    FORALL(nargs, nlocals:nat,phi:FPBExpr,A,B:FPStmt):
+      wellFormed?(ITE(phi,A,B), nargs, nlocals)
+      IMPLIES wellFormed?(A, nargs, nlocals)
+
+  well_formed_ite_else: LEMMA
+    FORALL(nargs, nlocals:nat,phi:FPBExpr,A,B:FPStmt):
+      wellFormed?(ITE(phi,A,B), nargs, nlocals)
+      IMPLIES wellFormed?(B, nargs, nlocals)
+
+  well_formed_def_aexpr: LEMMA
+    FORALL(nargs, nlocals:nat,expr:FPAExpr):
+      wellFormed?(AEXPR(expr), nargs, nlocals)
+      = wellFormed?(expr, nargs, nlocals)
+      
+  well_formed_aexpr: LEMMA
+    FORALL(nargs, nlocals:nat,expr:FPAExpr):
+      wellFormed?(AEXPR(expr), nargs, nlocals)
+      IMPLIES wellFormed?(expr, nargs, nlocals)
+
+  well_formed_def_letin: LEMMA
+    FORALL(nargs, nlocals:nat,expr:FPAExpr,body:FPStmt):
+      wellFormed?(LETIN(expr,body), nargs, nlocals)
+      = (wellFormed?(expr, nargs, nlocals) AND wellFormed?(body, nargs, 1+nlocals))
+
+  well_formed_letin_body: LEMMA
+    FORALL(nargs, nlocals:nat,expr:FPAExpr,body:FPStmt):
+      wellFormed?(LETIN(expr,body), nargs, nlocals)
+      IMPLIES wellFormed?(body, nargs, 1+nlocals)
+
+  well_formed_letin_expr: LEMMA
+    FORALL(nargs, nlocals:nat,expr:FPAExpr,body:FPStmt):
+      wellFormed?(LETIN(expr,body), nargs, nlocals)
+      IMPLIES wellFormed?(expr, nargs, nlocals)
+
+  well_formed_int_def
+  : LEMMA
+    wellFormed?(stmt,nargs,nlocals)
+    = ( maxFreeLocalIndex(stmt) < nlocals AND maxParamIndex(stmt) < nargs )
+
+  wellFormedProgram?(pgm: FPProgram): bool
+  = wellFormed?(body(pgm), nargs(pgm), 0)
+
+END program

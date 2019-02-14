@@ -1,0 +1,24 @@
+le_r_fp[
+  RealNumber          : TYPE+,
+  lt_r                : (strict_total_order?[RealNumber]),
+  FloatingPointNumber : TYPE+,
+  lt_fp               : (strict_total_order?[FloatingPointNumber]),
+  FtoR 		      : [FloatingPointNumber -> RealNumber]
+] : THEORY BEGIN
+  ASSUMING
+
+    X,Y: VAR FloatingPointNumber
+
+    lt_fp_lt_r
+    : ASSUMPTION
+      lt_fp(X,Y) = lt_r(FtoR(X),FtoR(Y))
+
+  ENDASSUMING
+
+  IMPORTING le_r[RealNumber,lt_r], le_fp[FloatingPointNumber,lt_fp]
+
+  le_fp_le_r
+  : LEMMA
+    le_fp(X,Y) = le_r(FtoR(X),FtoR(Y))
+
+END le_r_fp

@@ -1,0 +1,322 @@
+domain[
+  Operator            : TYPE+,
+  RealNumber          : TYPE+,
+  lt_r                : (strict_total_order?[RealNumber]),
+  applyFun_r          : [[Operator,RealNumber,RealNumber]->RealNumber],
+  FloatingPointNumber : TYPE+,
+  lt_fp               : (strict_total_order?[FloatingPointNumber]),
+  applyFun_fp         : [[Operator,FloatingPointNumber,FloatingPointNumber]->FloatingPointNumber],
+  FtoR 		      : [FloatingPointNumber -> RealNumber]
+] : THEORY BEGIN
+
+  ASSUMING
+  
+    X,Y: VAR FloatingPointNumber
+    rX,rY: VAR RealNumber
+  
+    lt_fp_lt_r
+    : ASSUMPTION
+      lt_fp(X,Y) = lt_r(FtoR(X),FtoR(Y))
+      
+  ENDASSUMING
+
+  IMPORTING expressions_semantics[Operator,RealNumber,lt_r,applyFun_r,FloatingPointNumber,lt_fp,applyFun_fp,FtoR]
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Arithmetic expressions domain                              %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  FPAExprDomain: DATATYPE
+  BEGIN
+    FPAExpr(expr:FPAExpr) :FPAExpr?
+    FPBottom              :FPBottom?
+  END FPAExprDomain
+
+  RAExprDomain: DATATYPE
+  BEGIN
+    RAExpr(expr:RAExpr) :RAExpr?
+    RBottom             :RBottom?
+  END RAExprDomain
+
+
+  FtoR(aexpr: FPAExprDomain): RECURSIVE RAExprDomain =
+    CASES aexpr OF
+      FPAExpr(expr): RAExpr(FtoR(expr)),
+      FPBottom: RBottom
+    ENDCASES
+  MEASURE aexpr BY <<
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Conditional error bounds domain                            %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  CEB: TYPE = [# rconds   : RBExpr,
+                 fpconds  : FPBExpr,
+                 rresult  : RAExprDomain,
+                 fpresult : FPAExprDomain,
+                 stable?  : bool #]
+
+  ceb : VAR CEB
+
+  IMPORTING sets_aux@more_set_props[CEB,CEB]
+
+  domain?(s: set[CEB]): MACRO bool = finite_nonempty?[CEB](s)
+
+  % A domain is defined as a finite set of CEB because the max
+  % free local index of a fpconds(ceb) is needed
+  Domain: TYPE = (finite_nonempty?[CEB])
+
+  dom : VAR Domain
+
+  subset_dom
+  : LEMMA
+    FORALL (dom,(sub: set[CEB])): subset?(sub,dom) AND NOT empty?(sub) IMPLIES domain?(sub)
+
+  make_ceb(rconds   : RBExpr,
+           fpconds  : FPBExpr,
+           rresult  : RAExprDomain,
+           fpresult : FPAExprDomain,
+           stable?  : bool) : CEB =
+    (# rconds   := rconds    ,
+       fpconds  := fpconds   ,
+       rresult  := rresult   ,
+       fpresult := fpresult  ,
+       stable?  := stable?   #)
+
+  %
+  % Notion of apparition of variables in (conds of) CEBs
+  %
+
+  local : VAR (FPVariable?)
+
+  appears?(ceb)(local): bool
+  = appears?(fpconds(ceb))(local) OR appears?(rconds(ceb))(FtoR(local))
+
+  appears?_ceb_int_def
+  : LEMMA
+    appears?(ceb)(local)
+    = (appears?(fpconds(ceb))(local) OR appears?(rconds(ceb))(FtoR(local)))
+
+  appears?(dom)(local)
+  : bool
+  = EXISTS(ceb: (dom))
+    : appears?(ceb)(local)
+
+  appears?_dom_int_def
+  : LEMMA
+    appears?(dom)(local) = EXISTS(ceb: (dom)) : appears?(ceb)(local)
+    
+  %------------------------------------------------------------%
+  %                                                            %
+  % Propagation of conditions                                  %
+  %                                                            %
+  %------------------------------------------------------------%
+  
+  propagate_into(ceb:CEB, rexpr:RBExpr, fpexpr:FPBExpr): MACRO CEB =
+    make_ceb( RAnd(rexpr,rconds(ceb)), FPAnd(fpexpr,fpconds(ceb)),
+      	      rresult(ceb), 	       fpresult(ceb),
+      	      stable?(ceb) )
+
+  is_propagation_of?(ceb2,ceb:CEB, rexpr:RBExpr, fpexpr:FPBExpr): MACRO bool =
+    ceb2 = propagate_into(ceb,rexpr,fpexpr)
+
+  propagate_into_dom(rexpr:RBExpr, fpexpr:FPBExpr)(sceb: Domain): MACRO Domain
+  = map[CEB,CEB](LAMBDA(ceb:CEB):propagate_into(ceb,rexpr,fpexpr))(sceb)
+
+  partial_propagation?
+    (rexpr:RBExpr, fpexpr : FPBExpr)
+    (original : Domain)
+    (propagated : Domain)
+  : MACRO bool
+  = FORALL(ceb2: (propagated)) :
+      EXISTS(ceb: (original)):
+        is_propagation_of?(ceb2,ceb,rexpr,fpexpr)
+	
+  propagated_dom_is_partial_propagation: LEMMA
+   FORALL(rexpr:RBExpr, fpexpr:FPBExpr, sceb: Domain):
+    partial_propagation?(rexpr,fpexpr)(sceb)(propagate_into_dom(rexpr, fpexpr)(sceb))
+
+  AUTO_REWRITE+ propagated_dom_is_partial_propagation
+    
+  includes_propagation_on?
+    (rexpr:RBExpr, fpexpr : FPBExpr)
+    (original : Domain)
+    (propagated : Domain)
+  : MACRO bool
+  = FORALL(ceb: (original)) :
+      EXISTS(ceb2: (propagated)):
+        is_propagation_of?(ceb2,ceb,rexpr,fpexpr)
+
+  propagated_dom_includes_propagation: CONJECTURE
+   FORALL(rexpr:RBExpr, fpexpr:FPBExpr, sceb: Domain):
+    includes_propagation_on?(rexpr,fpexpr)(sceb)(propagate_into_dom(rexpr, fpexpr)(sceb))
+  AUTO_REWRITE+ propagated_dom_includes_propagation
+
+  propag(sceb:Domain, rexpr:RBExpr, fpexpr:FPBExpr)
+  : { result: Domain | partial_propagation?(rexpr, fpexpr)(sceb)(result) AND
+      	      	       includes_propagation_on?(rexpr, fpexpr)(sceb)(result) }
+  = propagate_into_dom(rexpr, fpexpr)(sceb)
+
+  %
+
+  rform: VAR RBExpr
+  fpform: VAR FPBExpr
+  nargs, nlocals: VAR nat  
+
+  propag_def: LEMMA
+    propag(dom, rform, fpform)(ceb)
+    IMPLIES EXISTS(ceb_0: (dom)): fpconds(ceb) = FPAnd(fpform,fpconds(ceb_0))
+
+  propag_def_r
+  : LEMMA
+    propag(dom, rform, fpform)(ceb)
+    IMPLIES EXISTS(ceb_0: (dom)): rconds(ceb) = RAnd(rform,rconds(ceb_0))
+
+  % A CEB is considered well formed if its conditions are well formed
+
+  wellFormed?(ceb, nargs, nlocals)
+  : bool
+  = wellFormed?(fpconds(ceb),nargs,nlocals)
+
+  wellFormed?_ceb_is_wellFormed?_fconds: LEMMA
+  wellFormed?(ceb, nargs, nlocals) IFF wellFormed?(fpconds(ceb),nargs,nlocals)
+
+  %
+
+  wellFormed?(dom, nargs, nlocals)
+  : bool
+  = FORALL(ceb:(dom)): wellFormed?(ceb,nargs,nlocals)
+
+  wellFormed?_dom_iff_every_ceb_is_wellFormed?: LEMMA
+  wellFormed?(dom, nargs, nlocals) IFF FORALL(ceb:(dom)): wellFormed?(ceb,nargs,nlocals)
+ 
+  %
+
+  maxFreeLocalIndex(ceb): upfrom(-1) 
+  = maxFreeLocalIndex(fpconds(ceb))
+
+  max_local_index_ceb_def
+  : LEMMA
+    maxFreeLocalIndex(fpconds(ceb)) = maxFreeLocalIndex(ceb)
+
+  %
+
+  maxParamIndex(ceb): upfrom(-1) 
+  = maxParamIndex(fpconds(ceb))
+
+  %
+ 
+  maxFreeLocalIndex(dom)
+  : RECURSIVE { m: upfrom(-1) | (FORALL(ceb: (dom)): maxFreeLocalIndex(ceb) <= m) AND
+    	      	   	      	(EXISTS(ceb: (dom)): maxFreeLocalIndex(ceb) = m)}
+  = IF empty?(dom) THEN -1
+    ELSIF empty?(rest(dom)) THEN maxFreeLocalIndex(choose(dom))
+    ELSE max(maxFreeLocalIndex(choose(dom)), maxFreeLocalIndex(rest(dom))) ENDIF
+  MEASURE card(dom)
+
+  max_local_index_dom_def
+  : LEMMA
+    (FORALL(ceb: (dom)): maxFreeLocalIndex(ceb) <= maxFreeLocalIndex(dom)) AND
+    (EXISTS(ceb: (dom)): maxFreeLocalIndex(ceb) = maxFreeLocalIndex(dom))
+
+  max_local_index_dom_ge_ceb
+  : LEMMA
+    FORALL(ceb: (dom)):
+      maxFreeLocalIndex(ceb) <= maxFreeLocalIndex(dom)
+
+  %
+
+  maxParamIndex(dom)
+  : RECURSIVE { m: upfrom(-1) | (FORALL(ceb: (dom)): maxParamIndex(ceb) <= m) AND
+    	      	   	      	(EXISTS(ceb: (dom)): maxParamIndex(ceb) = m)}
+  = IF empty?(dom) THEN -1
+    ELSIF empty?(rest(dom)) THEN maxParamIndex(choose(dom))
+    ELSE max(maxParamIndex(choose(dom)), maxParamIndex(rest(dom))) ENDIF
+  MEASURE card(dom)
+
+  max_param_index_dom_def
+  : LEMMA
+    (FORALL(ceb: (dom)): maxParamIndex(ceb) <= maxParamIndex(dom)) AND
+    (EXISTS(ceb: (dom)): maxParamIndex(ceb) = maxParamIndex(dom))
+
+  max_param_index_dom_ge_ceb
+  : LEMMA
+    FORALL(ceb: (dom)):
+      maxParamIndex(ceb) <= maxParamIndex(dom)
+
+  %
+
+  wellFormed?_dom_int_def
+  : LEMMA
+    wellFormed?(dom,nargs,nlocals) = (maxFreeLocalIndex(dom) < nlocals AND maxParamIndex(dom) < nargs)
+
+  %
+  % Stability notions for domains
+  %
+
+  % A Domain is stable if each of its cebs is stable.
+  stable_domain?(dom): boolean = finite_nonempty?[CEB](dom) AND FORALL(ceb: (dom)): stable?(ceb)
+
+  rest_stable_dom
+  : JUDGEMENT
+    FORALL(dom: (stable_domain?) | NOT empty?(rest(dom)))
+    : rest(dom) HAS_TYPE (stable_domain?)
+
+  at_least_one_stable?(d: Domain)
+  : MACRO boolean
+  = EXISTS (ceb: CEB): d(ceb) AND stable?(ceb)
+
+  % This domain filter keeps only stable cebs.
+  stable_ceb_filter(d: (at_least_one_stable?))
+  : { result: Domain | FORALL(ceb:(result)): stable?(ceb) }
+  = { ceb: CEB | d(ceb) AND stable?(ceb) }
+
+  %
+
+  is_unstable_from?
+  ( ceb1,ceb2: CEB )
+  ( ceb: CEB )
+  : bool
+  = rconds(ceb)   = rconds(ceb1)   AND
+    fpconds(ceb)  = fpconds(ceb2)  AND
+    rresult(ceb)  = rresult(ceb1)  AND
+    fpresult(ceb) = fpresult(ceb2) AND
+    NOT stable?(ceb)
+
+  %
+
+  make_unstable_ceb_from(cebl,cebr:CEB)
+  : (is_unstable_from?(cebl,cebr))
+  = make_ceb(rconds(cebl),
+             fpconds(cebr),
+             rresult(cebl),
+             fpresult(cebr),
+             FALSE)
+
+  is_unstable_dom_from_ceb_and_dom?
+  (cebl:CEB, domr:Domain)
+  (dom:Domain)
+  : bool
+  = FORALL(ceb: (dom)): EXISTS(cebr: (domr)) : is_unstable_from?(cebl,cebr)(ceb)
+
+  make_unstable_domain_from_ceb_and_dom
+  (cebl:CEB, domr:(stable_domain?))
+  : RECURSIVE { dom: Domain | dom = {ceb: CEB | EXISTS(cebr: (domr)) : is_unstable_from?(cebl,cebr)(ceb)} }
+  = IF empty?(rest(domr)) 
+    THEN singleton[CEB](make_unstable_ceb_from(cebl,choose(domr)))
+    ELSE add(make_unstable_ceb_from(cebl,choose(domr)), make_unstable_domain_from_ceb_and_dom(cebl,rest(domr))) ENDIF
+  MEASURE card(domr)
+
+  make_unstable_domain(doml,domr: (stable_domain?))
+  : RECURSIVE { dom: Domain | dom = { ceb: CEB | EXISTS(cebl: (doml), cebr: (domr)) : is_unstable_from?(cebl,cebr)(ceb) } }
+  = IF empty?(rest(doml))
+    THEN make_unstable_domain_from_ceb_and_dom(choose(doml),domr)
+    ELSE union( make_unstable_domain_from_ceb_and_dom(choose(doml),domr),
+    	 	make_unstable_domain(rest(doml),domr) ) ENDIF
+  MEASURE card(doml)
+
+END domain

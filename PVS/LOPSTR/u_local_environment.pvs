@@ -1,0 +1,119 @@
+u_local_environment
+[ T             : TYPE+
+, variable? 	: PRED[T]
+, index     	: [(variable?)->nat]
+, <<        	: (strict_well_founded?[T]) ] : THEORY
+BEGIN
+
+  LocalEnvironment: TYPE+
+
+  env,env1,env2: VAR LocalEnvironment
+  expr: VAR T
+
+
+  % basic functions on environments
+
+  size(env: LocalEnvironment): nat 
+
+  bounded_by?(env: LocalEnvironment)(expr: T): bool
+  = FORALL(v:(variable?)|v=expr OR v<<expr): index(v) < size(env)
+
+  cons(expr,(env|bounded_by?(env)(expr))): LocalEnvironment
+  empty_local_env: LocalEnvironment 
+  get (env: LocalEnvironment)(i: below(size(env))): T
+
+  % Keep only those expressions needed to evaluate the
+  % i-th expression, i.e., from the first expression added
+  % to the enviroment to the one added in the (i-1)-th turn.
+  shrink(env: LocalEnvironment,i: below(size(env))): LocalEnvironment
+  
+  size_cons
+  : AXIOM
+    FORALL(expr:(bounded_by?(env)))
+    : size(env) <= size(cons(expr, env))
+
+  size_cons_def
+  : AXIOM
+    FORALL(expr:(bounded_by?(env)))
+    : size(cons(expr, env)) = 1+size(env)
+  AUTO_REWRITE+ size_cons_def
+
+  size_empty
+  : AXIOM
+    size(empty_local_env) = 0
+  AUTO_REWRITE+ size_empty
+
+  size_shrink
+  : AXIOM
+    FORALL(i: below(size(env)))
+    : size(shrink(env,i)) = size(env) - (i+1)
+
+  shrink_env_monotonocity
+  : AXIOM
+    FORALL(idx: upto(size(env)) |  NOT idx = 0, expr:(bounded_by?(env)))
+    : shrink(cons(expr, env), idx) = shrink(env,idx-1)
+
+  
+  shrink_for_last_added
+  : AXIOM
+    FORALL(expr:(bounded_by?(env)))
+    : shrink(cons(expr, env), 0) = env
+
+  get_env_monotonocity
+  : AXIOM
+    FORALL(idx: upto(size(env)) | NOT idx = 0, expr:(bounded_by?(env)))
+    : get(cons(expr, env))(idx) = get(env)(idx-1)
+
+  get_last_added
+  : AXIOM
+    FORALL(expr:(bounded_by?(env)))
+    : get(cons(expr, env))(0) = expr
+
+  u_local_environment_extensionality
+  : AXIOM
+    (env1 = env2)
+    = ( size(env1) = size(env2) AND FORALL(i: below(size(env1))): get(env1)(i) = get(env2)(i))
+
+  get_shrink
+  : AXIOM
+    FORALL(j: below(size(env)), i: below(size(shrink(env,j))))
+    : get(env)(i+j+1) = get(shrink(env,j))(i)
+
+  %
+  
+  local_definitions_are_evaluable_in_smaller_env: AXIOM
+    FORALL(env: LocalEnvironment,i: below(size(env))):
+      bounded_by?(shrink(env,i))(get(env)(i))
+  AUTO_REWRITE+ local_definitions_are_evaluable_in_smaller_env
+
+  %
+
+  env_cons_eta: AXIOM
+    FORALL (env | 0 < size(env)):
+      cons(get(env)(0), shrink(env,0)) = env
+
+  % Induction Scheme
+  lenv_induction: AXIOM
+    FORALL (p: [LocalEnvironment -> boolean]):
+      (p(empty_local_env) AND
+        (FORALL (env: LocalEnvironment, expr: T | bounded_by?(env)(expr)):
+           p(env) IMPLIES p(cons(expr, env))))
+       IMPLIES (FORALL (env: LocalEnvironment): p(env));
+
+  %
+  % Evaluation Context (used to define eval in expression_semantics)
+  %
+
+  EvaluationContext: TYPE = [# expr: T, locals: LocalEnvironment #]
+
+  make_context(expr: T, locals: LocalEnvironment): MACRO EvaluationContext
+  = (# expr:=expr, locals:=locals #)
+
+  ;<<: [EvaluationContext,EvaluationContext->bool]
+  = LAMBDA(e1,e2: EvaluationContext)
+    : size(locals(e1)) < size(locals(e2))
+      OR (size(locals(e1)) = size(locals(e2)) AND expr(e1) << expr(e2))
+
+  doublelessp_swf: AXIOM strict_well_founded?[EvaluationContext](<<)
+
+END u_local_environment

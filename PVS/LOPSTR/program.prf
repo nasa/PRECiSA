@@ -1,0 +1,2547 @@
+(program
+ (subterm_reflexibility 0
+  (subterm_reflexibility-1 nil 3753176906 ("" (grind) nil nil)
+   ((subterm adt-def-decl "boolean" program nil)) shostak))
+ (subterm_transitivity 0
+  (subterm_transitivity-1 nil 3752519543
+   ("" (skeep :but "c")
+    (("" (induct "c")
+      (("1" (grind) nil nil)
+       ("2" (skolem 1 ("condition" "then_branch" "else_branch"))
+        (("2" (flatten)
+          (("2" (expand "subterm" -4)
+            (("2" (split -4)
+              (("1" (grind) nil nil)
+               ("2" (assert)
+                (("2" (expand "subterm" 1) (("2" (propax) nil nil))
+                  nil))
+                nil)
+               ("3" (assert)
+                (("3" (expand "subterm" 1) (("3" (propax) nil nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil)
+       ("3" (grind) nil nil)
+       ("4" (skolem 1 ("aexpr_" "body_"))
+        (("4" (flatten)
+          (("4" (expand "subterm" -3)
+            (("4" (split -3)
+              (("1" (grind) nil nil) ("2" (grind) nil nil)) nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((FPStmt type-decl nil program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (subterm adt-def-decl "boolean" program nil)
+    (FPStmt_induction formula-decl nil program nil))
+   shostak))
+ (appears_in?_TCC1 0
+  (appears_in?_TCC1-1 nil 3753176896 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil))
+   nil))
+ (appears_in?_TCC2 0
+  (appears_in?_TCC2-1 nil 3753176896 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil))
+   nil))
+ (appears_in?_TCC3 0
+  (appears_in?_TCC3-1 nil 3753176896 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (subterm adt-def-decl "boolean" expressions nil))
+   nil))
+ (appears_in?_int_def_ite 0
+  (appears_in?_int_def_ite-1 nil 3754832987
+   ("" (expand "appears_in?" 1 1) (("" (propax) nil nil)) nil)
+   ((appears_in? def-decl "bool" program nil)) shostak))
+ (appears_in?_int_def_letin 0
+  (appears_in?_int_def_letin-1 nil 3754833778
+   ("" (expand "appears_in?" 1 1) (("" (propax) nil nil)) nil)
+   ((appears_in? def-decl "bool" program nil)) shostak))
+ (appears_in?_int_def_aexpr 0
+  (appears_in?_int_def_aexpr-1 nil 3754833785
+   ("" (expand "appears_in?" 1 1) (("" (propax) nil nil)) nil)
+   ((appears_in? def-decl "bool" program nil)) shostak))
+ (appears_in?_TCC4 0
+  (appears_in?_TCC4-1 nil 3754243229 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil))
+   nil))
+ (appears_in?_TCC5 0
+  (appears_in?_TCC5-1 nil 3754243229 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil))
+   nil))
+ (appears_in?_TCC6 0
+  (appears_in?_TCC6-1 nil 3754832503 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil))
+   nil))
+ (maxParamIndex_TCC1 0
+  (maxParamIndex_TCC1-1 nil 3754243229 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil))
+   nil))
+ (maxParamIndex_TCC2 0
+  (maxParamIndex_TCC2-1 nil 3754832503 ("" (termination-tcc) nil nil)
+   ((<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil))
+   nil))
+ (max_param_index_stmt__ite 0
+  (max_param_index_stmt__ite-1 nil 3754994505
+   ("" (expand "maxParamIndex" 1 1) (("" (propax) nil nil)) nil)
+   ((maxParamIndex def-decl "int" program nil)) shostak))
+ (max_param_index_stmt__aexpr 0
+  (max_param_index_stmt__aexpr-1 nil 3754996047
+   ("" (expand "maxParamIndex" 1 1) (("" (propax) nil nil)) nil)
+   ((maxParamIndex def-decl "int" program nil)) shostak))
+ (max_param_index_stmt__letin 0
+  (max_param_index_stmt__letin-1 nil 3754996696
+   ("" (expand "maxParamIndex" 1 1) (("" (propax) nil nil)) nil)
+   ((maxParamIndex def-decl "int" program nil)) shostak))
+ (appearsFree?_stmt_int_def_ite 0
+  (appearsFree?_stmt_int_def_ite-1 nil 3754832953
+   ("" (expand "appearsFree?" 1 1) (("" (propax) nil nil)) nil)
+   ((appearsFree? def-decl "bool" program nil)) shostak))
+ (appearsFree?_stmt_int_def_aexpr 0
+  (appearsFree?_stmt_int_def_aexpr-1 nil 3754833809
+   ("" (expand "appearsFree?" 1 1) (("" (propax) nil nil)) nil)
+   ((appearsFree? def-decl "bool" program nil)) shostak))
+ (appearsFree?_stmt_int_def_letin 0
+  (appearsFree?_stmt_int_def_letin-1 nil 3754833821
+   ("" (expand "appearsFree?" 1 1) (("" (propax) nil nil)) nil)
+   ((appearsFree? def-decl "bool" program nil)) shostak))
+ (appearsFree?_inc_var 0
+  (appearsFree?_inc_var-1 nil 3754566041
+   ("" (skeep :but ("stmt" "n"))
+    (("" (induct "stmt")
+      (("1" (grind) nil nil)
+       ("2" (skolem 1 ("form" "stmt1" "stmt2"))
+        (("2" (flatten)
+          (("2" (skeep)
+            (("2" (inst -1 "n")
+              (("2" (inst -2 "n")
+                (("2" (rewrite "appearsFree?_stmt_int_def_ite")
+                  (("2" (rewrite "appearsFree?_stmt_int_def_ite")
+                    (("2" (flatten)
+                      (("2" (split -3)
+                        (("1" (lemma "appearsFree?_form_int_def")
+                          (("1" (inst? -1 :where 1)
+                            (("1" (replace -1 :hide? t)
+                              (("1"
+                                (use "appearsFree?_form_int_def")
+                                (("1" (assert) nil nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil)
+                         ("2" (assert) nil nil) ("3" (assert) nil nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil)
+       ("3" (skolem 1 "expr_")
+        (("3" (skeep)
+          (("3" (rewrite "appearsFree?_stmt_int_def_aexpr")
+            (("3" (rewrite "appearsFree?_stmt_int_def_aexpr")
+              (("3" (use "appearsFree?_expr_int_def")
+                (("3" (replace -1 :hide? t)
+                  (("3" (use "appearsFree?_expr_int_def")
+                    (("3" (replace -1 :hide? t)
+                      (("3" (assert) nil nil)) nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil)
+       ("4" (skolem 1 ("expr_" "stmt_"))
+        (("4" (flatten)
+          (("4" (skeep)
+            (("4" (rewrite "appearsFree?_stmt_int_def_letin")
+              (("4" (rewrite "appearsFree?_stmt_int_def_letin")
+                (("4" (flatten)
+                  (("4" (split -2)
+                    (("1" (use "appearsFree?_expr_int_def")
+                      (("1" (replace -1 :hide? t)
+                        (("1" (use "appearsFree?_expr_int_def")
+                          (("1" (replace -1 :hide? t)
+                            (("1" (assert) nil nil)) nil))
+                          nil))
+                        nil))
+                      nil)
+                     ("2" (inst -2 "1+n") (("2" (assert) nil nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((nnint_plus_posint_is_posint application-judgement "posint"
+     integers nil)
+    (FPStmt type-decl nil program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FPAExpr type-decl nil expressions nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (appearsFree? def-decl "bool" program nil)
+    (DeBruijnIndex nonempty-type-eq-decl nil expressions nil)
+    (FPVariable adt-constructor-decl "[DeBruijnIndex -> (FPVariable?)]"
+     expressions nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (FPStmt_induction formula-decl nil program nil)
+    (FPBExpr type-decl nil expressions nil)
+    (appearsFree?_stmt_int_def_ite formula-decl nil program nil)
+    (appearsFree?_form_int_def formula-decl nil expressions nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (nnint_plus_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (appearsFree?_expr_int_def formula-decl nil expressions nil)
+    (appearsFree?_stmt_int_def_aexpr formula-decl nil program nil)
+    (appearsFree?_stmt_int_def_letin formula-decl nil program nil))
+   nil))
+ (appearsFree?_dec_var 0
+  (appearsFree?_dec_var-1 nil 3754938454
+   ("" (skeep :but ("stmt" "n"))
+    (("" (induct "stmt")
+      (("1" (grind) nil nil)
+       ("2" (skolem 1 ("form" "stmt1" "stmt2"))
+        (("2" (flatten)
+          (("2" (skeep)
+            (("2" (inst -1 "n")
+              (("2" (inst -2 "n")
+                (("2" (rewrite "appearsFree?_stmt_int_def_ite")
+                  (("2" (rewrite "appearsFree?_stmt_int_def_ite")
+                    (("2" (flatten)
+                      (("2" (split -3)
+                        (("1" (lemma "appearsFree?_form_int_def")
+                          (("1" (inst? -1 :where 1)
+                            (("1" (replace -1 :hide? t)
+                              (("1"
+                                (use "appearsFree?_form_int_def")
+                                (("1" (assert) nil nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil)
+                         ("2" (assert) nil nil) ("3" (assert) nil nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil)
+       ("3" (skolem 1 "expr_")
+        (("3" (skeep)
+          (("3" (rewrite "appearsFree?_stmt_int_def_aexpr")
+            (("3" (rewrite "appearsFree?_stmt_int_def_aexpr")
+              (("3" (use "appearsFree?_expr_int_def")
+                (("3" (replace -1 :hide? t)
+                  (("3" (use "appearsFree?_expr_int_def")
+                    (("3" (replace -1 :hide? t)
+                      (("3" (assert) nil nil)) nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil)
+       ("4" (skolem 1 ("expr_" "stmt_"))
+        (("4" (flatten)
+          (("4" (skeep)
+            (("4" (rewrite "appearsFree?_stmt_int_def_letin")
+              (("4" (rewrite "appearsFree?_stmt_int_def_letin")
+                (("4" (flatten)
+                  (("4" (split -2)
+                    (("1" (use "appearsFree?_expr_int_def")
+                      (("1" (replace -1 :hide? t)
+                        (("1" (use "appearsFree?_expr_int_def")
+                          (("1" (replace -1 :hide? t)
+                            (("1" (assert) nil nil)) nil))
+                          nil))
+                        nil))
+                      nil)
+                     ("2" (inst -2 "1+n") (("2" (assert) nil nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((nnint_plus_posint_is_posint application-judgement "posint"
+     integers nil)
+    (FPStmt type-decl nil program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FPAExpr type-decl nil expressions nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (appearsFree? def-decl "bool" program nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (DeBruijnIndex nonempty-type-eq-decl nil expressions nil)
+    (FPVariable adt-constructor-decl "[DeBruijnIndex -> (FPVariable?)]"
+     expressions nil)
+    (FPStmt_induction formula-decl nil program nil)
+    (FPBExpr type-decl nil expressions nil)
+    (appearsFree?_stmt_int_def_ite formula-decl nil program nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (appearsFree?_form_int_def formula-decl nil expressions nil)
+    (nnint_plus_nnint_is_nnint application-judgement "nonneg_int"
+     integers nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (appearsFree?_expr_int_def formula-decl nil expressions nil)
+    (appearsFree?_stmt_int_def_aexpr formula-decl nil program nil)
+    (appearsFree?_stmt_int_def_letin formula-decl nil program nil))
+   shostak))
+ (appearsFree?_stmt_locals_count_def 0
+  (appearsFree?_stmt_locals_count_def-1 nil 3754828503
+   ("" (expand "appearsFree?" 1 1) (("" (propax) nil nil)) nil)
+   ((appearsFree? const-decl "bool" program nil)) shostak))
+ (appearsFree?_1_stmt_int_def_ite 0
+  (appearsFree?_1_stmt_int_def_ite-1 nil 3754922696
+   ("" (skeep)
+    (("" (rewrite "appearsFree?_stmt_locals_count_def")
+      (("" (rewrite "appearsFree?_stmt_locals_count_def")
+        (("" (rewrite "appearsFree?_stmt_locals_count_def")
+          (("" (expand "appears?")
+            (("" (rewrite "appearsFree?_stmt_int_def_ite") nil nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((appearsFree?_stmt_locals_count_def formula-decl nil program nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FPAExpr type-decl nil expressions nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (FPStmt type-decl nil program nil)
+    (FPBExpr type-decl nil expressions nil)
+    (IfThenElse? adt-recognizer-decl "[FPStmt -> boolean]" program nil)
+    (ITE adt-constructor-decl
+     "[[FPBExpr[Operator, RealNumber, FloatingPointNumber, FtoR], FPStmt,
+  FPStmt] ->
+   (IfThenElse?)]" program nil)
+    (appearsFree?_stmt_int_def_ite formula-decl nil program nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (appears? const-decl "bool" expressions nil))
+   shostak))
+ (appearsFree?_1_stmt_int_def_aexpr 0
+  (appearsFree?_1_stmt_int_def_aexpr-1 nil 3754935401
+   ("" (grind) nil nil)
+   ((appearsFree? def-decl "bool" program nil)
+    (appearsFree? const-decl "bool" program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (appears? const-decl "bool" expressions nil))
+   shostak))
+ (maxFreeLocalIndex_TCC1 0
+  (maxFreeLocalIndex_TCC1-1 nil 3754921779
+   ("" (skeep)
+    (("" (replace -1)
+      (("" (use "max_local_index_fpform_def")
+        (("" (split -1)
+          (("1" (flatten)
+            (("1" (hide -1)
+              (("1" (typepred "v(e)")
+                (("1" (split -2)
+                  (("1" (hide -3)
+                    (("1" (flatten)
+                      (("1" (typepred "v(t)")
+                        (("1" (split -2)
+                          (("1" (hide -3)
+                            (("1" (flatten)
+                              (("1"
+                                (skeep
+                                 -1
+                                 :but
+                                 (("local" "localt"))
+                                 :preds?
+                                 t)
+                                (("1"
+                                  (skeep
+                                   -6
+                                   :but
+                                   (("local" "locale"))
+                                   :preds?
+                                   t)
+                                  (("1"
+                                    (skeep
+                                     -11
+                                     :but
+                                     (("local" "localg"))
+                                     :preds?
+                                     t)
+                                    (("1"
+                                      (split 1)
+                                      (("1"
+                                        (flatten)
+                                        (("1"
+                                          (split 1)
+                                          (("1"
+                                            (expand "max" 1)
+                                            (("1"
+                                              (case "v(t) < v(e)")
+                                              (("1"
+                                                (assert)
+                                                (("1"
+                                                  (case
+                                                   "maxFreeLocalIndex[Operator, RealNumber, FloatingPointNumber, FtoR]
+                (g)
+             < v(e)")
+                                                  (("1"
+                                                    (assert)
+                                                    (("1"
+                                                      (inst 1 "locale")
+                                                      (("1"
+                                                        (replace -18)
+                                                        (("1"
+                                                          (rewrite
+                                                           "appearsFree?_1_stmt_int_def_ite")
+                                                          nil
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil)
+                                                   ("2"
+                                                    (assert)
+                                                    (("2"
+                                                      (inst 2 "localg")
+                                                      (("2"
+                                                        (replace -17)
+                                                        (("2"
+                                                          (rewrite
+                                                           "appearsFree?_1_stmt_int_def_ite")
+                                                          nil
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil)
+                                               ("2"
+                                                (assert)
+                                                (("2"
+                                                  (case
+                                                   "maxFreeLocalIndex[Operator, RealNumber, FloatingPointNumber, FtoR]
+                (g)
+             < v(e)")
+                                                  (("1"
+                                                    (assert)
+                                                    (("1"
+                                                      (inst 2 "localt")
+                                                      (("1"
+                                                        (replace -17)
+                                                        (("1"
+                                                          (rewrite
+                                                           "appearsFree?_1_stmt_int_def_ite")
+                                                          nil
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil)
+                                                   ("2"
+                                                    (case
+                                                     "maxFreeLocalIndex[Operator, RealNumber, FloatingPointNumber, FtoR]
+                (g)
+             < v(t)")
+                                                    (("1"
+                                                      (assert)
+                                                      (("1"
+                                                        (inst
+                                                         3
+                                                         "localt")
+                                                        (("1"
+                                                          (replace -17)
+                                                          (("1"
+                                                            (rewrite
+                                                             "appearsFree?_1_stmt_int_def_ite")
+                                                            nil
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil)
+                                                     ("2"
+                                                      (assert)
+                                                      (("2"
+                                                        (inst
+                                                         4
+                                                         "localg")
+                                                        (("2"
+                                                          (replace -16)
+                                                          (("2"
+                                                            (rewrite
+                                                             "appearsFree?_1_stmt_int_def_ite")
+                                                            nil
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil)
+                                           ("2"
+                                            (skeep 1 :preds? t)
+                                            (("2"
+                                              (replace -18)
+                                              (("2"
+                                                (rewrite
+                                                 "appearsFree?_1_stmt_int_def_ite")
+                                                (("2"
+                                                  (split -2)
+                                                  (("1"
+                                                    (inst -17 "local")
+                                                    (("1"
+                                                      (expand "max")
+                                                      (("1"
+                                                        (assert)
+                                                        (("1"
+                                                          (grind)
+                                                          nil
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil)
+                                                   ("2"
+                                                    (inst -11 "local")
+                                                    (("2"
+                                                      (grind)
+                                                      nil
+                                                      nil))
+                                                    nil)
+                                                   ("3"
+                                                    (inst -14 "local")
+                                                    (("3"
+                                                      (grind)
+                                                      nil
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil)
+                                       ("2"
+                                        (flatten)
+                                        (("2"
+                                          (inst 1 "localt")
+                                          (("2"
+                                            (rewrite
+                                             "appearsFree?_1_stmt_int_def_ite")
+                                            nil
+                                            nil))
+                                          nil))
+                                        nil)
+                                       ("3" (assert) nil nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil)
+                           ("2" (split -2)
+                            (("1" (replace -1 :hide? t)
+                              (("1"
+                                (expand "max")
+                                (("1"
+                                  (assert)
+                                  (("1"
+                                    (case "-1 < v(e)")
+                                    (("1"
+                                      (assert)
+                                      (("1"
+                                        (case
+                                         "maxFreeLocalIndex
+                        [Operator, RealNumber, FloatingPointNumber, FtoR]
+                        (g)
+                     < v(e)")
+                                        (("1"
+                                          (assert)
+                                          (("1"
+                                            (split 2)
+                                            (("1"
+                                              (flatten)
+                                              (("1"
+                                                (split 1)
+                                                (("1"
+                                                  (skeep
+                                                   -5
+                                                   :but
+                                                   (("local" "locale"))
+                                                   :preds?
+                                                   t)
+                                                  (("1"
+                                                    (inst 1 "locale")
+                                                    (("1"
+                                                      (replace -12)
+                                                      (("1"
+                                                        (rewrite
+                                                         "appearsFree?_1_stmt_int_def_ite")
+                                                        nil
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil)
+                                                 ("2"
+                                                  (skeep
+                                                   1
+                                                   :but
+                                                   (("local" "localx"))
+                                                   :preds?
+                                                   t)
+                                                  (("2"
+                                                    (inst -8 "localx")
+                                                    (("2"
+                                                      (replace -11)
+                                                      (("2"
+                                                        (rewrite
+                                                         "appearsFree?_1_stmt_int_def_ite")
+                                                        (("2"
+                                                          (assert)
+                                                          (("2"
+                                                            (grind)
+                                                            nil
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil)
+                                             ("2"
+                                              (skeep
+                                               -4
+                                               :but
+                                               (("local" "locale"))
+                                               :preds?
+                                               t)
+                                              (("2"
+                                                (inst 1 "locale")
+                                                (("2"
+                                                  (rewrite
+                                                   "appearsFree?_1_stmt_int_def_ite")
+                                                  nil
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil)
+                                         ("2"
+                                          (assert)
+                                          (("2"
+                                            (split 3)
+                                            (("1" (grind) nil nil)
+                                             ("2" (grind) nil nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil)
+                                     ("2" (grind) nil nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("2" (propax) nil nil))
+                            nil))
+                          nil)
+                         ("2" (replace -6)
+                          (("2" (expand "<<") (("2" (propax) nil nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil)
+                   ("2" (split -2)
+                    (("1" (replace -1)
+                      (("1" (typepred "v(t)")
+                        (("1" (split -2)
+                          (("1" (hide -3)
+                            (("1" (flatten)
+                              (("1"
+                                (expand "max")
+                                (("1"
+                                  (case " v(t) < -1")
+                                  (("1" (assert) nil nil)
+                                   ("2"
+                                    (assert)
+                                    (("2"
+                                      (case
+                                       "maxFreeLocalIndex
+                        [Operator, RealNumber, FloatingPointNumber, FtoR]
+                        (g)
+                     < v(t)")
+                                      (("1"
+                                        (assert)
+                                        (("1"
+                                          (split 3)
+                                          (("1"
+                                            (flatten)
+                                            (("1"
+                                              (split 1)
+                                              (("1"
+                                                (skeep
+                                                 -3
+                                                 :but
+                                                 (("local" "localt"))
+                                                 :preds?
+                                                 t)
+                                                (("1"
+                                                  (inst 1 "localt")
+                                                  (("1"
+                                                    (replace -12)
+                                                    (("1"
+                                                      (rewrite
+                                                       "appearsFree?_1_stmt_int_def_ite")
+                                                      nil
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil)
+                                               ("2"
+                                                (skeep
+                                                 1
+                                                 :but
+                                                 (("local" "localx"))
+                                                 :preds?
+                                                 t)
+                                                (("2"
+                                                  (inst -6 "localx")
+                                                  (("2"
+                                                    (replace -11)
+                                                    (("2"
+                                                      (rewrite
+                                                       "appearsFree?_1_stmt_int_def_ite")
+                                                      (("2"
+                                                        (assert)
+                                                        (("2"
+                                                          (grind)
+                                                          nil
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil)
+                                           ("2" (grind) nil nil))
+                                          nil))
+                                        nil)
+                                       ("2"
+                                        (assert)
+                                        (("2"
+                                          (split 4)
+                                          (("1"
+                                            (flatten)
+                                            (("1"
+                                              (split 1)
+                                              (("1"
+                                                (skeep
+                                                 -7
+                                                 :but
+                                                 (("local" "localg"))
+                                                 :preds?
+                                                 t)
+                                                (("1"
+                                                  (inst 1 "localg")
+                                                  (("1"
+                                                    (replace -11)
+                                                    (("1"
+                                                      (rewrite
+                                                       "appearsFree?_1_stmt_int_def_ite")
+                                                      nil
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil)
+                                               ("2"
+                                                (skeep
+                                                 1
+                                                 :but
+                                                 (("local" "localx"))
+                                                 :preds?
+                                                 t)
+                                                (("2"
+                                                  (inst -10 "localx")
+                                                  (("2"
+                                                    (replace -10)
+                                                    (("2"
+                                                      (rewrite
+                                                       "appearsFree?_1_stmt_int_def_ite")
+                                                      (("2"
+                                                        (grind)
+                                                        nil
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil)
+                                           ("2" (grind) nil nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil)
+                           ("2" (grind) nil nil))
+                          nil)
+                         ("2" (grind) nil nil))
+                        nil))
+                      nil)
+                     ("2" (propax) nil nil))
+                    nil))
+                  nil)
+                 ("2" (replace -3)
+                  (("2" (expand "<<") (("2" (propax) nil nil)) nil))
+                  nil))
+                nil))
+              nil))
+            nil)
+           ("2" (flatten)
+            (("2" (replace -1 :hide? t)
+              (("2" (typepred "v(e)")
+                (("1" (split -2)
+                  (("1" (flatten)
+                    (("1" (typepred "v(t)")
+                      (("1" (split -2)
+                        (("1" (hide -3 -7)
+                          (("1"
+                            (skeep -3 :but (("local" "locale")) :preds?
+                             t)
+                            (("1"
+                              (skeep -3 :but (("local" "localt"))
+                               :preds? t)
+                              (("1"
+                                (split 2)
+                                (("1"
+                                  (flatten)
+                                  (("1"
+                                    (split 1)
+                                    (("1"
+                                      (expand "max")
+                                      (("1"
+                                        (case "v(t) < v(e)")
+                                        (("1"
+                                          (assert)
+                                          (("1"
+                                            (inst 1 "locale")
+                                            (("1"
+                                              (replace -13)
+                                              (("1"
+                                                (rewrite
+                                                 "appearsFree?_1_stmt_int_def_ite")
+                                                nil
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil)
+                                         ("2"
+                                          (assert)
+                                          (("2"
+                                            (inst 2 "localt")
+                                            (("2"
+                                              (replace -12)
+                                              (("2"
+                                                (rewrite
+                                                 "appearsFree?_1_stmt_int_def_ite")
+                                                nil
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil)
+                                     ("2"
+                                      (skeep
+                                       1
+                                       :but
+                                       (("local" "localx"))
+                                       :preds?
+                                       t)
+                                      (("2"
+                                        (case "v(t) < v(e)")
+                                        (("1"
+                                          (inst -13 "localx")
+                                          (("1" (grind) nil nil)
+                                           ("2"
+                                            (replace -14)
+                                            (("2"
+                                              (rewrite
+                                               "appearsFree?_1_stmt_int_def_ite")
+                                              (("2" (grind) nil nil))
+                                              nil))
+                                            nil))
+                                          nil)
+                                         ("2" (grind) nil nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil)
+                                 ("2" (grind) nil nil)
+                                 ("3" (grind) nil nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil)
+                         ("2" (grind) nil nil))
+                        nil)
+                       ("2" (grind) nil nil))
+                      nil))
+                    nil)
+                   ("2" (split -2)
+                    (("1" (replace -1 :hide? t)
+                      (("1" (typepred "v(t)")
+                        (("1" (split -2)
+                          (("1" (flatten)
+                            (("1"
+                              (skeep -1 :but (("local" "localt"))
+                               :preds? t)
+                              (("1"
+                                (expand "max")
+                                (("1"
+                                  (assert)
+                                  (("1"
+                                    (split 3)
+                                    (("1"
+                                      (flatten)
+                                      (("1"
+                                        (split 1)
+                                        (("1"
+                                          (inst 1 "localt")
+                                          (("1"
+                                            (replace -9)
+                                            (("1"
+                                              (rewrite
+                                               "appearsFree?_1_stmt_int_def_ite")
+                                              nil
+                                              nil))
+                                            nil))
+                                          nil)
+                                         ("2"
+                                          (skeep
+                                           1
+                                           :but
+                                           (("local" "localx"))
+                                           :preds?
+                                           t)
+                                          (("2"
+                                            (inst -7 "localx")
+                                            (("2"
+                                              (replace -10)
+                                              (("2"
+                                                (rewrite
+                                                 "appearsFree?_1_stmt_int_def_ite")
+                                                (("2" (grind) nil nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil)
+                                     ("2" (grind) nil nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil)
+                           ("2" (grind) nil nil))
+                          nil)
+                         ("2" (grind) nil nil))
+                        nil))
+                      nil)
+                     ("2" (propax) nil nil))
+                    nil))
+                  nil)
+                 ("2" (grind) nil nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((< const-decl "bool" reals nil)
+    (appears? const-decl "bool" expressions nil)
+    (maxFreeLocalIndex def-decl "{max: upfrom(-1) |
+         IF EXISTS (local: (FPVariable?)): appears?(form)(local)
+           THEN (EXISTS (local: (FPVariable?) | appears?(form)(local)):
+                   index(local) = max)
+                 AND
+                 (FORALL (local: (FPVariable?) | appears?(form)(local)):
+                    index(local) <= max)
+         ELSE max = -1
+         ENDIF}" expressions nil)
+    (stmt skolem-const-decl "FPStmt" program nil)
+    (e skolem-const-decl "FPStmt" program nil)
+    (locale skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(e)(local)}" program nil)
+    (appearsFree?_1_stmt_int_def_ite formula-decl nil program nil)
+    (g skolem-const-decl
+     "FPBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]" program
+     nil)
+    (localg skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         appears?(g)(local)}" program nil)
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (minus_odd_is_odd application-judgement "odd_int" integers nil)
+    (t skolem-const-decl "FPStmt" program nil)
+    (localt skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(t)(local)}" program nil)
+    (max const-decl "{p: real | p >= m AND p >= n}" real_defs nil)
+    (appearsFree? def-decl "bool" program nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (real_le_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (local skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (rat_max application-judgement "{s: rat | s >= q AND s >= r}"
+     real_defs nil)
+    (int_max application-judgement "{k: int | i <= k AND j <= k}"
+     real_defs nil)
+    (appearsFree? def-decl "bool" expressions nil)
+    (local!2 skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (elseBranch adt-accessor-decl "[(IfThenElse?) -> FPStmt]" program
+     nil)
+    (thenBranch adt-accessor-decl "[(IfThenElse?) -> FPStmt]" program
+     nil)
+    (local!3 skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         appears?(g)(local)}" program nil)
+    (guard adt-accessor-decl
+     "[(IfThenElse?) -> FPBExpr[Operator, RealNumber, FloatingPointNumber, FtoR]]"
+     program nil)
+    (IfThenElse? adt-recognizer-decl "[FPStmt -> boolean]" program nil)
+    (localx skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (locale skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(e)(local)}" program nil)
+    (localt skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(t)(local)}" program nil)
+    (localx skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (localg skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         appears?(g)(local)}" program nil)
+    (localx skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (local!1 skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         appears?(g)(local)}" program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (>= const-decl "bool" reals nil) (FPStmt type-decl nil program nil)
+    (pred type-eq-decl nil defined_types nil)
+    (strict_well_founded? const-decl "bool" orders nil)
+    (<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (upfrom nonempty-type-eq-decl nil integers nil)
+    (IF const-decl "[boolean, T, T -> T]" if_def nil)
+    (FPAExpr type-decl nil expressions nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (appearsFree? const-decl "bool" program nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (FPParameter? adt-recognizer-decl "[FPAExpr -> boolean]"
+     expressions nil)
+    (DeBruijnIndex nonempty-type-eq-decl nil expressions nil)
+    (index shared-adt-accessor-decl
+           "[{x: FPAExpr | FPVariable?(x) OR FPParameter?(x)} -> DeBruijnIndex]"
+           expressions nil)
+    (<= const-decl "bool" reals nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (local!4 skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (local!1 skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(e)(local)}" program nil)
+    (localx skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (localt skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(t)(local)}" program nil)
+    (locale skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(e)(local)}" program nil)
+    (localx skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (localt skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(t)(local)}" program nil)
+    (FPBExpr type-decl nil expressions nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (max_local_index_fpform_def formula-decl nil expressions nil))
+   nil))
+ (maxFreeLocalIndex_TCC2 0
+  (maxFreeLocalIndex_TCC2-1 nil 3754921779
+   ("" (skeep)
+    (("" (replace -1)
+      (("" (lemma "max_local_index_fpexpr_def")
+        (("" (inst -1 "a")
+          (("" (split -1)
+            (("1" (flatten)
+              (("1" (hide -1)
+                (("1" (skeep -1 :but (("local" "locala")) :preds? t)
+                  (("1" (split 1)
+                    (("1" (flatten)
+                      (("1" (split 1)
+                        (("1" (inst 1 "locala")
+                          (("1" (replace -6)
+                            (("1"
+                              (rewrite
+                               "appearsFree?_1_stmt_int_def_aexpr")
+                              (("1"
+                                (rewrite "appears?_expr_subterm")
+                                nil
+                                nil))
+                              nil))
+                            nil))
+                          nil)
+                         ("2"
+                          (skeep 1 :but (("local" "localx")) :preds? t)
+                          (("2" (inst -7 "localx")
+                            (("2" (replace -7)
+                              (("2"
+                                (rewrite
+                                 "appearsFree?_1_stmt_int_def_aexpr")
+                                (("2"
+                                  (rewrite "appears?_expr_subterm")
+                                  nil
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil)
+                     ("2" (flatten)
+                      (("2" (inst 1 "locala")
+                        (("2"
+                          (rewrite "appearsFree?_1_stmt_int_def_aexpr")
+                          (("2" (rewrite "appears?_expr_subterm") nil
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (flatten)
+              (("2" (replace -1 :hide? t)
+                (("2" (split 2)
+                  (("1" (flatten)
+                    (("1"
+                      (skeep -1 :but (("local" "locala")) :preds? t)
+                      (("1" (inst 2 "locala")
+                        (("1"
+                          (rewrite "appearsFree?_1_stmt_int_def_aexpr")
+                          (("1" (rewrite "appears?_expr_subterm") nil
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil)
+                   ("2" (propax) nil nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((FPAExpr type-decl nil expressions nil)
+    (localx skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (FPStmt type-decl nil program nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (appearsFree? const-decl "bool" program nil)
+    (subterm adt-def-decl "boolean" expressions nil)
+    (locala skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         subterm(local, a)}" program nil)
+    (a skolem-const-decl
+     "FPAExpr[Operator, RealNumber, FloatingPointNumber, FtoR]" program
+     nil)
+    (stmt skolem-const-decl "FPStmt" program nil)
+    (appearsFree?_1_stmt_int_def_aexpr formula-decl nil program nil)
+    (appears?_expr_subterm formula-decl nil expressions nil)
+    (max_local_index_fpexpr_def formula-decl nil expressions nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil))
+   nil))
+ (maxFreeLocalIndex_TCC3 0
+  (maxFreeLocalIndex_TCC3-1 nil 3754921779
+   ("" (skeep)
+    (("" (replace -2)
+      (("" (typepred "v(b)")
+        (("" (split -2)
+          (("1" (hide -3)
+            (("1" (flatten)
+              (("1" (case "v(b)=0")
+                (("1" (replace -1 :hide? t)
+                  (("1" (hide -3 -4)
+                    (("1"
+                      (skeep -1 :but (("local" "localb")) :preds? t)
+                      (("1" (split 1)
+                        (("1" (flatten)
+                          (("1" (split 1)
+                            (("1" (lemma "max_local_index_fpexpr_def")
+                              (("1"
+                                (inst -1 "a")
+                                (("1"
+                                  (split -1)
+                                  (("1"
+                                    (flatten)
+                                    (("1"
+                                      (skeep
+                                       -2
+                                       :but
+                                       (("local" "locala"))
+                                       :preds?
+                                       t)
+                                      (("1"
+                                        (inst 1 "locala")
+                                        (("1"
+                                          (replace -11)
+                                          (("1"
+                                            (expand "appearsFree?" 1)
+                                            (("1"
+                                              (expand "appearsFree?" 1)
+                                              (("1"
+                                                (rewrite
+                                                 "appears?_expr_int_def"
+                                                 :dir
+                                                 rl)
+                                                (("1"
+                                                  (rewrite
+                                                   "appears?_expr_subterm")
+                                                  nil
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil)
+                                   ("2"
+                                    (flatten)
+                                    (("2"
+                                      (skeep -2)
+                                      (("2"
+                                        (expand "appearsFree?" -2)
+                                        (("2"
+                                          (rewrite
+                                           "appearsFree?_stmt_int_def_letin")
+                                          (("2"
+                                            (split -2)
+                                            (("1"
+                                              (inst 1 "local")
+                                              (("1"
+                                                (rewrite
+                                                 "appears?_expr_int_def"
+                                                 :dir
+                                                 rl)
+                                                (("1"
+                                                  (rewrite
+                                                   "appears?_expr_subterm")
+                                                  nil
+                                                  nil))
+                                                nil))
+                                              nil)
+                                             ("2"
+                                              (lemma
+                                               "appearsFree?_dec_var")
+                                              (("2"
+                                                (inst
+                                                 -1
+                                                 "0"
+                                                 "b"
+                                                 "index(local)")
+                                                (("2"
+                                                  (split -1)
+                                                  (("1"
+                                                    (inst
+                                                     -7
+                                                     "FPVariable(index(local) + 1)")
+                                                    (("1"
+                                                      (assert)
+                                                      nil
+                                                      nil)
+                                                     ("2"
+                                                      (expand
+                                                       "appearsFree?"
+                                                       1)
+                                                      (("2"
+                                                        (assert)
+                                                        nil
+                                                        nil))
+                                                      nil))
+                                                    nil)
+                                                   ("2"
+                                                    (case
+                                                     "local = FPVariable(index(local))")
+                                                    (("1"
+                                                      (assert)
+                                                      nil
+                                                      nil)
+                                                     ("2"
+                                                      (apply-extensionality)
+                                                      nil
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("2" (skeep 1 :preds? t)
+                              (("2"
+                                (expand "appearsFree?" -2)
+                                (("2"
+                                  (replace -8)
+                                  (("2"
+                                    (rewrite
+                                     "appearsFree?_stmt_int_def_letin")
+                                    (("2"
+                                      (split -2)
+                                      (("1"
+                                        (lemma
+                                         "max_local_index_fpexpr_def")
+                                        (("1"
+                                          (inst -1 "a")
+                                          (("1"
+                                            (split -1)
+                                            (("1"
+                                              (flatten)
+                                              (("1"
+                                                (skeep
+                                                 -2
+                                                 :but
+                                                 (("local" "locala"))
+                                                 :preds?
+                                                 t)
+                                                (("1"
+                                                  (inst -5 "local")
+                                                  (("1"
+                                                    (rewrite
+                                                     "appears?_expr_int_def"
+                                                     :dir
+                                                     rl)
+                                                    (("1"
+                                                      (rewrite
+                                                       "appears?_expr_subterm")
+                                                      nil
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil)
+                                             ("2"
+                                              (flatten)
+                                              (("2"
+                                                (inst 1 "local")
+                                                (("2"
+                                                  (rewrite
+                                                   "appears?_expr_int_def"
+                                                   :dir
+                                                   rl)
+                                                  (("2"
+                                                    (rewrite
+                                                     "appears?_expr_subterm")
+                                                    nil
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil)
+                                       ("2"
+                                        (lemma "appearsFree?_dec_var")
+                                        (("2"
+                                          (inst
+                                           -1
+                                           "0"
+                                           "b"
+                                           "index(local)")
+                                          (("2"
+                                            (split -1)
+                                            (("1"
+                                              (inst
+                                               -8
+                                               "FPVariable(index(local)+1)")
+                                              (("1" (assert) nil nil)
+                                               ("2"
+                                                (expand
+                                                 "appearsFree?"
+                                                 1)
+                                                (("2"
+                                                  (assert)
+                                                  nil
+                                                  nil))
+                                                nil))
+                                              nil)
+                                             ("2"
+                                              (assert)
+                                              (("2"
+                                                (case
+                                                 "local = FPVariable(index(local))")
+                                                (("1" (assert) nil nil)
+                                                 ("2"
+                                                  (apply-extensionality)
+                                                  nil
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil)
+                         ("2" (flatten)
+                          (("2" (expand "appearsFree?" -2)
+                            (("2" (lemma "max_local_index_fpexpr_def")
+                              (("2"
+                                (inst -1 "a")
+                                (("2"
+                                  (assert)
+                                  (("2"
+                                    (split -1)
+                                    (("1"
+                                      (flatten)
+                                      (("1"
+                                        (skeep
+                                         -2
+                                         :but
+                                         (("local" "locala"))
+                                         :preds?
+                                         t)
+                                        (("1"
+                                          (inst 1 "locala")
+                                          (("1"
+                                            (expand "appearsFree?" 1)
+                                            (("1"
+                                              (rewrite
+                                               "appearsFree?_stmt_int_def_letin")
+                                              (("1"
+                                                (rewrite
+                                                 "appears?_expr_int_def"
+                                                 :dir
+                                                 rl)
+                                                (("1"
+                                                  (rewrite
+                                                   "appears?_expr_subterm")
+                                                  nil
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil)
+                                     ("2" (propax) nil nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil)
+                 ("2" (assert) (("2" (grind) nil nil)) nil))
+                nil))
+              nil))
+            nil)
+           ("2" (split -2)
+            (("1" (lemma "max_local_index_fpexpr_def")
+              (("1" (inst -1 "a")
+                (("1" (split -1)
+                  (("1" (flatten)
+                    (("1" (split 2)
+                      (("1" (flatten)
+                        (("1"
+                          (skeep -3 :but (("local" "locala")) :preds?
+                           t)
+                          (("1" (split 1)
+                            (("1" (inst 1 "locala")
+                              (("1"
+                                (replace -10)
+                                (("1"
+                                  (expand "appearsFree?" 1)
+                                  (("1"
+                                    (rewrite
+                                     "appearsFree?_stmt_int_def_letin")
+                                    (("1"
+                                      (rewrite
+                                       "appears?_expr_int_def"
+                                       :dir
+                                       rl)
+                                      (("1"
+                                        (rewrite
+                                         "appears?_expr_subterm")
+                                        nil
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("2" (skeep 1 :preds? t)
+                              (("2"
+                                (inst -8 "local")
+                                (("2"
+                                  (replace -11)
+                                  (("2"
+                                    (expand "appearsFree?" -2)
+                                    (("2"
+                                      (rewrite
+                                       "appearsFree?_stmt_int_def_letin")
+                                      (("2"
+                                        (rewrite
+                                         "appears?_expr_int_def"
+                                         :dir
+                                         rl)
+                                        (("2"
+                                          (rewrite
+                                           "appears?_expr_subterm")
+                                          (("2"
+                                            (assert)
+                                            (("2"
+                                              (lemma
+                                               "appearsFree?_dec_var")
+                                              (("2"
+                                                (inst
+                                                 -1
+                                                 "0"
+                                                 "b"
+                                                 "index(local)")
+                                                (("2"
+                                                  (split -1)
+                                                  (("1"
+                                                    (inst
+                                                     3
+                                                     "FPVariable(index(local)+1)")
+                                                    (("1"
+                                                      (expand
+                                                       "appearsFree?"
+                                                       3)
+                                                      (("1"
+                                                        (assert)
+                                                        nil
+                                                        nil))
+                                                      nil))
+                                                    nil)
+                                                   ("2"
+                                                    (assert)
+                                                    (("2"
+                                                      (case
+                                                       "local = FPVariable(index(local))")
+                                                      (("1"
+                                                        (assert)
+                                                        nil
+                                                        nil)
+                                                       ("2"
+                                                        (apply-extensionality)
+                                                        nil
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil)
+                       ("2" (flatten)
+                        (("2"
+                          (skeep -2 :but (("local" "locala")) :preds?
+                           t)
+                          (("2" (inst 1 "locala")
+                            (("2" (expand "appearsFree?" 1)
+                              (("2"
+                                (rewrite
+                                 "appearsFree?_stmt_int_def_letin")
+                                (("2"
+                                  (rewrite
+                                   "appears?_expr_int_def"
+                                   :dir
+                                   rl)
+                                  (("2"
+                                    (rewrite "appears?_expr_subterm")
+                                    nil
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil)
+                   ("2" (flatten)
+                    (("2" (split 3)
+                      (("1" (flatten)
+                        (("1" (skeep -1 :preds? t)
+                          (("1" (expand "appearsFree?" -2)
+                            (("1"
+                              (rewrite
+                               "appearsFree?_stmt_int_def_letin")
+                              (("1"
+                                (split -2)
+                                (("1"
+                                  (inst 2 "local")
+                                  (("1"
+                                    (rewrite
+                                     "appears?_expr_int_def"
+                                     :dir
+                                     rl)
+                                    (("1"
+                                      (rewrite "appears?_expr_subterm")
+                                      nil
+                                      nil))
+                                    nil))
+                                  nil)
+                                 ("2"
+                                  (lemma "appearsFree?_dec_var")
+                                  (("2"
+                                    (inst -1 "0" "b" "index(local)")
+                                    (("2"
+                                      (split -1)
+                                      (("1"
+                                        (inst
+                                         3
+                                         "FPVariable(index(local)+1)")
+                                        (("1"
+                                          (expand "appearsFree?" 3)
+                                          (("1" (assert) nil nil))
+                                          nil))
+                                        nil)
+                                       ("2"
+                                        (assert)
+                                        (("2"
+                                          (case
+                                           "local = FPVariable(index(local))")
+                                          (("1" (assert) nil nil)
+                                           ("2"
+                                            (apply-extensionality)
+                                            nil
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil))
+                                nil))
+                              nil))
+                            nil))
+                          nil))
+                        nil)
+                       ("2" (flatten) nil nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (propax) nil nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (local skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (max_local_index_fpexpr_def formula-decl nil expressions nil)
+    (appearsFree? def-decl "bool" program nil)
+    (appears?_expr_subterm formula-decl nil expressions nil)
+    (appears?_expr_int_def formula-decl nil expressions nil)
+    (locala skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         subterm(local, a)}" program nil)
+    (a skolem-const-decl
+     "FPAExpr[Operator, RealNumber, FloatingPointNumber, FtoR]" program
+     nil)
+    (stmt skolem-const-decl "FPStmt" program nil)
+    (subterm adt-def-decl "boolean" expressions nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (appearsFree?_stmt_int_def_letin formula-decl nil program nil)
+    (odd_plus_even_is_odd application-judgement "odd_int" integers nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (appearsFree?_dec_var formula-decl nil program nil)
+    (real_le_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (minus_odd_is_odd application-judgement "odd_int" integers nil)
+    (local skolem-const-decl "(FPVariable?)" program nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (FPVariable adt-constructor-decl "[DeBruijnIndex -> (FPVariable?)]"
+     expressions nil)
+    (b skolem-const-decl "FPStmt" program nil)
+    (nnint_plus_posint_is_posint application-judgement "posint"
+     integers nil)
+    (FPAExpr_FPVariable_extensionality formula-decl nil expressions
+     nil)
+    (even_plus_odd_is_odd application-judgement "odd_int" integers nil)
+    (local skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (locala skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         subterm(local, a)}" program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (>= const-decl "bool" reals nil) (FPStmt type-decl nil program nil)
+    (pred type-eq-decl nil defined_types nil)
+    (strict_well_founded? const-decl "bool" orders nil)
+    (<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (upfrom nonempty-type-eq-decl nil integers nil)
+    (IF const-decl "[boolean, T, T -> T]" if_def nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FPAExpr type-decl nil expressions nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (appearsFree? const-decl "bool" program nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (FPParameter? adt-recognizer-decl "[FPAExpr -> boolean]"
+     expressions nil)
+    (DeBruijnIndex nonempty-type-eq-decl nil expressions nil)
+    (index shared-adt-accessor-decl
+           "[{x: FPAExpr | FPVariable?(x) OR FPParameter?(x)} -> DeBruijnIndex]"
+           expressions nil)
+    (<= const-decl "bool" reals nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil))
+   nil))
+ (maxFreeLocalIndex_TCC4 0
+  (maxFreeLocalIndex_TCC4-1 nil 3754921779
+   ("" (skeep)
+    (("" (replace -1)
+      (("" (typepred "v(b)")
+        (("" (assert)
+          (("" (split -2)
+            (("1" (hide -3)
+              (("1" (flatten)
+                (("1" (split 2)
+                  (("1" (flatten)
+                    (("1"
+                      (skeep -2 :but (("local" "localb")) :preds? t)
+                      (("1" (expand "appearsFree?" -2)
+                        (("1" (lemma "appearsFree?_inc_var")
+                          (("1" (inst -1 "0" "b" "index(localb)-1")
+                            (("1" (assert)
+                              (("1"
+                                (split -1)
+                                (("1"
+                                  (split 1)
+                                  (("1"
+                                    (expand "max")
+                                    (("1"
+                                      (case
+                                       "maxFreeLocalIndex[Operator, RealNumber, FloatingPointNumber, FtoR]
+                 (a)
+              < v(b)-1")
+                                      (("1"
+                                        (assert)
+                                        (("1"
+                                          (inst
+                                           1
+                                           "FPVariable(index(localb) - 1)")
+                                          (("1" (assert) nil nil)
+                                           ("2"
+                                            (replace -9)
+                                            (("2"
+                                              (expand "appearsFree?" 1)
+                                              (("2"
+                                                (rewrite
+                                                 "appearsFree?_stmt_int_def_letin")
+                                                nil
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil)
+                                       ("2"
+                                        (assert)
+                                        (("2"
+                                          (lemma
+                                           "max_local_index_fpexpr_def")
+                                          (("2"
+                                            (inst -1 "a")
+                                            (("2"
+                                              (assert)
+                                              (("2"
+                                                (split -1)
+                                                (("1"
+                                                  (flatten)
+                                                  (("1"
+                                                    (skeep
+                                                     -2
+                                                     :but
+                                                     (("local"
+                                                       "locala"))
+                                                     :preds?
+                                                     t)
+                                                    (("1"
+                                                      (inst 2 "locala")
+                                                      (("1"
+                                                        (replace -13)
+                                                        (("1"
+                                                          (expand
+                                                           "appearsFree?"
+                                                           1)
+                                                          (("1"
+                                                            (rewrite
+                                                             "appearsFree?_stmt_int_def_letin")
+                                                            (("1"
+                                                              (rewrite
+                                                               "appears?_expr_int_def"
+                                                               :dir
+                                                               rl)
+                                                              (("1"
+                                                                (rewrite
+                                                                 "appears?_expr_subterm")
+                                                                nil
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil)
+                                                 ("2"
+                                                  (propax)
+                                                  nil
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil)
+                                   ("2"
+                                    (skeep 1 :preds? t)
+                                    (("2"
+                                      (replace -10)
+                                      (("2"
+                                        (expand "appearsFree?" -2)
+                                        (("2"
+                                          (rewrite
+                                           "appearsFree?_stmt_int_def_letin")
+                                          (("2"
+                                            (split -2)
+                                            (("1"
+                                              (lemma
+                                               "max_local_index_fpexpr_def")
+                                              (("1"
+                                                (inst -1 "a")
+                                                (("1"
+                                                  (assert)
+                                                  (("1"
+                                                    (split -1)
+                                                    (("1"
+                                                      (flatten)
+                                                      (("1"
+                                                        (inst
+                                                         -3
+                                                         "local")
+                                                        (("1"
+                                                          (grind)
+                                                          nil
+                                                          nil)
+                                                         ("2"
+                                                          (rewrite
+                                                           "appears?_expr_int_def"
+                                                           :dir
+                                                           rl)
+                                                          (("2"
+                                                            (rewrite
+                                                             "appears?_expr_subterm")
+                                                            nil
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil)
+                                                     ("2"
+                                                      (flatten)
+                                                      (("2"
+                                                        (inst
+                                                         1
+                                                         "local")
+                                                        (("2"
+                                                          (rewrite
+                                                           "appears?_expr_int_def"
+                                                           :dir
+                                                           rl)
+                                                          (("2"
+                                                            (rewrite
+                                                             "appears?_expr_subterm")
+                                                            nil
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil)
+                                             ("2"
+                                              (lemma
+                                               "appearsFree?_dec_var")
+                                              (("2"
+                                                (inst
+                                                 -1
+                                                 "0"
+                                                 "b"
+                                                 "index(local)")
+                                                (("2"
+                                                  (assert)
+                                                  (("2"
+                                                    (split -1)
+                                                    (("1"
+                                                      (inst
+                                                       -9
+                                                       "FPVariable(1 + index(local))")
+                                                      (("1"
+                                                        (assert)
+                                                        nil
+                                                        nil)
+                                                       ("2"
+                                                        (expand
+                                                         "appearsFree?"
+                                                         1)
+                                                        (("2"
+                                                          (propax)
+                                                          nil
+                                                          nil))
+                                                        nil))
+                                                      nil)
+                                                     ("2"
+                                                      (case
+                                                       "local = FPVariable(index(local))")
+                                                      (("1"
+                                                        (assert)
+                                                        nil
+                                                        nil)
+                                                       ("2"
+                                                        (apply-extensionality)
+                                                        nil
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil))
+                                              nil))
+                                            nil))
+                                          nil))
+                                        nil))
+                                      nil))
+                                    nil))
+                                  nil)
+                                 ("2"
+                                  (case
+                                   "localb = FPVariable(index(localb))")
+                                  (("1" (assert) nil nil)
+                                   ("2"
+                                    (apply-extensionality)
+                                    nil
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("2" (assert) nil nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil)
+                   ("2" (flatten)
+                    (("2"
+                      (skeep -1 :but (("local" "localb")) :preds? t)
+                      (("2" (expand "appearsFree?" -2)
+                        (("2" (lemma "appearsFree?_inc_var")
+                          (("2" (inst -1 "0" "b" "index(localb)-1")
+                            (("1" (assert)
+                              (("1"
+                                (split -1)
+                                (("1"
+                                  (inst
+                                   1
+                                   "FPVariable(index(localb) - 1)")
+                                  (("1"
+                                    (expand "appearsFree?" 1)
+                                    (("1"
+                                      (rewrite
+                                       "appearsFree?_stmt_int_def_letin")
+                                      (("1" (assert) nil nil))
+                                      nil))
+                                    nil))
+                                  nil)
+                                 ("2"
+                                  (case
+                                   "localb = FPVariable(index(localb))")
+                                  (("1" (assert) nil nil)
+                                   ("2"
+                                    (apply-extensionality)
+                                    nil
+                                    nil))
+                                  nil))
+                                nil))
+                              nil)
+                             ("2" (assert) nil nil))
+                            nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil)
+                   ("3" (assert) nil nil))
+                  nil))
+                nil))
+              nil)
+             ("2" (propax) nil nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((real_le_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (minus_odd_is_odd application-judgement "odd_int" integers nil)
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (appearsFree?_inc_var formula-decl nil program nil)
+    (int_plus_int_is_int application-judgement "int" integers nil)
+    (< const-decl "bool" reals nil)
+    (subterm adt-def-decl "boolean" expressions nil)
+    (maxFreeLocalIndex def-decl "{maxInd: upfrom(-1) |
+         IF EXISTS (local: (FPVariable?)): subterm(local, expr)
+           THEN (EXISTS (local: (FPVariable?) | subterm(local, expr)):
+                   index(local) = maxInd)
+                 AND
+                 (FORALL (local: (FPVariable?) | subterm(local, expr)):
+                    index(local) <= maxInd)
+         ELSE maxInd = -1
+         ENDIF}" expressions nil)
+    (stmt skolem-const-decl "FPStmt" program nil)
+    (FPVariable adt-constructor-decl "[DeBruijnIndex -> (FPVariable?)]"
+     expressions nil)
+    (appearsFree?_stmt_int_def_letin formula-decl nil program nil)
+    (odd_plus_even_is_odd application-judgement "odd_int" integers nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (max_local_index_fpexpr_def formula-decl nil expressions nil)
+    (a skolem-const-decl
+     "FPAExpr[Operator, RealNumber, FloatingPointNumber, FtoR]" program
+     nil)
+    (locala skolem-const-decl
+     "{local: (FPVariable?[Operator, RealNumber, FloatingPointNumber, FtoR]) |
+         subterm(local, a)}" program nil)
+    (appears?_expr_int_def formula-decl nil expressions nil)
+    (appears?_expr_subterm formula-decl nil expressions nil)
+    (max const-decl "{p: real | p >= m AND p >= n}" real_defs nil)
+    (appearsFree?_dec_var formula-decl nil program nil)
+    (even_plus_odd_is_odd application-judgement "odd_int" integers nil)
+    (nnint_plus_posint_is_posint application-judgement "posint"
+     integers nil)
+    (FPAExpr_FPVariable_extensionality formula-decl nil expressions
+     nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (rat_max application-judgement "{s: rat | s >= q AND s >= r}"
+     real_defs nil)
+    (int_max application-judgement "{k: int | i <= k AND j <= k}"
+     real_defs nil)
+    (local skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(stmt)(local)}" program nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (localb skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(b)(local)}" program nil)
+    (b skolem-const-decl "FPStmt" program nil)
+    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (localb skolem-const-decl
+     "{local: (FPVariable?) | appearsFree?(b)(local)}" program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (>= const-decl "bool" reals nil) (FPStmt type-decl nil program nil)
+    (pred type-eq-decl nil defined_types nil)
+    (strict_well_founded? const-decl "bool" orders nil)
+    (<< adt-def-decl "(strict_well_founded?[FPStmt])" program nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (upfrom nonempty-type-eq-decl nil integers nil)
+    (IF const-decl "[boolean, T, T -> T]" if_def nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FPAExpr type-decl nil expressions nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (appearsFree? const-decl "bool" program nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (FPParameter? adt-recognizer-decl "[FPAExpr -> boolean]"
+     expressions nil)
+    (DeBruijnIndex nonempty-type-eq-decl nil expressions nil)
+    (index shared-adt-accessor-decl
+           "[{x: FPAExpr | FPVariable?(x) OR FPParameter?(x)} -> DeBruijnIndex]"
+           expressions nil)
+    (<= const-decl "bool" reals nil)
+    (IMPLIES const-decl "[bool, bool -> bool]" booleans nil))
+   nil))
+ (maxFreeLocalIndex_TCC5 0
+  (maxFreeLocalIndex_TCC5-1 nil 3754921779 ("" (subtype-tcc) nil nil)
+   ((appearsFree? def-decl "bool" program nil)
+    (appearsFree? const-decl "bool" program nil))
+   nil))
+ (max_local_index_def 0
+  (max_local_index_def-1 nil 3754921784
+   ("" (skeep)
+    (("" (typepred "maxFreeLocalIndex(stmt)") (("" (grind) nil nil))
+      nil))
+    nil)
+   ((IMPLIES const-decl "[bool, bool -> bool]" booleans nil)
+    (maxFreeLocalIndex def-decl "(LAMBDA (vidx: upfrom(-1)):
+   IF EXISTS (local: (FPVariable?)): appearsFree?(stmt)(local)
+     THEN (EXISTS (local: (FPVariable?) | appearsFree?(stmt)(local)):
+             index(local) = vidx)
+           AND
+           (FORALL (local: (FPVariable?) | appearsFree?(stmt)(local)):
+              index(local) <= vidx)
+   ELSE vidx = -1
+   ENDIF)" program nil)
+    (<= const-decl "bool" reals nil)
+    (index shared-adt-accessor-decl
+           "[{x: FPAExpr | FPVariable?(x) OR FPParameter?(x)} -> DeBruijnIndex]"
+           expressions nil)
+    (DeBruijnIndex nonempty-type-eq-decl nil expressions nil)
+    (FPParameter? adt-recognizer-decl "[FPAExpr -> boolean]"
+     expressions nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (appearsFree? const-decl "bool" program nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (FPAExpr type-decl nil expressions nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (IF const-decl "[boolean, T, T -> T]" if_def nil)
+    (upfrom nonempty-type-eq-decl nil integers nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (FPStmt type-decl nil program nil) (>= const-decl "bool" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number nonempty-type-decl nil numbers nil)
+    (NOT const-decl "[bool -> bool]" booleans nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil))
+   shostak))
+ (max_local_index_stmt__ite 0
+  (max_local_index_stmt__ite-1 nil 3753461451 ("" (grind) nil nil)
+   ((max const-decl "{p: real | p >= m AND p >= n}" real_defs nil)
+    (maxFreeLocalIndex def-decl "(LAMBDA (vidx: upfrom(-1)):
+   IF EXISTS (local: (FPVariable?)): appearsFree?(stmt)(local)
+     THEN (EXISTS (local: (FPVariable?) | appearsFree?(stmt)(local)):
+             index(local) = vidx)
+           AND
+           (FORALL (local: (FPVariable?) | appearsFree?(stmt)(local)):
+              index(local) <= vidx)
+   ELSE vidx = -1
+   ENDIF)" program nil))
+   shostak))
+ (max_local_index_stmt__aexpr 0
+  (max_local_index_stmt__aexpr-1 nil 3753461384 ("" (grind) nil nil)
+   ((maxFreeLocalIndex def-decl "(LAMBDA (vidx: upfrom(-1)):
+   IF EXISTS (local: (FPVariable?)): appearsFree?(stmt)(local)
+     THEN (EXISTS (local: (FPVariable?) | appearsFree?(stmt)(local)):
+             index(local) = vidx)
+           AND
+           (FORALL (local: (FPVariable?) | appearsFree?(stmt)(local)):
+              index(local) <= vidx)
+   ELSE vidx = -1
+   ENDIF)" program nil))
+   shostak))
+ (max_local_index_stmt_def__letin 0
+  (max_local_index_stmt_def__letin-1 nil 3754996599
+   ("" (expand "maxFreeLocalIndex" 1 1) (("" (propax) nil nil)) nil)
+   ((maxFreeLocalIndex def-decl "(LAMBDA (vidx: upfrom(-1)):
+   IF EXISTS (local: (FPVariable?)): appearsFree?(stmt)(local)
+     THEN (EXISTS (local: (FPVariable?) | appearsFree?(stmt)(local)):
+             index(local) = vidx)
+           AND
+           (FORALL (local: (FPVariable?) | appearsFree?(stmt)(local)):
+              index(local) <= vidx)
+   ELSE vidx = -1
+   ENDIF)" program nil))
+   shostak))
+ (well_formed_ite 0
+  (well_formed_ite-1 nil 3754995751
+   ("" (expand "wellFormed?" 1 1) (("" (propax) nil nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_ite_guard 0
+  (well_formed_ite_guard-1 nil 3754994259
+   ("" (expand "wellFormed?" 1 1)
+    (("" (assert) (("" (skeep) nil nil)) nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_ite_then 0
+  (well_formed_ite_then-1 nil 3753461146
+   ("" (skeep 1 :preds? t)
+    (("" (expand "wellFormed?" -) (("" (flatten) nil nil)) nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_ite_else 0
+  (well_formed_ite_else-1 nil 3753461341
+   ("" (skeep 1 :preds? t)
+    (("" (expand "wellFormed?" -) (("" (flatten) nil nil)) nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) nil))
+ (well_formed_def_aexpr 0
+  (well_formed_def_aexpr-1 nil 3754995966
+   ("" (expand "wellFormed?" 1 1) (("" (propax) nil nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_aexpr 0
+  (well_formed_aexpr-1 nil 3753532581
+   ("" (skeep)
+    (("" (expand "wellFormed?" -1) (("" (propax) nil nil)) nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_def_letin 0
+  (well_formed_def_letin-1 nil 3754996253
+   ("" (expand "wellFormed?" 1 1) (("" (propax) nil nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_letin_body 0
+  (well_formed_letin_body-1 nil 3753457436
+   ("" (skeep :preds? t)
+    (("" (expand "wellFormed?" -) (("" (flatten) nil nil)) nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_letin_expr 0
+  (well_formed_letin_expr-1 nil 3753532638
+   ("" (skeep)
+    (("" (expand "wellFormed?" -1) (("" (flatten) nil nil)) nil)) nil)
+   ((wellFormed? inductive-decl "bool" program nil)) nil))
+ (well_formed_int_def 0
+  (well_formed_int_def-1 nil 3754851265
+   ("" (skeep :but ("stmt" "nlocals"))
+    (("" (induct "stmt")
+      (("1" (expand "wellFormed?")
+        (("1" (expand "maxFreeLocalIndex")
+          (("1" (expand "maxParamIndex") (("1" (propax) nil nil)) nil))
+          nil))
+        nil)
+       ("2" (skolem 1 ("form" "stmt1" "stmt2"))
+        (("2" (flatten)
+          (("2" (rewrite "max_param_index_stmt__ite")
+            (("2" (rewrite "max_local_index_stmt__ite")
+              (("2" (skeep)
+                (("2" (insteep -1)
+                  (("2" (insteep -2)
+                    (("2" (rewrite "well_formed_ite")
+                      (("2" (replace -1 :hide? t)
+                        (("2" (replace -1 :hide? t)
+                          (("2" (rewrite "wellFormed?_form_int_def")
+                            (("2" (grind) nil nil)) nil))
+                          nil))
+                        nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil)
+       ("3" (skolem 1 "epxpr_")
+        (("3" (skeep)
+          (("3" (rewrite "well_formed_def_aexpr")
+            (("3" (rewrite "max_local_index_stmt__aexpr")
+              (("3" (rewrite "max_param_index_stmt__aexpr")
+                (("3" (rewrite "wellFormed?_expr_int_def") nil nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil)
+       ("4" (skolem 1 ("expr_" "stmt_"))
+        (("4" (flatten)
+          (("4" (skeep)
+            (("4" (rewrite "well_formed_def_letin")
+              (("4" (inst -1 "1+nlocals")
+                (("4" (replace -1 :hide? t)
+                  (("4" (rewrite "wellFormed?_expr_int_def")
+                    (("4" (rewrite "max_local_index_stmt_def__letin")
+                      (("4" (rewrite "max_param_index_stmt__letin")
+                        (("4" (grind) nil nil)) nil))
+                      nil))
+                    nil))
+                  nil))
+                nil))
+              nil))
+            nil))
+          nil))
+        nil))
+      nil))
+    nil)
+   ((FPStmt type-decl nil program nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (number nonempty-type-decl nil numbers nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
+     nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (real nonempty-type-from-decl nil reals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (>= const-decl "bool" reals nil)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (= const-decl "[T, T -> boolean]" equalities nil)
+    (wellFormed? inductive-decl "bool" program nil)
+    (AND const-decl "[bool, bool -> bool]" booleans nil)
+    (< const-decl "bool" reals nil)
+    (numfield nonempty-type-eq-decl nil number_fields nil)
+    (- const-decl "[numfield -> numfield]" number_fields nil)
+    (upfrom nonempty-type-eq-decl nil integers nil)
+    (IF const-decl "[boolean, T, T -> T]" if_def nil)
+    (Operator formal-nonempty-type-decl nil program nil)
+    (RealNumber formal-nonempty-type-decl nil program nil)
+    (FloatingPointNumber formal-nonempty-type-decl nil program nil)
+    (FtoR formal-const-decl "[FloatingPointNumber -> RealNumber]"
+     program nil)
+    (FPAExpr type-decl nil expressions nil)
+    (FPVariable? adt-recognizer-decl "[FPAExpr -> boolean]" expressions
+     nil)
+    (appearsFree? const-decl "bool" program nil)
+    (OR const-decl "[bool, bool -> bool]" booleans nil)
+    (FPParameter? adt-recognizer-decl "[FPAExpr -> boolean]"
+     expressions nil)
+    (DeBruijnIndex nonempty-type-eq-decl nil expressions nil)
+    (index shared-adt-accessor-decl
+           "[{x: FPAExpr | FPVariable?(x) OR FPParameter?(x)} -> DeBruijnIndex]"
+           expressions nil)
+    (<= const-decl "bool" reals nil)
+    (maxFreeLocalIndex def-decl "(LAMBDA (vidx: upfrom(-1)):
+   IF EXISTS (local: (FPVariable?)): appearsFree?(stmt)(local)
+     THEN (EXISTS (local: (FPVariable?) | appearsFree?(stmt)(local)):
+             index(local) = vidx)
+           AND
+           (FORALL (local: (FPVariable?) | appearsFree?(stmt)(local)):
+              index(local) <= vidx)
+   ELSE vidx = -1
+   ENDIF)" program nil)
+    (maxParamIndex def-decl "int" program nil)
+    (FPStmt_induction formula-decl nil program nil)
+    (max_local_index_stmt__ite formula-decl nil program nil)
+    (well_formed_ite formula-decl nil program nil)
+    (max const-decl "{p: real | p >= m AND p >= n}" real_defs nil)
+    (real_lt_is_strict_total_order name-judgement
+     "(strict_total_order?[real])" real_props nil)
+    (wellFormed?_form_int_def formula-decl nil expressions nil)
+    (minus_odd_is_odd application-judgement "odd_int" integers nil)
+    (int_max application-judgement "{k: int | i <= k AND j <= k}"
+     real_defs nil)
+    (rat_max application-judgement "{s: rat | s >= q AND s >= r}"
+     real_defs nil)
+    (max_param_index_stmt__ite formula-decl nil program nil)
+    (FPBExpr type-decl nil expressions nil)
+    (max_local_index_stmt__aexpr formula-decl nil program nil)
+    (wellFormed?_expr_int_def formula-decl nil expressions nil)
+    (max_param_index_stmt__aexpr formula-decl nil program nil)
+    (well_formed_def_aexpr formula-decl nil program nil)
+    (well_formed_def_letin formula-decl nil program nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (max_local_index_stmt_def__letin formula-decl nil program nil)
+    (real_le_is_total_order name-judgement "(total_order?[real])"
+     real_props nil)
+    (int_minus_int_is_int application-judgement "int" integers nil)
+    (max_param_index_stmt__letin formula-decl nil program nil)
+    (+ const-decl "[numfield, numfield -> numfield]" number_fields
+       nil))
+   shostak)))
+

@@ -1,0 +1,52 @@
+u_local_environment_trans
+[ T1             : TYPE+
+, variable?1 	 : PRED[T1]
+, index1     	 : [(variable?1)->nat]
+, <<        	 : (strict_well_founded?[T1])
+, T2             : TYPE+
+, variable?2 	 : PRED[T2]
+, index2     	 : [(variable?2)->nat]
+, <<        	 : (strict_well_founded?[T2])
+, t1ToT2         : [T1->T2] ]
+: THEORY BEGIN
+  ASSUMING
+
+    local: VAR (variable?1)
+    rlocal: VAR (variable?2)
+    expr: VAR T1
+
+    t1ToT2_fpvar_rvar
+    : ASSUMPTION
+      variable?2(t1ToT2(local))
+      
+    t1ToT2_rvar_fpvar
+    : ASSUMPTION
+      variable?2(t1ToT2(expr)) IMPLIES variable?1(expr)
+      
+    t1ToT2_var_index_id
+    : ASSUMPTION
+      index2(t1ToT2(local)) = index1(local)
+
+    t1ToT2_var
+    : ASSUMPTION
+      rlocal << t1ToT2(expr)
+      IMPLIES EXISTS (local): rlocal = t1ToT2(local) AND local << expr
+
+  ENDASSUMING
+
+  IMPORTING u_local_environment[T1,variable?1,index1,<<] as ule1
+  IMPORTING u_local_environment[T2,variable?2,index2,<<] as ule2
+
+  translatedFrom?(fle: ule1.LocalEnvironment)(rle: ule2.LocalEnvironment)
+  : MACRO bool
+  = size(fle) = size(rle) AND
+    FORALL(i: below(size(rle))): get(rle)(i) = t1ToT2(get(fle)(i))
+
+  translation_function_existence
+  : AXIOM
+    EXISTS (f: [fle: ule1.LocalEnvironment -> (translatedFrom?(fle))]): TRUE
+
+  translate(fle: ule1.LocalEnvironment)
+  : (translatedFrom?(fle))
+
+END u_local_environment_trans

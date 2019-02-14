@@ -1,0 +1,439 @@
+expressions_semantics[
+  Operator            : TYPE+,
+  RealNumber          : TYPE+,
+  lt_r                : (strict_total_order?[RealNumber]),
+  applyFun_r          : [[Operator,RealNumber,RealNumber]->RealNumber],
+  FloatingPointNumber : TYPE+,
+  lt_fp               : (strict_total_order?[FloatingPointNumber]),
+  applyFun_fp         : [[Operator,FloatingPointNumber,FloatingPointNumber]->FloatingPointNumber],
+  FtoR 		      : [FloatingPointNumber -> RealNumber]
+] : THEORY BEGIN
+
+  ASSUMING
+  
+    X,Y: VAR FloatingPointNumber
+    rX,rY: VAR RealNumber
+  
+    lt_fp_lt_r
+    : ASSUMPTION
+      lt_fp(X,Y) = lt_r(FtoR(X),FtoR(Y))
+      
+  ENDASSUMING
+
+  IMPORTING le_r_fp[RealNumber,lt_r,FloatingPointNumber,lt_fp,FtoR]
+
+  IMPORTING expressions[Operator,RealNumber,FloatingPointNumber,FtoR]
+
+  expr,aexpr : VAR FPAExpr
+  rexpr      : VAR RAExpr
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Basic types                                                %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  %
+  % Environments for input values
+  %
+
+  REnvironment  : TYPE+ = [ParameterIndex -> RNumber]
+  FPEnvironment : TYPE+ = [ParameterIndex -> FPNumber]
+
+  fpParamEnv : VAR FPEnvironment
+  rParamEnv  : VAR REnvironment
+
+  induced_real_env(fpEnv: FPEnvironment) : MACRO REnvironment
+  = LAMBDA(i: ParameterIndex) : FtoR(fpEnv(i))
+
+  induced_real_env?(fpEnv: FPEnvironment)(rEnv: REnvironment): MACRO bool
+  = rEnv = induced_real_env(fpEnv)
+
+  induced_real_env?_not_empty: LEMMA
+   FORALL (fpEnv: FPEnvironment):
+    EXISTS (x: (induced_real_env?(fpEnv))):
+     TRUE
+      
+  AUTO_REWRITE+ induced_real_env?_not_empty
+
+  InducedREnv(fpEnv: FPEnvironment)  : TYPE+
+  = (induced_real_env?(fpEnv))
+  
+  % Restriction on input values
+
+  Range: TYPE = [# lb,ub: FPNumber #]
+
+  % A restriction on the inputs of an expression is a
+  % list of ranges, with one range for each possible
+  % input of the expression.
+  InputRestriction: TYPE = [ParameterIndex -> Range]
+
+  inputRest : VAR InputRestriction
+
+  validInput?(restriction: InputRestriction)(fpParamEnv)
+  : bool
+  = FORALL(i: ParameterIndex)
+    : LET range = restriction(i),
+      	  input = fpParamEnv(i)
+      IN le_fp(lb(range),input) AND le_fp(input,ub(range))
+
+  ValidInput(restriction: InputRestriction): TYPE = (validInput?(restriction))
+
+  % Corresponding notions for the real-valued case.
+
+  RRange: TYPE = [# lb,ub: RNumber #]
+  
+  RInputRestriction: TYPE = [ParameterIndex -> RRange]
+
+  rValidInput?(restriction: RInputRestriction)(rParamEnv)
+  : bool
+  = FORALL(i: ParameterIndex)
+    : LET range = restriction(i),
+      	  input = rParamEnv(i)
+      IN le_r(lb(range),input) AND le_r(input,ub(range))
+
+  RValidInput(restriction: RInputRestriction): TYPE = (rValidInput?(restriction))
+
+  % Relation between notions.
+
+  FtoR(r: Range): RRange = (# lb := FtoR(lb(r)), ub := FtoR(ub(r)) #)
+
+  FtoR(inputRest): RInputRestriction = LAMBDA(i: ParameterIndex): FtoR(inputRest(i))
+
+  %
+  % Local Environments
+  %
+  
+  fpVarIndex(expr: (FPVariable?)): nat = index(expr)
+  rVarIndex (expr: (RVariable?)) : nat = index(expr)
+
+  IMPORTING u_local_environment[FPAExpr,FPVariable?,fpVarIndex,<<]
+  	    AS fp_local_env
+  IMPORTING u_local_environment[RAExpr,RVariable?,rVarIndex,<<]
+  	    AS r_local_env
+
+  FPLocalEnvironment : TYPE = fp_local_env.LocalEnvironment
+  RLocalEnvironment  : TYPE = r_local_env.LocalEnvironment
+
+  FPEmptyLocalEnv: FPLocalEnvironment = fp_local_env.empty_local_env
+  REmptyLocalEnv : RLocalEnvironment  = r_local_env.empty_local_env
+
+  get_renv(env: RLocalEnvironment)(i: below(size(env))): RAExpr
+  = r_local_env.get(env)(i)
+  get_fpenv(env: FPLocalEnvironment)(i: below(size(env))): FPAExpr
+  = fp_local_env.get(env)(i)
+
+  cons_renv(rexpr: RAExpr, env: RLocalEnvironment | bounded_by?(env)(rexpr))
+  : RLocalEnvironment
+  = r_local_env.cons(rexpr,env)
+  cons_fpenv(expr: FPAExpr, env: FPLocalEnvironment | bounded_by?(env)(expr))
+  : FPLocalEnvironment
+  = fp_local_env.cons(expr,env)
+
+  shrink_renv(env: RLocalEnvironment, i: below(size(env))): RLocalEnvironment
+  = r_local_env.shrink(env,i)
+  shrink_fpenv(env: FPLocalEnvironment, i: below(size(env))): FPLocalEnvironment
+  = fp_local_env.shrink(env,i)
+
+  fpLocalEnv : VAR FPLocalEnvironment
+  rLocalEnv,rLocalEnv1,rLocalEnv2  : VAR RLocalEnvironment
+
+  %
+  % Renamings to be used in client theories.
+  % 
+  bounded_by?_fpaexpr(fpLocalEnv)(expr): bool = fp_local_env.bounded_by?(fpLocalEnv)(expr)
+  bounded_by?_raexpr(rLocalEnv)(rexpr): bool = r_local_env.bounded_by?(rLocalEnv)(rexpr)
+  make_context_fpaexpr(expr,fpLocalEnv): fp_local_env.EvaluationContext
+  = fp_local_env.make_context(expr,fpLocalEnv)
+  
+  shrink_fple(fpLocalEnv,(vidx:below(size(fpLocalEnv))))
+  : FPLocalEnvironment
+  = fp_local_env.shrink(fpLocalEnv,vidx)
+  
+  get_fple(fpLocalEnv)(vidx:below(size(fpLocalEnv)))
+  : {expr|bounded_by?(shrink_fple(fpLocalEnv,vidx))(expr)}
+  = get(fpLocalEnv)(vidx)
+
+  doublelessp_swf_fpaexpr
+  : LEMMA
+    strict_well_founded?[fp_local_env.EvaluationContext](<<)
+
+  %
+
+  evaluable_in_fpaexpr_def_op
+  : LEMMA
+    FORALL (env: FPLocalEnvironment, expr1,expr2: FPAExpr, op: Operator)
+    : bounded_by?(env)(FPOperator(op,expr1,expr2))
+      = (bounded_by?(env)(expr1) AND bounded_by?(env)(expr2))
+
+  evaluable_in_raexpr_def_op
+  : LEMMA
+    FORALL (env: RLocalEnvironment, expr1,expr2: RAExpr, op: Operator)
+    : bounded_by?(env)(ROperator(op,expr1,expr2))
+      = (bounded_by?(env)(expr1) AND bounded_by?(env)(expr2))
+
+  evaluable_in_fpaexpr_wellformed_eq
+  : LEMMA
+    FORALL (env: FPLocalEnvironment)(aexpr: FPAExpr)
+    : bounded_by?(env)(aexpr) = (EXISTS(n:nat): wellFormed?(aexpr,n,size(env)))
+
+  evaluable_in_raexpr_wellformed_eq
+  : LEMMA
+    FORALL (env: RLocalEnvironment)(aexpr: RAExpr)
+    : bounded_by?(env)(aexpr) = (EXISTS(n:nat): wellFormed?_RAExpr(aexpr,n,size(env)))
+
+  no_local_vars_r_evaluable_in
+  : LEMMA
+    FORALL(rexpr | NoLocalVars?(rexpr))
+    : bounded_by?(rLocalEnv)(rexpr)
+
+  no_local_vars_evaluable_in
+  : LEMMA
+    FORALL(expr | NoLocalVars?(expr))
+    : bounded_by?(fpLocalEnv)(expr)
+
+  %
+  % Relation between real and floating-point environments
+  %
+
+  IMPORTING u_local_environment_trans[FPAExpr,FPVariable?,fpVarIndex,<<,RAExpr,RVariable?,rVarIndex,<<,FtoR]
+
+  FtoR(fle: FPLocalEnvironment)
+  : { rle: RLocalEnvironment |
+        size(fle) = size(rle) AND
+        FORALL(i: below(size(rle))): get(rle)(i) = FtoR(get(fle)(i)) }
+  = translate(fle)
+
+  evaluable_in_expr_FtoR
+  : LEMMA
+    FORALL (fpLocalEnv: FPLocalEnvironment, rLocalEnv: RLocalEnvironment, aexpr: FPAExpr)
+    : size(fpLocalEnv) = size(rLocalEnv) AND
+      bounded_by?(fpLocalEnv)(aexpr) IMPLIES bounded_by?(rLocalEnv)(FtoR(aexpr))
+
+  ftor_shrink
+  : LEMMA
+    FORALL(i: below(size(fpLocalEnv))): FtoR(shrink(fpLocalEnv,i)) = shrink(FtoR(fpLocalEnv),i)
+
+  ftor_get
+  : LEMMA
+    FORALL(i: below(size(fpLocalEnv))): FtoR(get(fpLocalEnv)(i)) = get(FtoR(fpLocalEnv))(i)
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Auxiliary expression functions
+  %                                                            %
+  %------------------------------------------------------------%
+
+  FtoR(fpEnv: FPEnvironment) : InducedREnv(fpEnv)
+  = induced_real_env(fpEnv)
+
+  valid_input_ftor
+  : LEMMA
+    validInput?(inputRest)(fpParamEnv) IMPLIES rValidInput?(FtoR(inputRest))(FtoR(fpParamEnv))
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Arithmetic expression evalution                            %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  fp_eval_termination_1
+  : LEMMA
+    FORALL( fpLocalEnv : FPLocalEnvironment,
+            aexpr      : (bounded_by?(fpLocalEnv)),
+            v          : DeBruijnIndex )
+    : aexpr = FPVariable(v)
+      IMPLIES make_context(get(fpLocalEnv)(v),shrink(fpLocalEnv,v)) << make_context(aexpr,fpLocalEnv)
+  AUTO_REWRITE+ fp_eval_termination_1
+
+  eval
+  ( fpParamEnv: FPEnvironment, fpLocalEnv: FPLocalEnvironment )
+  ( aexpr: (bounded_by?(fpLocalEnv)) )
+  : RECURSIVE FPNumber
+  = CASES aexpr OF
+      FPConstant(number)       : number,
+      FPParameter(v)           : fpParamEnv(v),
+      FPVariable(v)            : eval(fpParamEnv,shrink(fpLocalEnv,v))(get(fpLocalEnv)(v)),
+      FPOperator(op,arg1,arg2) : LET v1 = eval(fpParamEnv,fpLocalEnv)(arg1),
+      			       	     v2 = eval(fpParamEnv,fpLocalEnv)(arg2)
+				 IN applyFun_fp(op,v1,v2)
+    ENDCASES
+  MEASURE make_context(aexpr,fpLocalEnv) BY <<
+
+  nlv_expr: VAR {expr: FPAExpr | NoLocalVars?(expr)}
+
+  eval_NoLocalVars?: RECURSIVE JUDGEMENT
+  eval(fpParamEnv,fpLocalEnv)(nlv_expr)
+    HAS_TYPE { res: FPNumber | FORALL(fpLocalEnv2:FPLocalEnvironment)
+    	       	    	       : eval(fpParamEnv,fpLocalEnv2)(nlv_expr) = res }
+
+  r_eval_termination_1: LEMMA
+    FORALL( rLocalEnv : RLocalEnvironment,
+            aexpr      : (bounded_by?(rLocalEnv)),
+            v          : DeBruijnIndex ):
+      aexpr = RVariable(v)
+      IMPLIES make_context(get(rLocalEnv)(v),shrink(rLocalEnv,v)) << make_context(aexpr,rLocalEnv)
+  AUTO_REWRITE+ r_eval_termination_1
+
+  eval
+  ( rParamEnv: REnvironment, rLocalEnv: RLocalEnvironment )
+  ( aexpr: (bounded_by?(rLocalEnv)) )
+  : RECURSIVE RNumber =
+    CASES aexpr OF
+      RConstant(number)       : number,
+      RParameter(v)           : rParamEnv(v),
+      RVariable(v)            : eval(rParamEnv,shrink(rLocalEnv,v))(get(rLocalEnv)(v)),
+      ROperator(op,arg1,arg2) : LET v1 = eval(rParamEnv,rLocalEnv)(arg1),
+      			       	    v2 = eval(rParamEnv,rLocalEnv)(arg2)
+				 IN applyFun_r(op,v1,v2)
+    ENDCASES
+  MEASURE make_context(aexpr,rLocalEnv) BY <<
+
+  no_local_vars_eval_eq
+  : LEMMA
+    NoLocalVars?(rexpr)
+    IMPLIES eval(rParamEnv,rLocalEnv1)(rexpr) = eval(rParamEnv,rLocalEnv2)(rexpr)
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Boolean expression truth value                             %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  bounded_by?(env: FPLocalEnvironment)(expr: FPBExpr)
+  : RECURSIVE bool
+  = CASES expr OF
+      FPNot(e)     : bounded_by?(env)(e ),
+      FPAnd(e1,e2) : bounded_by?(env)(e1) AND
+      		     bounded_by?(env)(e2),
+      FPLT(a1,a2)  : bounded_by?(env)(a1) AND
+      		     bounded_by?(env)(a2)
+      ELSE TRUE
+    ENDCASES
+  MEASURE expr BY <<
+
+  evaluable_in_and: LEMMA
+  FORALL (env: FPLocalEnvironment)(e1,e2: FPBExpr)
+  : bounded_by?(env)(FPAnd(e1,e2)) = (bounded_by?(env)(e1) AND bounded_by?(env)(e2))
+
+  evaluable_in_not: LEMMA
+  FORALL (env: FPLocalEnvironment)(e: FPBExpr)
+  : bounded_by?(env)(FPNot(e)) = bounded_by?(env)(e)
+
+  evaluable_in_lt: LEMMA
+  FORALL (env: FPLocalEnvironment)(a1,a2: FPAExpr)
+  : bounded_by?(env)(FPLT(a1,a2)) = (bounded_by?(env)(a1) AND bounded_by?(env)(a2))
+
+  evaluable_in_wellformed_eq: LEMMA
+  FORALL (env: FPLocalEnvironment)(fpbexpr: FPBExpr)
+  : bounded_by?(env)(fpbexpr) = (EXISTS(n:nat): wellFormed?(fpbexpr,n,size(env)))
+
+  FPEvaluableBExpr(env: FPLocalEnvironment): TYPE = { e: FPBExpr | bounded_by?(env)(e) } 
+
+  evaluable_subterm_fp: LEMMA
+    FORALL(env: FPLocalEnvironment,expr,expr2:FPBExpr):
+      subterm(expr2,expr) AND
+      bounded_by?(env)(expr) 
+      IMPLIES bounded_by?(env)(expr2)
+      
+  evaluable_and_fp: LEMMA
+    FORALL(env: FPLocalEnvironment,expr,expr2:FPEvaluableBExpr(env)):
+      bounded_by?(env)(FPAnd(expr,expr2)) 
+
+  evaluable_not_fp: LEMMA
+    FORALL(env: FPLocalEnvironment,expr:FPEvaluableBExpr(env)):
+      bounded_by?(env)(FPNot(expr)) 
+
+  %
+
+  val
+  ( paramEnv: FPEnvironment,localEnv: FPLocalEnvironment )
+  ( bexpr: FPEvaluableBExpr(localEnv) )
+  : RECURSIVE bool
+  =
+    CASES bexpr OF
+      FPTrue            : TRUE,
+      FPFalse           : FALSE,
+      FPNot(expr)       : NOT val(paramEnv,localEnv)(expr),
+      FPAnd(expr1,expr2): val(paramEnv,localEnv)(expr1) AND val(paramEnv,localEnv)(expr2),
+      FPLT(expr1,expr2) : lt_fp(eval(paramEnv,localEnv)(expr1),eval(paramEnv,localEnv)(expr2))
+    ENDCASES
+  MEASURE bexpr BY <<
+  
+  bounded_by?(env: RLocalEnvironment)(expr: RBExpr): RECURSIVE bool
+  = CASES expr OF
+      RNot(e)     : bounded_by?(env)(e ),
+      RAnd(e1,e2) : bounded_by?(env)(e1) AND
+      		     bounded_by?(env)(e2),
+      RLT(a1,a2)  : bounded_by?(env)(a1) AND
+      		     bounded_by?(env)(a2)
+      ELSE TRUE
+    ENDCASES
+  MEASURE expr BY <<
+
+  evaluable_in_r_and: LEMMA
+  FORALL (env: RLocalEnvironment)(e1,e2: RBExpr)
+  : bounded_by?(env)(RAnd(e1,e2)) = (bounded_by?(env)(e1) AND bounded_by?(env)(e2))
+
+  evaluable_in_r_not: LEMMA
+  FORALL (env: RLocalEnvironment)(e: RBExpr)
+  : bounded_by?(env)(RNot(e)) = bounded_by?(env)(e)
+
+  evaluable_in_r_lt: LEMMA
+  FORALL (env: RLocalEnvironment)(a1,a2: RAExpr)
+  : bounded_by?(env)(RLT(a1,a2)) = (bounded_by?(env)(a1) AND bounded_by?(env)(a2))
+
+  evaluable_in_r_wellformed_eq
+  : LEMMA
+    FORALL (env: RLocalEnvironment)(rbexpr: RBExpr)
+    : bounded_by?(env)(rbexpr)
+      = (EXISTS(n:nat): wellFormed?_RBExpr(rbexpr,n,size(env)))
+
+  REvaluableBExpr(env: RLocalEnvironment): TYPE = { e: RBExpr | bounded_by?(env)(e) } 
+
+  evaluable_subterm_r: LEMMA
+    FORALL(env: RLocalEnvironment,expr,expr2:RBExpr):
+      subterm(expr2,expr) AND
+      bounded_by?(env)(expr) 
+      IMPLIES bounded_by?(env)(expr2)
+
+  val
+  ( paramEnv: REnvironment,localEnv: RLocalEnvironment )
+  ( bexpr: REvaluableBExpr(localEnv) )
+  : RECURSIVE bool
+  = CASES bexpr OF
+      RTrue: TRUE,
+      RFalse: FALSE,
+      RNot(expr): NOT val(paramEnv,localEnv)(expr),
+      RAnd(expr1,expr2): val(paramEnv,localEnv)(expr1) AND val(paramEnv,localEnv)(expr2),
+      RLT(expr1,expr2) : lt_r(eval(paramEnv,localEnv)(expr1),eval(paramEnv,localEnv)(expr2))
+    ENDCASES
+  MEASURE bexpr BY <<
+
+  consistentLocalEnvironments?( fpEnv: FPLocalEnvironment, rEnv: RLocalEnvironment): bool
+  = size(fpEnv) = size(rEnv) AND FORALL(i: below(size(fpEnv))): FtoR(get(fpEnv)(i)) = get(rEnv)(i)
+
+  empty_env_are_consistent
+  : LEMMA
+    consistentLocalEnvironments?(FPEmptyLocalEnv,REmptyLocalEnv)
+  AUTO_REWRITE+ empty_env_are_consistent
+
+  evaluable_in_fp_evaluable_in_r
+  : LEMMA
+    FORALL(fpLocalEnv: FPLocalEnvironment, rLocalEnv: RLocalEnvironment, phi: FPBExpr)
+    : consistentLocalEnvironments?(fpLocalEnv,rLocalEnv) AND
+      bounded_by?(fpLocalEnv)(phi)
+      IMPLIES bounded_by?(rLocalEnv)(FtoR(phi))
+
+  consistent_local_environments_ext  
+  : LEMMA
+    FORALL(fpLocalEnv, rLocalEnv, (aexpr|bounded_by?(fpLocalEnv)(aexpr)))
+    : consistentLocalEnvironments?(fpLocalEnv, rLocalEnv)
+      IMPLIES consistentLocalEnvironments?(cons(aexpr, fpLocalEnv),cons(FtoR(aexpr),rLocalEnv))
+
+  consistent_local_environments_eq
+  : LEMMA
+    consistentLocalEnvironments?(fpLocalEnv, rLocalEnv)
+    IMPLIES FtoR(fpLocalEnv) = rLocalEnv
+
+END expressions_semantics

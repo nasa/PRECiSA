@@ -1,0 +1,640 @@
+expressions[
+  Operator            : TYPE+,
+  RealNumber          : TYPE+,
+  FloatingPointNumber : TYPE+,
+  FtoR 		      : [FloatingPointNumber -> RealNumber]
+]: THEORY BEGIN
+
+  op : VAR Operator
+  localsCount: VAR nat
+  nargs,nlocals: VAR nat
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Basic types                                                %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  RNumber        : TYPE+ = RealNumber
+  FPNumber       : TYPE+ = FloatingPointNumber
+  DeBruijnIndex  : TYPE+ = nat
+  ParameterIndex : TYPE+ = nat
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Arithmetic expressions                                     %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  FPAExpr: DATATYPE
+  BEGIN
+    FPConstant(number:FPNumber)               :FPConstant?
+    FPVariable(index:DeBruijnIndex)           :FPVariable?
+    FPParameter(index:ParameterIndex)         :FPParameter?
+    FPOperator(op:Operator,arg1,arg2:FPAExpr) :FPOperator?
+  END FPAExpr
+
+  expr,expr1,expr2: VAR FPAExpr
+  local: VAR (FPVariable?)
+
+  %
+
+  maxParamIndex(expr:FPAExpr)
+  : RECURSIVE { maxInd: upfrom(-1) | FORALL(v:(FPParameter?)|subterm(v,expr)): index(v) <= maxInd }
+  = CASES expr OF
+      FPConstant(number)      : -1,
+      FPVariable(variable)    : -1,
+      FPParameter(variable)   : variable,
+      FPOperator(op,arg1,arg2): max(maxParamIndex(arg1),maxParamIndex(arg2))
+    ENDCASES
+  MEASURE expr BY <<
+
+  %
+  %
+  %
+
+  maximumFreeLocalIndex?_expr(expr)(vidx: upfrom(-1))
+  : MACRO bool
+  =  IF ( EXISTS(local: (FPVariable?)):   subterm(local,expr) )
+     THEN ( EXISTS(local: (FPVariable?) | subterm(local,expr)): index(local) = vidx ) AND
+     	  ( FORALL(local: (FPVariable?) | subterm(local,expr)): index(local) <= vidx )
+     ELSE vidx = -1 ENDIF
+
+  maxFreeLocalIndex(expr:FPAExpr)
+  : RECURSIVE { maxInd: upfrom(-1) | maximumFreeLocalIndex?_expr(expr)(maxInd) }
+  = CASES expr OF
+      FPConstant(number)      : -1,
+      FPVariable(variable)    : variable,
+      FPParameter(variable)   : -1,
+      FPOperator(op,arg1,arg2): max(maxFreeLocalIndex(arg1),maxFreeLocalIndex(arg2))
+    ENDCASES
+  MEASURE expr BY <<
+
+  max_local_index_expr_op_def
+  : LEMMA
+    maxFreeLocalIndex(FPOperator(op,expr1,expr2)) = max(maxFreeLocalIndex(expr1),maxFreeLocalIndex(expr2))
+
+  max_local_index_fpexpr_def
+  : LEMMA
+    maximumFreeLocalIndex?_expr(expr)(maxFreeLocalIndex(expr))
+
+  %
+
+  wellFormed?(expr:FPAExpr, nargs, localsCount:nat)
+  : INDUCTIVE bool =
+    CASES expr OF
+      FPConstant(number): TRUE,
+      FPVariable(variable): variable < localsCount,
+      FPParameter(variable): variable < nargs,
+      FPOperator(op,arg1,arg2):
+        wellFormed?(arg1,nargs,localsCount)
+        AND
+        wellFormed?(arg2,nargs,localsCount)
+    ENDCASES
+
+  wellFormed?_fpaexpr_monotonocity: LEMMA
+  FORALL(expr:FPAExpr, nargs, localsCount:nat)
+  : wellFormed?(expr, nargs, localsCount)
+    IMPLIES FORALL(n: upfrom(nargs), m: upfrom(localsCount)): wellFormed?(expr, n, m)
+
+  wellFormed?_expr_op: LEMMA
+    wellFormed?(FPOperator(op,expr1,expr2),nargs,localsCount)
+    IFF ( wellFormed?(expr1,nargs,localsCount) AND
+          wellFormed?(expr2,nargs,localsCount) )
+
+  wellFormed?_expr_int_def
+  : LEMMA
+    wellFormed?(expr,nargs,nlocals) = (maxFreeLocalIndex(expr) < nlocals AND maxParamIndex(expr) < nargs)
+
+  %
+  % Real-valued arithmetic expressions
+  %
+  
+  RAExpr: DATATYPE
+  BEGIN
+    RConstant(number:RNumber)               :RConstant?
+    RVariable(index:DeBruijnIndex)          :RVariable?
+    RParameter(index:ParameterIndex)        :RParameter?
+    ROperator(op:Operator,arg1,arg2:RAExpr) :ROperator?
+  END RAExpr
+
+  rexpr,rexpr1,rexpr2: VAR RAExpr
+
+  complexity(rexpr): nat
+  = reduce_nat( LAMBDA(n: RNumber): 1,
+  		LAMBDA(n: DeBruijnIndex): 1,
+		LAMBDA(n: ParameterIndex): 1,
+		LAMBDA(op: Operator, n1,n2: nat): 1 + n1 + n2 )
+	       (rexpr)
+
+  subterm_doublelessp
+  : LEMMA
+    subterm(rexpr1,rexpr2) = ( rexpr1 = rexpr2 OR rexpr1 << rexpr2 )
+
+  fpaexpr_subterm_doublelessp
+  : LEMMA
+    subterm(expr1,expr2) = ( expr1 = expr2 OR expr1 << expr2 )
+
+  %
+
+  maxParamIndex(expr:RAExpr)
+  : RECURSIVE { maxInd: upfrom(-1) |
+                  FORALL(v:(RParameter?)|subterm(v,expr)): index(v) <= maxInd }
+  = CASES expr OF
+      RConstant(number)      : -1,
+      RVariable(variable)    : -1,
+      RParameter(variable)   : variable,
+      ROperator(op,arg1,arg2): max(maxParamIndex(arg1),maxParamIndex(arg2))
+    ENDCASES
+  MEASURE expr BY <<
+
+  %
+  
+  wellFormed?_RAExpr(expr:RAExpr, nargs, localsCount:nat): INDUCTIVE bool =
+    CASES expr OF
+      RConstant(number): TRUE,
+      RVariable(variable): variable < localsCount,
+      RParameter(variable): variable < nargs,
+      ROperator(op,arg1,arg2):
+        wellFormed?_RAExpr(arg1,nargs,localsCount)
+        AND
+        wellFormed?_RAExpr(arg2,nargs,localsCount)
+    ENDCASES
+
+  wellFormed?_RAExpr_monotonicity
+  : LEMMA
+    FORALL(expr:RAExpr, nargs, localsCount:nat)
+    : wellFormed?_RAExpr(expr, nargs, localsCount)
+      IMPLIES FORALL(n: upfrom(nargs), m: upfrom(localsCount)): wellFormed?_RAExpr(expr, n, m)
+
+  wellFormed?_rexpr_op
+  : LEMMA
+    wellFormed?_RAExpr(ROperator(op,rexpr1,rexpr2),nargs,localsCount)
+    IFF ( wellFormed?_RAExpr(rexpr1,nargs,localsCount) AND
+          wellFormed?_RAExpr(rexpr2,nargs,localsCount) )
+
+  %
+
+  maximumFreeLocalIndex?_rexpr(rexpr)(vidx: upfrom(-1))
+  : MACRO bool
+  =  IF ( EXISTS(local: (RVariable?)):   subterm(local,rexpr) )
+     THEN ( EXISTS(local: (RVariable?) | subterm(local,rexpr)): index(local) = vidx ) AND
+     	  ( FORALL(local: (RVariable?) | subterm(local,rexpr)): index(local) <= vidx )
+     ELSE vidx = -1 ENDIF
+
+  maxFreeLocalIndex_RAExpr(rexpr:RAExpr)
+  : RECURSIVE { maxInd: upfrom(-1) | maximumFreeLocalIndex?_rexpr(rexpr)(maxInd) }
+  = CASES rexpr OF
+      RConstant(number)      : -1,
+      RVariable(variable)    : variable,
+      RParameter(variable)   : -1,
+      ROperator(op,arg1,arg2): max(maxFreeLocalIndex_RAExpr(arg1),maxFreeLocalIndex_RAExpr(arg2))
+    ENDCASES
+  MEASURE rexpr BY <<
+
+  max_local_index_rexpr_def
+  : LEMMA
+    maximumFreeLocalIndex?_rexpr(rexpr)(maxFreeLocalIndex_RAExpr(rexpr))
+
+  max_local_index_rexpr_op_def
+  : LEMMA
+    maxFreeLocalIndex_RAExpr(ROperator(op,rexpr1,rexpr2))
+    = max(maxFreeLocalIndex_RAExpr(rexpr1),maxFreeLocalIndex_RAExpr(rexpr2))
+
+  %
+
+  wellFormed?_rexpr_int_def
+  : LEMMA
+    wellFormed?_RAExpr(rexpr,nargs,nlocals)
+    = (maxFreeLocalIndex_RAExpr(rexpr) < nlocals AND maxParamIndex(rexpr) < nargs)
+
+  %
+  % Translation of expressions (float to real)
+  %
+
+  FtoR(aexpr: FPAExpr): RECURSIVE RAExpr =
+    CASES aexpr OF
+      FPConstant(n): RConstant(FtoR(n)),
+      FPVariable(i): RVariable(i),
+      FPParameter(i): RParameter(i),
+      FPOperator(op,arg1,arg2): ROperator(op,FtoR(arg1),FtoR(arg2))
+    ENDCASES
+  MEASURE aexpr BY <<
+
+  rlocal : VAR (RVariable?)
+
+  %
+
+  ftor_var
+  : LEMMA
+    rlocal << FtoR(expr)
+    IMPLIES EXISTS (local): rlocal = FtoR(local) AND local << expr
+
+  ftor_expr_wellFormed?
+  : LEMMA
+    wellFormed?(expr,nargs,nlocals) = wellFormed?_RAExpr(FtoR(expr),nargs,nlocals)
+
+  ftor_fpvar_rvar_j
+  : JUDGEMENT FtoR(local) HAS_TYPE (RVariable?)
+  
+  ftor_fpvar_rvar: LEMMA RVariable?(FtoR(local))
+
+  %------------------------------------------------------------%
+  %                                                            %
+  % Boolean expressions                                        %
+  %                                                            %
+  %------------------------------------------------------------%
+
+  FPBExpr: DATATYPE
+  BEGIN
+    FPTrue                     :FPTrue?
+    FPFalse                    :FPFalse?
+    FPNot(expr:FPBExpr)        :FPNot?
+    FPAnd(expr1,expr2:FPBExpr) :FPAnd?
+    FPLT(expr1,expr2:FPAExpr)  :FPLT?
+  END FPBExpr
+
+  form,form1,form2: VAR FPBExpr
+
+  FPLEQ(expr1,expr2:FPAExpr): FPBExpr = FPNot(FPLT(expr2,expr1))
+  
+  RBExpr: DATATYPE
+  BEGIN
+    RTrue                      :RTrue?
+    RFalse                     :RFalse?
+    RNot(expr:RBExpr)         :RNot?
+    RAnd(expr1,expr2:RBExpr) :RAnd?
+    RLT(expr1,expr2:RAExpr)  :RLT?
+  END RBExpr
+  
+  rform,rform1,rform2: VAR RBExpr
+  
+  %
+
+  FtoR(bexpr: FPBExpr): RECURSIVE RBExpr
+  = CASES bexpr OF
+      FPTrue: RTrue,
+      FPFalse: RFalse,
+      FPNot(expr) : RNot(FtoR(expr)),
+      FPAnd(expr1, expr2) : RAnd(FtoR(expr1),FtoR(expr2)),
+      FPLT(aexpr1, aexpr2) : RLT(FtoR(aexpr1),FtoR(aexpr2))
+    ENDCASES
+  MEASURE bexpr BY <<
+
+  %
+
+  maxParamIndex(form: FPBExpr )
+  : RECURSIVE upfrom(-1)
+  = CASES form OF
+      FPNot(e)     : maxParamIndex(e),
+      FPAnd(e1,e2) : max(maxParamIndex(e1),maxParamIndex(e2)),
+      FPLT(a1,a2)  : max(maxParamIndex(a1),maxParamIndex(a2))
+      ELSE -1
+    ENDCASES
+  MEASURE form BY <<
+
+  maxParamIndex(rform: RBExpr )
+  : RECURSIVE upfrom(-1)
+  = CASES rform OF
+      RNot(e)     : maxParamIndex(e),
+      RAnd(e1,e2) : max(maxParamIndex(e1),maxParamIndex(e2)),
+      RLT(a1,a2)  : max(maxParamIndex(a1),maxParamIndex(a2))
+      ELSE -1
+    ENDCASES
+  MEASURE rform BY <<
+
+  %
+  % Appears Free In
+  %
+
+  % A variable appears free in a statement if any of its appareances
+  % is not bounded by a LET-IN declaration, i.e., if the amount of nested
+  % LET-INs that surrounds the appearence is less than its index number.
+
+  % These declarations will make sense in the statement-level definition
+  appearsFree?(expr)(declaredLocalsCount: nat, local: (FPVariable?))
+  : RECURSIVE bool
+  = CASES expr OF
+      FPVariable(variable): variable - declaredLocalsCount = index(local),
+      FPOperator(op,e1,e2): appearsFree?(e1)(declaredLocalsCount,local) OR
+      		     	    appearsFree?(e2)(declaredLocalsCount,local)
+      ELSE FALSE
+    ENDCASES
+  MEASURE expr BY <<
+
+  vidx: VAR DeBruijnIndex
+
+  appearsFree?_expr_int_def_var
+  : LEMMA
+    FORALL(alreadyDeclaredLocalsCount: nat)
+    : appearsFree?(FPVariable(vidx))(alreadyDeclaredLocalsCount, local)
+      = (vidx - alreadyDeclaredLocalsCount = index(local))
+  
+  appearsFree?_expr_int_def
+  : LEMMA
+    FORALL(alreadyDeclaredLocalsCount: nat)
+    : appearsFree?(expr)(alreadyDeclaredLocalsCount, local)
+      = (subterm(FPVariable(index(local) + alreadyDeclaredLocalsCount),expr))
+
+  appears?(expr)(local: (FPVariable?))
+  : bool
+  = appearsFree?(expr)(0,local)
+
+  appears?_expr_int_def
+  : LEMMA
+    appears?(expr)(local) = appearsFree?(expr)(0,local)
+
+  appears?_expr_subterm
+  : LEMMA
+    appears?(expr)(local) = subterm(local,expr)
+
+  %
+
+  %
+  % Appears in
+  %
+
+  appears_in?(expr, form)
+  : RECURSIVE bool
+  = CASES form OF
+      FPNot(e)     : appears_in?(expr,e),
+      FPAnd(e1,e2) : appears_in?(expr,e1) OR appears_in?(expr,e2),
+      FPLT(e1,e2)  : subterm(expr,e1) OR subterm(expr,e2)
+      ELSE FALSE
+    ENDCASES
+  MEASURE form BY <<
+
+  appears_in?_expr_int_def_lt
+  : LEMMA
+    appears_in?(expr, FPLT(expr1,expr2)) = (subterm(expr,expr1) OR subterm(expr,expr2))
+
+  %
+
+  appearsFree?(form)(declaredLocalsCount: nat, local: (FPVariable?))
+  : RECURSIVE bool
+  = CASES form OF
+      FPNot(e)     : appearsFree?(e)(declaredLocalsCount,local),
+      FPAnd(e1,e2) : appearsFree?(e1)(declaredLocalsCount,local) OR
+      		     appearsFree?(e2)(declaredLocalsCount,local),
+      FPLT(e1,e2)  : appearsFree?(e1)(declaredLocalsCount,local) OR
+      		     appearsFree?(e2)(declaredLocalsCount,local)
+      ELSE FALSE
+    ENDCASES
+  MEASURE form BY <<
+
+  appearsFree?_form_int_def_lt
+  : LEMMA
+    FORALL(alreadyDeclaredLocalsCount: nat)
+    : appearsFree?(FPLT(expr1,expr2))(alreadyDeclaredLocalsCount, local)
+      = ( appearsFree?(expr1)(alreadyDeclaredLocalsCount,local) OR
+      	  appearsFree?(expr2)(alreadyDeclaredLocalsCount,local) )
+
+  appearsFree?_form_int_def
+  : LEMMA
+    FORALL(alreadyDeclaredLocalsCount: nat)
+    : appearsFree?(form)(alreadyDeclaredLocalsCount, local)
+      = (appears_in?(FPVariable(index(local) + alreadyDeclaredLocalsCount),form))
+
+  %
+
+  appears?(form)(local: (FPVariable?))
+  : bool
+  = appearsFree?(form)(0,local)
+
+  % definitional lemmas
+
+  appears?_form_int_def
+  : LEMMA
+    appears?(form)(local) = appearsFree?(form)(0,local)
+
+  appears?_form_int_def_and
+  : LEMMA
+    appears?(FPAnd(form1,form2))(local) = (appears?(form1)(local) OR appears?(form2)(local))
+
+  appears?_form_int_def_not
+  : LEMMA
+    appears?(FPNot(form))(local) = appears?(form)(local)
+
+  appears?_form_int_def_lt
+  : LEMMA
+    appears?(FPLT(expr1,expr2))(local) = (appears?(expr1)(local) OR appears?(expr2)(local))
+
+  %
+  % Max Local Index
+  %
+
+  maximumFreeLocalIndex?_form(form)(vidx: upfrom(-1))
+  : MACRO bool
+  =  IF ( EXISTS(local: (FPVariable?)): appears?(form)(local) )
+     THEN ( EXISTS(local: (FPVariable?) | appears?(form)(local)): index(local) = vidx ) AND
+     	  ( FORALL(local: (FPVariable?) | appears?(form)(local)): index(local) <= vidx )
+     ELSE vidx = -1 ENDIF
+
+  maxFreeLocalIndex(form: FPBExpr )
+  : RECURSIVE { max: upfrom(-1) | maximumFreeLocalIndex?_form(form)(max) }
+  = CASES form OF
+      FPNot(e)     : maxFreeLocalIndex(e),
+      FPAnd(e1,e2) : max(maxFreeLocalIndex(e1),maxFreeLocalIndex(e2)),
+      FPLT(a1,a2)  : max(maxFreeLocalIndex(a1),maxFreeLocalIndex(a2))
+      ELSE -1
+    ENDCASES
+  MEASURE form BY <<
+
+  max_local_index_fpform_def
+  : LEMMA
+    maximumFreeLocalIndex?_form(form)(maxFreeLocalIndex(form))
+
+  max_local_index_stmt_and_def: LEMMA
+    maxFreeLocalIndex(FPAnd(form1,form2)) = max(maxFreeLocalIndex(form1),maxFreeLocalIndex(form2))
+
+  max_local_index_stmt_lt_def: LEMMA
+    maxFreeLocalIndex(FPLT(expr1,expr2)) = max(maxFreeLocalIndex(expr1),maxFreeLocalIndex(expr2))
+
+  %
+
+  wellFormed?(form:FPBExpr, nargs, localsCount:nat)
+  : RECURSIVE bool
+  = CASES form OF
+      FPNot(e)     : wellFormed?(e,nargs,localsCount),
+      FPAnd(e1,e2) : wellFormed?(e1,nargs,localsCount) AND
+      		     wellFormed?(e2,nargs,localsCount),
+      FPLT(a1,a2)  : wellFormed?(a1,nargs,localsCount) AND
+      		     wellFormed?(a2,nargs,localsCount)
+      ELSE TRUE
+    ENDCASES
+  MEASURE form By <<
+
+  wellFormed?_form_true
+  : LEMMA
+    wellFormed?(FPTrue, nargs, nlocals)
+  AUTO_REWRITE+ wellFormed?_form_true
+
+  wellFormed?_form_int_def
+  : LEMMA
+    wellFormed?(form,nargs,nlocals)
+    = (maxFreeLocalIndex(form) < nlocals AND maxParamIndex(form) < nargs)
+
+  %
+
+  wellFormed?_motonocity: LEMMA
+  FORALL(expr:FPBExpr, nargs, localsCount:nat)
+  : wellFormed?(expr, nargs, localsCount)
+    IMPLIES FORALL(n: upfrom(nargs), m: upfrom(localsCount))
+            : wellFormed?(expr, n, m)
+
+  %
+
+  wellFormed?_RBExpr(form:RBExpr, nargs, localsCount:nat)
+  : RECURSIVE bool
+  = CASES form OF
+      RNot(e)     : wellFormed?_RBExpr(e,nargs,localsCount),
+      RAnd(e1,e2) : wellFormed?_RBExpr(e1,nargs,localsCount) AND
+      		    wellFormed?_RBExpr(e2,nargs,localsCount),
+      RLT(a1,a2)  : wellFormed?_RAExpr(a1,nargs,localsCount) AND
+      		    wellFormed?_RAExpr(a2,nargs,localsCount)
+      ELSE TRUE
+    ENDCASES
+  MEASURE form By <<
+
+  wellFormed?_RBExpr_monotonicity
+  : LEMMA
+    FORALL(form:RBExpr, nargs, localsCount:nat)
+    : wellFormed?_RBExpr(form, nargs, localsCount)
+      IMPLIES FORALL(n: upfrom(nargs), m: upfrom(localsCount))
+              : wellFormed?_RBExpr(form, n, m)
+  %
+
+  ftor_form_wellFormed?
+  : LEMMA
+    wellFormed?(form,nargs,nlocals) = wellFormed?_RBExpr(FtoR(form),nargs,nlocals)
+
+  %
+  % Appears in (Real)
+  %
+
+  % These declarations will make sense in the statement-level definition
+  appearsFree?(rexpr)(declaredLocalsCount: nat, local: (RVariable?))
+  : RECURSIVE bool
+  = CASES rexpr OF
+      RVariable(variable): variable - declaredLocalsCount = index(local),
+      ROperator(op,e1,e2): appearsFree?(e1)(declaredLocalsCount,local) OR
+      		     	    appearsFree?(e2)(declaredLocalsCount,local)
+      ELSE FALSE
+    ENDCASES
+  MEASURE rexpr BY <<
+
+  appearsFree?_expr_rexpr
+  : LEMMA
+    appearsFree?(expr)(0,local) = appearsFree?(FtoR(expr))(0,FtoR(local))
+    
+  appears?(rexpr)(local: (RVariable?))
+  : bool
+  = appearsFree?(rexpr)(0,local)
+
+  appears?_rexpr_subterm
+  : LEMMA
+    appears?(rexpr)(rlocal) = subterm(rlocal,rexpr)
+
+  appears?_expr_rexpr
+  : LEMMA
+    appears?(expr)(local) = appears?(FtoR(expr))(FtoR(local))
+
+  %
+
+  NoLocalVars?(expr): bool
+  = FORALL(local): NOT appears?(expr)(local)
+
+  NoLocalVars?(rexpr): bool
+  = FORALL(rlocal): NOT appears?(rexpr)(rlocal)
+
+  NoLocalVars?_fp_op
+  : LEMMA 
+    NoLocalVars?(FPOperator(op, expr1, expr2))
+    = ( NoLocalVars?(expr1) AND  NoLocalVars?(expr2) )
+
+  NoLocalVars?_r_op
+  : LEMMA 
+    NoLocalVars?(ROperator(op, rexpr1, rexpr2))
+    = ( NoLocalVars?(rexpr1) AND  NoLocalVars?(rexpr2) )
+
+  noLocalVars_FtoR
+  : LEMMA
+    NoLocalVars?(expr) = NoLocalVars?(FtoR(expr))
+
+  %
+  
+  appearsFree?(rform)(declaredLocalsCount: nat, local: (RVariable?))
+  : RECURSIVE bool
+  = CASES rform OF
+      RNot(e)     : appearsFree?(e)(declaredLocalsCount,local),
+      RAnd(e1,e2) : appearsFree?(e1)(declaredLocalsCount,local) OR
+      		     appearsFree?(e2)(declaredLocalsCount,local),
+      RLT(e1,e2)  : appearsFree?(e1)(declaredLocalsCount,local) OR
+      		     appearsFree?(e2)(declaredLocalsCount,local)
+      ELSE FALSE
+    ENDCASES
+  MEASURE rform BY <<
+
+  appearsFree?_form_rform
+  : LEMMA
+    appearsFree?(form)(0,local) = appearsFree?(FtoR(form))(0,FtoR(local))
+
+  appears?(rform)(local: (RVariable?))
+  : bool
+  = appearsFree?(rform)(0,local)
+
+  appears?_rform_int_def_and
+  : LEMMA
+    appears?(RAnd(rform1,rform2))(rlocal)
+    = (appears?(rform1)(rlocal) OR appears?(rform2)(rlocal))
+
+  appears?_rform_int_def_not
+  : LEMMA
+    appears?(RNot(rform))(rlocal) = appears?(rform)(rlocal)
+
+  appears?_rform_int_def_lt
+  : LEMMA
+    appears?(RLT(rexpr1,rexpr2))(rlocal)
+    = (appears?(rexpr1)(rlocal) OR appears?(rexpr2)(rlocal))
+
+  appears?_rform_int_def
+  : LEMMA
+    appears?(rform)(rlocal) = appearsFree?(rform)(0,rlocal)
+
+  %
+  % Max Local Index (Real)
+  %
+
+  maximumFreeLocalIndex?_rform(rform)(vidx: upfrom(-1))
+  : MACRO bool
+  =  IF ( EXISTS(local: (RVariable?)): appears?(rform)(local) )
+     THEN ( EXISTS(local: (RVariable?) | appears?(rform)(local)): index(local) = vidx ) AND
+     	  ( FORALL(local: (RVariable?) | appears?(rform)(local)): index(local) <= vidx )
+     ELSE vidx = -1 ENDIF
+
+  maxFreeLocalIndex(rform: RBExpr )
+  : RECURSIVE { max: upfrom(-1) | maximumFreeLocalIndex?_rform(rform)(max) }
+  = CASES rform OF
+      RNot(e)     : maxFreeLocalIndex(e),
+      RAnd(e1,e2) : max(maxFreeLocalIndex(e1),maxFreeLocalIndex(e2)),
+      RLT(a1,a2)  : max(maxFreeLocalIndex_RAExpr(a1),maxFreeLocalIndex_RAExpr(a2))
+      ELSE -1
+    ENDCASES
+  MEASURE rform BY <<
+
+  max_local_index_rform_def
+  : LEMMA
+    maximumFreeLocalIndex?_rform(rform)(maxFreeLocalIndex(rform))
+
+  max_local_index_rform_lt_def: LEMMA
+    maxFreeLocalIndex(RLT(rexpr1,rexpr2))
+    = max(maxFreeLocalIndex_RAExpr(rexpr1),maxFreeLocalIndex_RAExpr(rexpr2))
+
+  %
+  
+  wellFormed?_rform_int_def
+  : LEMMA
+    wellFormed?_RBExpr(rform,nargs,nlocals)
+    = (maxFreeLocalIndex(rform) < nlocals AND maxParamIndex(rform) < nargs)
+
+END expressions

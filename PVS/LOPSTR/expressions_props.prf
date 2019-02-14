@@ -1,0 +1,33 @@
+(expressions_props
+ (well_formed_ITE_propagation 0
+  (well_formed_ITE_propagation-1 nil 3732022956
+   ("" (skeep)
+    (("" (expand "wellFormed?" -)
+      (("" (flatten) (("" (assert) nil nil)) nil)) nil))
+    nil)
+   ((wellFormed? inductive-decl "bool" program nil)) shostak))
+ (well_formed_LETIN_propagation 0
+  (well_formed_LETIN_propagation-1 nil 3732700466
+   ("" (skeep :preds? t)
+    (("" (expand "wellFormed?" -)
+      (("" (flatten) (("" (assert) nil nil)) nil)) nil))
+    nil)
+   ((wellFormed? inductive-decl "bool" program nil)
+    (posint_plus_nnint_is_posint application-judgement "posint"
+     integers nil)
+    (real_ge_is_total_order name-judgement "(total_order?[real])"
+     real_props nil))
+   shostak))
+ (well_formed_op_propagation 0
+  (well_formed_op_propagation-1 nil 3732023192
+   ("" (skeep)
+    (("" (expand "wellFormed?" -)
+      (("" (expand "wellFormed?" -)
+        (("" (expand "wellFormed?" +) (("" (propax) nil nil)) nil))
+        nil))
+      nil))
+    nil)
+   ((wellFormed? inductive-decl "bool" program nil)
+    (wellFormed? inductive-decl "bool" expressions nil))
+   shostak)))
+

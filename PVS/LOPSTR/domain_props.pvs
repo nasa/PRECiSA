@@ -1,0 +1,44 @@
+domain_props[
+  Operator            : TYPE+,
+  RealNumber          : TYPE+,
+  lt_r                : (strict_total_order?[RealNumber]),
+  applyFun_r          : [[Operator,RealNumber,RealNumber]->RealNumber],
+  FloatingPointNumber : TYPE+,
+  lt_fp               : (strict_total_order?[FloatingPointNumber]),
+  applyFun_fp         : [[Operator,FloatingPointNumber,FloatingPointNumber]->FloatingPointNumber],
+  FtoR 		      : [FloatingPointNumber -> RealNumber]
+] : THEORY BEGIN
+
+  ASSUMING
+  
+    X,Y: VAR FloatingPointNumber
+    rX,rY: VAR RealNumber
+  
+    lt_fp_lt_r
+    : ASSUMPTION
+      lt_fp(X,Y) = lt_r(FtoR(X),FtoR(Y))
+      
+  ENDASSUMING
+
+  IMPORTING domain[Operator,RealNumber,lt_r,applyFun_r,FloatingPointNumber,lt_fp,applyFun_fp,FtoR]
+
+  propag_union: LEMMA
+    FORALL(scebA,scebB: Domain, rphi: RBExpr, fpphi: FPBExpr):
+      propag(union(scebA,scebB),rphi,fpphi) =
+        union(propag(scebA,rphi,fpphi), propag(scebB,rphi,fpphi))
+
+  propag_fpresult_inv : LEMMA
+    FORALL(sceb: Domain, rphi: RBExpr, fpphi: FPBExpr):
+      (
+        FORALL(ceb: (propag(sceb,rphi, fpphi))):
+          EXISTS(cebp: (sceb)):
+            fpresult(ceb) = fpresult(cebp)
+      )
+      AND
+      (
+        FORALL(ceb: (sceb)):
+          EXISTS(cebp: (propag(sceb,rphi, fpphi))):
+            fpresult(ceb) = fpresult(cebp)
+      )
+
+END domain_props
