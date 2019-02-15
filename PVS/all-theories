@@ -1,3 +1,4 @@
 # Program Round-off Error Certifier via Static Analysis
+: --log --dir summaries
 PRECiSA
 LOPSTR

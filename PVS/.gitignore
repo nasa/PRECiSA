@@ -1,2 +1,5 @@
 .pvscontext
 pvsbin
+*.log
+*~
+_adt.pvs
