@@ -4,8 +4,8 @@ import AbsPVSLang
 import AbsSpecLang
 import AbstractDomain
 import AbstractSemantics
-import Kodiak.KodiakRunnable
-import Kodiak.KodiakRunner
+import Kodiak.Runnable
+import Kodiak.Runner
 import Common.DecisionPath
 import FPrec
 
@@ -29,4 +29,3 @@ computeNumRoundOffError varBinds ee =  maximumUpperBound <$> run kodiakInput ()
                              maxDepth = 7,
                              precision = 14
                            }
-   

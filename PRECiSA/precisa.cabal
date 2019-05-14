@@ -50,8 +50,8 @@ common deps
     Kodiak.Expression
     Kodiak.Generator
     Kodiak.Kodiak
-    Kodiak.KodiakRunnable
-    Kodiak.KodiakRunner
+    Kodiak.Runnable
+    Kodiak.Runner
     MapPVSLangAST
     MapRealPVSLangAST
     MapSpecLangAST

@@ -17,11 +17,7 @@
 
 {-# LANGUAGE FunctionalDependencies #-}
 
-module Kodiak.KodiakRunnable where
-
-data KodiakResult = KR { maximumLowerBound :: Double,
-                         maximumUpperBound :: Double
-                       } deriving Show
+module Kodiak.Runnable where
 
 class KodiakRunnable a b c | a -> c where
   run :: a -> b -> IO c

@@ -2,7 +2,7 @@ module FramaC.PrettyPrint where
 
 import AbsPVSLang
 import AbsSpecLang
-import PPExt 
+import PPExt
 import FPrec
 --import Data.List (isSuffixOf)
 import qualified Common.ShowRational as Rat
@@ -15,8 +15,8 @@ import Prelude hiding ((<>))
 --import Data.Set (toList, fromList)
 import Transformation (listErrEnvVars)
 import Utils
-import Kodiak.KodiakRunnable
-import Kodiak.KodiakRunner
+import Kodiak.Runnable
+import Kodiak.Runner
 import NumericalError
 import Data.Numbers.FloatingHex (showHFloat)
 import AbstractDomain (Condition)
@@ -53,7 +53,7 @@ genFramaCFile fp realDecls tauDecls (Spec specBinds) errs = do
                                  bindings = initValues  f,
                                  maxDepth = 7,
                                  precision = 14
-                                } 
+                                }
 
 
 printProgram :: FPrec -> IO [(RDecl, Decl,[(VarName,FAExpr,FBExpr)], [VarBind], EExpr, [Condition], Double)] -> IO Doc
@@ -66,10 +66,10 @@ printDeclWithACSL :: FPrec -> (RDecl,Decl,[(VarName,FAExpr,FBExpr)],[VarBind], E
 printDeclWithACSL fp (realDecl@(RDecl _ f realArgs _ ), taudecl@(Decl _ _ _ stm), errVars, varBinds, symbROError, stableConds,numROErr) = do
   numDecl <- printNumDeclWithACSL fp f realArgs (forIndexes stm) taudecl errVars varBinds numROErr
   return
-    (printSymbDeclWithACSL fp (realDecl,(taudecl, errVars),symbROError,stableConds) 
+    (printSymbDeclWithACSL fp (realDecl,(taudecl, errVars),symbROError,stableConds)
         $$
         text (vspace 1)
-        $$ 
+        $$
         numDecl)
 
 prettyErrorHex :: Double -> Doc
@@ -136,7 +136,7 @@ printSymbDeclWithACSL fp (realDecl@(RDecl _ f realArgs _ ), (decl@(Decl _ _ taua
   $$
   text (vspace 1)
   $$
-  printFPSymbPrecond fp f realArgs tauargs errVars (localVars taustm) (forIndexes taustm) symbROError 
+  printFPSymbPrecond fp f realArgs tauargs errVars (localVars taustm) (forIndexes taustm) symbROError
   $$
   printFPDecl decl
     where
@@ -218,15 +218,15 @@ prettyStmValue (ListIte ((beThen,stmThen):thenList) stmElse) = do
         <+> stmThenDoc <+> text ":"
         $$  vcat (map (\(stmDoc,beDoc) -> beDoc
                                         $$  text "?"
-                                        <+> stmDoc <+> text ":") (zip stmThenListDoc beListDoc))  
-        $$  stmElseDoc 
+                                        <+> stmDoc <+> text ":") (zip stmThenListDoc beListDoc))
+        $$  stmElseDoc
 
 prettyStmValue (StmExpr ae) = do
   aeDoc <- prettyFAExprValue ae
   return $ text "result == " <+> aeDoc
 
 prettyStmValue ForLoop{} = error "prettyACSLstm: Something went wrong, for loops not allowed in logic assertions."
-prettyStmValue UnstWarning = error "prettyStmValue: value WARNING not expected" 
+prettyStmValue UnstWarning = error "prettyStmValue: value WARNING not expected"
 
 prettyUnaryOpValue :: Doc -> FAExpr -> State [(VarName, FAExpr)] Doc
 prettyUnaryOpValue op a = do
@@ -288,18 +288,18 @@ prettyFAExprValue (FEFun f fp args)    = do
 
 prettyFAExprValue (FINeg           a) = prettyUnaryOpValue (text "Ineg"  ) a
 prettyFAExprValue (FIAbs           a) = prettyUnaryOpValue (text "Iabs"  ) a
-prettyFAExprValue (FNeg   FPSingle a) = prettyUnaryOpValue (text "Sneg"  ) a 
-prettyFAExprValue (FFloor FPSingle a) = prettyUnaryOpValue (text "Sfloor") a 
-prettyFAExprValue (FSqrt  FPSingle a) = prettyUnaryOpValue (text "Ssqrt" ) a 
-prettyFAExprValue (FAbs   FPSingle a) = prettyUnaryOpValue (text "Sabs"  ) a 
-prettyFAExprValue (FSin   FPSingle a) = prettyUnaryOpValue (text "Ssin"  ) a 
-prettyFAExprValue (FCos   FPSingle a) = prettyUnaryOpValue (text "Scos"  ) a 
-prettyFAExprValue (FTan   FPSingle a) = prettyUnaryOpValue (text "Stan"  ) a 
-prettyFAExprValue (FAsin  FPSingle a) = prettyUnaryOpValue (text "Sasin" ) a 
-prettyFAExprValue (FAcos  FPSingle a) = prettyUnaryOpValue (text "Sacos" ) a 
-prettyFAExprValue (FAtan  FPSingle a) = prettyUnaryOpValue (text "Satan" ) a 
-prettyFAExprValue (FLn    FPSingle a) = prettyUnaryOpValue (text "Sln"   ) a 
-prettyFAExprValue (FExpo  FPSingle a) = prettyUnaryOpValue (text "Sexp"  ) a 
+prettyFAExprValue (FNeg   FPSingle a) = prettyUnaryOpValue (text "Sneg"  ) a
+prettyFAExprValue (FFloor FPSingle a) = prettyUnaryOpValue (text "Sfloor") a
+prettyFAExprValue (FSqrt  FPSingle a) = prettyUnaryOpValue (text "Ssqrt" ) a
+prettyFAExprValue (FAbs   FPSingle a) = prettyUnaryOpValue (text "Sabs"  ) a
+prettyFAExprValue (FSin   FPSingle a) = prettyUnaryOpValue (text "Ssin"  ) a
+prettyFAExprValue (FCos   FPSingle a) = prettyUnaryOpValue (text "Scos"  ) a
+prettyFAExprValue (FTan   FPSingle a) = prettyUnaryOpValue (text "Stan"  ) a
+prettyFAExprValue (FAsin  FPSingle a) = prettyUnaryOpValue (text "Sasin" ) a
+prettyFAExprValue (FAcos  FPSingle a) = prettyUnaryOpValue (text "Sacos" ) a
+prettyFAExprValue (FAtan  FPSingle a) = prettyUnaryOpValue (text "Satan" ) a
+prettyFAExprValue (FLn    FPSingle a) = prettyUnaryOpValue (text "Sln"   ) a
+prettyFAExprValue (FExpo  FPSingle a) = prettyUnaryOpValue (text "Sexp"  ) a
 prettyFAExprValue (FNeg   FPDouble a) = prettyUnaryOpValue (text "Dneg"  ) a
 prettyFAExprValue (FFloor FPDouble a) = prettyUnaryOpValue (text "Dfloor") a
 prettyFAExprValue (FSqrt  FPDouble a) = prettyUnaryOpValue (text "Dsqrt" ) a
@@ -344,9 +344,9 @@ prettyFAExprValue (FFma fp a1 a2 a3) = do
   return $ fpDoc <> parens (a1Doc <> comma <+> a2Doc <> comma <+> a3Doc)
   where
     fpDoc = case fp of
-      FPSingle -> text "Sfma" 
+      FPSingle -> text "Sfma"
       FPDouble -> text "Dfma"
-      _ -> error "fpDoc: unexpected value." 
+      _ -> error "fpDoc: unexpected value."
 
 prettyFAExprValue (FMin as) = do
   asDoc <- mapM prettyFAExprValue as
@@ -355,7 +355,7 @@ prettyFAExprValue (FMin as) = do
 prettyFAExprValue (FMax as) = do
   asDoc <- mapM prettyFAExprValue as
   return $ text "max" <> parens (hsep $ punctuate comma asDoc)
-    
+
 prettyFAExprValue ee = error $ "printACSLFAexpr for " ++ show ee ++ "not implemented yet."
 
 
@@ -386,7 +386,7 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
                         text (f ++ "_trans_value") <> parens (docListComma (map (printFPVar fp . argName) fpArgs) <> comma <+> text "result.value") <> text ";"
     behaviorStablePaths = text "behavior stable paths:"
                        $$ text "ensures \\result.isValid"
-                       $$ nest 2 (text "==> \\forall" <+> prettyACSLFormalArgs fp realVarArgs <> text ";" 
+                       $$ nest 2 (text "==> \\forall" <+> prettyACSLFormalArgs fp realVarArgs <> text ";"
                                               $$ printDefLocalVars errVars locVars
                                               $$ (text "(" <> printQuantIdx forIdx)
                                               $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")"
@@ -404,7 +404,7 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
                     $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")" <+> text "&&"
                     $$ text "\\result.isValid"
                     $$ text "==> \\abs(\\result.value -" <+> text f <> parens (printRealArgs fp realArgs) <> text ") <=" <+> prettyACSLaexpr symbROError <+> text ";"
-  
+
 printDefLocalVars :: [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] -> Doc
 printDefLocalVars errVars letVars = vcat $ map printLocalVar vars
   where
@@ -422,7 +422,7 @@ printDefLocalVars errVars letVars = vcat $ map printLocalVar vars
 printPosErrReq :: [VarName] -> Doc
 printPosErrReq errVars = docListAnd $ map aux errVars
   where
-    aux x = text "0 <=" <+> text "double_" <> text x 
+    aux x = text "0 <=" <+> text "double_" <> text x
 
 isArg :: VarName -> [Arg] -> Bool
 isArg y (Arg x _:args) = (x == y) || isArg y args
@@ -448,7 +448,7 @@ printErrInputVar fp x =
   <+> prettyACSLaexpr (ErrorMark x fp)
 
 printErrVar :: FPrec -> (VarName,FAExpr,FBExpr) -> Doc
-printErrVar fp (ev, ae, FBTrue) = 
+printErrVar fp (ev, ae, FBTrue) =
       text "\\abs" <> parens (printACSLFAexpr ae
   <+> text "-"
   <+> prettyACSLaexpr (fae2real ae))
@@ -484,13 +484,13 @@ nameArrayIdx v = "idx_" ++ v
 
 makeDeclRecursive :: RDecl -> (RDecl,[RDecl])
 makeDeclRecursive decl@(RDecl _ f args _) = (newMainDecl, zipWith (makeForFun f args) (reverse forList) [1, 2 ..])
-  where 
+  where
     (newMainDecl, forList) = replaceForWithCallDecl decl
 
 replaceForWithCallDecl :: RDecl -> (RDecl, [RStm])
 replaceForWithCallDecl (RDecl fp f args stm) = (RDecl fp f args recStm, forList)
   where
-    (recStm, forList) = replaceForWithCallStm f args [] stm 
+    (recStm, forList) = replaceForWithCallStm f args [] stm
 
 forFunName :: String -> Int -> String
 forFunName f n = "for_"++ f ++ show n
@@ -500,21 +500,21 @@ replaceForWithCallStm f args forList forStm@(RForLoop fp _ idxEnd _ _ _ _) =
    (RStmExpr $ EFun (forFunName f (1 + length forList)) fp (idxEnd : map arg2AExpr args),forStm:forList)
 replaceForWithCallStm f args forList (RLet x fp ae stm) = (RLet x fp ae recStm, forListStm)
   where
-    (recStm, forListStm) = replaceForWithCallStm f args forList stm 
+    (recStm, forListStm) = replaceForWithCallStm f args forList stm
 replaceForWithCallStm f args forList (RIte be thenStm elseStm) = (RIte be recStmThen recStmElse, forListStmThen ++ forListStmElse)
   where
-    (recStmThen, forListStmThen) = replaceForWithCallStm f args forList thenStm 
-    (recStmElse, forListStmElse) = replaceForWithCallStm f args forList elseStm 
+    (recStmThen, forListStmThen) = replaceForWithCallStm f args forList thenStm
+    (recStmElse, forListStmElse) = replaceForWithCallStm f args forList elseStm
 replaceForWithCallStm f args forList (RListIte listThen elseStm) = (RListIte recListThen recStmElse, forListThen ++ forListElse)
   where
     forListThen = concatMap (snd . replaceForWithCallStm f args forList . snd) listThen
     recListThen = zip (map fst listThen) (map (fst . replaceForWithCallStm f args forList . snd) listThen)
-    (recStmElse,forListElse) = replaceForWithCallStm f args forList elseStm  
+    (recStmElse,forListElse) = replaceForWithCallStm f args forList elseStm
 replaceForWithCallStm _ _ forList stm@(RStmExpr _) = (stm, forList)
 replaceForWithCallStm _ _ forList RUnstWarning      = (RUnstWarning, forList)
 
 makeForFun :: String -> [Arg] -> RStm -> Int -> RDecl
-makeForFun f args (RForLoop fp idxStart _ initAcc _ _ forBody) n = 
+makeForFun f args (RForLoop fp idxStart _ initAcc _ _ forBody) n =
   RDecl fp (forFunName f n) (Arg "I" TInt:args) declBody
   where
     declBody = RIte (Eq (Var TInt "I") idxStart) forBodyThen forBodyElse
@@ -528,7 +528,7 @@ printACSLlogicDecl fpTarget (RDecl fp f args stm) =
      text "/*@"
   $$ text "axiomatic real_function_" <> text f <+> text "{"
   $$ text "logic"
-  <+> prettyACSLPrec fp 
+  <+> prettyACSLPrec fp
   <+> text f
   <+> parens (prettyACSLFormalArgs fpTarget args)
   <+> text "="
@@ -546,8 +546,8 @@ printVarBinds varBinds = vcat $ map printVarBind varBinds
     printVarBind (VarBind x _ (LBDouble  r)         UInf)  = text (Rat.showRational Nothing r) <+> text "<=" <+> text x
     printVarBind (VarBind x _ (LBInt    lb) (UBInt    ub)) = integer lb <+> text "<=" <+> text x <+> text "<=" <+> integer ub
     printVarBind (VarBind x _ (LBDouble lb) (UBDouble ub)) = text (Rat.showRational Nothing lb) <+> text x <+> text "<=" <+> text (Rat.showRational Nothing ub)
-    printVarBind (VarBind x _ (LBInt    lb) (UBDouble ub)) = integer lb <+> text "<=" <+> text x <+> text "<=" <+> text (Rat.showRational Nothing ub) 
-    printVarBind (VarBind x _ (LBDouble lb) (UBInt    ub)) = text (Rat.showRational Nothing lb) <+> text "<=" <+> text x <+> text "<=" <+> integer ub 
+    printVarBind (VarBind x _ (LBInt    lb) (UBDouble ub)) = integer lb <+> text "<=" <+> text x <+> text "<=" <+> text (Rat.showRational Nothing ub)
+    printVarBind (VarBind x _ (LBDouble lb) (UBInt    ub)) = text (Rat.showRational Nothing lb) <+> text "<=" <+> text x <+> text "<=" <+> integer ub
 
 prettyACSLstm :: RStm -> Doc
 prettyACSLstm (RLet x _ ae stm) =
@@ -569,7 +569,7 @@ prettyACSLstm (RListIte ((beThen,stmThen):thenList) stmElse) =
   $$ text "?"
   <+> prettyACSLstm stmThen <+> text ":"
   $$ vcat (map (\(be,stm) -> parens (prettyACSLbexpr be)
-  $$ text "?" <+> prettyACSLstm stm <+> text ":") thenList)  
+  $$ text "?" <+> prettyACSLstm stm <+> text ":") thenList)
   $$ prettyACSLstm stmElse
 prettyACSLstm (RStmExpr ae) = prettyACSLaexpr ae
 prettyACSLstm RForLoop{} = error "prettyACSLstm: Something went wrong, for loops not allowed in logic assertions."
@@ -669,10 +669,10 @@ prettyACSLaexpr (ErrStoD            ae ee) = printUnaryOpErrorACSL "errStoD"   a
 prettyACSLaexpr (ErrDtoS            ae ee) = printUnaryOpErrorACSL "errDtoS"   ae ee
 prettyACSLaexpr (ErrItoS            ae ee) = printUnaryOpErrorACSL "errItoS"   ae ee
 prettyACSLaexpr (ErrItoD            ae ee) = printUnaryOpErrorACSL "errItoD"   ae ee
-prettyACSLaexpr (ErrMulPow2R FPSingle n ee) = text "ErrMulPow2R_sp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")") 
-prettyACSLaexpr (ErrMulPow2R FPDouble n ee) = text "ErrMulPow2R_dp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")") 
-prettyACSLaexpr (ErrMulPow2L FPSingle n ee) = text "ErrMulPow2L_sp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")") 
-prettyACSLaexpr (ErrMulPow2L FPDouble n ee) = text "ErrMulPow2L_dp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")") 
+prettyACSLaexpr (ErrMulPow2R FPSingle n ee) = text "ErrMulPow2R_sp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
+prettyACSLaexpr (ErrMulPow2R FPDouble n ee) = text "ErrMulPow2R_dp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
+prettyACSLaexpr (ErrMulPow2L FPSingle n ee) = text "ErrMulPow2L_sp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
+prettyACSLaexpr (ErrMulPow2L FPDouble n ee) = text "ErrMulPow2L_dp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
 prettyACSLaexpr (HalfUlp ae FPSingle) = text "ulp_sp" <> (text "(" <> prettyACSLaexpr ae <> text ")/2")
 prettyACSLaexpr (HalfUlp ae FPDouble) = text "ulp_dp" <> (text "(" <> prettyACSLaexpr ae <> text ")/2")
 prettyACSLaexpr (ErrNeg _ _ ee) = prettyACSLaexpr ee
@@ -696,7 +696,7 @@ prettyACSLFormalArgs :: FPrec -> [Arg] -> Doc
 prettyACSLFormalArgs fp args = docListComma $ map (prettyACSLFormalArg fp) args
 
 prettyACSLFormalArg :: FPrec -> Arg -> Doc
-prettyACSLFormalArg fp (Arg x (Array _ _)) = prettyACSLPrec fp <+> text "*" <> text x 
+prettyACSLFormalArg fp (Arg x (Array _ _)) = prettyACSLPrec fp <+> text "*" <> text x
 prettyACSLFormalArg _  (Arg x     Real) = text  "real" <+> text x
 prettyACSLFormalArg _  (Arg x     TInt) = text "int" <+> text x
 prettyACSLFormalArg _  (Arg x FPSingle) = text "single" <+> text ("single_" ++ x)
@@ -742,8 +742,8 @@ printFPDecl (Decl fp f args stm) =
     retType = maybeRetType fp
 
 printFPVar :: FPrec -> String -> Doc
-printFPVar TInt x = text x 
-printFPVar fp x = prettyFPrec fp <> text "_" <> text x 
+printFPVar TInt x = text x
+printFPVar fp x = prettyFPrec fp <> text "_" <> text x
 
 validityCheckListBinOp :: FBExpr -> FBExpr -> State Int [(FAExpr, Int)]
 validityCheckListBinOp be1 be2 = do
@@ -757,15 +757,15 @@ validityCheckList (FAnd be1 be2) = validityCheckListBinOp be1 be2
 validityCheckList (FNot be) = validityCheckList be
 validityCheckList (IsValid ae) = do
   currentState <- get
-  put (currentState + 1) 
+  put (currentState + 1)
   return [(ae,currentState)]
 validityCheckList            _ = return []
 
 printStructVars :: FPrec -> [(FAExpr,Int)] -> Doc
 printStructVars fp list = vcat (map printStructVar list)
   where
-    printStructVar (funCall@FEFun{}, n) = maybeRetType fp <+> text "aux_" <> int n <+> text "=" <+> printFPaexpr funCall <+> text ";" 
-    printStructVar (Value (StructVar v), n) = maybeRetType fp <+> text "aux_" <> int n <+> text "=" <+> text v <+> text ";" 
+    printStructVar (funCall@FEFun{}, n) = maybeRetType fp <+> text "aux_" <> int n <+> text "=" <+> printFPaexpr funCall <+> text ";"
+    printStructVar (Value (StructVar v), n) = maybeRetType fp <+> text "aux_" <> int n <+> text "=" <+> text v <+> text ";"
     printStructVar (ae,_) = error $ "printStructVars: unexpected value " ++ show ae ++ "."
 
 printFPstm :: FPrec -> Stm -> Maybe VarName -> State Int Doc
@@ -787,7 +787,7 @@ printFPstm fp (Ite be stmThen stmElse) isForBody = do
       return (text "if"
                 <+> parens (printFPbexpr be)
                 $$  text "{"
-                <+> stmThenDoc 
+                <+> stmThenDoc
                 $$  text "} else {"
                 <+> stmElseDoc
                 $$  text "}")
@@ -835,7 +835,7 @@ printFPstm fp (StmExpr ae) (Just acc) =
               <+> printFPaexpr ae
                <>  text ";"
             $$ text "res =" <+> printSome fp <+> text " (" <> text acc <> text ") ;")
- 
+
 printFPstm fp (ForLoop fpFor idxStart idxEnd initAcc idx acc forBody) _ = do
   forBodyDoc <- printFPstm fp forBody (Just acc)
   return $
@@ -904,7 +904,7 @@ printFPaexpr (FINeg     ae) = text "-"   <+>  parens (printFPaexpr ae)
 printFPaexpr (FNeg   _  ae) = text "-"   <+>  parens (printFPaexpr ae)
 printFPaexpr (FIAbs     ae) = text "abs"  <>  parens (printFPaexpr ae)
 printFPaexpr (FFloor _ ae) = text "floor" <>  parens (printFPaexpr ae)
-printFPaexpr (FSqrt  _ ae) = text "sqrt"  <>  parens (printFPaexpr ae) 
+printFPaexpr (FSqrt  _ ae) = text "sqrt"  <>  parens (printFPaexpr ae)
 printFPaexpr (FAbs   _ ae) = text "abs"   <>  parens (printFPaexpr ae)
 printFPaexpr (FSin   _ ae) = text "sin"   <>  parens (printFPaexpr ae)
 printFPaexpr (FCos   _ ae) = text "cos"   <>  parens (printFPaexpr ae)
@@ -924,8 +924,8 @@ printFPaexpr (FVar  TInt x) = text x
 printFPaexpr (FVar  fp x) = prettyFPrec fp <> text "_" <> text x
 printFPaexpr (StructVar x) = text x
 printFPaexpr (FArrayElem _ _ v idxExpr) = text v <> text "[" <> printFPaexpr idxExpr <> text "]"
-printFPaexpr (FMin _) = error "printFPaexpr: min not defined" 
-printFPaexpr (FMax _) = error "printFPaexpr: max not defined" 
+printFPaexpr (FMin _) = error "printFPaexpr: min not defined"
+printFPaexpr (FMax _) = error "printFPaexpr: max not defined"
 printFPaexpr (RtoD (Int i)) = integer i
 printFPaexpr (RtoS (Int i)) = integer i
 printFPaexpr (RtoD (Rat rat)) = text $ Rat.showRational Nothing rat
@@ -934,7 +934,7 @@ printFPaexpr (StoD ae) = text "(double)" <> parens (printFPaexpr ae)
 printFPaexpr (DtoS ae) = text "(single)" <> parens (printFPaexpr ae)
 printFPaexpr (ItoD ae) = text "(double)" <> parens (printFPaexpr ae)
 printFPaexpr (ItoS ae) = text "(single)" <> parens (printFPaexpr ae)
-printFPaexpr FFma{} = error "printFPaexpr: fused multiply add not defined" 
+printFPaexpr FFma{} = error "printFPaexpr: fused multiply add not defined"
 printFPaexpr ae = error $ "printFPaexpr: case " ++ show ae ++ " niy."
 
 printFPbexpr :: FBExpr -> Doc
@@ -993,7 +993,7 @@ printACSLFAexpr (FNeg _ (FCnst _ d)) = text "-" <> parens (text $ showRational d
 printACSLFAexpr (FVar FPSingle x) = text ("single_" ++ x)
 printACSLFAexpr (FVar FPDouble x) = text ("double_" ++ x)
 printACSLFAexpr (FVar _ x) = text x
-printACSLFAexpr (FEFun f _ []) = text f 
+printACSLFAexpr (FEFun f _ []) = text f
 printACSLFAexpr (FEFun f _ args) = text f <> parens (hsep $ punctuate comma $ map printACSLFAexpr args)
 printACSLFAexpr (FIAdd a1 a2)  = text "Iadd"  <> parens (printACSLFAexpr a1 <> comma <+> printACSLFAexpr a2)
 printACSLFAexpr (FISub a1 a2)  = text "Isub"  <> parens (printACSLFAexpr a1 <> comma <+> printACSLFAexpr a2)
@@ -1101,20 +1101,20 @@ replaceCallsInAExpr callList (FItDiv    ae1 ae2) = FItDiv    (replaceCallsInAExp
 replaceCallsInAExpr callList (FIMod     ae1 ae2) = FIMod     (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
 replaceCallsInAExpr callList (FItMod    ae1 ae2) = FItMod    (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
 replaceCallsInAExpr callList (FIPow     ae1 ae2) = FIPow     (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
-replaceCallsInAExpr callList (FAdd   fp ae1 ae2) = FAdd   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)  
-replaceCallsInAExpr callList (FSub   fp ae1 ae2) = FSub   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2) 
-replaceCallsInAExpr callList (FMul   fp ae1 ae2) = FMul   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2) 
-replaceCallsInAExpr callList (FDiv   fp ae1 ae2) = FDiv   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2) 
-replaceCallsInAExpr callList (FPow   fp ae1 ae2) = FPow   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2) 
-replaceCallsInAExpr callList (FMod   fp ae1 ae2) = FMod   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2) 
-replaceCallsInAExpr callList (FIExp     ae1 ae2) = FIExp     (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2) 
+replaceCallsInAExpr callList (FAdd   fp ae1 ae2) = FAdd   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
+replaceCallsInAExpr callList (FSub   fp ae1 ae2) = FSub   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
+replaceCallsInAExpr callList (FMul   fp ae1 ae2) = FMul   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
+replaceCallsInAExpr callList (FDiv   fp ae1 ae2) = FDiv   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
+replaceCallsInAExpr callList (FPow   fp ae1 ae2) = FPow   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
+replaceCallsInAExpr callList (FMod   fp ae1 ae2) = FMod   fp (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
+replaceCallsInAExpr callList (FIExp     ae1 ae2) = FIExp     (replaceCallsInAExpr callList ae1) (replaceCallsInAExpr callList ae2)
 replaceCallsInAExpr callList (FINeg     ae)      = FINeg     (replaceCallsInAExpr callList ae)
 replaceCallsInAExpr callList (FIAbs     ae)      = FIAbs     (replaceCallsInAExpr callList ae)
 replaceCallsInAExpr callList (Value     ae)      = Value     (replaceCallsInAExpr callList ae)
-replaceCallsInAExpr callList (StoD      ae)      = StoD      (replaceCallsInAExpr callList ae) 
-replaceCallsInAExpr callList (DtoS      ae)      = DtoS      (replaceCallsInAExpr callList ae) 
-replaceCallsInAExpr callList (ItoD      ae)      = ItoD      (replaceCallsInAExpr callList ae) 
-replaceCallsInAExpr callList (ItoS      ae)      = ItoS      (replaceCallsInAExpr callList ae) 
+replaceCallsInAExpr callList (StoD      ae)      = StoD      (replaceCallsInAExpr callList ae)
+replaceCallsInAExpr callList (DtoS      ae)      = DtoS      (replaceCallsInAExpr callList ae)
+replaceCallsInAExpr callList (ItoD      ae)      = ItoD      (replaceCallsInAExpr callList ae)
+replaceCallsInAExpr callList (ItoS      ae)      = ItoS      (replaceCallsInAExpr callList ae)
 replaceCallsInAExpr callList (FNeg   fp ae)      = FNeg   fp (replaceCallsInAExpr callList ae)
 replaceCallsInAExpr callList (FFloor fp ae)      = FFloor fp (replaceCallsInAExpr callList ae)
 replaceCallsInAExpr callList (FSqrt  fp ae)      = FSqrt  fp (replaceCallsInAExpr callList ae)

@@ -9,7 +9,7 @@ import AbsPVSLang
 import AbsSpecLang
 import AbstractSemantics
 import AbstractDomain
-import Kodiak.KodiakRunnable
+import Kodiak.Runner
 import Prelude hiding ((<>))
 --import Data.Bits.Floating
 

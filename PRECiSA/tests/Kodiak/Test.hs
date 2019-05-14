@@ -10,9 +10,10 @@ import Test.Tasty.HUnit
 import AbsPVSLang
 import FPrec
 import Kodiak.Kodiak
-import Kodiak.KodiakRunnable
-import Kodiak.KodiakRunner
+import Kodiak.Runnable
+import Kodiak.Runner
 import qualified Kodiak.Expression as K
+import Kodiak.GeneratorTest
 
 testKodiak :: TestTree
 testKodiak = testGroup "Kodiak"
@@ -20,6 +21,7 @@ testKodiak = testGroup "Kodiak"
     ,testPaver
     ,testBooleanExpressionKodiakRunnable
     ,testKodiakExpressionsAreKodiakRunnable
+    ,testKodiakGenerator
     ]
 
 testBooleanExpressions :: TestTree

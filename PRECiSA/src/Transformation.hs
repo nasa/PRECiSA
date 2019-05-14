@@ -20,6 +20,9 @@ module Transformation where
 import AbsPVSLang
 import FPrec
 import AbstractSemantics
+import Common.DecisionPath
+import Kodiak.Runnable
+import Kodiak.Runner
 import Control.Monad.State
 import Data.Maybe (fromJust)
 import Utils
@@ -29,7 +32,7 @@ type ErrVarEnv = [(VarName,FAExpr,FBExpr)]
 data FreshErrVar = FreshErrVar { env :: ErrVarEnv,
                                  count :: Int }
   deriving (Show)
-  
+
 type ErrVarInterp = [(FunName, FreshErrVar)]
 
 findInErrVarInterp :: FunName -> ErrVarInterp -> FreshErrVar
@@ -46,13 +49,13 @@ listErrEnvVars envFreshVars = elimDuplicates $ map fst3 envFreshVars
 
 
 transformProgramSymb :: [Decl] -> [(Decl, ErrVarEnv)]
-transformProgramSymb decls = map (makePair interp') decls' 
+transformProgramSymb decls = map (makePair interp') decls'
   where
     (decls',interp') = runState (mapM (transformDeclSymb decls) decls) initState
     initState = map initStateDecl decls
     initStateDecl (Decl _ f _ _) = (f, FreshErrVar { env = [], count = 0 })
     makePair errInterp decl@(Decl  _ f _ _) = (decl, env (findInErrVarInterp f errInterp))
-  
+
 transformDeclSymb :: [Decl] -> Decl -> State ErrVarInterp Decl
 transformDeclSymb decls (Decl fp f args stm) = do
   transformedSmt <- transformStmSymb decls f FBTrue stm
@@ -84,14 +87,14 @@ transformStmSymb decls f be (Ite fbexpr thenStm elseStm) = do
   if noRoundOffErrorIn fbexpr
     then return $ Ite fbexpr thenStmTran elseStmTran
   else do
-    bePlus  <- betaPlusVar  f be fbexpr --(FAnd be       fbexpr) 
-    beMinus <- betaMinusVar f be fbexpr --(FAnd be (FNot fbexpr)) 
+    bePlus  <- betaPlusVar  f be fbexpr --(FAnd be       fbexpr)
+    beMinus <- betaMinusVar f be fbexpr --(FAnd be (FNot fbexpr))
     return $ Ite bePlus thenStmTran (Ite beMinus elseStmTran UnstWarning)
 
 transformStmSymb decls f be (ListIte listThen elseStm) = do
-  transformedListThen <- makeNewListThen listThen [] 
+  transformedListThen <- makeNewListThen listThen []
   if all (noRoundOffErrorIn . fst) listThen
-  then do 
+  then do
     listThenTran <- mapM (transformStmSymb decls f be . snd) listThen
     elseStmTran <- transformStmSymb decls f be elseStm
     return $ ListIte (zip (map fst listThen) listThenTran) elseStmTran
@@ -109,7 +112,7 @@ transformStmSymb decls f be (ListIte listThen elseStm) = do
           newThenBranch <- makeNewThenBranch thenBe listElseBes stm
           newListThen <- if noRoundOffErrorIn thenBe
                             then makeNewListThen rest listElseBes
-                            else makeNewListThen rest (thenBe:listElseBes) 
+                            else makeNewListThen rest (thenBe:listElseBes)
           return (newThenBranch:newListThen)
 
       makeNewThenBranch :: FBExpr -> [FBExpr] -> Stm -> State ErrVarInterp (FBExpr, Stm)
@@ -186,7 +189,7 @@ transformAExprSymb decls g be (FItMod ae1 ae2) = do
 transformAExprSymb decls g be (FIExp ae1 ae2) = do
   ae1' <- transformAExprSymb decls g be ae1
   ae2' <- transformAExprSymb decls g be ae2
-  return $ FIExp ae1' ae2' 
+  return $ FIExp ae1' ae2'
 
 transformAExprSymb decls g be (FIPow ae1 ae2) = do
   ae1' <- transformAExprSymb decls g be ae1
@@ -319,7 +322,7 @@ replaceLocVars locVars = argsBindFAExpr (map ((`Arg` FPDouble) . fst) locVars) (
 
 generateErrVarArg :: FunName -> FBExpr -> FAExpr -> State ErrVarInterp FAExpr
 generateErrVarArg f be ae = do
-  currentStateEnv <- get 
+  currentStateEnv <- get
   let currentState = findInErrVarInterp f currentStateEnv
   let (freshName,newEnv,newCount) = generateVarName ae (env currentState) (count currentState) be
   put $ updateErrVarInterp f (FreshErrVar { env = newEnv, count = newCount}) currentStateEnv
@@ -338,7 +341,7 @@ generateVarName ae environment counter be =
       --lookup' (FArrayElem fp v idx) [] = Nothing
       --lookup' (FArrayElem fp v idx) (((FArrayElem fp' v' idx'), ae):rest) | v == v' = Just ae
       --                                                                    | otherwise = lookup' (FArrayElem fp v idx) rest
-      --lookup' a list = lookup a list                                         
+      --lookup' a list = lookup a list
 
 findInEnv :: (FAExpr -> Bool) -> ErrVarEnv -> Maybe (VarName, FAExpr,FBExpr)
 findInEnv _ [] = Nothing
@@ -347,7 +350,7 @@ findInEnv p ((ev, ae, be):environment) | p ae      = Just (ev, ae, be)
 
 updateBetaState :: FunName -> FBExpr -> FAExpr -> State ErrVarInterp VarName
 updateBetaState f pathCond ae1 = do
-  currentStateEnv <- get 
+  currentStateEnv <- get
   let currentState = findInErrVarInterp f currentStateEnv
   let (freshName,newEnv,newCount) = generateVarName ae1 (env currentState) (count currentState) pathCond
   put $ updateErrVarInterp f (FreshErrVar { env = newEnv, count = newCount}) currentStateEnv
@@ -371,7 +374,7 @@ betaPlusVar f pathCond (FLt ae1 ae2) | isZeroExpr ae2 = do
 
 betaPlusVar f pathCond (FLt ae2 ae1) | isZeroExpr ae2 = do
   freshName <- updateBetaState f pathCond ae1
-  return $ FLt (FVar FPDouble freshName) ae1 
+  return $ FLt (FVar FPDouble freshName) ae1
 
 betaPlusVar f pathCond (FLtE ae1 ae2) | isZeroExpr ae2 = do
   freshName <- updateBetaState f pathCond ae1

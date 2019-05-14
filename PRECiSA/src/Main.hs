@@ -33,11 +33,13 @@ import Data.Time
 import ErrM
 import FPrec
 import Foreign.C
-import Kodiak.KodiakRunner
-import Kodiak.KodiakRunnable
 import FramaC.PrettyPrint
 import Options
 import PPExt
+import Kodiak.Runner
+import Kodiak.Runnable
+import Kodiak.Generator
+import qualified Kodiak.Expression as K
 import Prelude hiding ((<>))
 import PVSCert
 import Parser.Parser
@@ -71,7 +73,7 @@ generateCProg :: GenerateOptions -> IO ()
 generateCProg
   GenerateOptions
     { optRealProgramFile     = prog
-    , optRealInputRangeFile  = inputs 
+    , optRealInputRangeFile  = inputs
     , targetFormat           = fprec }
   = case fprec of
     "double" ->  real2FPC prog inputs FPDouble

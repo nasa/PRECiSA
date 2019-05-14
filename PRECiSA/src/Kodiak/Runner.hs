@@ -18,10 +18,10 @@
 
 {-# LANGUAGE MultiParamTypeClasses  #-}
 
-module Kodiak.KodiakRunner where
+module Kodiak.Runner where
 
 import Kodiak.Kodiak
-import Kodiak.KodiakRunnable
+import Kodiak.Runnable
 import AbsPVSLang
 import AbsSpecLang
 import FPrec
@@ -36,6 +36,10 @@ data KodiakInput = KI { name :: String,
                         bindings :: [VarBind],
                         maxDepth :: CUInt,
                         precision :: CUInt }
+
+data KodiakResult = KR { maximumLowerBound :: Double,
+                         maximumUpperBound :: Double
+                       } deriving Show
 
 variableMapFromBinds :: [VarBind] -> VariableMap
 variableMapFromBinds binds = VMap $ zip variableNames [(0::CUInt)..]

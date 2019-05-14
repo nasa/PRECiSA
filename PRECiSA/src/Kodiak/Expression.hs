@@ -7,8 +7,8 @@ module Kodiak.Expression (
 
 import FPrec
 import Kodiak.Kodiak
-import Kodiak.KodiakRunnable
-import Kodiak.KodiakRunner hiding (runBExpr)
+import Kodiak.Runnable
+import Kodiak.Runner hiding (runBExpr)
 
 import Control.Exception (throw,AssertionFailed(..),assert)
 import Data.Ratio (numerator,denominator)
