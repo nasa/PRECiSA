@@ -5,6 +5,7 @@
 
 module Kodiak.Generator where
 
+import Control.Applicative (liftA2)
 import Control.Monad.Except
 
 import qualified FPrec             as PVS
@@ -23,7 +24,11 @@ class KodiakType b => Kodiakable a b m | a -> b m where
 instance Kodiakable PVS.AExpr K.AExpr (Except (ToKodiakError PVS.AExpr)) where
     kodiakize = pvsAExpr2Kodiak
 
-data ToKodiakError x = NonSupportedExpr x | EmptyNAryExpr x
+data ToKodiakError x =
+    NonSupportedExpr x
+    | EmptyNAryExpr x
+    | AExprError (ToKodiakError PVS.AExpr)
+    | InvalidIntegerExpr x
     deriving (Show,Eq)
 
 pvsAExpr2Kodiak :: MonadError (ToKodiakError PVS.AExpr) m => PVS.AExpr -> m K.AExpr
@@ -84,7 +89,12 @@ pvsAExpr2Kodiak e
                                 xs  -> do xs' <- mapM pvsAExpr2Kodiak xs
                                           return $ K.Max xs'
 
+    -- Integer operators:
+
+    | PVS.IMod l r     <- e = (K.Cnst . toRational) <$> evalRI e
+
     | otherwise = throwError $ NonSupportedExpr e
+
     where
         recBinary op l r = do l' <- pvsAExpr2Kodiak l
                               r' <- pvsAExpr2Kodiak r
@@ -188,6 +198,11 @@ pvsFAExpr2Kodiak e
 
     | PVS.FFloor PVS.FPDouble e'     <- e = recUnary K.Floor e'
 
+    | PVS.RtoD e'                    <- e = case e' of
+                                                PVS.Int i -> return $ K.Cnst $ toRational i
+                                                PVS.Rat r -> return $ K.Cnst r
+                                                _ -> throwError $ NonSupportedExpr e
+
     -- N-ary operators:
 
     | PVS.FMax es    <- e = case es of
@@ -195,6 +210,12 @@ pvsFAExpr2Kodiak e
                                 [x] -> recUnary id x
                                 xs  -> do xs' <- mapM pvsFAExpr2Kodiak xs
                                           return $ K.Max xs'
+
+    -- Integer operators:
+
+    | PVS.FISub l r     <- e = (K.Cnst . toRational) <$> evalFI e
+
+    | PVS.FIMod l r     <- e = (K.Cnst . toRational) <$> evalFI e
 
     | otherwise = throwError $ NonSupportedExpr e
 
@@ -205,6 +226,24 @@ pvsFAExpr2Kodiak e
 
         recUnary op e = do e' <- pvsFAExpr2Kodiak e
                            return $ op e'
+
+evalFI :: MonadError (ToKodiakError PVS.FAExpr) m => PVS.FAExpr -> m Integer
+evalFI e
+    | PVS.FInt i    <- e = return i
+    | PVS.FISub l r <- e = recBinary (-) l r
+    | PVS.FIMod l r <- e = recBinary mod l r
+    | PVS.RtoD ie   <- e = case runExcept $ evalRI ie of
+                            Left e -> throwError $ AExprError e
+                            Right i -> return i
+    | otherwise = throwError $ InvalidIntegerExpr e
+    where
+        recBinary op l r = liftA2 op (evalFI l) (evalFI r)
+
+evalRI :: MonadError (ToKodiakError PVS.AExpr) m => PVS.AExpr -> m Integer
+evalRI e
+    | PVS.Int i    <- e = return i
+    | PVS.IMod l r <- e = liftA2 mod (evalRI l) (evalRI r)
+    | otherwise = throwError $ InvalidIntegerExpr e
 
 
 instance Kodiakable PVS.FBExpr K.BExpr (Except (ToKodiakError PVS.FAExpr)) where
