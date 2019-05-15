@@ -9,11 +9,11 @@ quadrant(X,Y: unb_double):unb_double =
   ELSE RtoD(4)
   ENDIF
 
-winding_number(P_V1_x, P_V1_y, P_V2_x, P_V2_y, S_x, S_y: unb_double):unb_double =
-  LET THIS_x = Dsub(P_V1_x,S_x) IN
-  LET THIS_y = Dsub(P_V1_y,S_y) IN
-  LET NEXT_x = Dsub(P_V2_x,S_x) IN
-  LET NEXT_y = Dsub(P_V2_y,S_y) IN
+winding_number(P_x, P_y, V1_x, V1_y, V2_x, V2_y: unb_double):unb_double =
+  LET THIS_x = Dsub(V1_x,P_x) IN
+  LET THIS_y = Dsub(V1_y,P_y) IN
+  LET NEXT_x = Dsub(V2_x,P_x) IN
+  LET NEXT_y = Dsub(V2_y,P_y) IN
   LET DISTANCE_x = Dsub(NEXT_x,THIS_x) IN
   LET DISTANCE_y = Dsub(NEXT_y,THIS_y) IN
   LET DET = Dsub(Dmul(DISTANCE_x,THIS_y),Dmul(DISTANCE_y,THIS_x)) IN
