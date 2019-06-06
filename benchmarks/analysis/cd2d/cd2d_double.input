@@ -1,0 +1,11 @@
+cd2d(S0x, S0y, V0x, V0y, S1x, S1y, V1x, V1y, D, T) : S0x in [1,10], S0y in [1,10], V0x in [1,10], V0y in [1,10], S1x in [1,10], S1y in [1,10], V1x in [1,10], V1y in [1,10], D in [1,5], T in [0,20]
+
+los(Sx, Sy) : Sx in [1,10], Sy in [1,10]
+
+omega(Sx, Sy, Vx, Vy, D, T) : Sx in [1,10], Sy in [1,10], Vx in [1,10], Vy in [1,10], D in [1,5], T in [0,20]
+
+tau(Sx, Sy, Vx, Vy, T) : Sx in [1,10], Sy in [1,10], Vx in [1,10], Vy in [1,10], T in [0,20]
+
+max(A,B): A in [-1000,1000], B in [-1000,1000]
+
+min(A,B): A in [-1000,1000], B in [-1000,1000]

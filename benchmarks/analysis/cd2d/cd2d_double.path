@@ -1,0 +1,11 @@
+cd2d(S0x, S0y, V0x, V0y, S1x, S1y, V1x, V1y, D, T): All
+
+los(Sx, Sy): All
+
+omega(Sx, Sy, Vx, Vy, D, T): All
+
+tau(Sx, Sy, Vx, Vy, T): All
+
+max(A,B): All
+
+min(A,B): All
