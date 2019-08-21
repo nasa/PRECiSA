@@ -1,0 +1,20 @@
+Date: Sun Jun 25 10:05:05 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_fluctuat kepler2.c
+[PROJECT] daed_project was called with : "kepler2.c"
+[PROJECT] Look at each C file to construct the project
+[PROJECT] Preprocessing kepler2.c
+[ INFO ] FLUCTUAT starts "Nov 17 2016"@"13:53:15"
+[ INFO ] Resource file loaded (project.rc)
+[ INFO ] Start analysis...
+[WARNIN] Sure     -> BUILTIN bounds not exactly represented
+[WARNIN] Sure     -> BUILTIN bounds not exactly represented
+[WARNIN] Sure     -> BUILTIN bounds not exactly represented
+[WARNIN] Sure     -> BUILTIN bounds not exactly represented
+[WARNIN] Sure     -> BUILTIN bounds not exactly represented
+[WARNIN] Sure     -> BUILTIN bounds not exactly represented
+[ANALYZ] Analysis cpu time: 0.00 sec
+[ANALYZ] Analyzer maximal allocated memory: 16384 Kilo Bytes
+[ INFO ] FLUCTUAT ends "Nov 17 2016"@"13:53:15"
+real  0.015
+ABS_ERROR: 2.61298326e-12

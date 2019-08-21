@@ -1,0 +1,76 @@
+Date: Sat Jun 24 09:41:58 EDT 2017
+Command:  ~/FPTaylor/repo/fptaylor -c config-a.cfg rigidBody1.txt
+FPTaylor, version 0.9.1+dev
+
+Loading: rigidBody1.txt
+
+*************************************
+Taylor form for: rnd64((rnd64((rnd64((rnd64((rnd64((-(rnd64(x1)))) * rnd64(x2))) - rnd64((rnd64((rnd64(2) * rnd64(x2))) * rnd64(x3))))) - rnd64(x1))) - rnd64(x3)))
+
+Conservative bound: [-705.000000, 705.000000]
+
+Simplified rounding: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3))))) - rnd64(x1))) - rnd64(x3)))
+Building Taylor forms...
+Simplifying Taylor forms...
+success
+v0 = (((((-(x1)) * x2) - ((2 * x2) * x3)) - x1) - x3)
+-1 (26): exp = -53: (7873602766503939/9903520314283042199192993792)
+1 (1): exp = -53: ((x2 * (-(8))) + (-(8)))
+2 (2): exp = -53: (((-(x1)) * 8) + (-((x3 * (2 * 8)))))
+3 (4): exp = -53: ((-(x1)) * x2)
+4 (8): exp = -53: ((-(((2 * x2) * 8))) + (-(8)))
+5 (10): exp = -53: (-(((2 * x2) * x3)))
+6 (12): exp = -53: (((-(x1)) * x2) - ((2 * x2) * x3))
+7 (15): exp = -53: ((((-(x1)) * x2) - ((2 * x2) * x3)) - x1)
+8 (18): exp = -53: (((((-(x1)) * x2) - ((2 * x2) * x3)) - x1) - x3)
+
+Corresponding original subexpressions:
+1: rnd64(x1)
+2: rnd64(x2)
+3: rnd64(((-(rnd64(x1))) * rnd64(x2)))
+4: rnd64(x3)
+5: rnd64(((2 * rnd64(x2)) * rnd64(x3)))
+6: rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3)))))
+7: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3))))) - rnd64(x1)))
+8: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3))))) - rnd64(x1))) - rnd64(x3)))
+
+bounds: [-inf, inf]
+
+Computing absolute errors
+-1: exp = -53: 7.950307e-13 (low = 7.950307e-13, subopt = 0.0%)
+
+Solving the approximate optimization problem
+
+Absolute errors:
+1: exp = -53: 1.280000e+02 (low = 1.280000e+02, subopt = 0.0%)
+2: exp = -53: 3.600000e+02 (low = 3.600000e+02, subopt = 0.0%)
+3: exp = -53: 2.250000e+02 (low = 2.232422e+02, subopt = 0.8%)
+4: exp = -53: 2.480000e+02 (low = 2.480000e+02, subopt = 0.0%)
+5: exp = -53: 4.500000e+02 (low = 4.464844e+02, subopt = 0.8%)
+6: exp = -53: 6.750000e+02 (low = 6.697266e+02, subopt = 0.8%)
+7: exp = -53: 6.900000e+02 (low = 6.846094e+02, subopt = 0.8%)
+8: exp = -53: 7.050000e+02 (low = 6.994922e+02, subopt = 0.8%)
+total1: 3.864686e-13 (low = 3.840877e-13, subopt = 0.6%)
+total2: 8.826614e-29 (low = 8.826614e-29, subopt = 0.0%)
+total: 3.864686e-13 (low = 3.840877e-13, subopt = 0.6%)
+
+Elapsed time: 1.88864
+*************************************
+
+-------------------------------------------------------------------------------
+Problem: rigidBody1
+
+Optimization lower bounds for error models:
+The absolute error model (approximate): 3.840877e-13 (suboptimality = 0.6%)
+
+Bounds (without rounding): [-inf, inf]
+
+Absolute error (approximate): 3.864686e-13
+
+Elapsed time: 1.89
+
+
+
+real	0m1.894s
+user	0m1.612s
+sys	0m0.104s

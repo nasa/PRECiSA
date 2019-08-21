@@ -30,6 +30,8 @@ set(PRECISA_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(haskell_sources
   src/AbsPVSLang.hs
   src/AbsSpecLang.hs
+  src/AbsRawPVSLang.hs
+  src/AbsRawSpecLang.hs
   src/AbstractDomain.hs
   src/AbstractSemantics.hs
   src/Common/ControlFlow.hs
@@ -40,13 +42,18 @@ set(haskell_sources
   src/Kodiak/KodiakRunnable.hs
   src/Kodiak/KodiakRunner.hs
   src/Main.hs
+  src/MapPVSLangAST.hs
+  src/MapSpecLangAST.hs
+  src/Options.hs
   src/Parser/LexDecisionPaths.hs
-  src/Parser/LexPVSLang.hs
-  src/Parser/LexSpecLang.hs
+  src/Parser/LexRawPVSLang.hs
+  src/Parser/LexRawSpecLang.hs
   src/Parser/ParDecisionPaths.hs
-  src/Parser/ParPVSLang.hs
-  src/Parser/ParSpecLang.hs
+  src/Parser/ParRawPVSLang.hs
+  src/Parser/ParRawSpecLang.hs
   src/PPExt.hs
+  src/SMT/GenerateSMTModel.hs
+  src/SMT/PrettyPrinter.hs
   src/Utils.hs
   )
 
@@ -83,6 +90,7 @@ set(hs_extra_libraries
 MESSAGE(STATUS "hs_extra_libraries: " ${hs_extra_libraries})
 add_custom_command(
   OUTPUT ${haskell_artifacts}
+  COMMAND ${CABAL} sandbox init
   COMMAND ${CABAL} update
   # Build dependencies first without --builddir, otherwise it fails.
   COMMAND ${CABAL} install --only-dependencies ${hs_enable_test}

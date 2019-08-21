@@ -1,0 +1,7 @@
+test_int_op_01: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f (X,Y:int):unb_double = Idiv(Iadd(X,Y),Imul(X,Y))
+
+END test_int_op_0

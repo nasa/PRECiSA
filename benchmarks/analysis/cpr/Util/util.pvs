@@ -1,0 +1,14 @@
+util: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+fun(Lat1,Lon1,Lat2,Lon2: unb_double):unb_double = 
+	to2pi(Datan(Ddiv(Dmul(Dsin(Dsub(Lon2,Lon1)),Dcos(Lat2)),
+    	         Dsub(Dmul(Dcos(Lat1),Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(Dsub(Lon2,Lon1))))))
+      	 ))
+
+to2pi(Rad : unb_double):unb_double = LET Mod =  RtoD(6.283185307179586) IN
+                                     LET N = Dfloor(Ddiv(Rad, Mod)) IN
+                                     Dsub(Rad, Dmul(N, Mod))
+
+END util  

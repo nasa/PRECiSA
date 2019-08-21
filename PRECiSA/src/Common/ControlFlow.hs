@@ -29,5 +29,8 @@ instance Ord ControlFlow where
 
 instance PPExt ControlFlow where
     prettyDoc   Stable = text "Stable"
-    prettyDoc Unstable = text "Unstable" 
-    prettyDocWith _ c = prettyDoc c
+    prettyDoc Unstable = text "Unstable"
+
+mergeControlFlow :: ControlFlow -> ControlFlow -> ControlFlow
+mergeControlFlow Stable Stable = Stable
+mergeControlFlow _ _ = Unstable

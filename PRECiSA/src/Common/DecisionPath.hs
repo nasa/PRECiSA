@@ -17,13 +17,10 @@
 
 module Common.DecisionPath where
 
-import Debug.Trace
-import PPExt
-
 class Eq p => DecisionPath p where
   root            :: p
 
-  (~>)            :: p -> Bool -> p
+  (~>)            :: p -> Integer -> p
 
   maxCommonPrefix :: p -> p -> p
 
@@ -32,13 +29,16 @@ class Eq p => DecisionPath p where
   maxCommonPrefixOfList ds = foldr1 maxCommonPrefix ds
 
   isPrefix :: p -> p -> Bool
-  isPrefix p1 p2 = (maxCommonPrefix p1 p2) == p1
+  isPrefix p1 p2 = maxCommonPrefix p1 p2 == p1
 
   isPrefixInList :: p -> [p] -> Bool
   isPrefixInList d = any (isPrefix d)
 
   existsPrefixInList :: p -> [p] -> Bool
-  existsPrefixInList d = any (flip isPrefix d)
+  existsPrefixInList d = any (`isPrefix` d) -- (flip isPrefix d)
+
+
+newtype LDecisionPath = LDP [Integer] deriving (Eq,Ord)
 
 instance DecisionPath LDecisionPath where
   root = LDP []
@@ -48,12 +48,12 @@ instance DecisionPath LDecisionPath where
   maxCommonPrefix (LDP ds1) (LDP ds2) = LDP $ reverse $ map fst $ takeWhile point2pointEqual $ zip revDs1 revDs2
     where revDs1 = reverse ds1
           revDs2 = reverse ds2
-
           point2pointEqual (d1,d2) = d1 == d2
 
-newtype LDecisionPath = LDP [Bool] deriving (Eq,Ord)
 
 instance Show LDecisionPath where
   show (LDP decisions) = show decisions
 
 type TargetDPs = [(String, [LDecisionPath])]
+
+

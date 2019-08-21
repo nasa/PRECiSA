@@ -1,0 +1,7 @@
+modu(A, B): A in [-90, 90], B in [0,6]
+
+j (YZ0, YZ1): YZ0 in [0,131072], YZ1 in [0,131072]
+
+rlat0(YZ0, YZ1): YZ0 in [0,131072], YZ1 in [0,131072]
+
+rlat1(YZ0, YZ1): YZ0 in [0,131072], YZ1 in [0,131072]

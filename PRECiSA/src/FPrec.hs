@@ -20,6 +20,23 @@ module FPrec (
   module FPrec
 ) where
 
--- floating point precision --
-data FPrec = FPSingle | FPDouble
+import Prelude hiding ((<>))
+import PPExt
+
+type VarName = String
+
+data ArraySize = ArraySizeInt Integer | ArraySizeVar VarName
   deriving (Eq, Ord, Show, Read)
+
+data FPrec = FPSingle | FPDouble | TInt | Real | Array FPrec (Maybe ArraySize) 
+  deriving (Eq, Ord, Show, Read)
+
+instance PPExt FPrec where
+  prettyDoc FPSingle = text "unb_single"
+  prettyDoc FPDouble = text "unb_double"
+  prettyDoc TInt = text "int"
+  prettyDoc Real = text "real"
+  prettyDoc (Array t _) = text "ARRAY [int ->" <+> prettyDoc t <> text "]"
+
+
+

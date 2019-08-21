@@ -1,0 +1,10 @@
+eps_line_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+sign (X: unb_double):unb_double = IF (X > RtoD(0)) THEN RtoD(1) ELSE (IF (X < RtoD(0)) THEN RtoD(-1) ELSE RtoD(0) ENDIF) ENDIF
+
+eps_line (Sx, Sy, Vx, Vy: unb_double): unb_double =
+ sign (Dmul(Dadd(Dmul(Sx,Vx),Dmul(Sy,Vy)),(Dsub(Dmul(Sx,Vx),Dmul(Sy,Vy)))))
+
+END eps_line_double

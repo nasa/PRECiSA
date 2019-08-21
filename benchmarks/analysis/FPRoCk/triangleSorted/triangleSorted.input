@@ -1,0 +1,1 @@
+triangleSorted (A,B,C): A in [-10,10], B in [-20,20], C in [0,20]

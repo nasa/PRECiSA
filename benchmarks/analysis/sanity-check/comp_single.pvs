@@ -1,0 +1,11 @@
+comp_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+h (A,B : unb_single): unb_single = Sadd(A,B)
+
+g (Z: unb_single): unb_single = h(Sabs(X),Ssqrt(X))
+
+f (X, Y: unb_single): unb_single = Smul(g(X), Y)
+
+END comp_single

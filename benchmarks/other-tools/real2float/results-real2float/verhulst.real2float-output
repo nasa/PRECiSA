@@ -1,0 +1,68 @@
+Date: Sun Jun 25 08:54:03 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_real2float verhulst
+[(0.1, 0.3)]
+[]
+Degree/number of variables is low => performing branch and bound
+8 problems remaining, 3 cuts done
+Sub box [(0.1, 0.125); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-2.17322e-16, 2.17322e-16]
+
+
+7 problems remaining, 3 cuts done
+Sub box [(0.125, 0.15); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-2.55937e-16, 2.55937e-16]
+
+
+6 problems remaining, 3 cuts done
+Sub box [(0.15, 0.175); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-2.9335e-16, 2.9335e-16]
+
+
+5 problems remaining, 3 cuts done
+Sub box [(0.175, 0.2); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-3.29688e-16, 3.29688e-16]
+
+
+4 problems remaining, 3 cuts done
+Sub box [(0.2, 0.225); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-3.65061e-16, 3.65061e-16]
+
+
+3 problems remaining, 3 cuts done
+Sub box [(0.225, 0.25); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-3.99564e-16, 3.99564e-16]
+
+
+2 problems remaining, 3 cuts done
+Sub box [(0.25, 0.275); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-4.3328e-16, 4.3328e-16]
+
+
+1 problem remaining, 3 cuts done
+Sub box [(0.275, 0.3); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-4.66284e-16, 4.66284e-16]
+
+
+8 problems solved, 3 cuts done
+End of nonlinear optimization algorithm
+Absolute roundoff error bound = 4.66284e-16 <= 4.67e-16
+Program verhulst verified
+Total time: 0.42548 seconds
+real  0.430

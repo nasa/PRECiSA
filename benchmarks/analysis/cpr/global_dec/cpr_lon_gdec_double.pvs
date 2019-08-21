@@ -1,0 +1,18 @@
+cpr_lon_gdec_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+dLon0 (NL: unb_double): unb_double = IF (NL > RtoD(0)) THEN Ddiv(RtoD(360), NL) ELSE RtoD(360) ENDIF
+
+dLon1 (NL: unb_double): unb_double = IF ((Dsub(NL, RtoD(1))) > RtoD(0)) THEN Ddiv(RtoD(360), Dsub(NL, RtoD(1))) ELSE RtoD(360) ENDIF
+
+modu(A, B: unb_double): unb_double = Dsub(A, Dmul(B, Dfloor(Ddiv(A,B))))
+
+m (XZ0, XZ1, NL: unb_double): unb_double =
+	Dfloor(Dadd(Ddiv(Dsub(Dmul(Dsub(NL,RtoD(1)),XZ0), Dmul(NL,XZ1)), RtoD(131072)), RtoD(0.5)))
+
+rlon0(XZ0, XZ1, NL: unb_double): unb_double = Dmul(dLon0(NL), Dadd(modu(m(XZ0, XZ1, NL), NL), Ddiv(XZ0, RtoD(131072))))
+
+rlon1(XZ0, XZ1, NL: unb_double): unb_double = Dmul(dLon1(NL), Dadd(modu(m(XZ0, XZ1, NL), Dsub(NL,RtoD(1))), Ddiv(XZ1, RtoD(131072))))
+ 
+END cpr_lon_gdec_double

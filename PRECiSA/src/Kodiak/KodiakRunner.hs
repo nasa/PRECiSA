@@ -24,12 +24,12 @@ import Kodiak.Kodiak
 import Kodiak.KodiakRunnable
 import AbsPVSLang
 import AbsSpecLang
-
+import FPrec
+import Numeric (fromRat)
 import Control.Exception (throw,AssertionFailed(..))
-import Control.Monad (when,mapM_,(>=>))
-import Debug.Trace (trace)
+import Control.Monad ((>=>))
+import Data.Maybe(fromMaybe)
 import Foreign.C
-import Foreign.C.String
 
 data KodiakInput = KI { name :: String,
                         expression :: EExpr,
@@ -37,8 +37,9 @@ data KodiakInput = KI { name :: String,
                         maxDepth :: CUInt,
                         precision :: CUInt }
 
+variableMapFromBinds :: [VarBind] -> VariableMap
 variableMapFromBinds binds = VMap $ zip variableNames [(0::CUInt)..]
-  where variableNames = map (\(VarBind s _ _) -> s) binds
+  where variableNames = map (\(VarBind s _ _ _) -> s) binds
 
 fromLBoundToRational :: LBound -> Rational
 fromLBoundToRational (LBInt i) = toRational i
@@ -51,9 +52,9 @@ fromUBoundToRational (UBDouble r) = toRational r
 fromUBoundToRational UInf = error "not implemented for UInf TODO: Refactor"
 
 instance KodiakRunnable VarBind PMinMaxSystem () where
-  run (VarBind name lowerBound upperBound) pSys =
+  run (VarBind x _ lowerBound upperBound) pSys =
     do
-      cName <- newCString name
+      cName <- newCString x
       pLb <- interval_create cLowerBound cLowerBound
       pUb <- interval_create cUpperBound cUpperBound
       minmax_system_register_variable pSys cName pLb pUb
@@ -64,7 +65,7 @@ instance KodiakRunnable VarBind PMinMaxSystem () where
 instance KodiakRunnable KodiakInput () KodiakResult where
   run kInput _ =
     do
-      let sysName = name kInput
+      let sysName       = name kInput
           errorExpr     = expression kInput
           varRanges     = bindings kInput
           variableMap   = variableMapFromBinds varRanges
@@ -74,7 +75,7 @@ instance KodiakRunnable KodiakInput () KodiakResult where
       pSys <- minmax_system_create cName
       minmax_system_set_maxdepth pSys thisMaxDepth
       minmax_system_set_precision pSys (negate (fromInteger $ toInteger thisPrecision))
-      mapM_ (flip run pSys) varRanges
+      mapM_ (`run` pSys) varRanges
       pExpr <- run errorExpr variableMap
       minmax_system_maximize pSys pExpr
       lb <- minmax_system_maximum_lower_bound pSys >>= fmap (fromRational . toRational) . return
@@ -84,175 +85,188 @@ instance KodiakRunnable KodiakInput () KodiakResult where
 
 newtype VariableMap = VMap [(String,CUInt)] deriving Show
 
-lookup' str (VMap mappings) = case lookup str mappings of
-                                Just x -> x
-                                Nothing -> error $ "lookup': tried to search \"" ++ str ++ "\" in \"" ++ show mappings ++ "\""
+lookup' :: String -> VariableMap -> CUInt
+lookup' str (VMap mappings) = fromMaybe (error $ "lookup': tried to search \"" ++ str ++ "\" in \"" ++ show mappings ++ "\"")
+                                        (lookup str mappings)
 
+rat2interval :: Rational -> (CDouble, CDouble)
+rat2interval rat |  toRational ratDouble == rat = (ratDouble, ratDouble)
+                 | (toRational ratDouble  < rat) && (toRational next >= rat)  = (ratDouble, next)
+                 | (toRational ratDouble  > rat) && (toRational prev <= rat)  = (prev, ratDouble)
+                 | otherwise = error $ "rat2interval failed with this values:"
+                                ++ "\n\trat: " ++ show rat
+                                ++ "\n\tratDouble: " ++ show ratDouble
+                                ++ "\n\tprev: " ++ show prev
+                                ++ "\n\tnext: " ++ show next
+    where
+        ratDouble = fromRat rat :: CDouble
+        next = nextDouble rat
+        prev = prevDouble rat
+      --  next = nextUp' ratDouble
+      --  prev = nextDown' ratDouble
 
 instance KodiakRunnable AExpr VariableMap PReal where
-  run e m = do kodiakVariables <- mapM createKodiakVariable variableToNumberMap
-               run' e kodiakVariables
-                 where
-                   VMap variableToNumberMap = m
+  run err m = do
+    kodiakVariables <- mapM createKodiakVariable variableToNumberMap
+    run' err kodiakVariables
+      where
+        VMap variableToNumberMap = m
 
-                   createKodiakVariable (name,id) = do cName <- newCString name
-                                                       pVariable <- real_create_variable id cName
-                                                       return (name,pVariable)
-                   runBinaryOperator l r vmap kodiakFunction = do pl <- run' l vmap
-                                                                  pr <- run' r vmap
-                                                                  kodiakFunction pl pr
-                   debugBinaryOperator l r vmap kodiakFunction str =
-                     do pl <- run' l vmap
-                        pr <- run' r vmap
-                        putStrLn ""
-                        putStrLn $ "BEGIN DEBUGGING " ++ str
-                        putStrLn "From:"
-                        putStr " l="
-                        real_print pl
-                        putStr " r="
-                        real_print pr
-                        returnP <- kodiakFunction pl pr
-                        putStrLn "...we get:"
-                        real_print returnP 
-                        putStrLn $ "END DEBUGGING " ++ str
-                        putStrLn ""
-                        putStrLn ""
-                        return returnP
+        createKodiakVariable (varName,varId) = do
+             cName <- newCString varName
+             pVariable <- real_create_variable varId cName
+             return (varName,pVariable)
 
-                   runUnaryOperator e vmap kodiakFunction = do p <- run' e vmap
-                                                               kodiakFunction p
+        runBinaryOperator l r vmap kodiakFunction = do
+          pl <- run' l vmap
+          pr <- run' r vmap
+          kodiakFunction pl pr
 
-                   debugUnaryOperator e vmap kodiakFunction str =
-                     do p <- run' e vmap
-                        putStrLn ""
-                        putStrLn $ "BEGIN DEBUGGING " ++ str
-                        putStrLn "From:"
-                        putStr " e="
-                        real_print p
-                        returnP <- kodiakFunction p
-                        putStrLn "...we get:"
-                        real_print returnP 
-                        putStrLn $ "END DEBUGGING " ++ str
-                        putStrLn ""
-                        putStrLn ""
-                        return returnP
+        runUnaryOperator e vmap kodiakFunction = do
+          p <- run' e vmap
+          kodiakFunction p
 
-                   runBinaryErrorOperator l le r re vmap kodiakFunction = do pl  <- run' l vmap
-                                                                             ple <- run' le vmap
-                                                                             pr  <- run' r vmap
-                                                                             pre <- run' re vmap
-                                                                             kodiakFunction pl ple pr pre
+        runBinaryErrorOperator l le r re vmap kodiakFunction = do
+          pl  <- run' l vmap
+          ple <- run' le vmap
+          pr  <- run' r vmap
+          pre <- run' re vmap
+          kodiakFunction pl ple pr pre
 
-                   debugBinaryErrorOperator l le r re vmap kodiakFunction str =
-                     do pl  <- run' l vmap
-                        ple <- run' le vmap
-                        pr  <- run' r vmap
-                        pre <- run' re vmap
-                        putStrLn ""
-                        putStrLn $ "BEGIN DEBUGGING " ++ str
-                        putStrLn "From:"
-                        putStr " pl="
-                        real_print pl
-                        putStr " ple="
-                        real_print ple
-                        putStr " pr="
-                        real_print pr
-                        putStr " pre="
-                        real_print pre
-                        returnP <- kodiakFunction pl ple pr pre
-                        putStrLn "...we get:"
-                        real_print returnP 
-                        putStrLn $ "END DEBUGGING " ++ str
-                        putStrLn ""
-                        putStrLn ""
-                        return returnP
+        runUnaryErrorOperator l le vmap kodiakFunction = do
+          pl  <- run' l vmap
+          ple <- run' le vmap
+          kodiakFunction pl ple
 
-                   runUnaryErrorOperator l le vmap kodiakFunction = do pl  <- run' l vmap
-                                                                       ple <- run' le vmap
-                                                                       kodiakFunction pl ple
+        run' (Add l r) vmap = runBinaryOperator l r vmap real_create_addition
+        run' (Sub l r) vmap = runBinaryOperator l r vmap real_create_subtraction
+        run' (Mul l r) vmap = runBinaryOperator l r vmap real_create_multiplication
+        run' (Div l r) vmap = runBinaryOperator l r vmap real_create_division
+        run' (Int i) vmap = run' (Rat $ toRational i) vmap
+        run' (Rat r) _ = interval_create lb ub >>= real_create_value
+          where (lb,ub) = rat2interval r
+        run' (Var _ x) vmap = run' (RealMark x) vmap
+        run' (RealMark x) vmap = case lookup x vmap of
+                                      Just pVar -> return pVar
+                                      Nothing -> throw (AssertionFailed $ "TODO: RealMark " ++ x ++ " name not found") >> return undefined
+        run' (ErrorMark _ _) _ = throw (AssertionFailed "ErrorMark should not be used") >> return undefined
+        run' (Abs   e) vmap = runUnaryOperator e vmap real_create_absolute_value
+        run' (Sqrt  e) vmap = runUnaryOperator e vmap real_create_sqrt
+        run' (Neg   e) vmap = runUnaryOperator e vmap real_create_negation
+        run' (Ln    e) vmap = runUnaryOperator e vmap real_create_elogarithm
+        run' (Expo  e) vmap = runUnaryOperator e vmap real_create_eexponent
+        run' (Sin   e) vmap = runUnaryOperator e vmap real_create_sine
+        run' (Cos   e) vmap = runUnaryOperator e vmap real_create_cosine
+        run' (ATan  e) vmap = runUnaryOperator e vmap real_create_arctangent
+        run' (Floor e) vmap = runUnaryOperator e vmap real_create_floor
+        run' (HalfUlp e FPDouble) vmap =
+          do
+           dulp <- runUnaryOperator e vmap real_create_double_ulp
+           ptwo <- run' (Rat 2) vmap
+           real_create_division dulp ptwo
+        run' (HalfUlp e FPSingle) vmap =
+          do
+           sulp <- runUnaryOperator e vmap real_create_single_ulp
+           ptwo <- run' (Rat 2) vmap
+           real_create_division sulp ptwo
+        run' (ErrAdd FPDouble r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_addition
+        run' (ErrSub FPDouble r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_subtraction
+        run' (ErrMul FPDouble r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_multiplication
+        run' (ErrDiv FPDouble r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_division
+        run' (ErrNeg FPDouble r e) vmap =
+          runUnaryErrorOperator r e vmap real_create_error_negation
+        run' (ErrRat rat) vmap = run' (Rat rat) vmap
+        run' (ErrMulPow2L FPDouble i e) vmap = do pe <- run' e vmap
+                                                  real_create_error_power_of_two_multiplication (fromInteger i) pe
+        run' (ErrMulPow2R FPDouble i e) vmap = do pe <- run' e vmap
+                                                  real_create_error_power_of_two_multiplication (fromInteger i) pe
+        run' (ErrExpo   FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_eexponent
+        run' (ErrLn     FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_elogarithm
+        run' (ErrSin    FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_sine
+        run' (ErrCos    FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_cosine
+        run' (ErrAtan   FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arctangent
+        run' (ErrAtanT  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arctangent_tight
+        run' (ErrFloor  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_floor
+        run' (ErrFloor0 FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_floor_tight
+        run' (ErrSqrt   FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_sqrt
+        --
+        run' (ErrAdd FPSingle r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_addition
+        run' (ErrSub FPSingle r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_subtraction
+        run' (ErrMul FPSingle r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_multiplication
+        run' (ErrDiv FPSingle r1 e1 r2 e2) vmap =
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_division
+        run' (ErrNeg FPSingle r e) vmap =
+          runUnaryErrorOperator r e vmap real_create_single_error_negation
+        run' (ErrMulPow2L FPSingle i e) vmap = do
+          pe <- run' e vmap
+          real_create_single_error_power_of_two_multiplication (fromInteger i) pe
+        run' (ErrMulPow2R FPSingle i e) vmap = do
+          pe <- run' e vmap
+          real_create_single_error_power_of_two_multiplication (fromInteger i) pe
+        run' (ErrExpo   FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_eexponent
+        run' (ErrLn     FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_elogarithm
+        run' (ErrSin    FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_sine
+        run' (ErrCos    FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_cosine
+        run' (ErrAtan   FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_arctangent
+        run' (ErrAtanT  FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_arctangent_tight
+        run' (ErrFloor  FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_floor
+        run' (ErrFloor0 FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_floor_tight
+        run' (ErrSqrt   FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_sqrt
+        --
+        run' (ErrAdd TInt _ _ _ _) vmap = run' (Rat 0) vmap
+        run' (ErrSub TInt _ _ _ _) vmap = run' (Rat 0) vmap
+        run' (ErrMul TInt _ _ _ _) vmap = run' (Rat 0) vmap
+        run' (ErrDiv TInt _ _ _ _) vmap = run' (Rat 0) vmap
+        run' (ErrMod TInt _ _ _ _) vmap = run' (Rat 0) vmap
+        run' (ErrNeg TInt _ _)     vmap = run' (Rat 0) vmap
+        run' (ErrAbs TInt _ _)     vmap = run' (Rat 0) vmap
+        run' (MaxErr es) vmap = let
+          buildVector = do pVector <- real_vector_create
+                           mapM_ (flip run' vmap >=> real_vector_add pVector) es
+                           return pVector
+          in if length es > 1
+             then buildVector >>= real_create_maximum
+             else run' (head es) vmap
+        run' e _ = error $ "KodiakRunnable instance for AExpr, VariableMap and PReal undefined for " ++ show e
 
-                   debugUnaryErrorOperator l le vmap kodiakFunction str =
-                     do pl  <- run' l vmap
-                        ple <- run' le vmap
-                        putStrLn ""
-                        putStrLn $ "BEGIN DEBUGGING " ++ str
-                        putStrLn "From:"
-                        putStr " pl="
-                        real_print pl
-                        putStr " ple="
-                        real_print ple
-                        returnP <- kodiakFunction pl ple
-                        putStrLn "...we get:"
-                        real_print returnP 
-                        putStrLn $ "END DEBUGGING " ++ str
-                        putStrLn ""
-                        putStrLn ""
-                        return returnP
 
-                   run' (Add l r) vmap =
-                     runBinaryOperator l r vmap real_create_addition
-                   run' (Sub l r) vmap =
-                     runBinaryOperator l r vmap real_create_subtraction
-                   run' (Mul l r) vmap =
-                     runBinaryOperator l r vmap real_create_multiplication
-                   run' (Div l r) vmap =
-                     runBinaryOperator l r vmap real_create_division
-                   run' (AE e) vmap = run' e vmap
-                   run' (EE e) vmap = run' e vmap
-                   run' (Int i) vmap = run' (Double $ toRational i) vmap
-                   run' (Double r) vmap = interval_create lb ub >>= real_create_value
-                     where (lb,ub) = rat2interval r
-                   run' (Var name) vmap = run' (RealMark name) vmap
-                   run' (RealMark name) vmap = case lookup name vmap of
-                                                 Just pVar -> return pVar
-                                                 Nothing -> (throw $ AssertionFailed $ "TODO: RealMark " ++ name ++ " name not found") >> return undefined
-                   run' (ErrorMark name) vmap = (throw $ AssertionFailed "TODO: ErrorMark should not been used") >> return undefined
-                   run' (Abs e) vmap = runUnaryOperator e vmap real_create_absolute_value
-                   run' (Ln e) vmap = runUnaryOperator e vmap real_create_elogarithm
-                   run' (Expo e) vmap = runUnaryOperator e vmap real_create_eexponent
-                   run' (Sin e) vmap = runUnaryOperator e vmap real_create_sine
-                   run' (Cos e) vmap = runUnaryOperator e vmap real_create_cosine
-                   run' (Floor e) vmap = runUnaryOperator e vmap real_create_floor
-                   run' (DUlp e) vmap =
-                     runUnaryOperator e vmap real_create_double_ulp
-                   run' (Neg e) vmap =
-                     runUnaryOperator e vmap real_create_negation
-                   run' (HalfUlp e) vmap = run' (Div (DUlp e) (Double $ toRational 2)) vmap
-                   run' (ErrAdd l le r re) vmap =
-                     runBinaryErrorOperator l le r re vmap real_create_error_addition
-                   run' (ErrSub l le r re) vmap =
-                     runBinaryErrorOperator l le r re vmap real_create_error_subtraction
+instance KodiakRunnable BExpr VariableMap PBool where
+  run = runBExpr
 
-                   run' (ErrMul l le r re) vmap =
-                     runBinaryErrorOperator l le r re vmap real_create_error_multiplication
-                   run' (ErrDiv l le r re) vmap =
-                     runBinaryErrorOperator l le r re vmap real_create_error_division
-                   run' (ErrNeg expr error) vmap =
-                     runUnaryErrorOperator expr error vmap real_create_error_negation
-                   run' (ErrRat rational) vmap = run' (Double rational) vmap
-                   run' (ErrMulPow2L i e) vmap = do pe <- run' e vmap
-                                                    real_create_error_power_of_two_multiplication (fromInteger i) pe
-                   run' (ErrMulPow2R i e) vmap = do pe <- run' e vmap
-                                                    real_create_error_power_of_two_multiplication (fromInteger i) pe
-                   run' (ErrExpo l le) vmap = runUnaryErrorOperator l le vmap real_create_error_eexponent
-                   run' (ErrLn l le) vmap = runUnaryErrorOperator l le vmap real_create_error_elogarithm
-                   run' (ErrSin l le) vmap = runUnaryErrorOperator l le vmap real_create_error_sine
-                   run' (ErrCos l le) vmap = runUnaryErrorOperator l le vmap real_create_error_cosine
-                   run' (ErrAtan l le) vmap = runUnaryErrorOperator l le vmap real_create_error_arctangent
-                   run' (ErrFloor l le) vmap = runUnaryErrorOperator l le vmap real_create_error_floor
-                   run' (ErrFloor0 l le) vmap = runUnaryErrorOperator l le vmap real_create_error_floor_tight
-                   run' (MaxErr es) vmap = let
-                     buildVector = do pVector <- real_vector_create
-                                      mapM_ (flip run' vmap >=> real_vector_add pVector) es
-                                      return pVector
-                     in if length es > 1
-                        then buildVector >>= real_create_maximum
-                        else run' (head es) vmap
-                   run' e _ = error $ "KodiakRunnable instance for AExpr, VariableMap and PReal undefined for " ++ show e
- 
-
-runnableTest = run expr2 varMap >>= real_print
-  where
-    varMap = VMap [("x", 0),("y", 1)]
-    expr1 = Var "helo"
-    expr2 = Var "y"
+runBExpr :: BExpr -> VariableMap -> IO PBool
+runBExpr BTrue            _ = bool_create_true
+runBExpr BFalse           _ = bool_create_false
+runBExpr (Not bexp)    vmap = runBExpr bexp vmap >>= bool_create_not
+runBExpr (Or lhs rhs)  vmap = do pLHS <- runBExpr lhs vmap
+                                 pRHS <- runBExpr rhs vmap
+                                 bool_create_or pLHS pRHS
+runBExpr (And lhs rhs) vmap = do pLHS <- runBExpr lhs vmap
+                                 pRHS <- runBExpr rhs vmap
+                                 bool_create_and pLHS pRHS
+runBExpr (Eq lhs rhs)  vmap = do pLHS <- run lhs vmap
+                                 pRHS <- run rhs vmap
+                                 bool_create_equal_to pLHS pRHS
+runBExpr (Neq lhs rhs) vmap = do pLHS <- run lhs vmap
+                                 pRHS <- run rhs vmap
+                                 pEq <- bool_create_equal_to pLHS pRHS
+                                 bool_create_not pEq
+runBExpr (Lt lhs rhs)  vmap = do pLHS <- run lhs vmap
+                                 pRHS <- run rhs vmap
+                                 bool_create_less_than pLHS pRHS
+runBExpr (LtE lhs rhs) vmap = do pLHS <- run lhs vmap
+                                 pRHS <- run rhs vmap
+                                 bool_create_less_than_or_equal_to pLHS pRHS
+runBExpr (Gt lhs rhs)  vmap = do pLHS <- run lhs vmap
+                                 pRHS <- run rhs vmap
+                                 bool_create_greater_than pLHS pRHS
+runBExpr (GtE lhs rhs) vmap = do pLHS <- run lhs vmap
+                                 pRHS <- run rhs vmap
+                                 bool_create_greater_than_or_equal_to pLHS pRHS
+--runBExpr _ _ = undefined

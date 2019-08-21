@@ -1,0 +1,10 @@
+distance_winding_number: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+distance(V1, V2, S: unb_double):unb_double =
+  LET THIS = Dsub(V1,S) IN
+  LET NEXT = Dsub(V2,S) IN
+  Dsub(NEXT,THIS)
+
+END distance_winding_number

@@ -1,0 +1,9 @@
+test_div1_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+f(X: unb_single): unb_single = IF (X /= RtoS(0))
+                                       THEN (Sdiv(RtoS(1), X))
+                                       ELSE X
+                                   ENDIF
+END test_div1_single

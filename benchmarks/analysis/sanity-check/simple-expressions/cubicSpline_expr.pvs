@@ -1,0 +1,8 @@
+cubicSpline: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+cubicSplineExpr (X: unb_double):unb_double = X
+END cubicSpline
+
+

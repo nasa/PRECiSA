@@ -1,0 +1,88 @@
+Date: Sat Jun 24 09:42:18 EDT 2017
+Command:  ~/FPTaylor/repo/fptaylor -c config-a.cfg turbine2.txt
+FPTaylor, version 0.9.1+dev
+
+Loading: turbine2.txt
+
+*************************************
+Taylor form for: rnd64((rnd64((rnd64((rnd64(6) * rnd64(v))) - rnd64((rnd64((rnd64((rnd64((1/2)) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd64((rnd64(1) - rnd64(v))))))) - rnd64((5/2))))
+
+Conservative bound: [-29.436989, 80.993000]
+
+Simplified rounding: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((6 * rnd64(v))) - rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v))))))) - (5/2)))
+Building Taylor forms...
+Simplifying Taylor forms...
+success
+v0 = (((6 * v) - ((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v)))) - (5/2))
+-1 (51): exp = -53: (8299108691784225/4951760157141521099596496896)
+1 (1): exp = -53: (((6 * 4) + (-(((((1/2) * v) * (((w * w) * r) * r)) * (-(((-(4)) / ((1 - v) * (1 - v))))))))) + (-(((1 / (1 - v)) * ((((w * w) * r) * r) * ((1/2) * 4))))))
+2 (3): exp = -53: (6 * v)
+3 (9): exp = -53: ((-(((1 / (1 - v)) * (((1/2) * v) * (r * (r * (w * (1/2)))))))) + (-(((1 / (1 - v)) * (((1/2) * v) * (r * (r * (w * (1/2)))))))))
+4 (11): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (r * (r * (w * w)))))))
+5 (17): exp = -53: ((-(((1 / (1 - v)) * (((1/2) * v) * (((w * w) * r) * 4))))) + (-(((1 / (1 - v)) * (((1/2) * v) * (r * ((w * w) * 4)))))))
+6 (15): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (r * ((w * w) * r))))))
+7 (19): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (((w * w) * r) * r)))))
+8 (22): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (((w * w) * r) * r)))))
+9 (25): exp = -53: (-(((((1/2) * v) * (((w * w) * r) * r)) * (-(((1 - v) / ((1 - v) * (1 - v))))))))
+10 (29): exp = -53: (-(((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v)))))
+11 (31): exp = -53: ((6 * v) - ((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v))))
+12 (33): exp = -53: (((6 * v) - ((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v)))) - (5/2))
+
+Corresponding original subexpressions:
+1: rnd64(v)
+2: rnd64((6 * rnd64(v)))
+3: rnd64(w)
+4: rnd64((rnd64(w) * rnd64(w)))
+5: rnd64(r)
+6: rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r)))
+7: rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r)))
+8: rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r)))))
+9: rnd(64,ne,1.000000,-53,0)((1 - rnd64(v)))
+10: rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v)))))
+11: rnd(64,ne,1.000000,-53,0)((rnd64((6 * rnd64(v))) - rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v)))))))
+12: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((6 * rnd64(v))) - rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v))))))) - (5/2)))
+
+bounds: [-inf, inf]
+
+Computing absolute errors
+-1: exp = -53: 1.675992e-12 (low = 1.675992e-12, subopt = 0.0%)
+
+Solving the approximate optimization problem
+
+Absolute errors:
+1: exp = -53: 3.487138e+01 (low = 3.432000e+01, subopt = 1.6%)
+2: exp = -53: 2.700000e+01 (low = 2.700000e+01, subopt = 0.0%)
+3: exp = -53: 2.253462e+01 (low = 2.237031e+01, subopt = 0.7%)
+4: exp = -53: 2.028116e+01 (low = 2.013328e+01, subopt = 0.7%)
+5: exp = -53: 2.080119e+01 (low = 2.064951e+01, subopt = 0.7%)
+6: exp = -53: 2.028116e+01 (low = 2.013328e+01, subopt = 0.7%)
+7: exp = -53: 2.028116e+01 (low = 2.013328e+01, subopt = 0.7%)
+8: exp = -53: 2.028116e+01 (low = 2.013328e+01, subopt = 0.7%)
+9: exp = -53: 2.028098e+01 (low = 2.014676e+01, subopt = 0.7%)
+10: exp = -53: 2.028116e+01 (low = 2.013328e+01, subopt = 0.7%)
+11: exp = -53: 2.627537e+01 (low = 2.605484e+01, subopt = 0.8%)
+12: exp = -53: 2.877537e+01 (low = 2.855484e+01, subopt = 0.8%)
+total1: 3.130215e-14 (low = 3.105989e-14, subopt = 0.8%)
+total2: 1.860725e-28 (low = 1.860725e-28, subopt = 0.0%)
+total: 3.130215e-14 (low = 3.105989e-14, subopt = 0.8%)
+
+Elapsed time: 3.37344
+*************************************
+
+-------------------------------------------------------------------------------
+Problem: turbine2
+
+Optimization lower bounds for error models:
+The absolute error model (approximate): 3.105989e-14 (suboptimality = 0.8%)
+
+Bounds (without rounding): [-inf, inf]
+
+Absolute error (approximate): 3.130215e-14
+
+Elapsed time: 3.37
+
+
+
+real	0m3.379s
+user	0m2.940s
+sys	0m0.164s

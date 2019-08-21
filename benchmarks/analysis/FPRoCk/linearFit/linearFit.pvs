@@ -1,0 +1,35 @@
+linearFit: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+linearFit (X,Y: unb_double):unb_double =
+    IF (X <= RtoD(-0.0000000000000004440892098500627)) 
+    THEN
+      IF (Y <= RtoD(-0.0000000000000004440892098500627)) 
+      THEN
+        Dsub(RtoD(0.0958099),Dsub(Dmul(RtoD(0.0557219),X), Dmul(RtoD(0.0557219),Y)))
+      ELSE
+        IF (Y > RtoD(0.0000000000000004440892098500627))
+        THEN
+          Dadd(RtoD(-0.0958099),Dsub(Dmul(RtoD(0.0557219),X), Dmul(RtoD(0.0557219),Y)))
+        ELSE
+        RtoD(0)
+        ENDIF
+      ENDIF
+    ELSE
+      IF (X > RtoD(0.0000000000000004440892098500627))
+        THEN
+        IF (Y <= RtoD(-0.0000000000000004440892098500627))
+        THEN
+          Dsub(RtoD(-0.0958099), Dadd(Dmul(RtoD(0.0557219),X),Dmul(RtoD(0.0557219),Y)))
+        ELSE 
+          IF (Y > RtoD(0.0000000000000004440892098500627))
+          THEN
+            Dadd(RtoD(0.0958099),Dadd(Dmul(RtoD(0.0557219),X),Dmul(RtoD(0.0557219),Y)))
+          ELSE RtoD(0)
+          ENDIF
+        ENDIF
+      ELSE RtoD(0)
+      ENDIF
+    ENDIF
+END linearFit

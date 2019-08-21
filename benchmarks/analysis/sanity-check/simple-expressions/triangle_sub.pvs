@@ -1,0 +1,7 @@
+triangle_sub: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+triangle_sub(A,B: unb_double):unb_double = Dsub(A,B)
+
+END ttriangle_sub

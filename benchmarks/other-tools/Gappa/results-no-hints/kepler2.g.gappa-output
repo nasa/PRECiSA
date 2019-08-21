@@ -1,0 +1,6 @@
+Date: Sat Jun 24 20:09:21 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time gappa kepler2
+Results:
+  |r1 - Mr1| in [0, 456309384477992257b-97 {2.87972e-12, 2^(-38.3372)}]
+real  0.320

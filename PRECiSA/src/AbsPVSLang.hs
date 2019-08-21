@@ -17,126 +17,146 @@
 
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies #-}
 
-module AbsPVSLang
-where
+module AbsPVSLang where
 
-import PPExt
-import Numeric
-import FPrec
-import Data.Ratio
-import Debug.Trace
-import Foreign.C.Types (CDouble, CFloat)
 import Data.Bits.Floating
+import Data.Maybe(fromMaybe)
+import FPrec
+import Utils
+import PPExt
+import Prelude hiding ((<>))
 
-type FunctionName = String
-type VarName = String
-
-
--- variables and process symbols --
-newtype VarId    = VarId String deriving (Eq, Ord, Show, Read)
-newtype NonVarId = NonVarId String deriving (Eq, Ord, Show, Read)
-
-data VarDecl = VarDecl VarId
-data Imp = Imp [NonVarId]
+type FunName = String
 
 type EExpr = AExpr
 
 data AExpr
  -- real arithmetic expressions
-    = Add AExpr AExpr
-    | Sub AExpr AExpr
-    | Mul AExpr AExpr
-    | Div AExpr AExpr
-    | Pow AExpr AExpr
-    | Mod AExpr AExpr
-    | Neg AExpr
+    = Add   AExpr AExpr
+    | Sub   AExpr AExpr
+    | Mul   AExpr AExpr
+    | Div   AExpr AExpr
+    | Pow   AExpr AExpr
+    | Mod   AExpr AExpr
+    | IDiv  AExpr AExpr
+    | ItDiv AExpr AExpr
+    | IMod  AExpr AExpr
+    | ItMod AExpr AExpr
+    | Fma   AExpr AExpr AExpr
+    | Neg   AExpr
     | Floor AExpr
-    | Sqrt AExpr
-    | Abs  AExpr
-    | Sin  AExpr
-    | Cos  AExpr
-    | Tan  AExpr
-    | ASin AExpr
-    | ACos AExpr
-    | ATan AExpr
-    | Ln   AExpr
-    | Expo AExpr
+    | Sqrt  AExpr
+    | Abs   AExpr
+    | Sin   AExpr
+    | Cos   AExpr
+    | Tan   AExpr
+    | ASin  AExpr
+    | ACos  AExpr
+    | ATan  AExpr
+    | Ln    AExpr
+    | Expo  AExpr
+    | Expt  AExpr AExpr
     | Int Integer
-    | Double Rational
-    | EFun FunctionName [AExpr]
-    | Var VarName
-    | Pi
-    | SUlp AExpr
-    | DUlp AExpr
+    | Rat Rational
+    | EFun FunName FPrec [AExpr]
+    | Var FPrec VarName
+    | ArrayElem FPrec (Maybe ArraySize) VarName AExpr
     | StoR FAExpr
     | DtoR FAExpr
-    | EE EExpr
-    | FPrec
+    | Prec
     | FExp FAExpr
     | RealMark VarName
+    | ErrorMark VarName FPrec
     | Min [AExpr]
     | Max [AExpr]
-    | ErrAdd    AExpr EExpr AExpr EExpr
-    | ErrSub    AExpr EExpr AExpr EExpr
-    | ErrMul    AExpr EExpr AExpr EExpr
-    | ErrDiv    AExpr EExpr AExpr EExpr
-    | ErrFloor  AExpr EExpr
-    | ErrFloor0  AExpr EExpr
-    | ErrSqrt   AExpr EExpr 
-    | ErrSin    AExpr EExpr 
-    | ErrCos    AExpr EExpr 
-    | ErrTan    AExpr EExpr 
-    | ErrAsin AExpr EExpr
-    | ErrAcos AExpr EExpr 
-    | ErrAtan AExpr EExpr
-    | ErrAtanT   AExpr EExpr 
-    | ErrNeg AExpr EExpr
-    | ErrAbs AExpr EExpr
-    | ErrLn  AExpr EExpr
-    | ErrExpo AExpr EExpr
-    | ErrMulPow2R Integer EExpr
-    | ErrMulPow2L Integer EExpr
-    | AE AExpr
-    | HalfUlp AExpr
+    | ErrAdd    FPrec AExpr EExpr AExpr EExpr
+    | ErrSub    FPrec AExpr EExpr AExpr EExpr
+    | ErrMul    FPrec AExpr EExpr AExpr EExpr
+    | ErrDiv    FPrec AExpr EExpr AExpr EExpr
+    | ErrFma    FPrec AExpr EExpr AExpr EExpr AExpr EExpr
+    | ErrItDiv  FPrec AExpr EExpr AExpr EExpr
+    | ErrMod    FPrec AExpr EExpr AExpr EExpr
+    | ErrItMod  FPrec AExpr EExpr AExpr EExpr
+    | ErrFloor  FPrec AExpr EExpr
+    | ErrFloor0 FPrec AExpr EExpr
+    | ErrSqrt   FPrec AExpr EExpr 
+    | ErrSin    FPrec AExpr EExpr 
+    | ErrCos    FPrec AExpr EExpr 
+    | ErrTan    FPrec AExpr EExpr 
+    | ErrAsin   FPrec AExpr EExpr
+    | ErrAcos   FPrec AExpr EExpr 
+    | ErrAtan   FPrec AExpr EExpr
+    | ErrAtanT  FPrec AExpr EExpr 
+    | ErrNeg    FPrec AExpr EExpr
+    | ErrAbs    FPrec AExpr EExpr
+    | ErrLn     FPrec AExpr EExpr
+    | ErrExpo   FPrec AExpr EExpr
+    | ErrMulPow2R FPrec Integer EExpr
+    | ErrMulPow2L FPrec Integer EExpr
+    | HalfUlp AExpr FPrec
     | ErrRat Rational
     | MaxErr [EExpr]
-    | ErrorMark VarName
     | Infinity
     | ErrUndefined
+    | ErrStoD AExpr EExpr
+    | ErrDtoS AExpr EExpr
+    | ErrItoS AExpr EExpr
+    | ErrItoD AExpr EExpr
     deriving (Eq, Ord, Show, Read)
+
 
 data FAExpr
 -- fp arithmetic expressions
-    = FAdd FAExpr FAExpr
-    | FSub FAExpr FAExpr
-    | FMul FAExpr FAExpr
-    | FDiv FAExpr FAExpr
-    | FPow FAExpr FAExpr
-    | FMod FAExpr FAExpr
-    | FNeg FAExpr
-    | FFloor FAExpr
-    | FSqrt FAExpr
-    | FAbs FAExpr
-    | FSin FAExpr
-    | FCos FAExpr
-    | FTan FAExpr
-    | FAcos FAExpr
-    | FAsin FAExpr
-    | FAtan FAExpr
-    | FLn   FAExpr
-    | FExpo FAExpr
-    | FInt Integer
-    | FDouble Rational -- Double
-    | FEFun String [FAExpr]
-    | FVar String
-    | FPi
-    | RtoS AExpr
-    | RtoD AExpr
+    = FIAdd  FAExpr FAExpr
+    | FISub  FAExpr FAExpr
+    | FIMul  FAExpr FAExpr
+    | FIDiv  FAExpr FAExpr
+    | FItDiv FAExpr FAExpr
+    | FIMod  FAExpr FAExpr
+    | FItMod FAExpr FAExpr
+    | FIPow  FAExpr FAExpr
+    | FIExp  FAExpr FAExpr
+    | FINeg  FAExpr
+    | FIAbs  FAExpr
+    | FFma   FPrec FAExpr FAExpr FAExpr
+    | FAdd   FPrec FAExpr FAExpr
+    | FSub   FPrec FAExpr FAExpr
+    | FMul   FPrec FAExpr FAExpr
+    | FDiv   FPrec FAExpr FAExpr
+    | FPow   FPrec FAExpr FAExpr
+    | FMod   FPrec FAExpr FAExpr
+    | FNeg   FPrec FAExpr
+    | FFloor FPrec FAExpr
+    | FSqrt  FPrec FAExpr
+    | FAbs   FPrec FAExpr
+    | FSin   FPrec FAExpr
+    | FCos   FPrec FAExpr
+    | FTan   FPrec FAExpr
+    | FAcos  FPrec FAExpr
+    | FAsin  FPrec FAExpr
+    | FAtan  FPrec FAExpr
+    | FLn    FPrec FAExpr
+    | FExpo  FPrec FAExpr
+    | FInt  Integer
+    | FCnst FPrec Rational
+    | FEFun String FPrec [FAExpr]
+    | FVar  FPrec VarName
+    | StructVar String
+    | FArrayElem FPrec (Maybe ArraySize) VarName FAExpr
     | FMin [FAExpr]
     | FMax [FAExpr]
+    | RtoD AExpr
+    | RtoS AExpr
+    | StoD FAExpr
+    | DtoS FAExpr
+    | ItoD FAExpr
+    | ItoS FAExpr
+    | Value FAExpr
     deriving (Eq, Ord, Show, Read)
-
+ 
 data BExpr
 -- real valued boolean expressions 
     = Or  BExpr BExpr
@@ -163,39 +183,81 @@ data FBExpr
     | FLtE FAExpr FAExpr
     | FGt  FAExpr FAExpr
     | FGtE FAExpr FAExpr
+    | IsValid FAExpr
     | FBTrue
     | FBFalse
     deriving (Eq, Ord, Show, Read)    
 
 -- progam
-newtype Program = Prog [Decl]
+type Program = [Decl]
+
+data Arg = Arg VarName FPrec
     deriving (Eq, Ord, Show, Read)
 
 -- set of declarations
-data Decl = Decl FPrec NonVarId [VarId] Stm
+data Decl = Decl FPrec FunName [Arg] Stm
     deriving (Eq, Ord, Show, Read)
 
 -- program expression
-data Stm = Let VarId FAExpr Stm
+data Stm = Let VarName FPrec FAExpr Stm
          | Ite FBExpr Stm Stm
+         | ListIte [(FBExpr, Stm)] Stm
          | StmExpr FAExpr
-         | ForLoop Integer Integer FAExpr NonVarId
+         | ForLoop FPrec FAExpr FAExpr FAExpr VarName VarName Stm
+         | UnstWarning
     deriving (Eq, Ord, Show, Read)
 
 -- real valued progam
-data RProgram = RProg [RDecl]
-    deriving (Eq, Ord, Show, Read)
+type RProgram = [RDecl]
 
 -- real valued set of declarations
-data RDecl = RDecl FPrec NonVarId [VarId] RStm
+data RDecl = RDecl FPrec FunName [Arg] RStm
     deriving (Eq, Ord, Show, Read)
 
 -- real valued program expression
-data RStm = RLet VarId AExpr RStm
+data RStm = RLet VarName FPrec AExpr RStm
           | RIte BExpr RStm RStm
+          | RListIte [(BExpr,RStm)] RStm
           | RStmExpr AExpr
-          | RForLoop Integer Integer AExpr NonVarId
+          | RForLoop FPrec AExpr AExpr AExpr VarName VarName RStm
+          | RUnstWarning
     deriving (Eq, Ord, Show, Read)
+
+arg2var :: Arg -> FAExpr
+arg2var (Arg x fp) = FVar fp x
+
+mapArg2Pair :: Arg -> (VarName, FPrec)
+mapArg2Pair (Arg x fp) = (x,fp)
+
+argName :: Arg -> VarName
+argName (Arg x _) = x
+
+argPrec :: Arg -> FPrec
+argPrec (Arg _ fp) = fp
+
+isArgArray :: Arg -> Bool
+isArgArray (Arg _ (Array _ _)) = True
+isArgArray _ = False
+
+isArgInt :: Arg -> Bool
+isArgInt (Arg _ TInt) = True
+isArgInt _ = False
+
+arg2AExpr :: Arg -> AExpr
+arg2AExpr (Arg x fp) = Var fp x 
+
+argCast :: FPrec -> Arg -> Arg
+argCast fp (Arg x _) = Arg x fp
+
+findInDecls :: String -> [Decl] -> (FPrec,[Arg],Stm)
+findInDecls fun [] = error ("findInDecls: function " ++ fun ++ " not found")
+findInDecls fun (Decl retType g args stm :ds) | fun==g = (retType,args,stm)
+                                              | otherwise = findInDecls fun ds
+
+findInProg :: String -> [Decl] -> Decl
+findInProg fun [] = error $ "findInProg: function "++ show fun ++ " not found."
+findInProg fun (decl@(Decl _ g _ _):ds) | fun==g = decl
+                                        | otherwise = findInProg fun ds
 
 isBExprEquivFalse :: BExpr -> Bool
 isBExprEquivFalse BFalse = True
@@ -210,149 +272,92 @@ isFBExprEquivFalse b = any (flip elem bs . FNot) bs
         bs = flatFAnd b
 
 flatAnd :: BExpr -> [BExpr]
-flatAnd (And b1 b2) = (flatAnd b1) ++ (flatAnd b2)
+flatAnd (And b1 b2) = flatAnd b1 ++ flatAnd b2
 flatAnd b = [b]
 
 flatFAnd :: FBExpr -> [FBExpr]
-flatFAnd (FAnd b1 b2) = (flatFAnd b1) ++ (flatFAnd b2)
+flatFAnd (FAnd b1 b2) = flatFAnd b1 ++ flatFAnd b2
 flatFAnd b = [b]
+
+simplFAnd :: FBExpr -> FBExpr -> FBExpr
+simplFAnd FBTrue  be      = be
+simplFAnd be      FBTrue  = be
+simplFAnd FBFalse _       = FBFalse
+simplFAnd _       FBFalse = FBFalse
+simplFAnd be1     be2     = FAnd be1 be2
+
+listFAnd :: [FBExpr] -> FBExpr
+listFAnd = foldl1 FAnd
+
+listFOr :: [FBExpr] -> FBExpr
+listFOr = foldl1 FOr
+
+listAnd :: [BExpr] -> BExpr
+listAnd = foldl1 And
+
+listOr :: [BExpr] -> BExpr
+listOr = foldl1 Or
+
+getFPrec :: FAExpr -> FPrec
+getFPrec (FIAdd  _ _)    = TInt
+getFPrec (FISub  _ _)    = TInt
+getFPrec (FIMul  _ _)    = TInt
+getFPrec (FIDiv  _ _)    = TInt
+getFPrec (FItDiv _ _)    = TInt
+getFPrec (FIMod  _ _)    = TInt
+getFPrec (FItMod _ _)    = TInt
+getFPrec (FIPow  _ _)    = TInt
+getFPrec (FINeg    _)    = TInt
+getFPrec (FIAbs    _)    = TInt
+getFPrec (FIExp  _ _)    = TInt
+getFPrec (FInt     _)    = TInt
+getFPrec (FFma fp _ _ _) = fp
+getFPrec (FAdd fp _ _)   = fp
+getFPrec (FSub fp _ _)   = fp
+getFPrec (FMul fp _ _)   = fp
+getFPrec (FDiv fp _ _)   = fp
+getFPrec (FPow fp _ _)   = fp
+getFPrec (FMod fp _ _)   = fp
+getFPrec (FNeg   fp _)   = fp
+getFPrec (FFloor fp _)   = fp
+getFPrec (FSqrt  fp _)   = fp
+getFPrec (FAbs   fp _)   = fp
+getFPrec (FSin   fp _)   = fp
+getFPrec (FCos   fp _)   = fp
+getFPrec (FTan   fp _)   = fp
+getFPrec (FAcos  fp _)   = fp
+getFPrec (FAsin  fp _)   = fp
+getFPrec (FAtan  fp _)   = fp
+getFPrec (FLn    fp _)   = fp
+getFPrec (FExpo  fp _)   = fp
+getFPrec (FCnst  fp _)   = fp
+getFPrec (FEFun _ fp _)  = fp 
+getFPrec (FVar fp _)     = fp
+getFPrec (RtoD _) = FPDouble
+getFPrec (RtoS _) = FPSingle
+getFPrec (StoD _) = FPDouble
+getFPrec (DtoS _) = FPSingle
+getFPrec (ItoD _) = FPDouble
+getFPrec (ItoS _) = FPSingle
+getFPrec ae = error $ "getFPrec niy for "++ show ae
 
 --------------------------------------------
 -- semantic equivalence error expressions --
 --------------------------------------------
 
 rewriteEquivEExpr :: EExpr -> EExpr
-rewriteEquivEExpr (ErrMulPow2L _ ee) = rewriteEquivEExpr ee
-rewriteEquivEExpr (ErrMulPow2R _ ee) = rewriteEquivEExpr ee
-rewriteEquivEExpr (ErrAbs      _ ee) = rewriteEquivEExpr ee
-rewriteEquivEExpr (ErrNeg      _ ee) = rewriteEquivEExpr ee
-rewriteEquivEExpr (MaxErr       ees)
-    | and $ zipWith (==) ees' $ tail ees' = head ees'
-    | otherwise = MaxErr ees'
+rewriteEquivEExpr = replaceInAExpr rewriteEquivEExpr'
+  where
+  rewriteEquivEExpr' (MaxErr       ees)
+    | and $ zipWith (==) ees' $ tail ees' = Just $ head ees'
+    | otherwise = Just $ MaxErr ees'
     where
         ees' = map rewriteEquivEExpr ees
-rewriteEquivEExpr (ErrAdd ae1 ee1 ae2 ee2) = ErrAdd ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
-rewriteEquivEExpr (ErrSub ae1 ee1 ae2 ee2) = ErrSub ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
-rewriteEquivEExpr (ErrMul ae1 ee1 ae2 ee2) = ErrMul ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
-rewriteEquivEExpr (ErrDiv ae1 ee1 ae2 ee2) = ErrDiv ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
-rewriteEquivEExpr (ErrFloor  ae ee) = ErrFloor  ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrFloor0 ae ee) = ErrFloor0 ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrSqrt   ae ee) = ErrSqrt   ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrSin    ae ee) = ErrSin    ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrCos    ae ee) = ErrCos    ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrTan    ae ee) = ErrTan    ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrAsin   ae ee) = ErrAsin   ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrAcos   ae ee) = ErrAcos   ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrAtan   ae ee) = ErrAtan   ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrAtanT  ae ee) = ErrAtanT  ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrLn     ae ee) = ErrLn     ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr (ErrExpo   ae ee) = ErrExpo   ae (rewriteEquivEExpr ee)
-rewriteEquivEExpr ee = ee
-
+  rewriteEquivEExpr' _ = Nothing
 
 equivEExpr :: EExpr -> EExpr -> Bool
-equivEExpr ee ee' = (rewriteEquivEExpr ee) == (rewriteEquivEExpr ee')
+equivEExpr ee ee' = rewriteEquivEExpr ee == rewriteEquivEExpr ee'
 
----------------------------------------------
--- float->real trasformations for programs --
----------------------------------------------
-
-fp2realVarId :: VarId -> VarId
-fp2realVarId (VarId x) = VarId ("r_"++x)
-
-fp2realProg :: Program -> RProgram
-fp2realProg (Prog decls) = RProg (map fp2realDecl decls)
-
-fp2realDecl :: Decl -> RDecl
-fp2realDecl (Decl fp (NonVarId f) xs stm) = RDecl fp (NonVarId (f++"_real")) (map fp2realVarId xs) (fp2realStm stm)
-
-fp2realStm :: Stm -> RStm
-fp2realStm (Let x fae stm)     = RLet (fp2realVarId x) (fae2real fae) (fp2realStm stm)
-fp2realStm (Ite fbe stm1 stm2) = RIte (fbe2be fbe) (fp2realStm stm1) (fp2realStm stm2)
-fp2realStm (StmExpr fae)       = RStmExpr (fae2real fae)
-
----------------------------------------------
--- real/float trasformations for variables --
----------------------------------------------
-
-fbe2be :: FBExpr -> BExpr
-fbe2be (FOr b1 b2)  = Or  (fbe2be b1) (fbe2be b2)
-fbe2be (FAnd b1 b2) = And (fbe2be b1) (fbe2be b2)
-fbe2be (FNot b)     = Not (fbe2be b)
-fbe2be (FEq a1 a2)  = Eq  (fae2real a1) (fae2real a2)
-fbe2be (FNeq a1 a2) = Neq (fae2real a1) (fae2real a2)
-fbe2be (FLt a1 a2)  = Lt  (fae2real a1) (fae2real a2)
-fbe2be (FLtE a1 a2) = LtE (fae2real a1) (fae2real a2)
-fbe2be (FGt a1 a2)  = Gt  (fae2real a1) (fae2real a2)
-fbe2be (FGtE a1 a2) = GtE (fae2real a1) (fae2real a2)
-fbe2be FBTrue       = BTrue
-fbe2be FBFalse      = BFalse
-
-fae2real :: FAExpr -> AExpr
--- traslation from FP to Real expressions without considering the FP errors of the operations
--- it is used to add the (FP) guards to the (Real) conditions
-fae2real (FAdd a1 a2)   = Add    (fae2real a1) (fae2real a2)
-fae2real (FSub a1 a2)   = Sub    (fae2real a1) (fae2real a2)
-fae2real (FMul a1 a2)   = Mul    (fae2real a1) (fae2real a2)
-fae2real (FDiv a1 a2)   = Div    (fae2real a1) (fae2real a2)
-fae2real (FPow a1 a2)   = Pow    (fae2real a1) (fae2real a2)
-fae2real (FMod a1 a2)   = Mod    (fae2real a1) (fae2real a2)
-fae2real (FNeg a)       = Neg    (fae2real a)
-fae2real (FFloor a)     = Floor  (fae2real a)
-fae2real (FSqrt a)      = Sqrt   (fae2real a)
-fae2real (FAbs a)       = Abs    (fae2real a)
-fae2real (FSin a)       = Sin    (fae2real a)
-fae2real (FCos a)       = Cos    (fae2real a)
-fae2real (FTan a)       = Tan    (fae2real a)
-fae2real (FAcos a)      = ACos (fae2real a)
-fae2real (FAsin a)      = ASin (fae2real a)
-fae2real (FAtan a)      = ATan (fae2real a)
-fae2real (FLn   a)      = Ln   (fae2real a)
-fae2real (FExpo a)      = Expo (fae2real a)
-fae2real (FInt n)       = StoR (FInt n)
-fae2real (FDouble n)    = StoR (FDouble n)
-fae2real (FEFun f args) = EFun f (map fae2real args)
-fae2real (FVar x)       = RealMark x
-fae2real FPi            = Pi 
-fae2real (RtoS a)       = a -- StoR (RtoS a)
-fae2real (RtoD a)       = a -- DtoR (RtoD a)
-fae2real (FMin as)      = Min (map fae2real as)
-fae2real (FMax as)      = Max (map fae2real as)
-
-
-real2fae :: FPrec -> AExpr -> FAExpr
-real2fae fp (Add a1 a2) = FAdd (real2fae fp a1) (real2fae fp a2)
-real2fae fp (Sub a1 a2) = FSub (real2fae fp a1) (real2fae fp a2)
-real2fae fp (Mul a1 a2) = FMul (real2fae fp a1) (real2fae fp a2)
-real2fae fp (Div a1 a2) = FDiv (real2fae fp a1) (real2fae fp a2)
-real2fae fp (Pow a1 a2) = FPow (real2fae fp a1) (real2fae fp a2)
-real2fae fp (Mod a1 a2) = FMod (real2fae fp a1) (real2fae fp a2)
-real2fae fp (Neg   a) = FNeg   (real2fae fp a)
-real2fae fp (Floor a) = FFloor (real2fae fp a)
-real2fae fp (Sqrt  a) = FSqrt  (real2fae fp a)
-real2fae fp (Abs   a) = FAbs   (real2fae fp a)
-real2fae fp (Sin   a) = FSin   (real2fae fp a)
-real2fae fp (Cos   a) = FCos   (real2fae fp a)
-real2fae fp (Tan   a) = FTan   (real2fae fp a)
-real2fae fp (ASin  a) = FAsin  (real2fae fp a)
-real2fae fp (ACos  a) = FAcos  (real2fae fp a)
-real2fae fp (ATan  a) = FAtan  (real2fae fp a)
-real2fae fp (Ln    a) = FLn    (real2fae fp a)
-real2fae fp (Expo  a) = FExpo  (real2fae fp a)
-real2fae FPSingle    (Int n) = RtoS $ Int n
-real2fae FPDouble    (Int n) = RtoD $ Int n
-real2fae FPSingle (Double n) = RtoS $ Double n
-real2fae FPDouble (Double n) = RtoD $ Double n
-real2fae fp (EFun f args) = FEFun f (map (real2fae fp) args)
-real2fae _ (Var x) = FVar x
-real2fae _ (RealMark x) = FVar x
-real2fae _ (RealMark x) = FVar x
-real2fae fp (Pi)    = FPi
-real2fae FPSingle (StoR fae) = fae
-real2fae FPDouble (DtoR fae) = fae
-real2fae FPDouble (StoR fae) = error "real2fpe: FP precision mismatch"
-real2fae FPSingle (DtoR fae) = error "real2fpe: FP precision mismatch"
-real2fae _ a = error $ show a
 
 ---------------------------------
 -- fp bool expr simplification --
@@ -389,69 +394,71 @@ simplFBExpr (FGt a1 a2)      = simplFRel (FGt a1 a2)
 simplFBExpr (FGtE a1 a2)     = simplFRel (FGtE a1 a2)
 simplFBExpr FBTrue           = FBTrue
 simplFBExpr FBFalse          = FBFalse
+simplFBExpr be@(IsValid _)   = be
 
 simplFRel :: FBExpr -> FBExpr
 simplFRel (FEq a1 a2) = case a1 of
     (FInt n)    -> case a2 of
                     (FInt m) ->  if n == m then FBTrue else FBFalse
-                    (FDouble m) ->  if (fromIntegral n) == m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if fromIntegral n == m then FBTrue else FBFalse
                     _ -> FEq a1 a2 -- (simplIAExpr a2)
-    (FDouble n) -> case a2 of
-                    (FInt m) ->  if n == (fromIntegral m) then FBTrue else FBFalse
-                    (FDouble m) ->  if n == m then FBTrue else FBFalse
+    (FCnst _ n) -> case a2 of
+                    (FInt m) ->  if n == fromIntegral m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if n == m then FBTrue else FBFalse
                     _ -> FEq a1 a2 -- (simplIAExpr a2)
     _           -> FEq a1 a2 -- (simplFAExpr a1) (simplFAExpr a2)                
 simplFRel (FNeq a1 a2) = case a1 of
     (FInt n)    -> case a2 of
                     (FInt m) ->  if n /= m then FBTrue else FBFalse
-                    (FDouble m) ->  if (fromIntegral n) /= m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if fromIntegral n /= m then FBTrue else FBFalse
                     _ -> FNeq a1 (simplFAExpr a2)
-    (FDouble n) -> case a2 of
-                    (FInt m) ->  if n /= (fromIntegral m) then FBTrue else FBFalse
-                    (FDouble m) ->  if n /= m then FBTrue else FBFalse
+    (FCnst _ n) -> case a2 of
+                    (FInt m) ->  if n /= fromIntegral m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if n /= m then FBTrue else FBFalse
                     _ -> FNeq a1 (simplFAExpr a2)
     _           ->  FNeq (simplFAExpr a1) (simplFAExpr a2)                    
 simplFRel (FLt a1 a2) = case a1 of
     (FInt n)    -> case a2 of
                     (FInt m) ->  if n < m then FBTrue else FBFalse
-                    (FDouble m) ->  if (fromIntegral n) < m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if fromIntegral n < m then FBTrue else FBFalse
                     _ -> FLt a1 (simplFAExpr a2)
-    (FDouble n)  -> case a2 of
-                    (FInt m) ->  if n < (fromIntegral m) then FBTrue else FBFalse
-                    (FDouble m) ->  if n < m then FBTrue else FBFalse
+    (FCnst _ n)  -> case a2 of
+                    (FInt m) ->  if n < fromIntegral m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if n < m then FBTrue else FBFalse
                     _ -> FLt a1 (simplFAExpr a2)
     _           -> FLt (simplFAExpr a1) (simplFAExpr a2)  
 simplFRel (FLtE a1 a2) = case a1 of
     (FInt n)    -> case a2 of
                     (FInt m) ->  if n <= m then FBTrue else FBFalse
-                    (FDouble m) ->  if (fromIntegral n) <= m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if fromIntegral n <= m then FBTrue else FBFalse
                     _ -> FLtE (simplFAExpr a1) (simplFAExpr a2)
-    (FDouble n) -> case a2 of
-                    (FInt m) ->  if n <= (fromIntegral m) then FBTrue else FBFalse
-                    (FDouble m) ->  if n <= m then FBTrue else FBFalse
+    (FCnst _ n) -> case a2 of
+                    (FInt m) ->  if n <= fromIntegral m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if n <= m then FBTrue else FBFalse
                     _ -> FLtE a1 (simplFAExpr a2)
     _          -> FLtE (simplFAExpr a1) (simplFAExpr a2)  
 simplFRel (FGt a1 a2) = case a1 of
     (FInt n)    -> case a2 of
                     (FInt m) ->  if n > m then FBTrue else FBFalse
-                    (FDouble m) ->  if (fromIntegral n) > m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if fromIntegral n > m then FBTrue else FBFalse
                     _ -> FGt a1 (simplFAExpr a2)
-    (FDouble n) -> case a2 of
-                    (FInt m) ->  if n > (fromIntegral m) then FBTrue else FBFalse
-                    (FDouble m) ->  if n > m then FBTrue else FBFalse
+    (FCnst _ n) -> case a2 of
+                    (FInt m) ->  if n > fromIntegral m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if n > m then FBTrue else FBFalse
                     _ -> FGt a1 (simplFAExpr a2)
     _          -> FGt (simplFAExpr a1) (simplFAExpr a2) 
 simplFRel (FGtE a1 a2) = case a1 of
     (FInt n)    -> case a2 of
                     (FInt m) ->  if n >= m then FBTrue else FBFalse
-                    (FDouble m) ->  if (fromIntegral n) >= m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if fromIntegral n >= m then FBTrue else FBFalse
                     _ -> FGtE a1 (simplFAExpr a2)
-    (FDouble n) -> case a2 of
-                    (FInt m) ->  if n >= (fromIntegral m) then FBTrue else FBFalse
-                    (FDouble m) ->  if n >= m then FBTrue else FBFalse
+    (FCnst _ n) -> case a2 of
+                    (FInt m) ->  if n >= fromIntegral m then FBTrue else FBFalse
+                    (FCnst _ m) ->  if n >= m then FBTrue else FBFalse
                     _ -> FGtE a1 (simplFAExpr a2)
     _          -> FGtE (simplFAExpr a1) (simplFAExpr a2)
 
+simplFRel be = error $ "simplFRel: unexpected value: "++ show be
 
 -----------------------------------
 -- real bool expr simplification --
@@ -493,70 +500,65 @@ simplRel :: BExpr -> BExpr
 simplRel (Eq a1 a2) = case a1 of
     (Int n)    -> case a2 of
                     (Int m) ->  if n == m then BTrue else BFalse
-                    (Double m) ->  if (fromIntegral n) == m then BTrue else BFalse
+                    (Rat m) ->  if fromIntegral n == m then BTrue else BFalse
                     _ -> Eq a1 (simplAExpr a2)
-    (Double n) -> case a2 of
-                    (Int m) ->  if n == (fromIntegral m) then BTrue else BFalse
-                    (Double m) ->  if n == m then BTrue else BFalse
+    (Rat n) -> case a2 of
+                    (Int m) ->  if n == fromIntegral m then BTrue else BFalse
+                    (Rat m) ->  if n == m then BTrue else BFalse
                     _ -> Eq a1 (simplAExpr a2)
     _          -> Eq (simplAExpr a1) (simplAExpr a2)                
 simplRel (Neq a1 a2) = case a1 of
     (Int n)    -> case a2 of
                     (Int m) ->  if n /= m then BTrue else BFalse
-                    (Double m) ->  if (fromIntegral n) /= m then BTrue else BFalse
+                    (Rat m) ->  if fromIntegral n /= m then BTrue else BFalse
                     _ -> Neq a1 (simplAExpr a2)
-    (Double n) -> case a2 of
-                    (Int m) ->  if n /= (fromIntegral m) then BTrue else BFalse
-                    (Double m) ->  if n /= m then BTrue else BFalse
+    (Rat n) -> case a2 of
+                    (Int m) ->  if n /= fromIntegral m then BTrue else BFalse
+                    (Rat m) ->  if n /= m then BTrue else BFalse
                     _ -> Neq a1 (simplAExpr a2)
     _          ->  Neq (simplAExpr a1) (simplAExpr a2)                    
 simplRel (Lt a1 a2) = case a1 of
     (Int n)    -> case a2 of
                     (Int m) ->  if n < m then BTrue else BFalse
-                    (Double m) ->  if (fromIntegral n) < m then BTrue else BFalse
+                    (Rat m) ->  if fromIntegral n < m then BTrue else BFalse
                     _ -> Lt a1 (simplAExpr a2)
-    (Double n)  -> case a2 of
-                    (Int m) ->  if n < (fromIntegral m) then BTrue else BFalse
-                    (Double m) ->  if n < m then BTrue else BFalse
+    (Rat n)  -> case a2 of
+                    (Int m) ->  if n < fromIntegral m then BTrue else BFalse
+                    (Rat m) ->  if n < m then BTrue else BFalse
                     _ -> Lt a1 (simplAExpr a2)
     _           -> Lt (simplAExpr a1) (simplAExpr a2)  
 simplRel (LtE a1 a2) = case a1 of
     (Int n)    -> case a2 of
                     (Int m) ->  if n <= m then BTrue else BFalse
-                    (Double m) ->  if (fromIntegral n) <= m then BTrue else BFalse
+                    (Rat m) ->  if fromIntegral n <= m then BTrue else BFalse
                     _ -> LtE a1 (simplAExpr a2)
-    (Double n) -> case a2 of
-                    (Int m) ->  if n <= (fromIntegral m) then BTrue else BFalse
-                    (Double m) ->  if n <= m then BTrue else BFalse
+    (Rat n) -> case a2 of
+                    (Int m) ->  if n <= fromIntegral m then BTrue else BFalse
+                    (Rat m) ->  if n <= m then BTrue else BFalse
                     _ -> LtE a1 (simplAExpr a2)
     _          -> LtE (simplAExpr a1) (simplAExpr a2)  
 simplRel (Gt a1 a2) = case a1 of
     (Int n)    -> case a2 of
                     (Int m) ->  if n > m then BTrue else BFalse
-                    (Double m) ->  if (fromIntegral n) > m then BTrue else BFalse
+                    (Rat m) ->  if fromIntegral n > m then BTrue else BFalse
                     _ -> Gt a1 (simplAExpr a2)
-    (Double n) -> case a2 of
-                    (Int m) ->  if n > (fromIntegral m) then BTrue else BFalse
-                    (Double m) ->  if n > m then BTrue else BFalse
+    (Rat n) -> case a2 of
+                    (Int m) ->  if n > fromIntegral m then BTrue else BFalse
+                    (Rat m) ->  if n > m then BTrue else BFalse
                     _ -> Gt a1 (simplAExpr a2)
     _          -> Gt (simplAExpr a1) (simplAExpr a2) 
 simplRel (GtE a1 a2) = case a1 of
     (Int n)    -> case a2 of
                     (Int m) ->  if n >= m then BTrue else BFalse
-                    (Double m) ->  if (fromIntegral n) >= m then BTrue else BFalse
+                    (Rat m) ->  if fromIntegral n >= m then BTrue else BFalse
                     _ -> GtE a1 (simplAExpr a2)
-    (Double n) -> case a2 of
-                    (Int m) ->  if n >= (fromIntegral m) then BTrue else BFalse
-                    (Double m) ->  if n >= m then BTrue else BFalse
+    (Rat n) -> case a2 of
+                    (Int m) ->  if n >= fromIntegral m then BTrue else BFalse
+                    (Rat m) ->  if n >= m then BTrue else BFalse
                     _ -> GtE a1 (simplAExpr a2)
     _          -> GtE (simplAExpr a1) (simplAExpr a2)
 
---simplFRel (And b1 b2) = And (simplBExprRel b1) (simplBExprRel b2)
---simplFRel (Or b1 b2) = Or (simplBExprRel b1) (simplBExprRel b2)
---simplFRel (Not b) = Not (simplBExprRel b)
---simplFRel BTrue = BTrue
---simplFRel BFalse = BFalse
-
+simplRel be = error $ "simplRel: unexpected value: "++ show be
 
 ------------------------------------
 -- real arith expr simplification --
@@ -571,69 +573,38 @@ simplAExpr ae =
     ae' = simplAExprAux ae 
 
 simplAExprAux :: AExpr -> AExpr
-simplAExprAux (Add a (Int 0)) = simplAExprAux a
-simplAExprAux (Add (Int 0) a) = simplAExprAux a
-simplAExprAux (Add a (Double 0)) = simplAExprAux a
-simplAExprAux (Add (Double 0) a) = simplAExprAux a
-simplAExprAux (Add (Int n) (Int m)) = Int (n+m)
-simplAExprAux (Add (Int n) (Double m)) = Double ((fromIntegral n)+m)
-simplAExprAux (Add (Double n) (Int m)) = Double (n+(fromIntegral m))
-simplAExprAux (Add (Double n) (Double m)) = Double (n+m)
-simplAExprAux (Add a1 a2) = Add (simplAExpr a1) (simplAExpr a2)
-simplAExprAux (Sub a (Int 0)) = simplAExprAux a
-simplAExprAux (Sub (Int 0) a) = Neg $ simplAExprAux a
-simplAExprAux (Sub a (Double 0)) = simplAExprAux a
-simplAExprAux (Sub (Double 0) a) = Neg $ simplAExprAux a
-simplAExprAux (Sub (Int n) (Int m)) = Int (n-m)
-simplAExprAux (Sub (Int n) (Double m)) = Double ((fromIntegral n)-m)
-simplAExprAux (Sub (Double n) (Int m)) = Double (n-(fromIntegral m))
-simplAExprAux (Sub (Double n) (Double m)) = Double (n-m)
-simplAExprAux (Sub a1 a2) = Sub (simplAExpr a1) (simplAExpr a2)
-simplAExprAux (Mul a (Int 1)) = simplAExprAux a
-simplAExprAux (Mul (Int 1) a) = simplAExprAux a
-simplAExprAux (Mul a (Double 1)) = simplAExprAux a
-simplAExprAux (Mul (Double 1) a) = simplAExprAux a
-simplAExprAux (Mul (Int 0) a) = Int 0
-simplAExprAux (Mul a (Int 0)) = Int 0
-simplAExprAux (Mul (Double 0) a) = Double 0
-simplAExprAux (Mul a (Double 0)) = Double 0    
-simplAExprAux (Mul (Int n) (Int m)) = Int (n*m)
-simplAExprAux (Mul (Int n) (Double m)) = Double ((fromIntegral n)*m)
-simplAExprAux (Mul (Double n) (Int m)) = Double (n*(fromIntegral m))
-simplAExprAux (Mul (Double n) (Double m)) = Double (n*m)
-simplAExprAux (Mul a1 a2) = Mul (simplAExpr a1) (simplAExpr a2)
-simplAExprAux (Div a1 a2) = Div (simplAExpr a1) (simplAExpr a2)
-simplAExprAux (Neg (Int n)) = Int (-n)
---simplAExprAux (Neg (Double n)) = Double (-n)
-simplAExprAux (Neg a) = Neg (simplAExpr a)
-simplAExprAux (Pow a1 a2) = Pow (simplAExprAux a1) (simplAExprAux a2)
-simplAExprAux (Floor a) = Floor (simplAExprAux a)
-simplAExprAux (Sqrt a) = Sqrt (simplAExprAux a)
---simplAExprAux (Abs (Int n)) = if n>=0 then Int n else Int (-n)
---simplAExprAux (Abs (Double n)) = if n>=0 then Double n else Double (-n)
-simplAExprAux (Abs (Abs a)) = Abs (simplAExprAux a)
-simplAExprAux (Abs a)  = Abs  (simplAExprAux a)
-simplAExprAux (Sin a)  = Sin  (simplAExprAux a)
-simplAExprAux (Cos a)  = Cos  (simplAExprAux a)
-simplAExprAux (Tan a)  = Cos  (simplAExprAux a)
-simplAExprAux (ACos a) = ACos (simplAExprAux a)
-simplAExprAux (ASin a) = ASin (simplAExprAux a)
-simplAExprAux (ATan a) = ATan (simplAExprAux a)
-simplAExprAux (Ln a)   = Ln   (simplAExprAux a)
-simplAExprAux (Expo a) = Expo (simplAExprAux a)
-simplAExprAux (Mod a1 a2) = Mod (simplAExprAux a1) (simplAExprAux a2)
-simplAExprAux (Int n) = Int n
-simplAExprAux (Double n) = Double n
-simplAExprAux (Var x) = Var x
-simplAExprAux (Pi) = Pi
-simplAExprAux (EFun f args) = EFun f (map simplAExprAux args)
-simplAExprAux (SUlp a) = SUlp $ simplAExpr a
-simplAExprAux (DUlp a) = DUlp $ simplAExpr a
-simplAExprAux (StoR (RtoS (Int n))) = Int n
-simplAExprAux (StoR a) = StoR $ simplFAExpr a
-simplAExprAux (DtoR (RtoD (Int n))) = Int n
-simplAExprAux (DtoR a) = DtoR $ simplFAExpr a
-simplAExprAux a = a
+simplAExprAux = replaceInAExpr simplAExprAux'
+  where
+    simplAExprAux' (Add a       (Int 0)) = Just $ simplAExprAux a
+    simplAExprAux' (Add (Int 0)       a) = Just $ simplAExprAux a
+    simplAExprAux' (Add a       (Rat 0)) = Just $ simplAExprAux a
+    simplAExprAux' (Add (Rat 0)       a) = Just $ simplAExprAux a
+    simplAExprAux' (Add (Int n) (Int m)) = Just $ Int (n+m)
+    simplAExprAux' (Add (Int n) (Rat m)) = Just $ Rat (fromIntegral n + m)
+    simplAExprAux' (Add (Rat n) (Int m)) = Just $ Rat (n + fromIntegral m)
+    simplAExprAux' (Add (Rat n) (Rat m)) = Just $ Rat (n+m)
+    simplAExprAux' (Sub a       (Int 0)) = Just $ simplAExprAux a
+    simplAExprAux' (Sub (Int 0)       a) = Just $ Neg $ simplAExprAux a
+    simplAExprAux' (Sub a       (Rat 0)) = Just $ simplAExprAux a
+    simplAExprAux' (Sub (Rat 0)       a) = Just $ Neg $ simplAExprAux a
+    simplAExprAux' (Sub (Int n) (Int m)) = Just $ Int (n-m)
+    simplAExprAux' (Sub (Int n) (Rat m)) = Just $ Rat (fromIntegral n - m)
+    simplAExprAux' (Sub (Rat n) (Int m)) = Just $ Rat (n - fromIntegral m)
+    simplAExprAux' (Sub (Rat n) (Rat m)) = Just $ Rat (n-m)
+    simplAExprAux' (Mul      a  (Int 1)) = Just $ simplAExprAux a
+    simplAExprAux' (Mul (Int 1)       a) = Just $ simplAExprAux a
+    simplAExprAux' (Mul      a  (Rat 1)) = Just $ simplAExprAux a
+    simplAExprAux' (Mul (Rat 1)       a) = Just $ simplAExprAux a
+    simplAExprAux' (Mul (Int 0)      _ ) = Just $ Int 0
+    simplAExprAux' (Mul      _  (Int 0)) = Just $ Int 0
+    simplAExprAux' (Mul (Rat 0)      _ ) = Just $ Rat 0
+    simplAExprAux' (Mul      _  (Rat 0)) = Just $ Rat 0    
+    simplAExprAux' (Mul (Int n) (Int m)) = Just $ Int (n*m)
+    simplAExprAux' (Mul (Int n) (Rat m)) = Just $ Rat (fromIntegral n * m)
+    simplAExprAux' (Mul (Rat n) (Int m)) = Just $ Rat (n * fromIntegral m)
+    simplAExprAux' (Mul (Rat n) (Rat m)) = Just $ Rat (n*m)
+    simplAExprAux' (Neg (Int n))         = Just $ Int (-n)
+    simplAExprAux' _ = Nothing
 
 ----------------------------------
 -- fp arith expr simplification --
@@ -648,830 +619,960 @@ simplFAExpr ae =
     ae' = simplFAExprAux ae 
 
 simplFAExprAux :: FAExpr -> FAExpr
-simplFAExprAux (FAdd a (FInt 0)) = simplFAExprAux a
-simplFAExprAux (FAdd (FInt 0) a) = simplFAExprAux a
-simplFAExprAux (FAdd a (FDouble 0)) = simplFAExprAux a
-simplFAExprAux (FAdd (FDouble 0) a) = simplFAExprAux a
-simplFAExprAux (FAdd (FInt n) (FInt m)) = FInt (n+m)
-simplFAExprAux (FAdd (FInt n) (FDouble m)) = FDouble ((fromIntegral n)+m)
-simplFAExprAux (FAdd (FDouble n) (FInt m)) = FDouble (n+(fromIntegral m))
-simplFAExprAux (FAdd (FDouble n) (FDouble m)) = FDouble (n+m)
-simplFAExprAux (FAdd a1 a2) = FAdd (simplFAExpr a1) (simplFAExpr a2)
-simplFAExprAux (FSub a (FInt 0)) = simplFAExprAux a
-simplFAExprAux (FSub (FInt 0) a) = FNeg $ simplFAExprAux a
-simplFAExprAux (FSub a (FDouble 0)) = simplFAExprAux a
-simplFAExprAux (FSub (FDouble 0) a) = FNeg $ simplFAExprAux a
-simplFAExprAux (FSub (FInt n) (FInt m)) = FInt (n-m)
-simplFAExprAux (FSub (FInt n) (FDouble m)) = FDouble ((fromIntegral n)-m)
-simplFAExprAux (FSub (FDouble n) (FInt m)) = FDouble (n-(fromIntegral m))
-simplFAExprAux (FSub (FDouble n) (FDouble m)) = FDouble (n-m)
-simplFAExprAux (FSub a1 a2) = FSub (simplFAExpr a1) (simplFAExpr a2)
-simplFAExprAux (FMul a (FInt 1)) = simplFAExprAux a
-simplFAExprAux (FMul (FInt 1) a) = simplFAExprAux a
-simplFAExprAux (FMul a (FDouble 1)) = simplFAExprAux a
-simplFAExprAux (FMul (FDouble 1) a) = simplFAExprAux a
-simplFAExprAux (FMul (FInt 0) a) = FInt 0
-simplFAExprAux (FMul a (FInt 0)) = FInt 0
-simplFAExprAux (FMul (FDouble 0) a) = FDouble 0
-simplFAExprAux (FMul a (FDouble 0)) = FDouble 0    
-simplFAExprAux (FMul (FInt n) (FInt m)) = FInt (n*m)
-simplFAExprAux (FMul (FInt n) (FDouble m)) = FDouble ((fromIntegral n)*m)
-simplFAExprAux (FMul (FDouble n) (FInt m)) = FDouble (n*(fromIntegral m))
-simplFAExprAux (FMul (FDouble n) (FDouble m)) = FDouble (n*m)
-simplFAExprAux (FMul a1 a2) = FMul (simplFAExpr a1) (simplFAExpr a2)
-simplFAExprAux (FDiv a1 a2) = FDiv (simplFAExpr a1) (simplFAExpr a2)
-simplFAExprAux (FNeg (FInt n)) = FInt (-n)
---simplFAExprAux (FNeg (FDouble n)) = FDouble (-n)
-simplFAExprAux (FNeg a) = FNeg (simplFAExpr a)
-simplFAExprAux (FPow a1 a2) = FPow (simplFAExprAux a1) (simplFAExprAux a2)
-simplFAExprAux (FFloor a) = FFloor (simplFAExprAux a)
-simplFAExprAux (FSqrt a) = FSqrt (simplFAExprAux a)
-simplFAExprAux (FAbs (FInt n)) = if n>=0 then FInt n else FInt (-n)
-simplFAExprAux (FAbs (FDouble n)) = if n>=0 then FDouble n else FDouble (-n)
-simplFAExprAux (FAbs (FAbs a)) = FAbs (simplFAExprAux a)
-simplFAExprAux (FAbs a) = FAbs (simplFAExprAux a)
-simplFAExprAux (FSin a) = FSin (simplFAExprAux a)
-simplFAExprAux (FCos a) = FCos (simplFAExprAux a)
-simplFAExprAux (FTan a) = FTan (simplFAExprAux a)
-simplFAExprAux (FAcos a) = FAcos (simplFAExprAux a)
-simplFAExprAux (FAsin a) = FAsin (simplFAExprAux a)
-simplFAExprAux (FAtan a) = FAtan (simplFAExprAux a)
-simplFAExprAux (FLn a) = FLn (simplFAExprAux a)
-simplFAExprAux (FExpo a) = FExpo (simplFAExprAux a)
-simplFAExprAux (FMod a1 a2) = FMod (simplFAExprAux a1) (simplFAExprAux a2)
-simplFAExprAux (FInt n) = FInt n
-simplFAExprAux (FDouble n) = FDouble n
-simplFAExprAux (FVar x) = FVar x
-simplFAExprAux (FPi) = FPi
-simplFAExprAux (FEFun f args) = FEFun f (map simplFAExprAux args)
-simplFAExprAux (RtoS (StoR fa)) = fa
-simplFAExprAux (RtoS a) = RtoS $ simplAExprAux a
-simplFAExprAux (RtoD (DtoR fa)) = fa
-simplFAExprAux (RtoD a) = RtoD $ simplAExprAux a
--- simplAExprAux c = c
-
-
-initErrExpr :: EExpr -> EExpr
-initErrExpr r@(ErrRat _)  = r
-initErrExpr (ErrorMark x) = HalfUlp (RealMark x)
-initErrExpr (ErrAdd    a1 e1 a2 e2) = ErrAdd (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initErrExpr (ErrSub    a1 e1 a2 e2) = ErrSub (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initErrExpr (ErrMul    a1 e1 a2 e2) = ErrMul (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initErrExpr (ErrDiv    a1 e1 a2 e2) = ErrDiv (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initErrExpr (ErrFloor  a e)         = ErrFloor   (initAExpr a) (initErrExpr e)
-initErrExpr (ErrFloor0 a e)         = ErrFloor0  (initAExpr a) (initErrExpr e)
-initErrExpr (ErrSqrt   a e)         = ErrSqrt    (initAExpr a) (initErrExpr e)
-initErrExpr (ErrSin    a e)         = ErrSin     (initAExpr a) (initErrExpr e)
-initErrExpr (ErrCos    a e)         = ErrCos     (initAExpr a) (initErrExpr e)
-initErrExpr (ErrTan    a e)         = ErrTan     (initAExpr a) (initErrExpr e)
-initErrExpr (ErrAsin   a e)         = ErrAsin    (initAExpr a) (initErrExpr e)
-initErrExpr (ErrAcos   a e)         = ErrAcos    (initAExpr a) (initErrExpr e)
-initErrExpr (ErrAtan   a e)         = ErrAtan    (initAExpr a) (initErrExpr e)
-initErrExpr (ErrAtanT  a e)         = ErrAtanT   (initAExpr a) (initErrExpr e)
-initErrExpr (ErrNeg    a e)         = ErrNeg     (initAExpr a) (initErrExpr e)
-initErrExpr (ErrAbs    a e)         = ErrAbs     (initAExpr a) (initErrExpr e)
-initErrExpr (ErrLn     a e)         = ErrLn      (initAExpr a) (initErrExpr e)
-initErrExpr (ErrExpo   a e)         = ErrExpo    (initAExpr a) (initErrExpr e)
-initErrExpr (ErrMulPow2L n e)       = ErrMulPow2L n (initErrExpr e)
-initErrExpr (ErrMulPow2R n e)       = ErrMulPow2R n (initErrExpr e)
-initErrExpr (AE a)                  = AE (initAExpr a)
-initErrExpr (HalfUlp a)             = HalfUlp (initAExpr a)
-initErrExpr (MaxErr es)             = MaxErr (map initErrExpr es)
-initErrExpr Infinity                = Infinity
-initErrExpr ErrUndefined            = ErrUndefined
-
-
-initAExpr :: AExpr -> AExpr
-initAExpr Pi              = Pi
-initAExpr FPrec           = FPrec
-initAExpr a@(Int _)       = a
-initAExpr a@(Double _)    = a 
-initAExpr a@(Var _)       = a
-initAExpr a@(RealMark _)  = a
-initAExpr a@(ErrorMark _) = a
-initAExpr (Add a1 a2) = Add (initAExpr a1) (initAExpr a2)
-initAExpr (Sub a1 a2) = Sub (initAExpr a1) (initAExpr a2)
-initAExpr (Mul a1 a2) = Mul (initAExpr a1) (initAExpr a2)
-initAExpr (Div a1 a2) = Div (initAExpr a1) (initAExpr a2)
-initAExpr (Pow a1 a2) = Pow (initAExpr a1) (initAExpr a2)
-initAExpr (Mod a1 a2) = Mod (initAExpr a1) (initAExpr a2)
-initAExpr (Neg a)     = Neg   (initAExpr a)
-initAExpr (Floor a)   = Floor (initAExpr a)
-initAExpr (Sqrt  a)   = Sqrt  (initAExpr a)
-initAExpr (Abs   a)   = Abs   (initAExpr a)
-initAExpr (Sin   a)   = Sin   (initAExpr a)
-initAExpr (Cos   a)   = Cos   (initAExpr a)
-initAExpr (Tan   a)   = Tan   (initAExpr a)
-initAExpr (ASin  a)   = ASin  (initAExpr a)
-initAExpr (ACos  a)   = ACos  (initAExpr a)
-initAExpr (ATan  a)   = ATan  (initAExpr a)
-initAExpr (Ln  a)     = Ln    (initAExpr a)
-initAExpr (Expo  a)   = Expo  (initAExpr a)
-initAExpr (SUlp a)    = SUlp (initAExpr a)
-initAExpr (DUlp a)    = DUlp (initAExpr a)
-initAExpr (StoR fa)   = StoR (initFAExpr fa)
-initAExpr (DtoR fa)   = DtoR (initFAExpr fa)
-initAExpr (EE e)      = EE (initErrExpr e)
-initAExpr (FExp fa)   = FExp (initFAExpr fa)
-initAExpr (EFun f as) = EFun f (map initAExpr as)
-initAExpr (Min as)    = Min (map initAExpr as)
-initAExpr (Max as)    = Max (map initAExpr as)
-initAExpr (MaxErr as) = MaxErr (map initAExpr as)
-initAExpr (ErrAdd a1 e1 a2 e2) = ErrAdd (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initAExpr (ErrSub a1 e1 a2 e2) = ErrSub (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initAExpr (ErrMul a1 e1 a2 e2) = ErrMul (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initAExpr (ErrDiv a1 e1 a2 e2) = ErrDiv (initAExpr a1) (initErrExpr e1) (initAExpr a2) (initErrExpr e2)
-initAExpr (ErrFloor  a e) = ErrFloor  (initAExpr a) (initErrExpr e)
-initAExpr (ErrFloor0 a e) = ErrFloor0 (initAExpr a) (initErrExpr e)
-initAExpr (ErrSqrt   a e) = ErrSqrt   (initAExpr a) (initErrExpr e)
-initAExpr (ErrSin    a e) = ErrSin    (initAExpr a) (initErrExpr e)
-initAExpr (ErrCos    a e) = ErrCos    (initAExpr a) (initErrExpr e)
-initAExpr (ErrTan    a e) = ErrTan    (initAExpr a) (initErrExpr e)
-initAExpr (ErrAsin   a e) = ErrAsin   (initAExpr a) (initErrExpr e)
-initAExpr (ErrAcos   a e) = ErrAcos   (initAExpr a) (initErrExpr e)
-initAExpr (ErrAtan   a e) = ErrAtan   (initAExpr a) (initErrExpr e)
-initAExpr (ErrAtanT  a e) = ErrAtanT  (initAExpr a) (initErrExpr e)
-initAExpr (ErrNeg    a e) = ErrNeg    (initAExpr a) (initErrExpr e)
-initAExpr (ErrAbs    a e) = ErrAbs    (initAExpr a) (initErrExpr e)
-initAExpr (ErrLn     a e) = ErrLn     (initAExpr a) (initErrExpr e)
-initAExpr (ErrExpo   a e) = ErrExpo   (initAExpr a) (initErrExpr e)
-initAExpr (ErrMulPow2R n e) = ErrMulPow2R n (initErrExpr e)
-initAExpr (ErrMulPow2L n e) = ErrMulPow2L n (initErrExpr e)
-initAExpr (AE a) = AE (initAExpr a)
-initAExpr (HalfUlp a) = HalfUlp (initAExpr a)
-initAExpr r@(ErrRat _) = r
-initAExpr Infinity = Infinity
-initAExpr ErrUndefined = ErrUndefined
-initAExpr a = error $ "niy "++ show a
-
-initFAExpr :: FAExpr -> FAExpr
-initFAExpr a@(FInt _)     = a
-initFAExpr a@(FDouble _)  = a
-initFAExpr a@(FVar _)     = a
-initFAExpr FPi            = FPi
-initFAExpr (FAdd fa1 fa2) = FAdd (initFAExpr fa1) (initFAExpr fa2)
-initFAExpr (FSub fa1 fa2) = FSub (initFAExpr fa1) (initFAExpr fa2)
-initFAExpr (FMul fa1 fa2) = FMul (initFAExpr fa1) (initFAExpr fa2)
-initFAExpr (FDiv fa1 fa2) = FDiv (initFAExpr fa1) (initFAExpr fa2)
-initFAExpr (FPow fa1 fa2) = FPow (initFAExpr fa1) (initFAExpr fa2)
-initFAExpr (FMod fa1 fa2) = FMod (initFAExpr fa1) (initFAExpr fa2)
-initFAExpr (FNeg fa)      = FNeg   (initFAExpr fa)
-initFAExpr (FFloor fa)    = FFloor (initFAExpr fa)
-initFAExpr (FSqrt  fa)    = FSqrt  (initFAExpr fa)
-initFAExpr (FAbs   fa)    = FAbs   (initFAExpr fa)
-initFAExpr (FSin   fa)    = FSin   (initFAExpr fa)
-initFAExpr (FCos   fa)    = FCos   (initFAExpr fa)
-initFAExpr (FTan   fa)    = FTan   (initFAExpr fa)
-initFAExpr (FAcos fa)     = FAcos (initFAExpr fa)
-initFAExpr (FAsin fa)     = FAsin (initFAExpr fa)
-initFAExpr (FAtan fa)     = FAtan (initFAExpr fa)
-initFAExpr (FLn fa)       = FLn (initFAExpr fa)
-initFAExpr (FExpo fa)     = FExpo (initFAExpr fa)
-initFAExpr (RtoS a)       = RtoS (initAExpr a)
-initFAExpr (RtoD a)       = RtoD (initAExpr a)
-initFAExpr (FEFun f fas)  = FEFun f (map initFAExpr fas)
-initFAExpr (FMin fas)     = FMin  (map initFAExpr fas)
-initFAExpr (FMax fas)     = FMax  (map initFAExpr fas)
-
-initFBExpr :: FBExpr -> FBExpr
-initFBExpr (FOr b1 b2)  = FOr  (initFBExpr b1) (initFBExpr b2)
-initFBExpr (FAnd b1 b2) = FAnd (initFBExpr b1) (initFBExpr b2)
-initFBExpr (FNot b)     = FNot (initFBExpr b) 
-initFBExpr (FEq  a1 a2) = FEq  (initFAExpr a1) (initFAExpr a2)
-initFBExpr (FNeq a1 a2) = FNeq (initFAExpr a1) (initFAExpr a2)
-initFBExpr (FLt  a1 a2) = FLt  (initFAExpr a1) (initFAExpr a2)
-initFBExpr (FLtE a1 a2) = FLtE (initFAExpr a1) (initFAExpr a2)
-initFBExpr (FGt  a1 a2) = FGt  (initFAExpr a1) (initFAExpr a2)
-initFBExpr (FGtE a1 a2) = FGtE (initFAExpr a1) (initFAExpr a2)
-initFBExpr FBTrue       = FBTrue
-initFBExpr FBFalse      = FBFalse
+simplFAExprAux = replaceInFAExpr simplFAExprAux'
+  where
+    simplFAExprAux' :: FAExpr -> Maybe FAExpr
+    simplFAExprAux' (FAdd  _          a  (FInt    0)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FAdd  _ (FInt    0)          a ) = Just $ simplFAExprAux a
+    simplFAExprAux' (FAdd  _          a  (FCnst _ 0)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FAdd  _ (FCnst _ 0)          a ) = Just $ simplFAExprAux a
+    simplFAExprAux' (FAdd  _ (FInt    n) (FInt    m)) = Just $ FInt (n+m)
+    simplFAExprAux' (FAdd fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n + m)
+    simplFAExprAux' (FAdd fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n + fromIntegral m)
+    simplFAExprAux' (FAdd fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n+m)
+    simplFAExprAux' (FSub  _          a  (FInt    0)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FSub fp (FInt    0)          a ) = Just $ FNeg fp $ simplFAExprAux a
+    simplFAExprAux' (FSub  _          a  (FCnst _ 0)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FSub fp (FCnst _ 0)          a ) = Just $ FNeg fp $ simplFAExprAux a
+    simplFAExprAux' (FSub  _ (FInt    n) (FInt    m)) = Just $ FInt (n-m)
+    simplFAExprAux' (FSub fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n - m)
+    simplFAExprAux' (FSub fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n - fromIntegral m)
+    simplFAExprAux' (FSub fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n-m)
+    simplFAExprAux' (FMul  _          a  (FInt    1)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FMul  _ (FInt    1)          a ) = Just $ simplFAExprAux a
+    simplFAExprAux' (FMul  _          a  (FCnst _ 1)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FMul  _ (FCnst _ 1)          a ) = Just $ simplFAExprAux a
+    simplFAExprAux' (FMul  _ (FInt    0)          _ ) = Just $ FInt 0
+    simplFAExprAux' (FMul  _          _  (FInt    0)) = Just $ FInt 0
+    simplFAExprAux' (FMul fp (FCnst _ 0)          _ ) = Just $ FCnst fp 0
+    simplFAExprAux' (FMul fp          _  (FCnst _ 0)) = Just $ FCnst fp 0    
+    simplFAExprAux' (FMul  _ (FInt    n) (FInt    m)) = Just $ FInt (n*m)
+    simplFAExprAux' (FMul fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n * m)
+    simplFAExprAux' (FMul fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n * fromIntegral m)
+    simplFAExprAux' (FMul fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n*m)
+    simplFAExprAux' (FIAdd            a  (FInt    0)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FIAdd   (FInt    0)          a ) = Just $ simplFAExprAux a
+    simplFAExprAux' (FIAdd   (FInt    n) (FInt    m)) = Just $ FInt (n+m)
+    simplFAExprAux' (FISub            a  (FInt    0)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FISub   (FInt    0)          a ) = Just $ FINeg $ simplFAExprAux a
+    simplFAExprAux' (FISub   (FInt    n) (FInt    m)) = Just $ FInt (n-m)
+    simplFAExprAux' (FIMul            a  (FInt    1)) = Just $ simplFAExprAux a
+    simplFAExprAux' (FIMul   (FInt    1)          a ) = Just $ simplFAExprAux a
+    simplFAExprAux' (FIMul   (FInt    0)          _ ) = Just $ FInt 0
+    simplFAExprAux' (FIMul            _  (FInt    0)) = Just $ FInt 0   
+    simplFAExprAux' (FIMul   (FInt    n) (FInt    m)) = Just $ FInt (n*m)
+    simplFAExprAux' (FNeg  _ (FInt    n))             = Just $ FInt (-n)
+    simplFAExprAux' (FAbs  _ (FInt    n))             = Just $ if n>=0 then FInt n else FInt (-n)
+    simplFAExprAux' (FAbs fp (FCnst _ n))             = Just $ if n>=0 then FCnst fp n else FCnst fp (-n)
+    simplFAExprAux' (FINeg   (FInt    n))             = Just $ FInt (-n)
+    simplFAExprAux' (FIAbs   (FInt    n))             = Just $ if n>=0 then FInt n else FInt (-n)
+    simplFAExprAux' ae = Nothing
 
 initBExpr :: BExpr -> BExpr
-initBExpr (Or b1 b2)  = Or  (initBExpr b1) (initBExpr b2)
-initBExpr (And b1 b2) = And (initBExpr b1) (initBExpr b2)
-initBExpr (Not b)     = Not (initBExpr b) 
-initBExpr (Eq  a1 a2) = Eq  (initAExpr a1) (initAExpr a2)
-initBExpr (Neq a1 a2) = Neq (initAExpr a1) (initAExpr a2)
-initBExpr (Lt  a1 a2) = Lt  (initAExpr a1) (initAExpr a2)
-initBExpr (LtE a1 a2) = LtE (initAExpr a1) (initAExpr a2)
-initBExpr (Gt  a1 a2) = Gt  (initAExpr a1) (initAExpr a2)
-initBExpr (GtE a1 a2) = GtE (initAExpr a1) (initAExpr a2)
-initBExpr BTrue       = BTrue
-initBExpr BFalse      = BFalse
+initBExpr = replaceInBExpr initErrorMark
+
+initAExpr :: AExpr -> AExpr
+initAExpr = replaceInAExpr initErrorMark
+
+initFAExpr :: FAExpr -> FAExpr
+initFAExpr = replaceInFAExpr initFAExpr' 
+
+initFBExpr :: FBExpr -> FBExpr
+initFBExpr = replaceInFBExpr initFAExpr' 
+
+initErrorMark :: AExpr -> Maybe AExpr
+initErrorMark (ErrorMark _ TInt) = Just (Int 0)
+initErrorMark (ErrorMark x   fp) = Just (HalfUlp (RealMark x) fp)
+initErrorMark (StoR fae) = Just (StoR (initFAExpr fae))
+initErrorMark _ = Nothing
+
+initFAExpr' :: FAExpr -> Maybe FAExpr
+initFAExpr' (RtoD a)  = Just (RtoD $ initAExpr  a)
+initFAExpr' (RtoS a)  = Just (RtoS $ initAExpr  a)
+initFAExpr' _ = Nothing
 
 
+substituteInRStm :: [(VarName, AExpr)] -> RStm -> RStm
+substituteInRStm subs (RLet x fp ae stm) = RLet x fp ae (substituteInRStm subs stm)
+substituteInRStm subs (RIte be stmThen stmElse) = RIte (substituteInBExpr subs be) (substituteInRStm subs stmThen) (substituteInRStm subs stmElse)
+substituteInRStm subs (RForLoop fp idxStart idxEnd initAcc idx acc forBody) = RForLoop fp idxStart idxEnd initAcc idx acc (substituteInRStm subs forBody)
+substituteInRStm subs (RListIte listThen stmElse) = RListIte (zip (map (substituteInBExpr subs . fst) listThen) (map (substituteInRStm subs . snd) listThen)) (substituteInRStm subs stmElse)
+substituteInRStm subs (RStmExpr ae) = RStmExpr $ substituteInAExpr subs ae
+substituteInRStm _ RUnstWarning = RUnstWarning
+
+substituteInBExpr :: [(VarName, AExpr)] -> BExpr -> BExpr
+substituteInBExpr subs = replaceInBExpr (replaceVarWithAExpr subs)
+
+substituteInAExpr :: [(VarName, AExpr)] -> AExpr -> AExpr
+substituteInAExpr subs = replaceInAExpr (replaceVarWithAExpr subs)
+
+replaceVarWithAExpr :: [(VarName, AExpr)] -> AExpr -> Maybe AExpr
+replaceVarWithAExpr ((y,ae):subs) var@(Var _ x) | x == y = Just ae
+                                                | otherwise = replaceVarWithAExpr subs var
+replaceVarWithAExpr _ _ = Nothing
+
+
+isInt :: RealFrac a => a -> Bool
+isInt x = x == fromInteger (round x)
+
+isExactlyRepresentable :: Rational -> Bool
+isExactlyRepresentable n = toRational(fromRational n :: Double) == n
+
+nextDouble :: Data.Bits.Floating.FloatingBits a w => Rational -> a
+nextDouble f = if isExactlyRepresentable f then fromRational f else
+    nextUp $ fromRational f
+
+prevDouble :: Data.Bits.Floating.FloatingBits a w => Rational -> a
+prevDouble f =  if isExactlyRepresentable f then fromRational f else
+   nextDown $ fromRational f
+
+nextUp' :: (RealFrac a, Data.Bits.Floating.FloatingBits a w) => a -> a
+nextUp' f = if isInt f then f else nextUp f
+
+nextDown' :: (RealFrac a, Data.Bits.Floating.FloatingBits a w) => a -> a
+nextDown' f = if isInt f then f else nextDown f
+
+localVars :: Stm -> [(VarName, FAExpr)]
+localVars (Let x _ ae stm) = (x,ae) : localVars stm
+localVars (Ite _ stmThen stmElse) = localVars stmThen ++ localVars stmElse
+localVars (ListIte listThen stmElse) = concatMap (localVars . snd) listThen ++ localVars stmElse
+localVars (StmExpr _) = []
+localVars (ForLoop _ _ _ _ _ _ stm) = localVars stm
+localVars UnstWarning = []
+
+forIndexes :: Stm -> [(VarName, FAExpr, FAExpr)]
+forIndexes (Let _ _ _ stm) = forIndexes stm
+forIndexes (Ite _ stmThen stmElse) = forIndexes stmThen ++ forIndexes stmElse
+forIndexes (ListIte listThen stmElse) = concatMap (forIndexes . snd) listThen ++ forIndexes stmElse
+forIndexes (StmExpr _) = []
+forIndexes (ForLoop _ idxStart idxEnd _ idx _ forBody) = (idx, idxStart, idxEnd) : forIndexes forBody
+forIndexes UnstWarning = []
+
+varList :: FAExpr -> [FAExpr]
+varList fae = elimDuplicates (foldFAExpr varList' const fae [])
+  where
+    varList' :: [FAExpr] -> FAExpr -> [FAExpr]
+    varList' acc var@(FVar _ _) = var:acc
+    varList' _   (RtoD ae)      = error $ "varList: niy for " ++ show ae ++ "."
+    varList' _   (RtoS ae)      = error $ "varList: niy for " ++ show ae ++ "."
+    varList' acc _              = acc
+
+noRoundOffErrorIn :: FBExpr -> Bool
+noRoundOffErrorIn be = foldFBExpr noRoundOffErrorInAExpr' const be True
+
+noRoundOffErrorInAExpr :: FAExpr -> Bool
+noRoundOffErrorInAExpr ae = foldFAExpr noRoundOffErrorInAExpr' const ae True
+
+noRoundOffErrorInAExpr' :: Bool -> FAExpr -> Bool
+noRoundOffErrorInAExpr' acc (FCnst _ n)    = acc && toRational (floor (fromRational n :: Double) :: Integer) == n
+noRoundOffErrorInAExpr' acc (FVar  TInt _) = acc
+noRoundOffErrorInAExpr' _   (FVar _ _)     = False
+noRoundOffErrorInAExpr' _   (RtoD _)       = False 
+noRoundOffErrorInAExpr' _   (RtoS _)       = False
+noRoundOffErrorInAExpr' _   (StoD _)       = False
+noRoundOffErrorInAExpr' _   (DtoS _)       = False
+noRoundOffErrorInAExpr' _   FArrayElem{}   = False
+noRoundOffErrorInAExpr' acc _              = acc
+
+funCallListStm :: Stm -> [FAExpr]
+funCallListStm = elimDuplicates . funCallListStm'
+  where
+    funCallListStm' :: Stm -> [FAExpr]
+    funCallListStm' (Let _ _ ae stm) = funCallListFAExpr ae ++ funCallListStm' stm
+    funCallListStm' (Ite _ stmThen stmElse) = funCallListStm' stmThen ++ funCallListStm' stmElse
+    funCallListStm' (ListIte listThen stmElse) = concatMap (funCallListStm' . snd) listThen ++ funCallListStm' stmElse
+    funCallListStm' (StmExpr ae) = funCallListFAExpr ae
+    funCallListStm' (ForLoop _ _ _ _ _ _ stm) = funCallListStm' stm
+    funCallListStm' UnstWarning = []
+
+funCallListFBExpr :: FBExpr -> [FAExpr]
+funCallListFBExpr be = elimDuplicates $ foldFBExpr funCallListAcc const be []
+
+funCallListFAExpr :: FAExpr -> [FAExpr]
+funCallListFAExpr ae = elimDuplicates $ foldFAExpr funCallListAcc const ae []
+
+funCallListAcc :: [FAExpr] -> FAExpr -> [FAExpr]
+funCallListAcc acc fc@(FEFun _ _ _)         = fc:acc
+funCallListAcc acc (Value fc@(FEFun _ _ _)) = fc:acc
+funCallListAcc acc (RtoD (Int _))           = acc
+funCallListAcc acc (RtoS (Int _))           = acc
+funCallListAcc acc (RtoD (Rat _))           = acc
+funCallListAcc acc (RtoS (Rat _))           = acc
+funCallListAcc _   (RtoD _)                 = error "funCallList: case RtoD niy"
+funCallListAcc _   (RtoS _)                 = error "funCallList: case RtoS niy"
+funCallListAcc acc _                        = acc
+
+equivModuloIndex :: FAExpr -> FAExpr -> Bool
+equivModuloIndex (FFma   _ ae1 ae2 ae3) (FFma   _ ae1' ae2' ae3') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2' && equivModuloIndex ae3 ae3'
+equivModuloIndex (FIAdd   ae1 ae2) (FIAdd   ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FISub   ae1 ae2) (FISub   ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FIMul   ae1 ae2) (FIMul   ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FIDiv   ae1 ae2) (FIDiv   ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FItDiv  ae1 ae2) (FItDiv  ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FIMod   ae1 ae2) (FIMod   ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FItMod  ae1 ae2) (FItMod  ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FIPow   ae1 ae2) (FIPow   ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FIExp   ae1 ae2) (FIExp   ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FAdd  _ ae1 ae2) (FAdd  _ ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FSub  _ ae1 ae2) (FSub  _ ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FMul  _ ae1 ae2) (FMul  _ ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FDiv  _ ae1 ae2) (FDiv  _ ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FPow  _ ae1 ae2) (FPow  _ ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FMod  _ ae1 ae2) (FMod  _ ae1' ae2') = equivModuloIndex ae1 ae1' && equivModuloIndex ae2 ae2'
+equivModuloIndex (FINeg    ae)     (FINeg    ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FIAbs    ae)     (FIAbs    ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FNeg   _ ae)     (FNeg   _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FFloor _ ae)     (FFloor _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FSqrt  _ ae)     (FSqrt  _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FAbs   _ ae)     (FAbs   _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FSin   _ ae)     (FSin   _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FCos   _ ae)     (FCos   _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FTan   _ ae)     (FTan   _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FAcos  _ ae)     (FAcos  _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FAsin  _ ae)     (FAsin  _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FAtan  _ ae)     (FAtan  _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FLn    _ ae)     (FLn    _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FExpo  _ ae)     (FExpo  _ ae')      = equivModuloIndex ae  ae'
+equivModuloIndex (FInt n) (FInt m) = n==m
+equivModuloIndex (FCnst fp1 r1) (FCnst fp2 r2) = fp1==fp2 && r1==r2
+equivModuloIndex (FVar  fp1 x1) (FVar  fp2 x2) = fp1==fp2 && x1==x2
+equivModuloIndex (FEFun f1 fp1 args1) (FEFun f2 fp2 args2) = f1 == f2 && fp1 == fp2 && foldl (\b (arg1,arg2) -> b && equivModuloIndex arg1 arg2) True (zip args1 args2)
+equivModuloIndex (StructVar s1) (StructVar s2) = s1==s2
+equivModuloIndex (FArrayElem fp1 _ v1 _) (FArrayElem fp2 _ v2 _) = fp1==fp2 && v1==v2
+equivModuloIndex (FMin aes1) (FMin aes2) = foldl (\b (ae1,ae2) -> b && equivModuloIndex ae1 ae2) True (zip aes1 aes2)
+equivModuloIndex (FMax aes1) (FMax aes2) = foldl (\b (ae1,ae2) -> b && equivModuloIndex ae1 ae2) True (zip aes1 aes2)
+equivModuloIndex (RtoD  (Int n))  (RtoD  (Int m))  = n==m
+equivModuloIndex (RtoS  (Int n))  (RtoS  (Int m))  = n==m
+equivModuloIndex (RtoD  (Rat r1)) (RtoD  (Rat r2)) = r1==r2
+equivModuloIndex (RtoS  (Rat r1)) (RtoS  (Rat r2)) = r1==r2
+equivModuloIndex (RtoD _) (RtoD _) = error "equivModuloIndex niy for RtoD."
+equivModuloIndex (RtoS _) (RtoS _) = error "equivModuloIndex niy for RtoS."
+equivModuloIndex (StoD  ae) (StoD  ae') = equivModuloIndex ae ae'
+equivModuloIndex (DtoS  ae) (DtoS  ae') = equivModuloIndex ae ae'
+equivModuloIndex (ItoD  ae) (ItoD  ae') = equivModuloIndex ae ae'
+equivModuloIndex (ItoS  ae) (ItoS  ae') = equivModuloIndex ae ae'
+equivModuloIndex (Value ae) (Value ae') = equivModuloIndex ae ae'
+equivModuloIndex _ _ = False
+
+
+foldFBExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> FBExpr -> a -> a
+foldFBExpr faExprF aExprF (FOr  be1 be2) a = foldFBExpr faExprF aExprF be2
+                                           $ foldFBExpr faExprF aExprF be1 a
+foldFBExpr faExprF aExprF (FAnd be1 be2) a = foldFBExpr faExprF aExprF be2
+                                           $ foldFBExpr faExprF aExprF be1 a
+foldFBExpr faExprF aExprF (FNot be1)     a = foldFBExpr faExprF aExprF be1 a
+foldFBExpr faExprF aExprF (FEq  ae1 ae2) a = foldFAExpr faExprF aExprF ae2
+                                           $ foldFAExpr faExprF aExprF ae1 a
+foldFBExpr faExprF aExprF (FNeq ae1 ae2) a = foldFAExpr faExprF aExprF ae2
+                                           $ foldFAExpr faExprF aExprF ae1 a
+foldFBExpr faExprF aExprF (FLt  ae1 ae2) a = foldFAExpr faExprF aExprF ae2
+                                           $ foldFAExpr faExprF aExprF ae1 a
+foldFBExpr faExprF aExprF (FLtE ae1 ae2) a = foldFAExpr faExprF aExprF ae2
+                                           $ foldFAExpr faExprF aExprF ae1 a
+foldFBExpr faExprF aExprF (FGt  ae1 ae2) a = foldFAExpr faExprF aExprF ae2
+                                           $ foldFAExpr faExprF aExprF ae1 a
+foldFBExpr faExprF aExprF (FGtE ae1 ae2) a = foldFAExpr faExprF aExprF ae2
+                                           $ foldFAExpr faExprF aExprF ae1 a
+foldFBExpr faExprF aExprF (IsValid  ae1) a = foldFAExpr faExprF aExprF ae1 a
+foldFBExpr _ _ FBTrue  a = a
+foldFBExpr _ _ FBFalse a = a
+
+foldFAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> FAExpr -> a -> a
+foldFAExpr faExprF _ ae@(FCnst _ _)   a = faExprF a ae
+foldFAExpr faExprF _ ae@(FVar  _ _)   a = faExprF a ae
+foldFAExpr faExprF _ ae@(StructVar _) a = faExprF a ae
+foldFAExpr faExprF _ ae@(FInt _)      a = faExprF a ae
+foldFAExpr faExprF aExprF ae@(FINeg            ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FNeg   _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FFloor _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FSqrt  _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FIAbs            ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FAbs   _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FSin   _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FCos   _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FTan   _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FAcos  _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FAsin  _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FAtan  _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FLn    _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FExpo  _        ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(StoD             ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(DtoS             ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(ItoD             ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(ItoS             ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(Value            ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FArrayElem _ _ _ ae1) a = foldUnaryFAExpr faExprF aExprF ae ae1 a
+foldFAExpr faExprF aExprF ae@(FIAdd     ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FISub     ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FIMul     ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FIDiv     ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FItDiv    ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FIMod     ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FItMod    ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FIPow     ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FIExp     ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FAdd   _ ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FSub   _ ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FMul   _ ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FDiv   _ ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FPow   _ ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(FMod   _ ae1 ae2) a = foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a
+foldFAExpr faExprF aExprF ae@(RtoD ae1) a = foldAExpr faExprF aExprF ae1
+                                          $ faExprF a ae
+foldFAExpr faExprF aExprF ae@(RtoS ae1) a = foldAExpr faExprF aExprF ae1
+                                          $ faExprF a ae
+foldFAExpr faExprF aExprF ae@(FFma _ ae1 ae2 ae3) a = foldFAExpr faExprF aExprF ae3
+                                                       $ foldFAExpr faExprF aExprF ae2
+                                                       $ foldFAExpr faExprF aExprF ae1
+                                                       $ faExprF a ae
+foldFAExpr faExprF aExprF ae@(FMin      aes) a = foldListFAExpr faExprF aExprF ae aes a
+foldFAExpr faExprF aExprF ae@(FMax      aes) a = foldListFAExpr faExprF aExprF ae aes a
+foldFAExpr faExprF aExprF ae@(FEFun _ _ aes) a = foldListFAExpr faExprF aExprF ae aes a
+
+
+foldUnaryFAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> FAExpr -> FAExpr -> a -> a
+foldUnaryFAExpr faExprF aExprF ae ae1 a = foldFAExpr faExprF aExprF ae1
+                                        $ faExprF a ae
+
+foldBinaryFAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> FAExpr -> FAExpr -> FAExpr -> a -> a
+foldBinaryFAExpr faExprF aExprF ae ae1 ae2 a = foldFAExpr faExprF aExprF ae2
+                                             $ foldFAExpr faExprF aExprF ae1
+                                             $ faExprF a ae
+
+foldQuadFAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> FAExpr -> FAExpr -> FAExpr -> FAExpr -> FAExpr -> a -> a
+foldQuadFAExpr faExprF aExprF ae ae1 ae2 ae3 ae4 a = foldFAExpr faExprF aExprF ae4
+                                                   $ foldFAExpr faExprF aExprF ae3
+                                                   $ foldFAExpr faExprF aExprF ae2
+                                                   $ foldFAExpr faExprF aExprF ae1
+                                                   $ faExprF a ae
+
+foldListFAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> FAExpr -> [FAExpr] -> a -> a
+foldListFAExpr faExprF aExprF ae aeList a = foldr (foldFAExpr faExprF aExprF) (faExprF a ae) aeList
+
+foldBExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> BExpr -> a -> a
+foldBExpr faExprF aExprF (Or  be1 be2)  a = foldBExpr faExprF aExprF be2
+                                          $ foldBExpr faExprF aExprF be1 a
+foldBExpr faExprF aExprF (And be1 be2)  a = foldBExpr faExprF aExprF be2
+                                          $ foldBExpr faExprF aExprF be1 a
+foldBExpr faExprF aExprF (Not be1)      a = foldBExpr faExprF aExprF be1 a
+foldBExpr faExprF aExprF (Eq  ae1 ae2)  a = foldAExpr faExprF aExprF ae2 
+                                          $ foldAExpr faExprF aExprF ae1 a
+foldBExpr faExprF aExprF (Neq ae1 ae2)  a = foldAExpr faExprF aExprF ae2
+                                          $ foldAExpr faExprF aExprF ae1 a
+foldBExpr faExprF aExprF (Lt  ae1 ae2)  a = foldAExpr faExprF aExprF ae2
+                                          $ foldAExpr faExprF aExprF ae1 a
+foldBExpr faExprF aExprF (LtE ae1 ae2)  a = foldAExpr faExprF aExprF ae2
+                                          $ foldAExpr faExprF aExprF ae1 a
+foldBExpr faExprF aExprF (Gt  ae1 ae2)  a = foldAExpr faExprF aExprF ae2
+                                          $ foldAExpr faExprF aExprF ae1 a
+foldBExpr faExprF aExprF (GtE ae1 ae2)  a = foldAExpr faExprF aExprF ae2
+                                          $ foldAExpr faExprF aExprF ae1 a
+foldBExpr _ _ BTrue          a = a
+foldBExpr _ _ BFalse         a = a 
+
+
+foldAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> AExpr -> a  -> a
+foldAExpr _       aExprF ae@(Int _)         a = aExprF a ae
+foldAExpr _       aExprF ae@(Rat _)         a = aExprF a ae
+foldAExpr _       aExprF ae@Prec            a = aExprF a ae
+foldAExpr _       aExprF ae@(Var _ _)       a = aExprF a ae
+foldAExpr _       aExprF ae@Infinity        a = aExprF a ae
+foldAExpr _       aExprF ae@(RealMark _)    a = aExprF a ae
+foldAExpr _       aExprF ae@ErrUndefined    a = aExprF a ae
+foldAExpr _       aExprF ae@(ErrRat _)      a = aExprF a ae
+foldAExpr _       aExprF ae@(ErrorMark _ _) a = aExprF a ae
+foldAExpr faExprF aExprF ae@(Neg   ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Floor ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Sqrt  ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Abs   ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Sin   ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Cos   ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Tan   ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(ASin  ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(ACos  ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(ATan  ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Ln    ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Expo  ae1)           a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(ErrMulPow2R _ _ ee)  a = foldUnaryAExpr  faExprF aExprF ae ee      a
+foldAExpr faExprF aExprF ae@(ErrMulPow2L _ _ ee)  a = foldUnaryAExpr  faExprF aExprF ae ee      a
+foldAExpr faExprF aExprF ae@(ArrayElem _ _ _ ae1) a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(HalfUlp ae1 _)       a = foldUnaryAExpr  faExprF aExprF ae ae1     a
+foldAExpr faExprF aExprF ae@(Add         ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(Sub         ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(Mul         ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(Div         ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(Pow         ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(Mod         ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(IDiv        ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(ItDiv       ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(IMod        ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(ItMod       ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(Expt        ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(ErrFloor  _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrFloor0 _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrSqrt   _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a 
+foldAExpr faExprF aExprF ae@(ErrSin    _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a 
+foldAExpr faExprF aExprF ae@(ErrCos    _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a 
+foldAExpr faExprF aExprF ae@(ErrTan    _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a 
+foldAExpr faExprF aExprF ae@(ErrAsin   _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrAcos   _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a 
+foldAExpr faExprF aExprF ae@(ErrAtan   _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrAtanT  _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a 
+foldAExpr faExprF aExprF ae@(ErrNeg    _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrAbs    _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrLn     _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrExpo   _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrStoD     ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrDtoS     ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrItoS     ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrItoD     ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
+foldAExpr faExprF aExprF ae@(ErrAdd    _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(ErrSub    _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(ErrMul    _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(ErrDiv    _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(ErrItDiv  _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(ErrMod    _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(ErrItMod  _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(EFun _ _ aes) a = foldListAExpr faExprF aExprF ae aes a
+foldAExpr faExprF aExprF ae@(Min      aes) a = foldListAExpr faExprF aExprF ae aes a
+foldAExpr faExprF aExprF ae@(Max      aes) a = foldListAExpr faExprF aExprF ae aes a
+foldAExpr faExprF aExprF ae@(MaxErr   aes) a = foldListAExpr faExprF aExprF ae aes a
+foldAExpr faExprF aExprF ae@(StoR fae)        a = foldFAExpr faExprF aExprF fae
+                                                $ aExprF a ae
+foldAExpr faExprF aExprF ae@(DtoR fae)        a = foldFAExpr faExprF aExprF fae
+                                                $ aExprF a ae
+foldAExpr faExprF aExprF ae@(FExp fae)        a = foldFAExpr faExprF aExprF fae
+                                                $ aExprF a ae
+foldAExpr faExprF aExprF ae@(Fma ae1 ae2 ae3) a = foldAExpr faExprF aExprF ae3
+                                                $ foldAExpr faExprF aExprF ae2
+                                                $ foldAExpr faExprF aExprF ae1
+                                                $ aExprF a ae
+foldAExpr faExprF aExprF ae@(ErrFma _ ae1 ee1 ae2 ee2 ae3 ee3) a = foldAExpr faExprF aExprF ee3
+                                                                 $ foldAExpr faExprF aExprF ae3
+                                                                 $ foldAExpr faExprF aExprF ee2
+                                                                 $ foldAExpr faExprF aExprF ae2
+                                                                 $ foldAExpr faExprF aExprF ee1
+                                                                 $ foldAExpr faExprF aExprF ae1
+                                                                 $ aExprF a ae
+
+foldUnaryAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> AExpr -> AExpr -> a -> a
+foldUnaryAExpr faExprF aExprF ae ae1 a = foldAExpr faExprF aExprF ae1
+                                       $ aExprF a ae
+foldBinaryAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> AExpr -> AExpr -> AExpr -> a -> a
+foldBinaryAExpr faExprF aExprF ae ae1 ae2 a = foldAExpr faExprF aExprF ae2
+                                            $ foldAExpr faExprF aExprF ae1
+                                            $ aExprF a ae
+
+foldQuadAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> AExpr -> AExpr -> AExpr -> AExpr -> AExpr -> a -> a
+foldQuadAExpr faExprF aExprF ae ae1 ae2 ae3 ae4 a = foldAExpr faExprF aExprF ae4
+                                                    $ foldAExpr faExprF aExprF ae3
+                                                    $ foldAExpr faExprF aExprF ae2
+                                                    $ foldAExpr faExprF aExprF ae1
+                                                    $ aExprF a ae
+
+foldListAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> AExpr -> [AExpr] -> a -> a
+foldListAExpr faExprF aExprF ae aeList a = foldl aExprF (foldAExpr faExprF aExprF ae a) aeList
+
+
+replaceInFAExpr :: (FAExpr -> Maybe FAExpr) -> FAExpr -> FAExpr
+replaceInFAExpr f fexpr = fromMaybe (replaceInFAExpr' fexpr) (f fexpr)
+  where
+    replaceInFAExpr' :: FAExpr -> FAExpr
+    replaceInFAExpr' ae@(FInt _)      = ae
+    replaceInFAExpr' ae@(FCnst _ _)   = ae
+    replaceInFAExpr' ae@(FVar  _ _)   = ae
+    replaceInFAExpr' ae@(StructVar _) = ae
+    replaceInFAExpr' ae@FArrayElem{}  = ae
+    replaceInFAExpr' (FEFun g fp args)   = FEFun g fp (map (replaceInFAExpr f) args)
+    replaceInFAExpr' (FIAdd  ae1 ae2)    = FIAdd     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FISub  ae1 ae2)    = FISub     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FIMul  ae1 ae2)    = FIMul     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FIDiv  ae1 ae2)    = FIDiv     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FItDiv ae1 ae2)    = FItDiv    (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FIMod  ae1 ae2)    = FIMod     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FItMod ae1 ae2)    = FItMod    (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FIPow  ae1 ae2)    = FIPow     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FIExp  ae1 ae2)    = FIExp     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FAdd   fp ae1 ae2) = FAdd   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FSub   fp ae1 ae2) = FSub   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FMul   fp ae1 ae2) = FMul   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FDiv   fp ae1 ae2) = FDiv   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FPow   fp ae1 ae2) = FPow   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FMod   fp ae1 ae2) = FMod   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
+    replaceInFAExpr' (FINeg  ae)         = FINeg     (replaceInFAExpr f ae)
+    replaceInFAExpr' (FIAbs  ae)         = FIAbs     (replaceInFAExpr f ae)
+    replaceInFAExpr' (FNeg   fp ae)      = FNeg   fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FFloor fp ae)      = FFloor fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FSqrt  fp ae)      = FSqrt  fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FAbs   fp ae)      = FAbs   fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FSin   fp ae)      = FSin   fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FCos   fp ae)      = FCos   fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FTan   fp ae)      = FTan   fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FAcos  fp ae)      = FAcos  fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FAsin  fp ae)      = FAsin  fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FAtan  fp ae)      = FAtan  fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FLn    fp ae)      = FLn    fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FExpo  fp ae) = FExpo  fp (replaceInFAExpr f ae)
+    replaceInFAExpr' (FFma   fp ae1 ae2 ae3) = FFma fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2) (replaceInFAExpr f ae3)
+    replaceInFAExpr' (FMin aes) = FMin (map (replaceInFAExpr f) aes)
+    replaceInFAExpr' (FMax aes) = FMax (map (replaceInFAExpr f) aes)
+    replaceInFAExpr' ae@(RtoD (Int _))  = ae
+    replaceInFAExpr' ae@(RtoS (Int _))  = ae
+    replaceInFAExpr' ae@(RtoD (Rat _))  = ae
+    replaceInFAExpr' ae@(RtoS (Rat _))  = ae
+    replaceInFAExpr' (StoD ae)  = StoD  (replaceInFAExpr f ae) 
+    replaceInFAExpr' (DtoS ae)  = DtoS  (replaceInFAExpr f ae)
+    replaceInFAExpr' (ItoD ae)  = ItoD  (replaceInFAExpr f ae)
+    replaceInFAExpr' (ItoS ae)  = ItoS  (replaceInFAExpr f ae)
+    replaceInFAExpr' (Value ae) = Value (replaceInFAExpr f ae)
+    replaceInFAExpr' ae         = error $ "replaceInFAExpr' niy for " ++ show ae
+
+replaceInFBExpr :: (FAExpr -> Maybe FAExpr) -> FBExpr -> FBExpr
+replaceInFBExpr g (FOr  be1 be2) = FOr  (replaceInFBExpr g be1) (replaceInFBExpr g be2)
+replaceInFBExpr g (FAnd be1 be2) = FAnd (replaceInFBExpr g be1) (replaceInFBExpr g be2)
+replaceInFBExpr g (FNot be)      = FNot (replaceInFBExpr g be)
+replaceInFBExpr g (FEq  ae1 ae2) = FEq  (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
+replaceInFBExpr g (FNeq ae1 ae2) = FNeq (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
+replaceInFBExpr g (FLt  ae1 ae2) = FLt  (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
+replaceInFBExpr g (FLtE ae1 ae2) = FLtE (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
+replaceInFBExpr g (FGt  ae1 ae2) = FGt  (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
+replaceInFBExpr g (FGtE ae1 ae2) = FGtE (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
+replaceInFBExpr g (IsValid ae)   = IsValid (replaceInFAExpr g ae)
+replaceInFBExpr _ FBTrue  = FBTrue
+replaceInFBExpr _ FBFalse = FBFalse
+
+replaceInAExpr :: (AExpr -> Maybe AExpr) -> AExpr -> AExpr
+replaceInAExpr f expr = fromMaybe (replaceInAExpr' f expr) (f expr)
+
+replaceInAExpr' :: (AExpr -> Maybe AExpr) -> AExpr -> AExpr
+replaceInAExpr' _ ae@(Int _)         = ae
+replaceInAExpr' _ ae@(Rat _)         = ae
+replaceInAExpr' _ ae@(Var _ _)       = ae
+replaceInAExpr' _ ae@ArrayElem{}     = ae 
+replaceInAExpr' _ ae@(RealMark _)    = ae
+replaceInAExpr' _ ae@(ErrorMark _ _) = ae
+replaceInAExpr' _ ae@(ErrRat _)      = ae
+replaceInAExpr' _ Prec = Prec
+replaceInAExpr' _ Infinity     = Infinity
+replaceInAExpr' _ ErrUndefined = ErrUndefined
+replaceInAExpr' f (Neg   ae)      = Neg   (replaceInAExpr f ae)
+replaceInAExpr' f (Floor ae)      = Floor (replaceInAExpr f ae)
+replaceInAExpr' f (Sqrt  ae)      = Sqrt  (replaceInAExpr f ae)
+replaceInAExpr' f (Abs   ae)      = Abs   (replaceInAExpr f ae)
+replaceInAExpr' f (Sin   ae)      = Sin   (replaceInAExpr f ae)
+replaceInAExpr' f (Cos   ae)      = Cos   (replaceInAExpr f ae)
+replaceInAExpr' f (Tan   ae)      = Tan   (replaceInAExpr f ae)
+replaceInAExpr' f (ASin  ae)      = ASin  (replaceInAExpr f ae)
+replaceInAExpr' f (ACos  ae)      = ACos  (replaceInAExpr f ae)
+replaceInAExpr' f (ATan  ae)      = ATan  (replaceInAExpr f ae)
+replaceInAExpr' f (Ln    ae)      = Ln    (replaceInAExpr f ae)
+replaceInAExpr' f (Expo  ae)      = Expo  (replaceInAExpr f ae)
+replaceInAExpr' f (Add   ae1 ae2) = Add   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (Sub   ae1 ae2) = Sub   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (Mul   ae1 ae2) = Mul   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (Div   ae1 ae2) = Div   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (Pow   ae1 ae2) = Pow   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (Mod   ae1 ae2) = Mod   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (IDiv  ae1 ae2) = IDiv  (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (ItDiv ae1 ae2) = ItDiv (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (IMod  ae1 ae2) = IMod  (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (ItMod ae1 ae2) = ItMod (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (Expt  ae1 ae2) = Expt  (replaceInAExpr f ae1) (replaceInAExpr f ae2)
+replaceInAExpr' f (EFun g fp args) = EFun g fp (map (replaceInAExpr f) args)
+replaceInAExpr' f (Min    aes) = Min    (map (replaceInAExpr f) aes)
+replaceInAExpr' f (Max    aes) = Max    (map (replaceInAExpr f) aes)
+replaceInAExpr' f (MaxErr aes) = MaxErr (map (replaceInAExpr f) aes)
+replaceInAExpr' f (Fma   ae1 ae2 ae3) = Fma (replaceInAExpr f ae1) (replaceInAExpr f ae2) (replaceInAExpr f ae3)
+replaceInAExpr' f (ErrAdd   fp ae1 ee1 ae2 ee2) = ErrAdd fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
+replaceInAExpr' f (ErrSub   fp ae1 ee1 ae2 ee2) = ErrSub fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
+replaceInAExpr' f (ErrMul   fp ae1 ee1 ae2 ee2) = ErrMul fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
+replaceInAExpr' f (ErrDiv   fp ae1 ee1 ae2 ee2) = ErrDiv fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
+replaceInAExpr' f (ErrItDiv fp ae1 ee1 ae2 ee2) = ErrItDiv fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
+replaceInAExpr' f (ErrMod   fp ae1 ee1 ae2 ee2) = ErrMod fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
+replaceInAExpr' f (ErrItMod fp ae1 ee1 ae2 ee2) = ErrItMod fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
+replaceInAExpr' f (ErrFma fp ae1 ee1 ae2 ee2 ae3 ee3) = ErrFma fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2) (replaceInAExpr f ae3) (replaceInAExpr f ee3)
+replaceInAExpr' f (ErrFloor  fp ae1 ee1) = ErrFloor  fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrFloor0 fp ae1 ee1) = ErrFloor0 fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrSqrt   fp ae1 ee1) = ErrSqrt   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrSin    fp ae1 ee1) = ErrSin    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrCos    fp ae1 ee1) = ErrCos    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrTan    fp ae1 ee1) = ErrTan    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrAsin   fp ae1 ee1) = ErrAsin   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrAcos   fp ae1 ee1) = ErrAcos   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrAtan   fp ae1 ee1) = ErrAtan   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrAtanT  fp ae1 ee1) = ErrAtanT  fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrNeg    fp ae1 ee1) = ErrNeg    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrAbs    fp ae1 ee1) = ErrAbs    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrLn     fp ae1 ee1) = ErrLn     fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
+replaceInAExpr' f (ErrExpo   fp ae1 ee1) = ErrExpo   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1)  
+replaceInAExpr' f (ErrMulPow2R fp i ee) = ErrMulPow2R fp i (replaceInAExpr f ee)
+replaceInAExpr' f (ErrMulPow2L fp i ee) = ErrMulPow2R fp i (replaceInAExpr f ee)
+replaceInAExpr' f (HalfUlp ae fp) = HalfUlp (replaceInAExpr f ae) fp
+replaceInAExpr' f (ErrStoD ae ee) = ErrStoD (replaceInAExpr f ae) (replaceInAExpr f ee)
+replaceInAExpr' f (ErrDtoS ae ee) = ErrDtoS (replaceInAExpr f ae) (replaceInAExpr f ee)
+replaceInAExpr' f (ErrItoS ae ee) = ErrItoS (replaceInAExpr f ae) (replaceInAExpr f ee)
+replaceInAExpr' f (ErrItoD ae ee) = ErrItoD (replaceInAExpr f ae) (replaceInAExpr f ee)
+replaceInAExpr' _ ae = error $ "replaceInAExpr': niy for " ++ show ae
+
+replaceInBExpr :: (AExpr -> Maybe AExpr) -> BExpr -> BExpr
+replaceInBExpr g (Or  be1 be2) = Or  (replaceInBExpr g be1) (replaceInBExpr g be2)
+replaceInBExpr g (And be1 be2) = And (replaceInBExpr g be1) (replaceInBExpr g be2)
+replaceInBExpr g (Not be)      = Not (replaceInBExpr g be)
+replaceInBExpr g (Eq  ae1 ae2) = Eq  (replaceInAExpr g ae1) (replaceInAExpr g ae2)
+replaceInBExpr g (Neq ae1 ae2) = Neq (replaceInAExpr g ae1) (replaceInAExpr g ae2)
+replaceInBExpr g (Lt  ae1 ae2) = Lt  (replaceInAExpr g ae1) (replaceInAExpr g ae2)
+replaceInBExpr g (LtE ae1 ae2) = LtE (replaceInAExpr g ae1) (replaceInAExpr g ae2)
+replaceInBExpr g (Gt  ae1 ae2) = Gt  (replaceInAExpr g ae1) (replaceInAExpr g ae2)
+replaceInBExpr g (GtE ae1 ae2) = GtE (replaceInAExpr g ae1) (replaceInAExpr g ae2)
+replaceInBExpr _ BTrue  = BTrue
+replaceInBExpr _ BFalse = BFalse
+
+isZero :: Rational -> Bool
+isZero r = r == toRational (0 :: Integer)
+
+isZeroExpr :: FAExpr -> Bool
+isZeroExpr (FInt 0)       = True
+isZeroExpr (RtoD (Int 0)) = True
+isZeroExpr (RtoS (Int 0)) = True
+isZeroExpr (FCnst _ r) = isZero r
+isZeroExpr _ = False
+
+errVar :: FAExpr -> AExpr
+errVar  (FVar fp x) = ErrorMark x fp
+errVar ae = error $ "errVar not defined for " ++ show ae ++ "."
+
+realVar :: FAExpr -> AExpr
+realVar (FVar _ x) = RealMark  x
+realVar ae = error $ "realVar not defined for " ++ show ae ++ "."
+
+nameFVar :: FAExpr -> VarName
+nameFVar (FVar _ x) = x
+nameFVar ae = error $ "nameFVar: unexpected value " ++ show ae ++ "."
+
+precFVar :: FAExpr -> FPrec
+precFVar (FVar fp _) = fp
+precFVar ae = error $ "precFVar: unexpected value " ++ show ae ++ "."
 
 -----------------------
 -- PPExt instances --
 -----------------------
 
-
-instance PPExt (NonVarId) where 
-    prettyDoc (NonVarId x) = text x
-    prettyDocWith _ v = prettyDoc v
-
-
-instance PPExt (VarId) where
-    prettyDoc (VarId x) = text x    
-    prettyDocWith _ v = prettyDoc v  
+prettyVarWithType :: FAExpr -> Doc
+prettyVarWithType (FVar fp x) = text x <> text ":" <+> prettyDoc fp
+prettyVarWithType ae = error $ "prettyVarWithType: case " ++ show ae ++ " niy."
 
 
-maxFlatten :: [EExpr] -> [EExpr]
-maxFlatten [] = []
-maxFlatten ((MaxErr [e]):ees') = e:(maxFlatten ees')
-maxFlatten ((MaxErr ees):ees') = (maxFlatten ees) ++ (maxFlatten ees')
-maxFlatten (ee:ees) = ee:(maxFlatten ees)
-
-rat2interval :: Rational -> (CDouble,CDouble)
-rat2interval rat | (toRational ratDouble == rat) = (ratDouble, ratDouble)
-                 | (toRational ratDouble  < rat) && (toRational next >= rat)  = (ratDouble, next)
-                 | (toRational ratDouble  > rat) && (toRational prev <= rat)  = (prev, ratDouble)
-                 | otherwise = error $ "rat2interval failed with this values:"
-                                ++ "\n\trat: " ++ show rat
-                                ++ "\n\tratDouble: " ++ show ratDouble
-                                ++ "\n\tprev: " ++ show prev
-                                ++ "\n\tnext: " ++ show next
-    where
-        ratDouble = ((fromRat rat) :: CDouble)
-        next = nextUp ratDouble
-        prev = nextDown ratDouble
-
-showFullPrecision :: CDouble -> String
-showFullPrecision x = (showFFloat Nothing x) ""
-
-showFullPrecisionRat :: Rational -> String
-showFullPrecisionRat x = (showFFloat Nothing $ fromRat x) ""
+instance PPExt Arg where
+    prettyDoc (Arg x fp) = text x <> text ":" <+> prettyDoc fp
 
 instance PPExt RProgram where
-    prettyDoc (RProg decls) = vcat (map prettyDoc decls)
-    prettyDocWith _ rProg = prettyDoc rProg
+    prettyDoc decls = vcat (map prettyDoc decls)
 
 instance PPExt RDecl where
     prettyDoc (RDecl fp fun args stm)
-      = prettyDoc fun <> text "(" <>
-        (hsep $ punctuate comma $ map (\x -> prettyDoc x) args)
-        <> text ": real"
-        <> text  "): real =" <+> prettyDocWith fp stm
+      = text fun <> text "(" <>
+        hsep (punctuate comma $ map prettyDoc args)
+        <> text  "):" <+> prettyDoc fp <+> text " =" <+> prettyDoc stm
 
 instance PPExt RStm where
-    prettyDoc _ = error "prettyDoc: undefined for RStm, fp needed"
+    prettyDoc RUnstWarning = error "Warning should not occur in a real-valued program."-- text "warning"
+    prettyDoc (RLet x t ae stm)
+        = text "LET" <+> text x <> text ":" <> prettyDoc t <> text "=" <> prettyDoc ae
+            $$ text "IN" <+> prettyDoc stm
+    prettyDoc (RIte be stm1 stm2)
+        = text "IF" <+> prettyDoc be
+            $$ text "THEN" <+> prettyDoc stm1
+            $$ text "ELSE" <+> prettyDoc stm2
+            $$ text "ENDIF"
+    prettyDoc (RListIte [] _) = error "prettyDoc RListIte: empty stmThen list"
+    prettyDoc (RListIte ((beThen,stmThen):thenList) stmElse)
+        = text "IF" <+> prettyDoc beThen $$ text "THEN" <+> prettyDoc stmThen
+            $$ vcat (map (\(be,stm) -> text "ELSIF" <+> prettyDoc be
+            $$ text "THEN" <+> prettyDoc stm) thenList) 
+            $$ text "ELSE" <+> prettyDoc stmElse $$ text "ENDIF"
+    prettyDoc (RStmExpr ae) = prettyDoc ae
+    prettyDoc RForLoop{} = error "prettyDoc RStm: unexpected for loop."
+            -- (RForLoop retType startIdx endIdx initValueAcc idx acc forBody)
+            -- text "for" <> text "(" <> integer i <> comma <> integer j <> comma
+            --         <> prettyDoc ae <> comma <> prettyDoc f <> text ")"
 
-    prettyDocWith fp (RLet x ae stm) = text "LET" <+> prettyDoc x <> text "=" <> prettyDocWith fp ae $$ text "IN" <+> prettyDocWith fp stm
-    prettyDocWith fp (RIte be stm1 stm2) = text "IF" <+> prettyDocWith fp be $$ text "THEN" <+> prettyDocWith fp stm1 $$ text "ELSE" <+> prettyDocWith fp stm2 $$ text "ENDIF"
-    prettyDocWith fp (RStmExpr ae) = prettyDocWith fp ae
-    prettyDocWith fp (RForLoop i j ae f) =  text "for" <> text "(" <> integer i <> comma <> integer j <> comma <> prettyDocWith fp ae <> comma <> prettyDoc f <> text ")"
+instance PPExt Program where
+    prettyDoc decls = vcat (map prettyDoc decls)
+
+instance PPExt Decl where
+    prettyDoc (Decl fp fun args stm)
+      = text fun <> text "(" <>
+        hsep (punctuate comma $ map prettyDoc args)
+        <> text  "):" <+> prettyDoc fp <+> text " =" <+> prettyDoc stm
+
+instance PPExt Stm where
+    prettyDoc UnstWarning = error "Warning should not occur in a non-transformed program."-- text "warning"
+    prettyDoc (Let x t ae stm)
+        = text "LET" <+> text x <> text ":" <> prettyDoc t <> text "=" <> prettyDoc ae
+            $$ text "IN" <+> prettyDoc stm
+    prettyDoc (Ite be stm1 stm2)
+        = text "IF" <+> prettyDoc be
+            $$ text "THEN" <+> prettyDoc stm1
+            $$ text "ELSE" <+> prettyDoc stm2
+            $$ text "ENDIF"
+    prettyDoc (ListIte [] _) = error "prettyDoc RListIte: empty stmThen list"
+    prettyDoc (ListIte ((beThen,stmThen):thenList) stmElse)
+        = text "IF" <+> prettyDoc beThen $$ text "THEN" <+> prettyDoc stmThen
+            $$ vcat (map (\(be,stm) -> text "ELSIF" <+> prettyDoc be
+            $$ text "THEN" <+> prettyDoc stm) thenList) 
+            $$ text "ELSE" <+> prettyDoc stmElse $$ text "ENDIF"
+    prettyDoc (StmExpr ae) = prettyDoc ae
+    prettyDoc ForLoop{} = undefined
+
+printBinOpError :: (PPExt a, PPExt a1, PPExt a2, PPExt a3) => String -> a -> a1 -> a2 -> a3 -> Doc
+printBinOpError nameErrFun r1 e1 r2 e2 =
+    text nameErrFun <> (text "(" <>  prettyDoc r1 <> comma <+> prettyDoc e1 <> comma
+                                 <+> prettyDoc r2 <> comma <+> prettyDoc e2 <> text ")")
+
+printUnaryOpError :: (PPExt a, PPExt a1) => String -> a -> a1 -> Doc
+printUnaryOpError nameErrFun r e = text nameErrFun <> (text "(" <>  prettyDoc r <> comma
+                                            <+> prettyDoc e <> text ")")
 
 instance PPExt AExpr where
+    prettyDoc         Infinity = text "infinity"
+    prettyDoc     ErrUndefined = text "undefined"
+    prettyDoc          (Int i) = integer i
+    prettyDoc          (Rat d) = parens $ text $ showRational d
+    prettyDoc        (Var _ x) = text x
+    prettyDoc      (EFun f _ []) = text f
+    prettyDoc    (Neg (Int i)) = text "-" <> integer i
+    prettyDoc    (Neg (Rat d)) = text "-" <> parens (text $ showRational d)
+    prettyDoc      (Add a1 a2) = parens $ prettyDoc a1 <+> text "+" <+> prettyDoc a2
+    prettyDoc      (Sub a1 a2) = parens $ prettyDoc a1 <+> text "-" <+> prettyDoc a2
+    prettyDoc      (Mul a1 a2) = parens $ prettyDoc a1 <+> text "*" <+> prettyDoc a2
+    prettyDoc   (Fma a1 a2 a3) = text "Fma" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2 <> comma <+> prettyDoc a3)
+    prettyDoc      (Div a1 a2) = parens $ prettyDoc a1 <+> text "/" <+> prettyDoc a2
+    prettyDoc     (IDiv a1 a2) = text "Idiv" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc    (ItDiv a1 a2) = text "Itdiv" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc      (Mod a1 a2) = text "mod" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc     (IMod a1 a2) = text "Imod" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc    (ItMod a1 a2) = text "Itmod" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc     (Expt a1 a2) = text "expt" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc      (Pow a1 a2) = prettyDoc a1 <> text "^" <> lparen <> prettyDoc a2 <> rparen
+    prettyDoc        (Neg   a) = text "-"     <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Floor a) = text "floor" <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Sqrt  a) = text "sqrt"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Abs   a) = text "abs"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Sin   a) = text "sin"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Cos   a) = text "cos"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Tan   a) = text "tan"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (ASin  a) = text "asin"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (ACos  a) = text "acos"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (ATan  a) = text "atan"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Ln    a) = text "ln"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (Expo  a) = text "exp"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc    (EFun f _ args) = text f <> parens (hsep $ punctuate comma $ map prettyDoc args)
+    prettyDoc         (StoR a) = text "StoR"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc         (DtoR a) = text "DtoR"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc        (FExp fa) = text "Fexp" <> parens (prettyDoc fa)
+    prettyDoc     (RealMark x) = text "r_" <> text x
+    prettyDoc (ErrorMark x _)  = text "e_" <> text x
+    prettyDoc (ErrRat r) = parens $ text $ showRational r
 
-    prettyDoc _ = error "prettyDoc: undefined for AExpr, fp needed"
+    prettyDoc (MaxErr []) = error "Something went wrong: MaxErr applied to empty list"
+    prettyDoc (MaxErr [es]) = prettyDoc es
+    prettyDoc (MaxErr ees@(_:(_:_))) = 
+        text "max" <> parens (hsep $ punctuate comma (map prettyDoc ees))
 
-    prettyDocWith _                Pi = text "pi"
-    prettyDocWith _          Infinity = text "infinity"
-    prettyDocWith _      ErrUndefined = text "undefined"
-    prettyDocWith _           (Int i) = integer i
---    prettyDocWith _        (Double d) = parens $ text $ showFullPrecisionRat d
-    prettyDocWith _        (Double d) = parens $ text $ showRational d
-    prettyDocWith _           (Var x) = text x
-    prettyDocWith _       (EFun f []) = text f
-    prettyDocWith _     (Neg (Int i)) = text "-" <> integer i
---    prettyDocWith _  (Neg (Double d)) = text "-" <> (text $ showFullPrecisionRat d)
-    prettyDocWith _  (Neg (Double d)) = text "-" <> parens (text $ showRational d)
-    prettyDocWith fp      (Add a1 a2) = parens $ prettyDocWith fp a1 <+> text "+" <+> prettyDocWith fp a2
-    prettyDocWith fp      (Sub a1 a2) = parens $ prettyDocWith fp a1 <+> text "-" <+> prettyDocWith fp a2
-    prettyDocWith fp      (Mul a1 a2) = parens $ prettyDocWith fp a1 <+> text "*" <+> prettyDocWith fp a2
-    prettyDocWith fp      (Div a1 a2) = parens $ prettyDocWith fp a1 <+> text "/" <+> prettyDocWith fp a2
-    prettyDocWith fp      (Mod a1 a2) = text "mod" <> parens (prettyDocWith fp a1 <> comma <+> prettyDocWith fp a2)
-    prettyDocWith fp      (Pow a1 a2) = prettyDocWith fp a1 <> text "^" <> lparen <> prettyDocWith fp a2 <> rparen
-    prettyDocWith fp        (Neg   a) = text "-"     <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Floor a) = text "floor" <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Sqrt  a) = text "sqrt"  <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Abs   a) = text "abs"   <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Sin   a) = text "sin"   <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Cos   a) = text "cos"   <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Tan   a) = text "tan"   <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (ASin  a) = text "asin"  <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (ACos  a) = text "acos"  <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (ATan  a) = text "atan"  <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Ln    a) = text "ln"  <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp        (Expo  a) = text "exp"  <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp    (EFun f args) = text f <> (parens $ hsep $ punctuate comma $ map (\x -> prettyDocWith fp x) args)
-    prettyDocWith fp         (SUlp a) = text "ulp_sp" <> lparen <> prettyDocWith FPSingle a <> rparen
-    prettyDocWith fp         (DUlp a) = text "ulp_dp" <> lparen <> prettyDocWith FPDouble a <> rparen
-    prettyDocWith fp         (StoR a) = text "StoR"   <> lparen <> prettyDocWith FPSingle a <> rparen
-    prettyDocWith fp         (DtoR a) = text "DtoR"   <> lparen <> prettyDocWith FPDouble a <> rparen
-    prettyDocWith fp           (EE e) = prettyDocWith fp e
-    prettyDocWith FPSingle    (FPrec) = text "ieee754sp_prec"
-    prettyDocWith FPDouble    (FPrec) = text "ieee754dp_prec"
-    prettyDocWith fp        (FExp fa) = text "Fexp" <> parens (prettyDocWith fp fa)
-    prettyDocWith fp     (RealMark x) = text "r_" <> text x
---    prettyDocWith _ (ErrRat r) = parens $ text $ showFullPrecisionRat r
-    prettyDocWith _ (ErrRat r) = parens $ text $ showRational r
+    prettyDoc (ErrAdd FPSingle r1 e1 r2 e2) = printBinOpError "aeboundsp_add" r1 e1 r2 e2
+    prettyDoc (ErrAdd FPDouble r1 e1 r2 e2) = printBinOpError "aebounddp_add" r1 e1 r2 e2
+    prettyDoc (ErrAdd TInt     r1 e1 r2 e2) = printBinOpError  "aeboundi_add" r1 e1 r2 e2
 
-    prettyDocWith _ (ErrorMark x)
-        = text "e_" <> text x
+    prettyDoc (ErrSub FPSingle r1 e1 r2 e2) = printBinOpError "aeboundsp_sub" r1 e1 r2 e2
+    prettyDoc (ErrSub FPDouble r1 e1 r2 e2) = printBinOpError "aebounddp_sub" r1 e1 r2 e2
+    prettyDoc (ErrSub TInt     r1 e1 r2 e2) = printBinOpError  "aeboundi_sub" r1 e1 r2 e2
 
-    prettyDocWith fp (MaxErr []) = error "Something went wrong: MaxErr applied to empty list"
+    prettyDoc (ErrMul FPSingle r1 e1 r2 e2) = printBinOpError "aeboundsp_mul" r1 e1 r2 e2
+    prettyDoc (ErrMul FPDouble r1 e1 r2 e2) = printBinOpError "aebounddp_mul" r1 e1 r2 e2
+    prettyDoc (ErrMul TInt     r1 e1 r2 e2) = printBinOpError  "aeboundi_mul" r1 e1 r2 e2 
 
-    prettyDocWith fp (MaxErr [es]) = prettyDocWith fp es
+    prettyDoc (ErrDiv FPSingle r1 e1 r2 e2) = printBinOpError "aeboundsp_div" r1 e1 r2 e2
+    prettyDoc (ErrDiv FPDouble r1 e1 r2 e2) = printBinOpError "aebounddp_div" r1 e1 r2 e2
+    prettyDoc (ErrDiv TInt     r1 e1 r2 e2) = printBinOpError  "aeboundi_div" r1 e1 r2 e2
 
-    prettyDocWith fp (MaxErr (e:es)) = 
-        text "max" <> parens ((prettyDocWith fp e) <> comma <+> prettyDocWith fp (MaxErr es)) 
-          -- (hsep $ punctuate comma (map (prettyDocWith fp) ees))
+    prettyDoc (ErrMod TInt     r1 e1 r2 e2) = printBinOpError "aeboundi_mod" r1 e1 r2 e2
 
-    prettyDocWith fp (MaxErr ees) = 
-        text "max" <> parens (hsep $ punctuate comma (map (prettyDocWith fp) ees))
+    prettyDoc (ErrMulPow2L fp n e) = text nameErrFun <> (text "(" <> integer n <> comma
+                                                     <+> prettyDoc e <> text ")") 
+        where
+            nameErrFun = case fp of
+                            FPSingle -> "aebounddp_mul_p2l"
+                            FPDouble -> "aeboundsp_mul_p2l"
+                            _ -> error $ "prettyDoc ErrMulPow2L: unexpected type " ++ show fp ++ " value."
 
-    prettyDocWith fp (AE a) = prettyDocWith fp a
+    prettyDoc (ErrMulPow2R fp n e) = text nameErrFun <> (text "(" <> integer n <> comma
+                                                     <+> prettyDoc e <> text ")") 
+        where
+            nameErrFun = case fp of
+                            FPSingle -> "aebounddp_mul_p2r"
+                            FPDouble -> "aeboundsp_mul_p2r"
+                            _ -> error $ "prettyDoc ErrMulPow2R: unexpected type " ++ show fp ++ " value."
 
-    prettyDocWith FPSingle (ErrAdd r1 e1 r2 e2) 
-        = text "aeboundsp_add" <> (text "(" <>  prettyDocWith FPSingle r1 <> comma
-                                            <+> prettyDocWith FPSingle e1 <> comma
-                                            <+> prettyDocWith FPSingle r2 <> comma
-                                            <+> prettyDocWith FPSingle e2 <> text ")")
-    prettyDocWith FPSingle (ErrSub r1 e1 r2 e2) 
-        = text "aeboundsp_sub" <> (text "(" <>  prettyDocWith FPSingle r1 <> comma
-                                            <+> prettyDocWith FPSingle e1 <> comma
-                                            <+> prettyDocWith FPSingle r2 <> comma
-                                            <+> prettyDocWith FPSingle e2 <> text ")")
-    prettyDocWith FPSingle (ErrMul r1 e1 r2 e2) 
-        = text "aeboundsp_mul" <> (text "(" <>  prettyDocWith FPSingle r1 <> comma
-                                            <+> prettyDocWith FPSingle e1 <> comma
-                                            <+> prettyDocWith FPSingle r2 <> comma
-                                            <+> prettyDocWith FPSingle e2 <> text ")")
-    prettyDocWith FPSingle (ErrDiv r1 e1 r2 e2) 
-        = text "aeboundsp_div" <> (text "(" <>  prettyDocWith FPSingle r1 <> comma
-                                            <+> prettyDocWith FPSingle e1 <> comma
-                                            <+> prettyDocWith FPSingle r2 <> comma
-                                            <+> prettyDocWith FPSingle e2 <> text ")")
-    prettyDocWith FPSingle (ErrFloor r e)
-        = text "aeboundsp_flr" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrFloor0 r e)
-        = text "aeboundsp_flr_t" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                              <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrSqrt r e)
-        = text "aeboundsp_sqt" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrSin r e)
-        = text "aeboundsp_sin" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrCos r e)
-        = text "aeboundsp_cos" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrTan r e)
-        = text "aeboundsp_tan" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrAcos r e)
-        = text "aeboundsp_acs" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrAsin r e)
-        = text "aeboundsp_asn" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrAtan r e)
-        = text "aeboundsp_atn" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")")  
-    prettyDocWith FPSingle (ErrAtanT r e)
-        = text "aeboundsp_atn_t" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                              <+> prettyDocWith FPSingle e <> text ")")
-    prettyDocWith FPSingle (ErrNeg r e)
-        = text "aeboundsp_neg" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")") 
-    prettyDocWith FPSingle (ErrAbs r e)
-        = text "aeboundsp_abs" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")") 
-    prettyDocWith FPSingle (ErrExpo r e)
-        = text "aeboundsp_exp" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")") 
-    prettyDocWith FPSingle (ErrLn r e)
-        = text "aeboundsp_ln" <> (text "(" <>  prettyDocWith FPSingle r <> comma
-                                            <+> prettyDocWith FPSingle e <> text ")") 
-    prettyDocWith FPSingle (ErrMulPow2L n e)
-        = text "aeboundsp_mul_p2l" <> (text "(" <> integer n <> comma
-                                               <+> prettyDocWith FPSingle e <> text ")") 
-    prettyDocWith FPSingle (ErrMulPow2R n e)
-        = text "aeboundsp_mul_p2r" <> (text "(" <> integer n <> comma
-                                               <+> prettyDocWith FPSingle e <> text ")") 
+    prettyDoc (ErrFloor  FPSingle r e) = printUnaryOpError "aeboundsp_flr"   r e
+    prettyDoc (ErrFloor  FPDouble r e) = printUnaryOpError "aebounddp_flr"   r e
 
-    prettyDocWith FPSingle (HalfUlp r@(RealMark x))
-        = text "ulp_sp" <> (text "(" <> prettyDocWith FPSingle r <> text ")/2")
-    prettyDocWith FPSingle (HalfUlp a)
+    prettyDoc (ErrFloor0 FPSingle r e) = printUnaryOpError "aeboundsp_flr_t" r e
+    prettyDoc (ErrFloor0 FPDouble r e) = printUnaryOpError "aeboundsp_flr_t" r e
+
+    prettyDoc (ErrSqrt   FPSingle r e) = printUnaryOpError "aeboundsp_sqt" r e
+    prettyDoc (ErrSqrt   FPDouble r e) = printUnaryOpError "aebounddp_sqt" r e
+
+    prettyDoc (ErrSin    FPSingle r e) = printUnaryOpError "aeboundsp_sin" r e
+    prettyDoc (ErrSin    FPDouble r e) = printUnaryOpError "aebounddp_sin" r e
+
+    prettyDoc (ErrCos    FPSingle r e) = printUnaryOpError "aeboundsp_cos" r e
+    prettyDoc (ErrCos    FPDouble r e) = printUnaryOpError "aebounddp_cos" r e
+
+    prettyDoc (ErrTan    FPSingle r e) = printUnaryOpError "aeboundsp_tan" r e
+    prettyDoc (ErrTan    FPDouble r e) = printUnaryOpError "aebounddp_tan" r e 
+
+    prettyDoc (ErrAcos   FPSingle r e) = printUnaryOpError "aeboundsp_acs" r e 
+    prettyDoc (ErrAcos   FPDouble r e) = printUnaryOpError "aebounddp_acs" r e
+
+    prettyDoc (ErrAsin   FPSingle r e) = printUnaryOpError "aeboundsp_asn" r e
+    prettyDoc (ErrAsin   FPDouble r e) = printUnaryOpError "aebounddp_asn" r e 
+
+    prettyDoc (ErrAtan   FPSingle r e) = printUnaryOpError "aeboundsp_atn" r e
+    prettyDoc (ErrAtan   FPDouble r e) = printUnaryOpError "aebounddp_atn" r e
+
+    prettyDoc (ErrAtanT  FPSingle r e) = printUnaryOpError "aeboundsp_atn_t" r e
+    prettyDoc (ErrAtanT  FPDouble r e) = printUnaryOpError "aebounddp_atn_t" r e
+
+    prettyDoc (ErrNeg    FPSingle r e) = printUnaryOpError "aeboundsp_neg" r e
+    prettyDoc (ErrNeg    FPDouble r e) = printUnaryOpError "aebounddp_neg" r e
+    prettyDoc (ErrNeg    TInt     r e) = printUnaryOpError  "aeboundi_neg" r e 
+
+    prettyDoc (ErrAbs    FPSingle r e) = printUnaryOpError  "aeboundsp_abs" r e 
+    prettyDoc (ErrAbs    FPDouble r e) = printUnaryOpError  "aebounddp_abs" r e
+    prettyDoc (ErrAbs    TInt     r e) = printUnaryOpError   "aeboundi_abs" r e
+
+    prettyDoc (ErrExpo   FPSingle r e) = printUnaryOpError  "aeboundsp_exp" r e
+    prettyDoc (ErrExpo   FPDouble r e) = printUnaryOpError  "aebounddp_exp" r e
+
+    prettyDoc (ErrLn     FPSingle r e) = printUnaryOpError  "aeboundsp_ln"  r e
+    prettyDoc (ErrLn     FPDouble r e) = printUnaryOpError  "aebounddp_ln"  r e
+
+    prettyDoc (HalfUlp r@(RealMark _) FPSingle)
+        = text "ulp_sp" <> (text "(" <> prettyDoc r <> text ")/2")
+
+    prettyDoc (HalfUlp r@(RealMark _) FPDouble)
+        = text "ulp_dp" <> (text "(" <> prettyDoc r <> text ")/2")
+
+    prettyDoc (HalfUlp a _)
         = error ("ppEEExpr: unexpected value in  HalfUlp " ++ show a)
 
-    prettyDocWith FPDouble (ErrAdd r1 e1 r2 e2)
-        = text "aebounddp_add" <> (text "(" <>  prettyDocWith FPDouble r1 <> comma
-                                            <+> prettyDocWith FPDouble e1 <> comma
-                                            <+> prettyDocWith FPDouble r2 <> comma
-                                            <+> prettyDocWith FPDouble e2 <> text ")")
-    prettyDocWith FPDouble (ErrSub r1 e1 r2 e2) 
-        = text "aebounddp_sub" <> (text "(" <>  prettyDocWith FPDouble r1 <> comma
-                                            <+> prettyDocWith FPDouble e1 <> comma
-                                            <+> prettyDocWith FPDouble r2 <> comma
-                                            <+> prettyDocWith FPDouble e2 <> text ")")
-    prettyDocWith FPDouble (ErrMul r1 e1 r2 e2)
-        = text "aebounddp_mul" <> (text "(" <>  prettyDocWith FPDouble r1 <> comma
-                                            <+> prettyDocWith FPDouble e1 <> comma
-                                            <+> prettyDocWith FPDouble r2 <> comma
-                                            <+> prettyDocWith FPDouble e2 <> text ")")
-    prettyDocWith FPDouble (ErrDiv r1 e1 r2 e2) 
-        = text "aebounddp_div" <> (text "(" <>  prettyDocWith FPDouble r1 <> comma
-                                            <+> prettyDocWith FPDouble e1 <> comma
-                                            <+> prettyDocWith FPDouble r2 <> comma
-                                            <+> prettyDocWith FPDouble e2 <> text ")")
-    prettyDocWith FPDouble (ErrFloor r e)
-        = text "aebounddp_flr" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrFloor0 r e)
-        = text "aebounddp_flr_t" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                              <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrSqrt r e)
-        = text "aebounddp_sqt" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrSin r e)
-        = text "aebounddp_sin" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrCos r e)
-        = text "aebounddp_cos" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrTan r e)
-        = text "aebounddp_tan" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrAcos r e)
-        = text "aebounddp_acs" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrAsin r e)
-        = text "aebounddp_asn" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")
-    prettyDocWith FPDouble (ErrAtan r e)
-        = text "aebounddp_atn" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")")  
-    prettyDocWith FPDouble (ErrAtanT r e)
-        = text "aebounddp_atn_t" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                              <+> prettyDocWith FPDouble e <> text ")")    
-    prettyDocWith FPDouble (ErrNeg r e)
-        = text "aebounddp_neg" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")") 
-    prettyDocWith FPDouble (ErrAbs r e)
-        = text "aebounddp_abs" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")") 
-    prettyDocWith FPDouble (ErrExpo r e)
-        = text "aebounddp_exp" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")") 
-    prettyDocWith FPDouble (ErrLn r e)
-        = text "aebounddp_ln" <> (text "(" <>  prettyDocWith FPDouble r <> comma
-                                            <+> prettyDocWith FPDouble e <> text ")") 
-    prettyDocWith FPDouble (ErrMulPow2L n e)
-        = text "aebounddp_mul_p2l" <> (text "(" <> integer n <> comma
-                                  <+> prettyDocWith FPDouble e <> text ")") 
-
-    prettyDocWith FPDouble (ErrMulPow2R n e)
-        = text "aebounddp_mul_p2r" <> (text "(" <> integer n <> comma
-                                  <+> prettyDocWith FPDouble e <> text ")") 
-
-    -- prettyDocWith FPDouble (HalfUlp (Var x))
-    prettyDocWith FPDouble (HalfUlp r@(RealMark x))
-        = text "ulp_dp" <> (text "(" <> prettyDocWith FPDouble r <> text ")/2")
-    prettyDocWith FPDouble (HalfUlp a)
-        = error ("ppEEExpr: unexpected value in  HalfUlp"++ show a)
-
-
-    prettyDocWith fp                p = error $ "prettyDocWith "++show p
-
-    prettyKodiakWith _                Pi = text "Pi"
-    prettyKodiakWith _           (Int i) =
-        if length (show i) > 9
-            then text "val" <> (parens $ text "Interval" <> (parens $ (text (showFullPrecision lb) <> comma <> text (showFullPrecision ub))))
-            else text "val" <> (parens $ integer i)
-        where
-            (lb,ub) = rat2interval (toRational i) 
-    prettyKodiakWith _        (Double r) =
-        if (length (show num) > 9) || (length (show den) > 9)
-            then text "val" <> (parens $ text "Interval" <> (parens $ (text (showFullPrecision lb) <> comma <> text (showFullPrecision ub))))
-            else parens $ text "val" <> (parens $ text "rat" <> (parens $ (integer num) <> comma <> (integer den)))
-        where
-            (lb,ub) = rat2interval r
-            num = (numerator r)
-            den = (denominator r)
-    prettyKodiakWith _           (Var x) = text x
-    prettyKodiakWith _       (EFun f []) = text f
-    prettyKodiakWith fp      (Add a1 a2) = parens $ (prettyKodiakWith fp a1) <+> text "+" <+> (prettyKodiakWith fp a2)
-    prettyKodiakWith fp      (Sub a1 a2) = parens $ (prettyKodiakWith fp a1) <+> text "-" <+> (prettyKodiakWith fp a2)
-    prettyKodiakWith fp      (Mul a1 a2) = parens $ (prettyKodiakWith fp a1) <+> text "*" <+> (prettyKodiakWith fp a2)
-    prettyKodiakWith fp      (Div a1 a2) = parens $ (prettyKodiakWith fp a1) <+> text "/" <+> (prettyKodiakWith fp a2)
-    prettyKodiakWith fp      (Mod a1 a2) = error "prettyKodiakWith niy"
-    prettyKodiakWith fp  (Pow a (Int n)) = (parens $ prettyKodiakWith fp a) <> text "^" <> integer n
-    prettyKodiakWith fp      (Pow a1 a2) = error "prettyKodiakWith niy"
-    prettyKodiakWith fp        (Neg   a) = parens $ text "-" <> prettyKodiakWith fp a
-    prettyKodiakWith fp        (Floor a) = text "Floor" <> lparen <> prettyKodiakWith fp a <> rparen --TODO
-    prettyKodiakWith fp        (Sqrt  a) = text "Sqrt"  <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (Abs   a) = text "Abs"   <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (Sin   a) = text "Sin"   <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (Cos   a) = text "Cos"   <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (Tan   a) = text "Tan"   <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (ASin  a) = text "Asin"  <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (ACos  a) = text "Acos"  <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (ATan  a) = text "Atan"  <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (Ln  a)   = text "Ln"  <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp        (Expo  a) = text "Exp"  <> lparen <> prettyKodiakWith fp a <> rparen
-    prettyKodiakWith fp    (EFun f args) = text f <> (parens $ hsep $ punctuate comma $ map (\x -> prettyKodiakWith fp x) args)
-    prettyKodiakWith fp         (SUlp a) = text "SUlp" <> lparen <> prettyKodiakWith FPDouble a <> rparen
-    prettyKodiakWith fp         (DUlp a) = text "DUlp" <> lparen <> prettyKodiakWith FPDouble a <> rparen
-    prettyKodiakWith fp         (StoR a) = prettyKodiakWith FPSingle a
-    prettyKodiakWith fp         (DtoR a) = prettyKodiakWith FPDouble a
-    prettyKodiakWith fp           (EE e) = prettyKodiakWith fp e
-    prettyKodiakWith FPSingle    (FPrec) = text "val(24)"
-    prettyKodiakWith FPDouble    (FPrec) = text "val(52)"
-    prettyKodiakWith fp        (FExp fa) = error "prettyKodiakWith FExp niy"
-    prettyKodiakWith fp     (RealMark x) = text x
-    prettyKodiakWith fp         (Max es) = text "Max" <> parens (lbrace <> (hsep $ punctuate comma $ (map (prettyKodiakWith fp) es)) <> rbrace)
-    prettyKodiakWith fp         (Min es) = text "Min" <> parens (lbrace <> (hsep $ punctuate comma $ (map (prettyKodiakWith fp) es)) <> rbrace)
-    
-    prettyKodiakWith fp (ErrRat r) = prettyKodiakWith fp (Double r)
-        -- = parens $ text "val" <> (parens $ text "rat" <> (parens $ (integer (numerator r)) <> comma <> (integer (denominator r))))
-
-    prettyKodiakWith _ (ErrorMark x)
-        = error "prettyKodiakWith ErrorMark: error expression not initialized"
-
-    prettyKodiakWith fp (MaxErr []) = error "Something went wrong: MaxErr applied to empty list"
-
-    --prettyKodiakWith fp (MaxErr [es]) = prettyKodiakWith fp es
-
-    prettyKodiakWith fp (MaxErr ees) = 
-        case ees' of
-            [e] -> prettyKodiakWith fp e
-            otherwise -> text "Max" <> parens (lbrace <> (hsep $ punctuate comma (map (prettyKodiakWith fp) $ ees')) <> rbrace )
-        where
-            ees' = maxFlatten ees
-
-    prettyKodiakWith fp (AE a) = prettyKodiakWith fp a
-
-    prettyKodiakWith FPSingle (ErrAdd r1 e1 r2 e2) 
-        = text "aeboundsp_add" <> (text "(" <>  prettyKodiakWith FPSingle r1 <> comma
-                                            <+> prettyKodiakWith FPSingle e1 <> comma
-                                            <+> prettyKodiakWith FPSingle r2 <> comma
-                                            <+> prettyKodiakWith FPSingle e2 <> text ")")
-    prettyKodiakWith FPSingle (ErrSub r1 e1 r2 e2) 
-        = text "aeboundsp_sub" <> (text "(" <>  prettyKodiakWith FPSingle r1 <> comma
-                                            <+> prettyKodiakWith FPSingle e1 <> comma
-                                            <+> prettyKodiakWith FPSingle r2 <> comma
-                                            <+> prettyKodiakWith FPSingle e2 <> text ")")
-    prettyKodiakWith FPSingle (ErrMul r1 e1 r2 e2) 
-        = text "aeboundsp_mul" <> (text "(" <>  prettyKodiakWith FPSingle r1 <> comma
-                                            <+> prettyKodiakWith FPSingle e1 <> comma
-                                            <+> prettyKodiakWith FPSingle r2 <> comma
-                                            <+> prettyKodiakWith FPSingle e2 <> text ")")
-    prettyKodiakWith FPSingle (ErrDiv r1 e1 r2 e2) 
-        = text "aeboundsp_div" <> (text "(" <>  prettyKodiakWith FPSingle r1 <> comma
-                                            <+> prettyKodiakWith FPSingle e1 <> comma
-                                            <+> prettyKodiakWith FPSingle r2 <> comma
-                                            <+> prettyKodiakWith FPSingle e2 <> text ")")
-    prettyKodiakWith FPSingle (ErrFloor r e)
-        = text "aeboundsp_flr" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrFloor0 r e)
-        = text "aeboundsp_flr_t" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                              <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrSqrt r e)
-        = text "aeboundsp_sqt" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrSin r e)
-        = text "aeboundsp_sin" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrCos r e)
-        = text "aeboundsp_cos" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrTan r e)
-        = text "aeboundsp_tan" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrAcos r e)
-        = text "aeboundsp_acs" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrAsin r e)
-        = text "aeboundsp_asn" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrAtan r e)
-        = text "aeboundsp_atn" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")")  
-    prettyKodiakWith FPSingle (ErrAtanT r e)
-        = text "aeboundsp_atn_t" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                              <+> prettyKodiakWith FPSingle e <> text ")")
-    prettyKodiakWith FPSingle (ErrNeg r e)
-        = text "aeboundsp_neg" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")") 
-    prettyKodiakWith FPSingle (ErrAbs r e)
-        = text "aeboundsp_abs" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")") 
-    prettyKodiakWith FPSingle (ErrExpo r e)
-        = text "aeboundsp_exp" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")") 
-    prettyKodiakWith FPSingle (ErrLn r e)
-        = text "aeboundsp_ln" <> (text "(" <>  prettyKodiakWith FPSingle r <> comma
-                                            <+> prettyKodiakWith FPSingle e <> text ")") 
-    prettyKodiakWith FPSingle (ErrMulPow2L n e)
-        = text "aeboundsp_mul_p2l" <> (text "(" <> integer n <> comma
-                                               <+> prettyKodiakWith FPSingle e <> text ")") 
-    prettyKodiakWith FPSingle (ErrMulPow2R n e)
-        = text "aeboundsp_mul_p2r" <> (text "(" <> integer n <> comma
-                                               <+> prettyKodiakWith FPSingle e <> text ")") 
-    --prettyKodiakWith FPSingle (HalfUlp (Var x))
-    prettyKodiakWith FPSingle r@(HalfUlp (RealMark x))
-        = text "SUlp" <> (text "(" <> prettyDocWith FPDouble r <> text ")/val(2)")
-
-    prettyKodiakWith FPSingle (HalfUlp a)
-        = error ("ppEEExpr: unexpected value in  HalfUlp " ++ show a)
-
-    prettyKodiakWith FPDouble (ErrAdd r1 e1 r2 e2)
-        = text "aebounddp_add" <> (text "(" <>  prettyKodiakWith FPDouble r1 <> comma
-                                            <+> prettyKodiakWith FPDouble e1 <> comma
-                                            <+> prettyKodiakWith FPDouble r2 <> comma
-                                            <+> prettyKodiakWith FPDouble e2 <> text ")")
-    prettyKodiakWith FPDouble (ErrSub r1 e1 r2 e2) 
-        = text "aebounddp_sub" <> (text "(" <>  prettyKodiakWith FPDouble r1 <> comma
-                                            <+> prettyKodiakWith FPDouble e1 <> comma
-                                            <+> prettyKodiakWith FPDouble r2 <> comma
-                                            <+> prettyKodiakWith FPDouble e2 <> text ")")
-    prettyKodiakWith FPDouble (ErrMul r1 e1 r2 e2)
-        = text "aebounddp_mul" <> (text "(" <>  prettyKodiakWith FPDouble r1 <> comma
-                                            <+> prettyKodiakWith FPDouble e1 <> comma
-                                            <+> prettyKodiakWith FPDouble r2 <> comma
-                                            <+> prettyKodiakWith FPDouble e2 <> text ")")
-    prettyKodiakWith FPDouble (ErrDiv r1 e1 r2 e2) 
-        = text "aebounddp_div" <> (text "(" <>  prettyKodiakWith FPDouble r1 <> comma
-                                            <+> prettyKodiakWith FPDouble e1 <> comma
-                                            <+> prettyKodiakWith FPDouble r2 <> comma
-                                            <+> prettyKodiakWith FPDouble e2 <> text ")")
-    prettyKodiakWith FPDouble (ErrFloor r e)
-        = text "aebounddp_flr" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrFloor0 r e)
-        = text "aebounddp_flr_t" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                              <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrSqrt r e)
-        = text "aebounddp_sqt" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrSin r e)
-        = text "aebounddp_sin" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrCos r e)
-        = text "aebounddp_cos" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrTan r e)
-        = text "aebounddp_tan" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrAcos r e)
-        = text "aebounddp_acs" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrAsin r e)
-        = text "aebounddp_asn" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")
-    prettyKodiakWith FPDouble (ErrAtan r e)
-        = text "aebounddp_atn" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")")  
-    prettyKodiakWith FPDouble (ErrAtanT r e)
-        = text "aebounddp_atn_t" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                              <+> prettyKodiakWith FPDouble e <> text ")")    
-    prettyKodiakWith FPDouble (ErrNeg r e)
-        = text "aebounddp_neg" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")") 
-    prettyKodiakWith FPDouble (ErrAbs r e)
-        = text "aebounddp_abs" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")") 
-    prettyKodiakWith FPDouble (ErrExpo r e)
-        = text "aebounddp_exp" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")") 
-    prettyKodiakWith FPDouble (ErrLn r e)
-        = text "aebounddp_ln" <> (text "(" <>  prettyKodiakWith FPDouble r <> comma
-                                            <+> prettyKodiakWith FPDouble e <> text ")") 
-    prettyKodiakWith FPDouble (ErrMulPow2L n e)
-        = text "aebounddp_mul_p2l" <> (text "(" <> integer n <> comma
-                                  <+> prettyKodiakWith FPDouble e <> text ")")  
-
-    prettyKodiakWith FPDouble (ErrMulPow2R n e)
-        = text " aebounddp_mul_p2r" <> (text "(" <> integer n <> comma
-                                  <+> prettyKodiakWith FPDouble e <> text ")")
-
-    --prettyKodiakWith FPDouble (HalfUlp (Var x))
-    prettyKodiakWith FPDouble r@(HalfUlp (RealMark x))
-        = text "DUlp" <> (text "(" <> prettyDocWith FPDouble r <> text ")/val(2)")
-    prettyKodiakWith FPDouble (HalfUlp a)
-        = error ("ppEEExpr: unexpected value in  HalfUlp"++ show a)
-
-    prettyKodiakWith fp                p = error $ "prettyKodiakWith " ++ show p
+    prettyDoc (ErrStoD r e) = printUnaryOpError  "aebound_StoD"  r e
+    prettyDoc (ErrDtoS r e) = printUnaryOpError  "aebound_DtoS"  r e
+    prettyDoc (ErrItoS r e) = printUnaryOpError  "aebound_ItoS"  r e
+    prettyDoc (ErrItoD r e) = printUnaryOpError  "aebound_ItoD"  r e
+    prettyDoc ee = error $ "prettyDoc for " ++ show ee ++ "not implemented yet."
 
 
 instance PPExt FAExpr where
 
-    prettyDoc _ = error "prettyDoc: undefined for FAExpr, fp needed"
-
-    prettyDocWith _            (FInt i) = integer i
-    -- prettyDocWith _         (FDouble d) = parens $ text $ showFullPrecisionRat d
-    prettyDocWith _         (FDouble d) = parens $ text $ showRational d
-    prettyDocWith _     (FNeg (FInt i)) = text "-" <> integer i
-    -- prettyDocWith _  (FNeg (FDouble d)) = text "-" <> (text $ showFullPrecisionRat d)
-    prettyDocWith _  (FNeg (FDouble d)) = text "-" <> parens (text $ showRational d)
-    prettyDocWith _            (FVar x) = text x
-    prettyDocWith _        (FEFun f []) = text f
-    prettyDocWith fp     (FEFun f args) = text f <> (parens $ hsep $ punctuate comma $ map (\x -> prettyDocWith fp x) args)
-    prettyDocWith fp           (RtoS a) = text "RtoS" <> lparen <> prettyDocWith fp a <> rparen
-    prettyDocWith fp           (RtoD a) = text "RtoD" <> lparen <> prettyDocWith fp a <> rparen 
-    prettyDocWith FPSingle (FPow a1 a2) = (prettyDocWith FPSingle a1) <+> text "^" <+> lparen <> (prettyDocWith FPSingle a2) <> rparen
-    prettyDocWith FPSingle (FAdd a1 a2) = text "Sadd" <> parens ((prettyDocWith FPSingle a1) <> comma <+> (prettyDocWith FPSingle a2))
-    prettyDocWith FPSingle (FSub a1 a2) = text "Ssub" <> parens ((prettyDocWith FPSingle a1) <> comma <+> (prettyDocWith FPSingle a2))
-    prettyDocWith FPSingle (FMul a1 a2) = text "Smul" <> parens ((prettyDocWith FPSingle a1) <> comma <+> (prettyDocWith FPSingle a2))
-    prettyDocWith FPSingle (FDiv a1 a2) = text "Sdiv" <> parens ((prettyDocWith FPSingle a1) <> comma <+> (prettyDocWith FPSingle a2))
-    prettyDocWith FPSingle (FMod a1 a2) = text "Smod" <> parens ((prettyDocWith FPSingle a1) <> comma <+> (prettyDocWith FPSingle a2))
-    prettyDocWith FPSingle     (FNeg a) = text "Sneg"   <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle   (FFloor a) = text "Sfloor" <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle    (FSqrt a) = text "Ssqrt"  <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle     (FAbs a) = text "Sabs"   <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle     (FSin a) = text "Ssin"   <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle     (FCos a) = text "Scos"   <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle     (FTan a) = text "Stan"   <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle    (FAsin a) = text "Sasin"  <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle    (FAcos a) = text "Sacos"  <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle    (FAtan a) = text "Satan"  <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle    (FLn   a) = text "Sln"  <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle    (FExpo a) = text "Sexp"  <> lparen <> (prettyDocWith FPSingle a) <> rparen
-    prettyDocWith FPSingle        (FPi) = text "Spi"
-    prettyDocWith FPDouble (FAdd a1 a2) = text "Dadd" <> parens ((prettyDocWith FPDouble a1) <> comma <+> (prettyDocWith FPDouble a2))
-    prettyDocWith FPDouble (FSub a1 a2) = text "Dsub" <> parens ((prettyDocWith FPDouble a1) <> comma <+> (prettyDocWith FPDouble a2))
-    prettyDocWith FPDouble (FMul a1 a2) = text "Dmul" <> parens ((prettyDocWith FPDouble a1) <> comma <+> (prettyDocWith FPDouble a2))
-    prettyDocWith FPDouble (FDiv a1 a2) = text "Ddiv" <> parens ((prettyDocWith FPDouble a1) <> comma <+> (prettyDocWith FPDouble a2))
-    prettyDocWith FPDouble (FMod a1 a2) = text "Dmod" <> parens ((prettyDocWith FPDouble a1) <> comma <+> (prettyDocWith FPDouble a2))
-    prettyDocWith FPDouble     (FNeg a) = text "Dneg"   <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble   (FFloor a) = text "Dfloor" <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble    (FSqrt a) = text "Dsqrt"  <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble     (FAbs a) = text "Dabs"   <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble     (FSin a) = text "Dsin"   <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble     (FCos a) = text "Dcos"   <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble     (FTan a) = text "Dtan"   <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble    (FAsin a) = text "Dasin"  <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble    (FAcos a) = text "Dacos"  <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble    (FAtan a) = text "Datan"  <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble    (FLn   a) = text "Dln"  <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble    (FExpo a) = text "Dexp"  <> lparen <> (prettyDocWith FPDouble a) <> rparen
-    prettyDocWith FPDouble        (FPi) = text "Dpi"
-
-
-
+    prettyDoc (RtoS a) = text "RtoS" <> parens (prettyDoc a)
+    prettyDoc (RtoD a) = text "RtoD" <> parens (prettyDoc a)
+    prettyDoc (StoD a) = text "StoD" <> parens (prettyDoc a)
+    prettyDoc (DtoS a) = text "StoD" <> parens (prettyDoc a)
+    prettyDoc (ItoS a) = text "ItoS" <> parens (prettyDoc a)
+    prettyDoc (ItoD a) = text "ItoD" <> parens (prettyDoc a)
+    prettyDoc (FInt i) = integer i
+    prettyDoc (FCnst _ d) = parens $ text $ showRational d
+    prettyDoc (FNeg _ (FInt i)) = text "-" <> integer i
+    prettyDoc (FNeg _ (FCnst _ d)) = text "-" <> parens (text $ showRational d)
+    prettyDoc (FVar _ x) = text x
+    prettyDoc (FEFun f _ []) = text f
+    prettyDoc (FEFun f _ args) = text f <> parens (hsep $ punctuate comma $ map prettyDoc args)
+    prettyDoc (FIAdd  a1 a2) = text "Iadd"  <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FISub  a1 a2) = text "Isub"  <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FIMul  a1 a2) = text "Imul"  <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FIDiv  a1 a2) = text "Idiv"  <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FItDiv a1 a2) = text "Itdiv" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FIMod  a1 a2) = text "Imod"  <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FItMod a1 a2) = text "Itmod" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FIPow  a1 a2) = text "Ipow"  <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FINeg  a)     = text "Ineg"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FIAbs  a)     = text "Iabs"  <> lparen <> prettyDoc a <> rparen
+    --
+    prettyDoc (FFma   FPSingle a1 a2 a3) = text "Sfma" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2 <> comma <+> prettyDoc a3)
+    prettyDoc (FAdd   FPSingle a1 a2) = text "Sadd" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FSub   FPSingle a1 a2) = text "Ssub" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FMul   FPSingle a1 a2) = text "Smul" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FDiv   FPSingle a1 a2) = text "Sdiv" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FMod   FPSingle a1 a2) = text "Smod" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FPow   FPSingle a1 a2) = prettyDoc a1 <+> text "^" <+> lparen <> prettyDoc a2 <> rparen
+    prettyDoc (FNeg   FPSingle a)     = text "Sneg"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FFloor FPSingle a)     = text "Sfloor" <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FSqrt  FPSingle a)     = text "Ssqrt"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAbs   FPSingle a)     = text "Sabs"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FSin   FPSingle a)     = text "Ssin"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FCos   FPSingle a)     = text "Scos"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FTan   FPSingle a)     = text "Stan"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAsin  FPSingle a)     = text "Sasin"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAcos  FPSingle a)     = text "Sacos"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAtan  FPSingle a)     = text "Satan"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FLn    FPSingle a)     = text "Sln"    <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FExpo  FPSingle a)     = text "Sexp"   <> lparen <> prettyDoc a <> rparen
+    --
+    prettyDoc (FAdd   FPDouble a1 a2) = text "Dadd" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FSub   FPDouble a1 a2) = text "Dsub" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FMul   FPDouble a1 a2) = text "Dmul" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FDiv   FPDouble a1 a2) = text "Ddiv" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FMod   FPDouble a1 a2) = text "Dmod" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
+    prettyDoc (FFma   FPDouble a1 a2 a3) = text "Dfma" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2 <> comma <+> prettyDoc a3)
+    prettyDoc (FPow   FPDouble a1 a2) = prettyDoc a1 <+> text "^" <+> lparen <> prettyDoc a2 <> rparen
+    prettyDoc (FNeg   FPDouble a)     = text "Dneg"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FFloor FPDouble a)     = text "Dfloor" <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FSqrt  FPDouble a)     = text "Dsqrt"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAbs   FPDouble a)     = text "Dabs"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FSin   FPDouble a)     = text "Dsin"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FCos   FPDouble a)     = text "Dcos"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FTan   FPDouble a)     = text "Dtan"   <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAsin  FPDouble a)     = text "Dasin"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAcos  FPDouble a)     = text "Dacos"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FAtan  FPDouble a)     = text "Datan"  <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FLn    FPDouble a)     = text "Dln"    <> lparen <> prettyDoc a <> rparen
+    prettyDoc (FExpo  FPDouble a)     = text "Dexp"   <> lparen <> prettyDoc a <> rparen
+    --
+    prettyDoc (FMin as) = text "min" <> parens (hsep $ punctuate comma $ map prettyDoc as)
+    prettyDoc (FMax as) = text "min" <> parens (hsep $ punctuate comma $ map prettyDoc as)
+    --
+    prettyDoc ee = error $ "prettyDoc for " ++ show ee ++ "not implemented yet."
 
 instance PPExt BExpr where
 
-    prettyDoc _ = error "prettyDoc: undefined for BExpr, fp needed"
-
-    prettyDocWith fp (Or  e1 e2) = parens $ prettyDocWith fp e1 <+> text "OR"  <+> prettyDocWith fp e2 
-    prettyDocWith fp (And e1 e2) = parens $ prettyDocWith fp e1 <+> text "AND" <+> prettyDocWith fp e2
-    prettyDocWith fp     (Not e) = text "NOT" <> (parens $ prettyDocWith fp e)
-    prettyDocWith fp  (Eq a1 a2) = parens $ prettyDocWith fp a1 <+> text "="  <+> prettyDocWith fp a2 
-    prettyDocWith fp (Neq a1 a2) = parens $ prettyDocWith fp a1 <+> text "/=" <+> prettyDocWith fp a2 
-    prettyDocWith fp  (Lt a1 a2) = parens $ prettyDocWith fp a1 <+> text "<"  <+> prettyDocWith fp a2 
-    prettyDocWith fp (LtE a1 a2) = parens $ prettyDocWith fp a1 <+> text "<=" <+> prettyDocWith fp a2 
-    prettyDocWith fp  (Gt a1 a2) = parens $ prettyDocWith fp a1 <+> text ">"  <+> prettyDocWith fp a2  
-    prettyDocWith fp (GtE a1 a2) = parens $ prettyDocWith fp a1 <+> text ">=" <+> prettyDocWith fp a2  
-    prettyDocWith fp       BTrue = text "TRUE"
-    prettyDocWith fp      BFalse = text "FALSE"
-
-    --prettyKodiakWith fp (Or  b1 b2) = parens $ (prettyKodiakWith fp b1) <> text "Or"  <> (prettyKodiakWith fp b1)
-    --prettyKodiakWith fp (And b1 b2) = parens $ (prettyKodiakWith fp b1) <> text "And" <> (prettyKodiakWith fp b1)
-    --prettyKodiakWith fp (Not b)     = parens $ text "Not" <> (prettyKodiakWith fp b)
-    --prettyKodiakWith fp (Eq  a1 a2) = parens $ (prettyKodiakWith fp a1) <> text "==" <> (prettyKodiakWith fp a2)
-    --prettyKodiakWith fp (Neq a1 a2) = parens $ (prettyKodiakWith fp a1) <> text "!=" <> (prettyKodiakWith fp a2)
-    --prettyKodiakWith fp (Lt  a1 a2) = parens $ (prettyKodiakWith fp a1) <> text "<"  <> (prettyKodiakWith fp a2)
-    --prettyKodiakWith fp (LtE a1 a2) = parens $ (prettyKodiakWith fp a1) <> text "<=" <> (prettyKodiakWith fp a2)
-    --prettyKodiakWith fp (Gt  a1 a2) = parens $ (prettyKodiakWith fp a2) <> text "<"  <> (prettyKodiakWith fp a1)
-    --prettyKodiakWith fp (GtE a1 a2) = parens $ (prettyKodiakWith fp a2) <> text "<=" <> (prettyKodiakWith fp a1)
-    --prettyKodiakWith _ BTrue  = text "True"
-    --prettyKodiakWith _ BFalse = text "False"
+    prettyDoc (Or  e1 e2) = parens $ prettyDoc e1 <+> text "OR"  <+> prettyDoc e2 
+    prettyDoc (And e1 e2) = parens $ prettyDoc e1 <+> text "AND" <+> prettyDoc e2
+    prettyDoc     (Not e) = text "NOT" <> parens (prettyDoc e)
+    prettyDoc  (Eq a1 a2) = parens $ prettyDoc a1 <+> text "="  <+> prettyDoc a2 
+    prettyDoc (Neq a1 a2) = parens $ prettyDoc a1 <+> text "/=" <+> prettyDoc a2 
+    prettyDoc  (Lt a1 a2) = parens $ prettyDoc a1 <+> text "<"  <+> prettyDoc a2 
+    prettyDoc (LtE a1 a2) = parens $ prettyDoc a1 <+> text "<=" <+> prettyDoc a2 
+    prettyDoc  (Gt a1 a2) = parens $ prettyDoc a1 <+> text ">"  <+> prettyDoc a2  
+    prettyDoc (GtE a1 a2) = parens $ prettyDoc a1 <+> text ">=" <+> prettyDoc a2  
+    prettyDoc       BTrue = text "TRUE"
+    prettyDoc      BFalse = text "FALSE"
 
 
 instance PPExt FBExpr where
-    
-    prettyDoc _ = error "prettyDoc: undefined for FBExpr, fp needed"
 
-    prettyDocWith fp  (FOr e1 e2) = parens $ prettyDocWith fp e1 <+> text "OR"  <+> prettyDocWith fp e2
-    prettyDocWith fp (FAnd e1 e2) = parens $ prettyDocWith fp e1 <+> text "AND" <+> prettyDocWith fp e2
-    prettyDocWith fp     (FNot e) = text "NOT" <> (parens $ prettyDocWith fp e)
-    prettyDocWith fp  (FEq a1 a2) = parens $ prettyDocWith fp a1 <+> text "="  <+> prettyDocWith fp a2
-    prettyDocWith fp (FNeq a1 a2) = parens $ prettyDocWith fp a1 <+> text "/=" <+> prettyDocWith fp a2
-    prettyDocWith fp  (FLt a1 a2) = parens $ prettyDocWith fp a1 <+> text "<"  <+> prettyDocWith fp a2
-    prettyDocWith fp (FLtE a1 a2) = parens $ prettyDocWith fp a1 <+> text "<=" <+> prettyDocWith fp a2
-    prettyDocWith fp  (FGt a1 a2) = parens $ prettyDocWith fp a1 <+> text ">"  <+> prettyDocWith fp a2
-    prettyDocWith fp (FGtE a1 a2) = parens $ prettyDocWith fp a1 <+> text ">=" <+> prettyDocWith fp a2
-    prettyDocWith fp       FBTrue = text "TRUE"
-    prettyDocWith fp      FBFalse = text "FALSE"
-
-    --prettyKodiakWith fp (FOr  fb1 fb2) = parens $ (prettyKodiakWith fp fb1) <> text "Or"  <> (prettyKodiakWith fp fb1)
-    --prettyKodiakWith fp (FAnd fb1 fb2) = parens $ (prettyKodiakWith fp fb1) <> text "And" <> (prettyKodiakWith fp fb1)
-    --prettyKodiakWith fp (FNot fb)      = parens $ text "Not" <> (prettyKodiakWith fp fb)
-    --prettyKodiakWith fp (FEq  fa1 fa2) = parens $ (prettyKodiakWith fp fa1) <> text "==" <> (prettyKodiakWith fp fa2)
-    --prettyKodiakWith fp (FNeq fa1 fa2) = parens $ (prettyKodiakWith fp fa1) <> text "!=" <> (prettyKodiakWith fp fa2)
-    --prettyKodiakWith fp (FLt  fa1 fa2) = parens $ (prettyKodiakWith fp fa1) <> text "<"  <> (prettyKodiakWith fp fa2)
-    --prettyKodiakWith fp (FLtE fa1 fa2) = parens $ (prettyKodiakWith fp fa1) <> text "<=" <> (prettyKodiakWith fp fa2)
-    --prettyKodiakWith fp (FGt  fa1 fa2) = parens $ (prettyKodiakWith fp fa2) <> text "<"  <> (prettyKodiakWith fp fa1)
-    --prettyKodiakWith fp (FGtE fa1 fa2) = parens $ (prettyKodiakWith fp fa2) <> text "<=" <> (prettyKodiakWith fp fa1)
-    --prettyKodiakWith _ FBTrue  = text "True"
-    --prettyKodiakWith _ FBFalse = text "False"
-
-
+    prettyDoc  (FOr e1 e2) = parens $ prettyDoc e1 <+> text "OR"  <+> prettyDoc e2
+    prettyDoc (FAnd e1 e2) = parens $ prettyDoc e1 <+> text "AND" <+> prettyDoc e2
+    prettyDoc     (FNot e) = text "NOT" <> parens (prettyDoc e)
+    prettyDoc  (FEq a1 a2) = parens $ prettyDoc a1 <+> text "="  <+> prettyDoc a2
+    prettyDoc (FNeq a1 a2) = parens $ prettyDoc a1 <+> text "/=" <+> prettyDoc a2
+    prettyDoc  (FLt a1 a2) = parens $ prettyDoc a1 <+> text "<"  <+> prettyDoc a2
+    prettyDoc (FLtE a1 a2) = parens $ prettyDoc a1 <+> text "<=" <+> prettyDoc a2
+    prettyDoc  (FGt a1 a2) = parens $ prettyDoc a1 <+> text ">"  <+> prettyDoc a2
+    prettyDoc (FGtE a1 a2) = parens $ prettyDoc a1 <+> text ">=" <+> prettyDoc a2
+    prettyDoc       FBTrue = text "TRUE"
+    prettyDoc      FBFalse = text "FALSE"
+    prettyDoc (IsValid ae) = text "isValid" <> parens (prettyDoc ae)
 
 
 

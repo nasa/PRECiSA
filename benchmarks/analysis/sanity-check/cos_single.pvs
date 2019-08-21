@@ -1,0 +1,7 @@
+cos_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+f(X: unb_single): unb_single = Scos(X)
+
+END cos_single

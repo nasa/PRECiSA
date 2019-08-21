@@ -1,0 +1,7 @@
+sin_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f(X: unb_double): unb_double = Dsin(X)
+
+END sin_double

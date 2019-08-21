@@ -5,6 +5,10 @@ import qualified Common.DecisionPath as DP
 import Test.Tasty
 import Test.Tasty.HUnit
 
+testCommonDecisionPath :: TestTree
+testCommonDecisionPath = testGroup "Common.DecisionPath"
+    [testDecisionPath
+    ]
 
 root = DP.root :: LDecisionPath
 
@@ -23,22 +27,22 @@ maxCommonPrefix__tests = testGroup "maxCommonPrefix tests"
   ]
 
 maxCommonPrefix__test1 = testCase "0100 /\\ 0000 = 0" $
-    maxCommonPrefix dp1 dp2 @?= root ~> False
+    maxCommonPrefix dp1 dp2 @?= root ~> 0
     where
-      dp1 = root ~> False ~> True ~> False ~> False
-      dp2 = root ~> False ~> False ~> False ~> False
+      dp1 = root ~> 0 ~> 1 ~> 0 ~> 0
+      dp2 = root ~> 0 ~> 0 ~> 0 ~> 0
 
 maxCommonPrefix__test2 = testCase "0100 /\\ 0101 = 010" $
-    maxCommonPrefix dp1 dp2 @?= root ~> False ~> True ~> False
+    maxCommonPrefix dp1 dp2 @?= root ~> 0 ~> 1 ~> 0
     where
-      dp1 = root ~> False ~> True ~> False ~> False
-      dp2 = root ~> False ~> True ~> False ~> True
+      dp1 = root ~> 0 ~> 1 ~> 0 ~> 0
+      dp2 = root ~> 0 ~> 1 ~> 0 ~> 1
 
 maxCommonPrefix__test3 = testCase "0100 /\\ 011 = 01" $
-    maxCommonPrefix dp1 dp2 @?= root ~> False ~> True
+    maxCommonPrefix dp1 dp2 @?= root ~> 0 ~> 1
     where
-      dp1 = root ~> False ~> True ~> False ~> False
-      dp2 = root ~> False ~> True ~> True
+      dp1 = root ~> 0 ~> 1 ~> 0 ~> 0
+      dp2 = root ~> 0 ~> 1 ~> 1
 
 maxCommonPrefixOfList__tests = testGroup "maxCommonPrefixOfList tests" [
   maxCommonPrefixOfList__test1,
@@ -46,12 +50,12 @@ maxCommonPrefixOfList__tests = testGroup "maxCommonPrefixOfList tests" [
   ]
 
 maxCommonPrefixOfList__test1 = testCase "[0110,0100,0111] = 01" $
-    maxCommonPrefixOfList dpList @?= root ~> False ~> True
+    maxCommonPrefixOfList dpList @?= root ~> 0 ~> 1
     where
       dpList = [
-        root ~> False ~> True ~> True ~> False,
-        root ~> False ~> True ~> False ~> False,
-        root ~> False ~> True ~> True ~> True
+        root ~> 0 ~> 1 ~> 1 ~> 0,
+        root ~> 0 ~> 1 ~> 0 ~> 0,
+        root ~> 0 ~> 1 ~> 1 ~> 1
         ]
 
 maxCommonPrefixOfList__test2 = testCase "root = root" $
@@ -69,20 +73,20 @@ isPrefix__tests = testGroup "isPrefix tests"
 isPrefix__test1 = testCase "101 `isPrefix` 1011" $
     (dp1 `isPrefix` dp2) @?= True
     where
-      dp1 = root ~> True ~> False ~> True
-      dp2 = root ~> True ~> False ~> True ~> True
+      dp1 = root ~> 1 ~> 0 ~> 1
+      dp2 = root ~> 1 ~> 0 ~> 1 ~> 1
 
 isPrefix__test2 = testCase "not $ 101 `isPrefix` 100" $
     (dp1 `isPrefix` dp2) @?= False
     where
-      dp1 = root ~> True ~> False ~> True
-      dp2 = root ~> True ~> False ~> False
+      dp1 = root ~> 1 ~> 0 ~> 1
+      dp2 = root ~> 1 ~> 0 ~> 0
 
 isPrefix__test3 = testCase "root `isPrefix` 100" $
     (dp1 `isPrefix` dp2) @?= True
     where
       dp1 = root
-      dp2 = root ~> True ~> False ~> False
+      dp2 = root ~> 1 ~> 0 ~> 0
 
 isPrefix__test4 = testCase "root `isPrefix` root" $
     (root `isPrefix` root) @?= True
@@ -98,19 +102,19 @@ isPrefixInList__tests = testGroup "isPrefixInList tests"
 isPrefixInList__test1 = testCase "0 `isPrefixInList` [10,01]" $
     (dp `isPrefixInList` dpList) @?= True
     where
-      dp = root ~> False
-      dpList = [root ~> True ~> False, root ~> False ~> True]
+      dp = root ~> 0
+      dpList = [root ~> 1 ~> 0, root ~> 0 ~> 1]
 
 isPrefixInList__test2 = testCase "not $ 0 `isPrefixInList` [10,11]" $
     (dp `isPrefixInList` dpList) @?= False
     where
-      dp = root ~> False
-      dpList = [root ~> True ~> False, root ~> True ~> True]
+      dp = root ~> 0
+      dpList = [root ~> 1 ~> 0, root ~> 1 ~> 1]
 
 isPrefixInList__test3 = testCase "not $ 0 `isPrefixInList` []" $
     (dp `isPrefixInList` dpList) @?= False
     where
-      dp = root ~> False
+      dp = root ~> 0
       dpList = []
 
 isPrefixInList__test4 = testCase "not $ root `isPrefixInList` []" $
@@ -123,7 +127,7 @@ isPrefixInList__test5 = testCase "root `isPrefixInList` [10,01]" $
     (dp `isPrefixInList` dpList) @?= True
     where
       dp = root
-      dpList = [root ~> True ~> False, root ~> False ~> True]
+      dpList = [root ~> 1 ~> 0, root ~> 0 ~> 1]
 
 
 existsPrefixInList__tests = testGroup "existsPrefixInList tests"
@@ -138,19 +142,19 @@ existsPrefixInList__tests = testGroup "existsPrefixInList tests"
 existsPrefixInList__test1 = testCase "011 `existsPrefixInList` [10,0]" $
     (dp `existsPrefixInList` dpList) @?= True
     where
-      dp = root ~> False ~> True ~> True
-      dpList = [root ~> True ~> False, root ~> False ]
+      dp = root ~> 0 ~> 1 ~> 1
+      dpList = [root ~> 1 ~> 0, root ~> 0 ]
 
 existsPrefixInList__test2 = testCase "not $ 0 `existsPrefixInList` [10,11]" $
     (dp `existsPrefixInList` dpList) @?= False
     where
-      dp = root ~> False
-      dpList = [root ~> True ~> False, root ~> True ~> True]
+      dp = root ~> 0
+      dpList = [root ~> 1 ~> 0, root ~> 1 ~> 1]
 
 existsPrefixInList__test3 = testCase "not $ 0 `existsPrefixInList` []" $
     (dp `existsPrefixInList` dpList) @?= False
     where
-      dp = root ~> False
+      dp = root ~> 0
       dpList = []
 
 existsPrefixInList__test4 = testCase "not $ root `existsPrefixInList` []" $
@@ -163,16 +167,16 @@ existsPrefixInList__test5 = testCase "root `existsPrefixInList` [root,01]" $
     (dp `existsPrefixInList` dpList) @?= True
     where
       dp = root
-      dpList = [root, root ~> False ~> True]
+      dpList = [root, root ~> 0 ~> 1]
 
 existsPrefixInList__test6 = testCase "not $ root `existsPrefixInList` [10,011]" $
     (dp `existsPrefixInList` dpList) @?= False
     where
       dp = root
-      dpList = [root ~> True ~> False, root ~> False ~> True ~> True]
+      dpList = [root ~> 1 ~> 0, root ~> 0 ~> 1 ~> 1]
 
 existsPrefixInList__test7 = testCase "1 `existsPrefixInList` [root,01]" $
     (dp `existsPrefixInList` dpList) @?= True
     where
-      dp = root ~> False
-      dpList = [root, root ~> False ~> True]
+      dp = root ~> 0
+      dpList = [root, root ~> 0 ~> 1]

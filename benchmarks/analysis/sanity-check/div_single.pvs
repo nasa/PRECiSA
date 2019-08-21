@@ -1,0 +1,7 @@
+div_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+f (X, Y: unb_single): unb_single = Sdiv(X, Y)
+
+END div_single

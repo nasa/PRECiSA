@@ -1,0 +1,6 @@
+Variables
+  real x1 in [-5, 5];
+  real x2 in [-5, 5];
+	
+Expressions
+  himmilbeau rnd64= (x1*x1 + x2 - 11)* (x1*x1 + x2 - 11) + (x1 + x2*x2 - 7)*(x1 + x2*x2 - 7);

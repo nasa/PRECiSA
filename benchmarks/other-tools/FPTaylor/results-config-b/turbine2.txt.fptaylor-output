@@ -1,0 +1,74 @@
+Date: Sat Jun 24 09:32:00 EDT 2017
+Command:  ~/FPTaylor/repo/fptaylor -c config-b.cfg turbine2.txt
+FPTaylor, version 0.9.1+dev
+
+Loading: turbine2.txt
+
+*************************************
+Taylor form for: rnd64((rnd64((rnd64((rnd64(6) * rnd64(v))) - rnd64((rnd64((rnd64((rnd64((1/2)) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd64((rnd64(1) - rnd64(v))))))) - rnd64((5/2))))
+
+Conservative bound: [-29.436989, 80.993000]
+
+Simplified rounding: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((6 * rnd64(v))) - rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v))))))) - (5/2)))
+Building Taylor forms...
+Simplifying Taylor forms...
+success
+v0 = (((6 * v) - ((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v)))) - (5/2))
+-1 (51): exp = -53: (8299108691784225/4951760157141521099596496896)
+1 (1): exp = -53: (((6 * 4) + (-(((((1/2) * v) * (((w * w) * r) * r)) * (-(((-(4)) / ((1 - v) * (1 - v))))))))) + (-(((1 / (1 - v)) * ((((w * w) * r) * r) * ((1/2) * 4))))))
+2 (3): exp = -53: (6 * v)
+3 (9): exp = -53: ((-(((1 / (1 - v)) * (((1/2) * v) * (r * (r * (w * (1/2)))))))) + (-(((1 / (1 - v)) * (((1/2) * v) * (r * (r * (w * (1/2)))))))))
+4 (11): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (r * (r * (w * w)))))))
+5 (17): exp = -53: ((-(((1 / (1 - v)) * (((1/2) * v) * (((w * w) * r) * 4))))) + (-(((1 / (1 - v)) * (((1/2) * v) * (r * ((w * w) * 4)))))))
+6 (15): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (r * ((w * w) * r))))))
+7 (19): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (((w * w) * r) * r)))))
+8 (22): exp = -53: (-(((1 / (1 - v)) * (((1/2) * v) * (((w * w) * r) * r)))))
+9 (25): exp = -53: (-(((((1/2) * v) * (((w * w) * r) * r)) * (-(((1 - v) / ((1 - v) * (1 - v))))))))
+10 (29): exp = -53: (-(((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v)))))
+11 (31): exp = -53: ((6 * v) - ((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v))))
+12 (33): exp = -53: (((6 * v) - ((((1/2) * v) * (((w * w) * r) * r)) * (1 / (1 - v)))) - (5/2))
+
+Corresponding original subexpressions:
+1: rnd64(v)
+2: rnd64((6 * rnd64(v)))
+3: rnd64(w)
+4: rnd64((rnd64(w) * rnd64(w)))
+5: rnd64(r)
+6: rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r)))
+7: rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r)))
+8: rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r)))))
+9: rnd(64,ne,1.000000,-53,0)((1 - rnd64(v)))
+10: rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v)))))
+11: rnd(64,ne,1.000000,-53,0)((rnd64((6 * rnd64(v))) - rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v)))))))
+12: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((6 * rnd64(v))) - rnd64((rnd64((rnd(64,ne,1.000000,0,-1022)(((1/2) * rnd64(v))) * rnd64((rnd64((rnd64((rnd64(w) * rnd64(w))) * rnd64(r))) * rnd64(r))))) / rnd(64,ne,1.000000,-53,0)((1 - rnd64(v))))))) - (5/2)))
+
+bounds: [-inf, inf]
+
+Computing absolute errors
+-1: exp = -53: 1.675992e-12 (low = 1.675992e-12, subopt = 0.0%)
+
+Solving the exact optimization problem
+exact bound (exp = -53): 2.294721e+02 (low = 2.277613e+02, subopt = 0.7%)
+total2: 1.860725e-28 (low = 1.860725e-28, subopt = 0.0%)
+exact total: 2.547653e-14 (low = 2.528658e-14, subopt = 0.7%)
+
+Elapsed time: 0.51073
+*************************************
+
+-------------------------------------------------------------------------------
+Problem: turbine2
+
+Optimization lower bounds for error models:
+The absolute error model (exact): 2.528658e-14 (suboptimality = 0.7%)
+
+Bounds (without rounding): [-inf, inf]
+
+Absolute error (exact): 2.547653e-14
+
+Elapsed time: 0.51
+
+
+
+real	0m0.517s
+user	0m0.456s
+sys	0m0.024s

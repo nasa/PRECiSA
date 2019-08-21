@@ -1,0 +1,7 @@
+mul_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+f (X, Y: unb_single): unb_single = Smul(X, Y)
+
+END mul_single

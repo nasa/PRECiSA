@@ -1,0 +1,1 @@
+los (Sx, Sy: unb_single): unb_single = Ssqrt (Sadd (Smul (Sx,Sx), Smul (Sy,Sy)))

@@ -1,0 +1,55 @@
+quadraticFit: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+quadraticFit (X,Y: unb_double):unb_double =
+    IF (X <= RtoD(-0.0000000000000004440892098500627)) 
+    THEN
+      IF (Y <= RtoD(-0.0000000000000004440892098500627)) 
+      THEN
+        Dsub(RtoD(-0.0495178)
+            ,Dsub(Dmul(RtoD(0.188656),X)
+                      ,Dsub(Dmul(RtoD(0.0502969),Dmul(X,X))
+                           ,Dadd(Dmul(RtoD(0.188656),Y)
+                                ,Dsub(Dmul(RtoD(0.0384002),Dmul(X,Y))
+                                     ,Dmul(RtoD(0.0502969),Dmul(Y,Y)))))))
+      ELSE
+        IF (Y > RtoD(0.0000000000000004440892098500627))
+        THEN
+          Dadd(RtoD(0.0495178)
+              ,Dadd(Dmul(RtoD(0.188656),X)
+                   ,Dsub(Dmul(RtoD(0.0502969),Dmul(X,X))
+                        ,Dadd(Dmul(RtoD(0.188656),Y)
+                             ,Dadd(Dmul(RtoD(0.0384002),Dmul(X,Y))
+                                  ,Dmul(RtoD(0.0502969),Dmul(Y,Y)))))))
+        ELSE
+        RtoD(0)
+        ENDIF
+      ENDIF
+    ELSE
+      IF (X > RtoD(0.0000000000000004440892098500627))
+        THEN
+        IF (Y <= RtoD(-0.0000000000000004440892098500627))
+        THEN
+          Dsub(RtoD(0.0495178)
+              ,Dadd(Dmul(RtoD(0.188656),X)
+                   ,Dadd(Dmul(RtoD(0.0502969),Dmul(X,X))
+                        ,Dadd(Dmul(RtoD(0.188656),Y)
+                             ,Dadd(Dmul(RtoD(0.0384002),Dmul(X,Y))
+                                  ,Dmul(RtoD(0.0502969),Dmul(Y,Y)))))))
+        ELSE 
+          IF (Y > RtoD(0.0000000000000004440892098500627))
+          THEN
+            Dadd(RtoD(-0.0495178)
+                ,Dsub(Dmul(RtoD(0.188656),X)
+                     ,Dadd(Dmul(RtoD(0.0502969),Dmul(X,X))
+                          ,Dadd(Dmul(RtoD(0.188656),Y)
+                               ,Dsub(Dmul(RtoD(0.0384002),Dmul(X,Y))
+                                    ,Dmul(RtoD(0.0502969),Dmul(Y,Y)))))))
+          ELSE RtoD(0)
+          ENDIF
+        ENDIF
+      ELSE RtoD(0)
+      ENDIF
+    ENDIF
+END quadraticFit

@@ -1,0 +1,15 @@
+Date: Sat Jun 24 20:09:24 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time gappa doppler1-hints
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Warning: maximum number of iterations reached.
+Results:
+  |r - Mr| in [0, 204020233594054325b-100 {1.60944e-13, 2^(-42.4985)}]
+real  3.475

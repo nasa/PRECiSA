@@ -1,0 +1,19 @@
+cpr_lat_ldec_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+modu(A, B: unb_single): unb_single = Ssub(A, Smul(B, Sfloor(Sdiv(A,B))))
+
+j0 (LatS, YZ0: unb_single): unb_single =
+	Sadd(Sfloor(Sdiv(LatS, Sdiv(RtoS(360), RtoS(60)))),
+	     Sfloor(Sadd(Ssub(Sdiv(modu(LatS, Sdiv(RtoS(360), RtoS(60))), Sdiv(RtoS(360), RtoS(60))), Sdiv(YZ0, RtoS(131072))), RtoS(0.5))))
+
+j1 (LatS, YZ1: unb_single): unb_single =
+	Sadd(Sfloor(Sdiv(LatS, Sdiv(RtoS(360), RtoS(59)))),
+	     Sfloor(Sadd(Ssub(Sdiv(modu(LatS, Sdiv(RtoS(360), RtoS(59))), Sdiv(RtoS(360), RtoS(59))), Sdiv(YZ1, RtoS(131072))), RtoS(0.5))))	     
+
+rlat0(LatS, YZ0: unb_single): unb_single = Smul(Sdiv(RtoS(360), RtoS(60)), Sadd(j0(LatS, YZ0), Sdiv(YZ0, RtoS(131072))))
+
+rlat1(LatS, YZ1: unb_single): unb_single = Smul(Sdiv(RtoS(360), RtoS(59)), Sadd(j1(LatS, YZ1), Sdiv(YZ1, RtoS(131072))))
+ 
+END cpr_lat_ldec_single

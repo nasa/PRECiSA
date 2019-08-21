@@ -1,0 +1,22 @@
+triangleSorted: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+triangleSorted (A,B,C: unb_double): unb_double =
+	LET E = RtoD(0.000000000000004440892098500627) IN
+		IF Dsub(A,B) < -E
+		THEN IF Dsub(A,B) >= E
+			 THEN Ddiv(Dsqrt (Dmul(Dmul(Dmul(Dadd(C,Dadd(B,A)),Dsub(A,Dsub(C,B))),
+                                            Dadd(A, Dsub(C,B))),Dadd(C, Dsub(B,A)) )),
+                         RtoD(4))
+			 ELSE Ddiv(Dsqrt (Dmul(Dmul(Dmul(Dadd(C,Dadd(B,A)),Dsub(B,Dsub(C,A))),
+                                            Dadd(B, Dsub(C,A))),Dadd(C, Dsub(A,B)) )),
+                         RtoD(4))
+			 ENDIF
+		ELSE RtoD(0)
+		ENDIF
+
+END triangleSorted
+
+      
+      

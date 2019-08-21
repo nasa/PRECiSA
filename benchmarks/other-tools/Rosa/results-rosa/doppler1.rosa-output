@@ -1,0 +1,22 @@
+Date: Sun Jun 25 12:34:07 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_rosa doppler1
+[ Info  ] Running Compilation phase
+[ Info  ] --- Analysis complete ---
+[ Info  ] 
+[ Info  ] doppler1
+[ Info  ] ==== VALID ====
+[ Info  ] result ∈ [-137.638571826411900, -0.0339518124224094700] ± 2.6826674592175065e-13
+[ Info  ] Verification successful for precision: Float64
+[ Info  ] Generated program with 8 lines.
+[ Info  ] . ┌─────────┐
+          ╔═╡ Summary ╞═══════════════════════════════════════════════════════════════════════╗
+          ║ └─────────┘                                                                       ║
+          ║ doppler1                  postcond.           VALID                        17.293 ║
+          
+          
+          ╟┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄╢
+          ║ total: 1      valid: 1      invalid: 0      unknown 0                      17.293 ║
+          ║ precision: Float64                                                                ║
+          ╚═══════════════════════════════════════════════════════════════════════════════════╝
+real  21.178

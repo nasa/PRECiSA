@@ -1,0 +1,66 @@
+Date: Sat Jun 24 09:31:55 EDT 2017
+Command:  ~/FPTaylor/repo/fptaylor -c config-b.cfg rigidBody1.txt
+FPTaylor, version 0.9.1+dev
+
+Loading: rigidBody1.txt
+
+*************************************
+Taylor form for: rnd64((rnd64((rnd64((rnd64((rnd64((-(rnd64(x1)))) * rnd64(x2))) - rnd64((rnd64((rnd64(2) * rnd64(x2))) * rnd64(x3))))) - rnd64(x1))) - rnd64(x3)))
+
+Conservative bound: [-705.000000, 705.000000]
+
+Simplified rounding: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3))))) - rnd64(x1))) - rnd64(x3)))
+Building Taylor forms...
+Simplifying Taylor forms...
+success
+v0 = (((((-(x1)) * x2) - ((2 * x2) * x3)) - x1) - x3)
+-1 (26): exp = -53: (7873602766503939/9903520314283042199192993792)
+1 (1): exp = -53: ((x2 * (-(8))) + (-(8)))
+2 (2): exp = -53: (((-(x1)) * 8) + (-((x3 * (2 * 8)))))
+3 (4): exp = -53: ((-(x1)) * x2)
+4 (8): exp = -53: ((-(((2 * x2) * 8))) + (-(8)))
+5 (10): exp = -53: (-(((2 * x2) * x3)))
+6 (12): exp = -53: (((-(x1)) * x2) - ((2 * x2) * x3))
+7 (15): exp = -53: ((((-(x1)) * x2) - ((2 * x2) * x3)) - x1)
+8 (18): exp = -53: (((((-(x1)) * x2) - ((2 * x2) * x3)) - x1) - x3)
+
+Corresponding original subexpressions:
+1: rnd64(x1)
+2: rnd64(x2)
+3: rnd64(((-(rnd64(x1))) * rnd64(x2)))
+4: rnd64(x3)
+5: rnd64(((2 * rnd64(x2)) * rnd64(x3)))
+6: rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3)))))
+7: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3))))) - rnd64(x1)))
+8: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(((-(rnd64(x1))) * rnd64(x2))) - rnd64(((2 * rnd64(x2)) * rnd64(x3))))) - rnd64(x1))) - rnd64(x3)))
+
+bounds: [-inf, inf]
+
+Computing absolute errors
+-1: exp = -53: 7.950307e-13 (low = 7.950307e-13, subopt = 0.0%)
+
+Solving the exact optimization problem
+exact bound (exp = -53): 3.481000e+03 (low = 3.481000e+03, subopt = 0.0%)
+total2: 8.826614e-29 (low = 8.826614e-29, subopt = 0.0%)
+exact total: 3.864686e-13 (low = 3.864686e-13, subopt = 0.0%)
+
+Elapsed time: 0.42148
+*************************************
+
+-------------------------------------------------------------------------------
+Problem: rigidBody1
+
+Optimization lower bounds for error models:
+The absolute error model (exact): 3.864686e-13 (suboptimality = 0.0%)
+
+Bounds (without rounding): [-inf, inf]
+
+Absolute error (exact): 3.864686e-13
+
+Elapsed time: 0.42
+
+
+
+real	0m0.427s
+user	0m0.352s
+sys	0m0.032s

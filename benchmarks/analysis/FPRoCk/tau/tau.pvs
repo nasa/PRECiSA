@@ -1,0 +1,19 @@
+tau: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+tau(S,V,T: unb_double):unb_double =
+	LET E1 = RtoD(0.00000000008026290743146094) IN
+	LET E2 = RtoD(0.000000003910145096597264) IN
+    IF Dmul(S,V) > E1
+    	THEN IF Dsub(Dmul(S,V), Dmul(T,Dmul(V,V))) > E2
+    			THEN Dmul(S,V)
+    			ELSE IF  Dsub(Dmul(S,V), Dmul(T,Dmul(V,V))) <= -E2
+    			     THEN Dmul(T,Dmul(V,V))
+    				 ELSE RtoD(0)
+    			     ENDIF
+    		 ENDIF
+    	ELSE RtoD(0)
+    ENDIF
+
+END tau

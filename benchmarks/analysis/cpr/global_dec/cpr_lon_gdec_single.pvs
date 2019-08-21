@@ -1,0 +1,18 @@
+cpr_lon_gdec_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+dLon0 (NL: unb_single): unb_single = IF (NL > RtoS(0)) THEN Sdiv(RtoS(360), NL) ELSE RtoS(360) ENDIF
+
+dLon1 (NL: unb_single): unb_single = IF ((Ssub(NL, RtoS(1))) > RtoS(0)) THEN Sdiv(RtoS(360), Ssub(NL, RtoS(1))) ELSE RtoS(360) ENDIF
+
+modu(A, B: unb_single): unb_single = Ssub(A, Smul(B, Sfloor(Sdiv(A,B))))
+
+m (XZ0, XZ1, NL: unb_single): unb_single =
+	Sfloor(Sadd(Sdiv(Ssub(Smul(Ssub(NL,RtoS(1)),XZ0), Smul(NL,XZ1)), RtoS(131072)), RtoS(0.5)))
+
+rlon0(XZ0, XZ1, NL: unb_single): unb_single = Smul(dLon0(NL), Sadd(modu(m(XZ0, XZ1, NL), NL), Sdiv(XZ0, RtoS(131072))))
+
+rlon1(XZ0, XZ1, NL: unb_single): unb_single = Smul(dLon1(NL), Sadd(modu(m(XZ0, XZ1, NL), Ssub(NL,RtoS(1))), Sdiv(XZ1, RtoS(131072))))
+ 
+END cpr_lon_gdec_single

@@ -1,0 +1,29 @@
+# azimuth # no support for trigonometric functions
+# sphere  # no support for trigonometric functions
+# logExp     # "the log and exp operations are interpreted only for operands 
+# hartman3   #   which floating-point value is a point (and not an interval)."
+# hartman 6  #   taken from the Fluctuat manual (in Fluctuat distribution)
+carbonGas.c
+cpr_yz0.c
+doppler1.c
+doppler2.c
+doppler3.c
+himmilbeau.c
+jet.c
+kepler0.c
+kepler1.c
+kepler2.c
+# polycarp.c # Segmentation fault
+predatorPrey.c
+rigidBody1.c
+rigidBody2.c
+sine.c
+sineOrder3.c
+sqroot.c
+stynlinski.c
+t_div_t1.c
+turbine1.c
+turbine2.c
+turbine3.c
+verhulst.c
+for_loop.c

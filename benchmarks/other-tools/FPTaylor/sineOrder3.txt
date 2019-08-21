@@ -1,0 +1,6 @@
+Variables
+  z in [-2, 2];
+	
+Expressions
+  sineOrder3 rnd64= 0.954929658551372 * z -  0.12900613773279798*(z*z*z);
+  

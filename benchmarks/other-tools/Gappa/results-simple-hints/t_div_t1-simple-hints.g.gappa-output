@@ -1,0 +1,6 @@
+Date: Sat Jun 24 20:11:52 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time gappa t_div_t1-simple-hints
+Results:
+  |r - Mr| in [0, 564636551481762251b-51 {250.749, 2^(7.9701)}]
+real  0.010

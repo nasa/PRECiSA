@@ -1,0 +1,17 @@
+fgh_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f (X, Y: unb_double): unb_double = IF (X /= RtoD(0))
+                                       THEN (Dadd(X, Y))
+                                       ELSE (Dmul(X, Y))
+                                   ENDIF
+
+g (Z: unb_double): unb_double = Z
+
+h (A, B: unb_double): unb_double = IF (A > RtoD(2))
+                                       THEN g(f(A, B))
+                                       ELSE g(f(B, A))
+                                   ENDIF
+
+END fgh_double

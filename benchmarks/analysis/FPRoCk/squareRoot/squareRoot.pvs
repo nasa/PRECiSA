@@ -1,0 +1,21 @@
+squareRoot: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+squareRoot (I: unb_double):unb_double =
+    IF (I >= RtoD(2.00000000000000022204460492503136))
+    THEN Dmul(RtoD(1.414213538169860839843750)
+             ,Dadd(RtoD(1)
+                  ,Dmul(Dsub(Ddiv(I,2), RtoD(1))
+                       ,Dsub(RtoD(0.5), Dmul(RtoD(0.125),Dsub(Ddiv(I,RtoD(2)),RtoD(1)))))))
+    ELSE
+       IF (I < RtoD(1.99999999999999977795539507496864))
+       THEN Dadd(RtoD(1), Dmul(Dsub(I,RtoD(1))
+                              ,Dadd(RtoD(0.5)
+                                   ,Dmul(Dsub(I,RtoD(1))
+                                        ,Dadd(RtoD(-0.125), Dmul(Dsub(I,RtoD(1)), RtoD(0.0625)))))))
+       ELSE RtoD(0)
+       ENDIF
+    ENDIF
+
+END squareRoot

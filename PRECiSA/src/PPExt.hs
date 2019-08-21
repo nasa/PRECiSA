@@ -22,40 +22,37 @@ module PPExt (
   module PPExt
 ) where
 
-import Text.PrettyPrint as PPExt hiding (empty)
+import Text.PrettyPrint as PPExt
+-- hiding (empty)
 import qualified Text.PrettyPrint as PP
-import FPrec
+--import FPrec
 
 class PPExt a where
-  prettyDoc        :: a -> Doc
-  prettyDocWith    :: FPrec -> a -> Doc
-  prettyKodiak     :: a -> Doc
-  prettyKodiak = prettyDoc
-  prettyKodiakWith :: FPrec -> a -> Doc
-  prettyKodiakWith = prettyDocWith
+  prettyDoc :: a -> Doc
 
 emptyDoc :: Doc
 emptyDoc = PP.empty
 
 prettyList :: PPExt a => [a] -> Doc -> Doc
-prettyList list sep     = hsep $ punctuate sep $ (map prettyDoc list)
+prettyList list separ = hsep $ punctuate separ $ map prettyDoc list
 
-prettyListWith :: PPExt a => FPrec -> Doc -> [a] -> Doc
-prettyListWith fp sep list =  hsep $ punctuate sep $ (map (prettyDocWith fp) list)
+docListComma :: [Doc] -> Doc
+docListComma list = hsep $ punctuate comma list
+
+docListAnd :: [Doc] -> Doc
+docListAnd list = hsep $ punctuate (text " &&") list
+
+docListOr :: [Doc] -> Doc
+docListOr list = hsep $ punctuate (text " ||") list
 
 showRational :: Rational -> String
 showRational x = map (\c -> if c=='%' then '/'; else c) (show x)
 
 instance PPExt Int where
   prettyDoc = int
-  prettyDocWith _ i = int i
-  prettyKodiak i = text "val" <> (parens $ int i)
-  prettyKodiakWith _ i = prettyKodiak i
 
 instance PPExt Double where
   prettyDoc = double
-  prettyDocWith _ d = double d
 
 instance PPExt Char where
   prettyDoc = char
-  prettyDocWith _ c = char c

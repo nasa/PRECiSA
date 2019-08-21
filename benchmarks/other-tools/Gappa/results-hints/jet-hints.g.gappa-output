@@ -1,0 +1,6 @@
+Date: Sat Jun 24 20:09:36 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time gappa jet-hints
+Results:
+  |r - Mr| in [0, 313106418876224527b-46 {4449.51, 2^(12.1194)}]
+real  28.604

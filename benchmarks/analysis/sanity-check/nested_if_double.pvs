@@ -1,0 +1,14 @@
+if_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f (X, Y: unb_double): unb_double =
+    IF (Y = X)
+	THEN
+		IF (X > RtoD(0))
+		THEN RtoD(0)
+		ELSE (Dadd(X, Y))
+		ENDIF
+	ELSE (Dadd(Y, Y))
+	ENDIF
+END if_double

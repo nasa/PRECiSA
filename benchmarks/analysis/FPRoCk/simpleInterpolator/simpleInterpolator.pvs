@@ -1,0 +1,28 @@
+simpleInterpolator: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+simpleInterpolator (E: unb_double):unb_double =
+    IF (E < RtoD(-4.999999999999992894572642398997))
+    THEN
+      Dmul(E, RtoD(2.25))
+    ELSE
+      IF (E >= RtoD(5.000000000000007105427357601003))
+      THEN
+        IF (E < RtoD(24.999999999999992894572642398997))
+        THEN
+          Dadd(Dmul((Dsub(E,RtoD(5))),RtoD(1.1)), Dmul(RtoD(5), RtoD(2.25)))
+        ELSE
+          IF (E >= RtoD(25.000000000000007105427357601003))
+          THEN
+            Dadd(Dmul(RtoD(5),RtoD(2.25)),Dmul(RtoD(20), RtoD(1.1)))
+          ELSE
+            RtoD(0)
+          ENDIF
+        ENDIF
+      ELSE 
+        RtoD(0)
+      ENDIF
+    ENDIF
+END simpleInterpolator
+  

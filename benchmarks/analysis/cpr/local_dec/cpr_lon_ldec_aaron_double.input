@@ -1,0 +1,11 @@
+dLon0 (NL): NL in [0,60]
+
+dLon1 (NL): NL in [0,60]
+
+m0 (LonS, XZ0, NL): LonS in [-90,90], XZ0 in [0, 131072], NL in [0,60]
+
+m1 (LatS, XZ1, NL): LonS in [-90,90], XZ1 in [0, 131072], NL in [0,60]
+
+rlon0(XZ0): XZ0 in [0, 131072]
+
+rlon1(XZ1): XZ1 in [0, 131072]

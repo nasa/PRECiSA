@@ -1,0 +1,7 @@
+floor_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f(X: unb_double): unb_double = Dfloor(X)
+
+END floor_double

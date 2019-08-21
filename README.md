@@ -1,75 +1,43 @@
 PRECiSA
--------------
-PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
+=======
+
+PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic static analyzer for floating-point programs.
+
+The main functionality of PRECiSA is the [round-off error estimation](#floating-point-round-off-error-estimation).
+Given a floating-point program, PRECiSA computes a sound overapproximation of the round-off error that may occur together with PVS certificates ensuring its correctness.
 [Here](http://precisa.nianet.org/) you can try the PRECiSA web-interface and find more information on the tool.
 
-The input to PRECiSA are the following files:
-
-* A program `example.pvs` composed of floating-point valued functions. In its current version, PRECiSA accepts a subset of the language of the Prototype Verification System (PVS), including LET expressions, IF-THEN-ELSE constructions, function calls, and floating point values and operations such as: addition, multiplication, division, subtraction, floor, square root, trigonometric functions, logarithm, and exponential. For example:
-   ```
-   example: THEORY
-   BEGIN
-   IMPORTING float@aerr754dp
-
-	example (X,Y: unb_double) : unb_double =
-		IF (X >= RtoD(0) AND Y < RtoD(4))
-		THEN IF (Y > RtoD(0))
-			 THEN Dadd(X,Y)
-			 ELSE Dmul(X,Y)
-			 ENDIF
-        ELSE Dsub(X,Y) ENDIF
-
-   END example
-   ```
-
-* A file `example.input` containing initial ranges for the input variables of the program. For example:
-   ```
-   example(X,Y): X in [-10,10], Y in [0, 40]
-   ```
-
-* A file `example.path` containing a set of decision paths/sub-programs of interests. The user can specify these paths by listing the paths/sub-programs of interests as a list of True and False. For instance, in the example above, the path [True, True] corresponds to the sub-program Dadd(X,Y), the path [False] to the subprogram Dsub(X,Y), and the path [True] to the subprogram IF (Y > RtoD(0)) THEN Dadd(X,Y) ELSE Dmul(X,Y) ENDIF. The analysis is done for all the execution paths in the program, or better for all combination of real/FP execution path in the program). For the selected sub-programs, a dedicated error expression representing the round-off error estimation is computed. For the others, the tool will generate an overall error which is the maximum of all the round-off error estimations corresponding to these sub-programs. If the user does not select any sub-program of interest (None), the tool will produce the overall round-off error for the stable cases (when real and floating-point execution flows coincide) and the one for the unstable cases (when real and floating-point execution flows diverge). If the user is interested in a precise analysis of the entire program (All), the analysis will generate a semantic element for each combination of real/FP execution path in the program.
-Examples of possible input for the decision pahts are the following:
-   ```
-   example(X,Y): None
-   ```
-   or
-   ```
-   example(X,Y): All
-   ```
-   or
-   ```
-   example(X,Y): [True, True]
-   ```
-
-More examples can be found in the [PRECiSA benchmarks folder](PRECiSA/benchmarks).
-
-The analysis performed by PRECiSA results in one upper-bound of the floating-point round-off error for each decision path of interest, an overall upper-bound for the decision paths not of interest, and an overall upper-bound for the unstable test cases (when real and floating-point flows diverge).
-Additionally, PRECiSA generates two PVS theories:
-
-* a theory containing a collection of lemmas stating symbolic accumulated round-off error estimations for the input program, and
-* a theory containing a collection of lemmas stating numerical accumulated round-off error estimations.  The numerical estimations are computed using Kodiak.
-
-All the generated lemmas are equipped with PVS proof scripts that automatically discharge them.
+In addition, PRECiSA implements a [program transformation](#automatic-generation-of-stable-C-code-from-PVS) from a PVS real-valued program to floating-point C code.
+This transformation corrects unstable tests by over-approximating the conditional guards in the if-then-else statements.
+The resulting transformed program emits a warning when an unstable test is detected (i.e., the floating-point computational flow diverges with respect to the ideal real number one).
+The generated C code is annotated with ACSL contracts that relate the floating-point implementation with the real-valued program specification.
 
 
-Prerequisites
--------------
-PRECiSA with the following instructions may run only on Linux and Mac OS X operating systems.
 
-To install PRECiSA you will need to install:
+# Installation
+
+PRECiSA runs on Linux and Mac OS X operating systems.
+
+
+## Prerequisites
+
+
+To build and install PRECiSA you need:
 
 * The [Glorious Haskell Compiler](https://www.haskell.org/ghc/) and its package manager Cabal, both available as part of the [Haskell platform](https://www.haskell.org/platform/),
 * [CMake](https://cmake.org/),
 * the [NASA Kodiak library](https://github.com/nasa/Kodiak) to compute numerical error bounds.
 
-To verify the certificates generated by PRECiSA you will need to install:
+To verify certificates generated by PRECiSA you need:
 
 * [PVS version 6.0](http://pvs.csl.sri.com/),
 * the [NASA PVS library](https://github.com/nasa/pvslib).
 
+If you want to use the SMT optimization you need [FPRock](https://github.com/nasa/FPRoCK).
 
-How to install PRECiSA
-----------------------
+
+## Build
+
 1. Install [Kodiak](https://github.com/nasa/Kodiak) producing `libKodiakDynamic.so` (for Linux) or `libKodiakDynamic.dylib` (for MacOS).
 
 2. Set the environment variable KODIAK_LIB with the directory in which the `libKodiakDynamic.so` (or `libKodiakDynamic.dylib`) is present.
@@ -102,30 +70,99 @@ How to install PRECiSA
 At this point, the executable should be in the current `build` directory. You can add the current directory to your `PATH` variable or install (copy) it to your place of choice.
 
 
-How to use PRECiSA
-------------------
+
+# Floating-Point Round-Off Error Estimation
+
+The input to the PRECiSA round-off error estimator are the following files:
+
+* A program `example.pvs` composed of floating-point valued functions. In its current version, PRECiSA accepts a subset of the language of the Prototype Verification System (PVS), including LET-IN expressions, IF-THEN-ELSE constructions, function calls, and floating-point values and operations such as: addition, multiplication, division, subtraction, floor, square root, trigonometric functions, logarithm, and exponential. For example:
+   ```
+   example: THEORY
+   BEGIN
+   IMPORTING float@aerr754dp
+
+	example (X,Y: unb_double) : unb_double =
+		IF (X >= RtoD(0) AND Y < RtoD(4))
+		THEN IF (Y > RtoD(0))
+			 THEN Dadd(X,Y)
+			 ELSE Dmul(X,Y)
+			 ENDIF
+        ELSE Dsub(X,Y) ENDIF
+
+   END example
+   ```
+
+* A file `example.input` containing initial ranges for the input variables of the program. For example:
+   ```
+   example(X,Y): X in [-10,10], Y in [0, 40]
+   ```
+
+* Optionally, a file `example.path` containing a set of decision paths/sub-programs of interests.
+   The user can specify these paths by listing the paths/sub-programs of interests as a list of True and False.
+   For instance, in the example above, the path [True, True] corresponds to the sub-program Dadd(X,Y), the path [False] to the subprogram Dsub(X,Y), and the path [True] to the subprogram IF (Y > RtoD(0)) THEN Dadd(X,Y) ELSE Dmul(X,Y) ENDIF.
+   The analysis is done for all the execution paths in the program, or better for all combination of real/FP execution path in the program).
+   For the selected sub-programs, a dedicated error expression representing the round-off error estimation is computed.
+   For the others, the tool will generate an overall error which is the maximum of all the round-off error estimations corresponding to these sub-programs.
+   If the user does not select any sub-program of interest (None), the tool will produce the overall round-off error for the stable cases (when real and floating-point execution flows coincide) and the one for the unstable cases (when real and floating-point execution flows diverge).
+   If the user is interested in a precise analysis of the entire program (All), the analysis will generate a semantic element for each combination of real/FP execution path in the program.
+   Examples of possible input for the decision pahts are the following:
+   ```
+   example(X,Y): None
+   ```
+   or
+   ```
+   example(X,Y): All
+   ```
+   or
+   ```
+   example(X,Y): [True, True]
+   ```
+
+More examples can be found in the [PRECiSA benchmarks folder](PRECiSA/benchmarks).
+
+The analysis performed by PRECiSA results in one upper-bound of the floating-point round-off error for each decision path of interest, an overall upper-bound for the rest of decision paths, and an overall upper-bound for the unstable test cases (when real and floating-point flows diverge).
+Additionally, PRECiSA generates two PVS theories:
+
+* a theory containing a collection of lemmas stating symbolic accumulated round-off error estimations for the input program, and
+* a theory containing a collection of lemmas stating numerical accumulated round-off error estimations.  The numerical estimations are computed using Kodiak.
+
+All the generated lemmas are equipped with PVS proof scripts that automatically discharge them.
+
+
+## How to run the PRECiSA round-off error estimator
+
 We assume that `precisa` (the executable of PRECiSA) is in the current directory.
 
-To use PRECiSA run:
+To launch the round-off error analysis of PRECiSA with the default parameters run:
 ```
-$ ./precisa "<example>.pvs" "<example>.input" "<example>.path" <max_depth> <precision> <displayed_precision> <stable-test-assumption?> <max-num-lemmas>
+$ ./precisa analyze "example.pvs" "example.input"
 ```
-
 - the first parameter is the path to the PVS program to be analyzed;
 - the second one is the path to the file that indicates the initial values for the input variables of the input program;
-- the third one is the path to the file that indicates the decision paths of interest for every function in the program;
-- the fourth, fifth, and sixth parameters are options for the branch-and-bound search: the maximum depth, the precision, and the displayed precision, respectively;
-- the seventh parameter is a boolean value indicating if the Stable Test Assumption is used (True) or not (False). If this parameter is set to True, real and floating-point execution flows are assumed to coincide. Therefore, the analysis can be unsound since the cases where the execution paths diverge (unstable cases) are not considered;
-- the last parameter is the maximum number of lemmas allowed to be generated by PRECiSA. This avoids having certificates too big to be treated. If your program generates a huge number of lemmas, this means probably that you have several nested if-then-else. In this case, try to run PRECiSA setting some decision paths of interests, or try to run it with the Stable Test Assumption set to True.
 
-An example of how to execute PRECiSA is the following:
+### Command Line Options
+
+- `--paths example.path` specifies the path to the file that indicates the decision paths of interest for every function in the program. The default is the empty set, i.e., there is no path of interest and the output of PRECiSA consists of two errors: one for the stable cases (when real and floating-point flows agree) and one for the unstable cases (when real and floating-point flows diverge).
+
+- Options for the branch-and-bound search used to compute the numerical estimation:
+  - `--max-depth 7` (or `-d 7`) is the maximum depth of the branch-and-bound exploration with a default value of `7`.
+  - `--precision 14` (or `-p 14`) is the negative exponent of `10` representing the numerical precision used.
+  It has a default value of `14` which stands for a precision of <span style="white-space: nowrap;"><math>10<sup>-14<sup></math></span>.
+
+- `--max-lemmas 50` (or `-l 50`) sets the maximum number of lemmas allowed to be generated by PRECiSA. This avoids having certificates too big to be treated. If your program generates a huge number of lemmas, this means probably that you have several nested if-then-else. In this case, try to run PRECiSA with the default settings, or try to set some decision paths of interests. Alternatively, you can activate the Stable Test Assumption.
+
+- `--assume stability` (or `-s`) if this option is activated, real and floating-point execution flows are assumed to coincide (Stable Test Assumption). Therefore, the analysis can be unsound since the cases where the execution paths diverge (unstable cases) are not considered.
+
+- `--no-collapsed-unstables` (or `-u`) if this option is activated, the unstable tests are not collapsed in a unique case.
+
+- `--smt-optimization` (or `-u`) if this option is activated, PRECiSA checks the satisfiability of each path condition by calling an external SMT solver through the FPRoCK tool. In this way, it is possible to detect and remove the spurious execution paths, improving the accuracy of the round-off error estimation.
+
+An example of how to execute PRECiSA by manually setting some options is the following:
 ```
-$ ./precisa "example.pvs" "example.input" "example.path" 7 14 2 False 40
+$ ./precisa analyze "example.pvs" "example.input" --paths "example.path" --max-depth 7 --precision 14 --max-lemmas 40
 ```
 
-
-How to verify the PVS certificates
-----------------------------------
+## How to verify the PVS certificates
 
 [PVS version 6.0](http://pvs.csl.sri.com) and the development version
 of the [NASA PVS Library](https://github.com/nasa/pvslib) are required
@@ -156,14 +193,68 @@ $ proveit -sc num_cert_example.pvs
 ```
 
 ### PVS basic troubleshooting ###
+
 If the PVS verification is not behaving as expected, try cleaning the PVS binaries in the NASA PVS library. Simply run cleanbin-all in the NASA PVS library folder of your installation and try again.
+
+
+
+# Automatic generation of stable C code from PVS
+
+The input to the PRECiSA C code generator are the following files:
+
+* A program `example.pvs` composed of real-valued functions. In its current version, PRECiSA accepts a subset of the language of the Prototype Verification System (PVS), including LET expressions, IF-THEN-ELSE constructions, function calls, and floating point values and operations such as: addition, multiplication, division, subtraction, floor, square root, trigonometric functions, logarithm, and exponential. For example:
+   ```
+   example: THEORY
+   BEGIN
+
+	example (X,Y: real) : real =
+		IF (X >= 0 AND Y < 4)
+		THEN IF (Y > 0)
+			 THEN X+Y
+			 ELSE X*Y
+			 ENDIF
+        ELSE X-Y ENDIF
+
+   END example
+   ```
+
+* A file `example.input` containing initial ranges for the input variables of the program. For example:
+   ```
+   example(X,Y): X in [-10,10], Y in [0, 40]
+   ```
+
+The output is a C floating-point program `example.c` instrumented to detect unstable tests.
+This program is annotated with ACSL contracts stating the relation between the floating-point program and the real number specification. This annotated program can be analyzed with the [Frama-C](https://frama-c.com/) static analyzer.
+
+Besides, PVS certificates are provided for ensuring that all the unstable tests are detected.
+These certificates can be automatically checked as explained [here](#How-to-verify-the-PVS-certificates).
+
+
+## How to run the PRECiSA stable C code generator
+
+We assume that `precisa` (the executable of PRECiSA) is in the current directory.
+
+To launch the round-off error analysis of PRECiSA with the default parameters run:
+```
+$ ./precisa gen-code "example.pvs" "example.input"
+```
+
+- the first parameter is the path to the PVS program to be analyzed;
+- the second one is the path to the file that indicates the initial values for the input variables of the input program;
+
+### Command Line Options
+
+- `--format FORMAT` where FORMAT can be double or single, indicating the target format of the floating-point C code. The default value is double precision.
+
+
+
+# Additional information
 
 ## Version
 
-*PRECiSA v-2.0* (November 2017)
+*PRECiSA v-2.1.0* (August 2019)
 
-Contact information
--------------------
+## Contact information
 If you have any question or problem, please contact:
 
 * [Laura Titolo](mailto:laura.titolo@nianet.org) (for PRECiSA)
@@ -171,16 +262,31 @@ If you have any question or problem, please contact:
 * [Marco A. Feliu](mailto:marco.feliu@nianet.org) (for Kodiak)
 * [C&eacute;sar A. Mu&ntilde;oz](http://shemesh.larc.nasa.gov/people/cam) (PRECiSA @ NASA)
 
-### License and Copyright Notice
+## Related Publications
 
-The code in this repository is released under NASA's Open Source
-Agreement.  See the directory [`LICENSES`](LICENSES).
+- Mariano Moscato, Laura Titolo, Marco Antonio Feliu Gabaldon and César Muñoz: A Provably Correct Floating-Point Implementation of a Point-in-Polygon Algorithm. FM 2019
+
+-	Rocco Salvia, Laura Titolo, Marco A. Feliú, Mariano M. Moscato, César A. Muñoz, Zvonimir Rakamaric: A Mixed Real and Floating-Point Solver. NFM 2019: 363-370
+
+- 	Laura Titolo, César A. Muñoz, Marco A. Feliú, Mariano M. Moscato:
+Eliminating Unstable Tests in Floating-Point Programs. LOPSTR 2018: 169-183
+
+- Laura Titolo, Marco A. Feliú, Mariano M. Moscato, César A. Muñoz:
+An Abstract Interpretation Framework for the Round-Off Error Analysis of Floating-Point Programs. VMCAI 2018: 516-537
+
+- Mariano M. Moscato, Laura Titolo, Aaron Dutle, César A. Muñoz:
+Automatic Estimation of Verified Floating-Point Round-Off Errors via Static Analysis. SAFECOMP 2017: 213-229
+
+
+## License and Copyright Notice
+
+The code in this repository is released under NASA's Open Source Agreement.  See the directory [`LICENSES`](LICENSES).
 
 <pre>
 
 Notices:
 
-Copyright 2017 United States Government as represented by the
+Copyright 2019 United States Government as represented by the
    Administrator of the National Aeronautics and Space Administration.
    All Rights Reserved.
 

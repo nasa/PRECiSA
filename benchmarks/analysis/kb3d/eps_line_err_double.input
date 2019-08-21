@@ -1,0 +1,2 @@
+sign (X): X in [-20000,20000]
+eps_line (Sx, Sy, Vx, Vy): Sx in [-100,100], Sy in [-100,100], Vx in [-1,1], Vy in [-1,1]

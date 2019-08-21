@@ -1,0 +1,36 @@
+winding_number: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+% X,Y in [-60000,60000]
+quadrant(X,Y: unb_double):unb_double =
+  LET ErrX = RtoD(0.0000000000036379788070917146) IN
+  LET ErrY = RtoD(0.0000000000036379788070917146) IN
+  IF (X >= ErrX AND Y >= ErrY) THEN RtoD(1)
+  ELSIF (X <= -ErrX AND Y >= ErrY) AND (X < -ErrX OR Y < -ErrY) THEN RtoD(2) 
+  ELSIF (X <= -ErrX) AND  (X < -ErrX OR Y < -ErrY) AND (X > ErrX OR Y < -ErrY) THEN RtoD(3)
+  ELSIF  (X < -ErrX OR Y < -ErrY) AND (X > ErrX OR Y < -ErrY) AND (X > ErrX) THEN RtoD(4)
+  ELSE warning
+  ENDIF
+
+% P_V1_x, P_V1_y, P_V2_x, P_V2_y, S_x, S_y in [-15000,15000]
+winding_number(P_V1_x, P_V1_y, P_V2_x, P_V2_y, S_x, S_y: unb_double):unb_double =
+  LET ErrDET = RtoD(0.0000010023941285908229) IN
+  LET THIS_x = Dsub(P_V1_x,S_x) IN
+  LET THIS_y = Dsub(P_V1_y,S_y) IN
+  LET NEXT_x = Dsub(P_V2_x,S_x) IN
+  LET NEXT_y = Dsub(P_V2_y,S_y) IN
+  LET DISTANCE_x = Dsub(NEXT_x,THIS_x) IN
+  LET DISTANCE_y = Dsub(NEXT_y,THIS_y) IN
+  LET DET = Dsub(Dmul(DISTANCE_x,THIS_y),Dmul(DISTANCE_y,THIS_x)) IN
+  LET K = quadrant(THIS_x,THIS_y) IN
+  LET P = quadrant(NEXT_x,NEXT_y) IN
+  IF (K = P) THEN RtoD(0)
+  ELSIF (Isub(P,RtoD(1)) = Imod(K,RtoD(4))) THEN RtoD(1)
+  ELSIF (Isub(K,RtoD(1)) = Imod(P,RtoD(4))) THEN RtoD(-1)
+  ELSIF (DET <= - ErrDET) THEN RtoD(2)
+  ELSIF (DET > ErrDET) THEN RtoD(-2)
+  ELSE warning
+  ENDIF
+
+END winding_number

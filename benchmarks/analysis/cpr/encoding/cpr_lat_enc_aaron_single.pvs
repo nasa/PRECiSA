@@ -1,0 +1,11 @@
+cpr_lat_enc_aaron_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+yz0 (Lat: unb_single): unb_single =
+    Sfloor(Sadd(Smul(Ssub(Sdiv(Lat, Sdiv(RtoS(360), RtoS(60))), Sfloor(Sdiv(Lat, Sdiv(RtoS(360), RtoS(60))))), RtoS(131072)), RtoS(0.5)))
+
+yz1 (Lat: unb_single): unb_single =
+    Sfloor(Sadd(Smul(Ssub(Sdiv(Lat, Sdiv(RtoS(360), RtoS(59))), Sfloor(Sdiv(Lat, Sdiv(RtoS(360), RtoS(59))))), RtoS(131072)), RtoS(0.5)))
+
+END cpr_lat_enc_aaron_single

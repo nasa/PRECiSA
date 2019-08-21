@@ -1,0 +1,23 @@
+case name, error bound, self-reported time, wall time, date, command, support configuration
+turbine2.c,  2.59285823e-14,  n/a,  4.311,  Sun Jun 25 11:48:08 EDT 2017,  time run_fluctuat turbine2.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+kepler0.c,  1.0278356e-13,  n/a,  9.467,  Sun Jun 25 11:43:54 EDT 2017,  time run_fluctuat kepler0.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+predatorPrey.c,  2.35284414e-16,  n/a,  0.019,  Sun Jun 25 11:47:56 EDT 2017,  time run_fluctuat predatorPrey.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+doppler3.c,  7.12251059e-14,  n/a,  6.837,  Sun Jun 25 11:43:45 EDT 2017,  time run_fluctuat doppler3.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+doppler2.c,  2.35394458e-13,  n/a,  6.835,  Sun Jun 25 11:43:39 EDT 2017,  time run_fluctuat doppler2.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+sphere.c,  n/a,  n/a,  n/a,  n/a,  n/a,  n/a
+kepler1.c,  3.51382355e-13,  n/a,  0.430,  Sun Jun 25 11:44:03 EDT 2017,  time run_fluctuat kepler1.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+himmilbeau.c,  1.00008891e-12,  n/a,  0.200,  Sun Jun 25 11:43:52 EDT 2017,  time run_fluctuat himmilbeau.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+azimuth.c,  n/a,  n/a,  n/a,  n/a,  n/a,  n/a
+kepler2.c,  2.23634615e-12,  n/a,  2.233,  Sun Jun 25 11:47:34 EDT 2017,  time run_fluctuat kepler2.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+sineOrder3.c,  1.08558511e-15,  n/a,  0.017,  Sun Jun 25 11:48:02 EDT 2017,  time run_fluctuat sineOrder3.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+verhulst.c,  4.80119237e-16,  n/a,  0.018,  Sun Jun 25 11:48:17 EDT 2017,  time run_fluctuat verhulst.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+doppler1.c,  1.27155681e-13,  n/a,  6.904,  Sun Jun 25 11:43:32 EDT 2017,  time run_fluctuat doppler1.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+jet.c,  1.07288078e-10,  n/a,  1.033,  Sun Jun 25 11:43:53 EDT 2017,  time run_fluctuat jet.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+turbine3.c,  1.33879828e-14,  n/a,  5.417,  Sun Jun 25 11:48:12 EDT 2017,  time run_fluctuat turbine3.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+sine.c,  7.41094903e-16,  n/a,  0.022,  Sun Jun 25 11:48:02 EDT 2017,  time run_fluctuat sine.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+rigidBody1.c,  3.21520588e-13,  n/a,  2.066,  Sun Jun 25 11:47:56 EDT 2017,  time run_fluctuat rigidBody1.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+carbonGas.c,  1.16778597e-08,  n/a,  0.062,  Sun Jun 25 11:43:32 EDT 2017,  time run_fluctuat carbonGas.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+turbine1.c,  3.08775851e-14,  n/a,  5.410,  Sun Jun 25 11:48:02 EDT 2017,  time run_fluctuat turbine1.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+rigidBody2.c,  3.64659414e-11,  n/a,  4.158,  Sun Jun 25 11:47:58 EDT 2017,  time run_fluctuat rigidBody2.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+sqroot.c,  6.8348105e-16,  n/a,  0.021,  Sun Jun 25 11:48:02 EDT 2017,  time run_fluctuat sqroot.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+t_div_t1.c,  2.79599016e-12,  n/a,  0.017,  Sun Jun 25 11:48:02 EDT 2017,  time run_fluctuat t_div_t1.c,  Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux

@@ -1,0 +1,10 @@
+test: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+sign (X: unb_double):unb_double = IF (X > RtoD(0)) THEN RtoD(1) ELSE (IF (X < RtoD(0)) THEN RtoD(-1) ELSE RtoD(0) ENDIF) ENDIF
+
+test (X,Y: unb_double): unb_double =
+    Dadd (sign (X), Y) 
+
+END test

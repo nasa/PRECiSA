@@ -26,9 +26,29 @@ combos :: [[t]] -> [[t]]
 -- returns all the possible combination for a lists of lists
 -- (ex combos [[1,2,3],[4,5]] = [1,4],[1,5],[2,4],[2,5],[3,4],[3,5])
 combos [] = [[]]
-combos ([]:ls) = []
+combos ([]:_) = []
 combos ((h:t):ls) = map (h:) (combos ls) ++ combos (t:ls)
 
+foldlWithDefault :: (a -> a -> a) -> a -> [a] -> a
+foldlWithDefault _ base [] = base
+foldlWithDefault f _ list = foldl1 f list
 
 isPow2 :: (Floating r, RealFrac r) => r -> Bool
-isPow2 n = ((logBase 2 n) == fromInteger (round $ logBase 2 n)) && ((logBase 2 n)>= 0)
+isPow2 n = (logBase 2 n == fromInteger (round $ logBase 2 n)) && (logBase 2 n >= 0)
+
+elimDuplicates :: (Ord a) => [a] -> [a]
+elimDuplicates = Set.toList . Set.fromList
+
+lookup3 :: (Show t, Eq t) => t -> [(t, a, b)] -> (a, b)
+lookup3 a [] = error $ "lookup3: element " ++ show a ++ "not found."
+lookup3 a ((b,c,d):rest) | a == b = (c,d)
+                         | otherwise = lookup3 a rest
+
+fst3 :: (a, b, c) -> a
+fst3 (a,_,_) = a
+
+snd3 :: (a, b, c) -> b
+snd3 (_,a,_) = a
+
+pairCombinations :: (Num b, Enum b, Eq b) => b -> [(b, b)]
+pairCombinations m = [ (a,b) | a <- [0..(m-1)], b <- [0..(m-1)], a /= b]

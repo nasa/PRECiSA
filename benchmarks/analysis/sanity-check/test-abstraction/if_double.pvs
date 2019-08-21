@@ -1,0 +1,8 @@
+if_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f (X, Y: unb_double): unb_double = IF (X>Y)
+                                       THEN X ELSE Y
+                                   ENDIF
+END if_double

@@ -1,4 +1,0 @@
-(defstep le-tcc ()
-  (then (skeep :preds? t) (expand "le_r") (expand "le") (grind))
-  ""
-  "")

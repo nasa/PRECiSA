@@ -1,0 +1,1 @@
+eps_line_mul(Sx, Sy, Vx, Vy): Sx in [-2000,2000], Sy in [-2000,2000], Vx in [-2000,2000], Vy in [-2000,2000]

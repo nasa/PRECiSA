@@ -1,0 +1,1 @@
+triangle_sub(A,B): A in [-10,10], B in [-20,20]

@@ -1,0 +1,91 @@
+Date: Sat Jun 24 09:42:03 EDT 2017
+Command:  ~/FPTaylor/repo/fptaylor -c config-a.cfg sine.txt
+FPTaylor, version 0.9.1+dev
+
+Loading: sine.txt
+
+*************************************
+Taylor form for: rnd64((rnd64((rnd64((rnd64(x) - rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) / rnd64(6))))) + rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / rnd64(120))))) - rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / rnd64(5040)))))
+
+Conservative bound: [-2.301135, 2.301135]
+
+Simplified rounding: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x) - rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) / 6)))) + rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / 120)))) - rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / 5040))))
+Building Taylor forms...
+Simplifying Taylor forms...
+success
+v0 = (((x - (((x * x) * x) * (1 / 6))) + (((((x * x) * x) * x) * x) * (1 / 120))) - (((((((x * x) * x) * x) * x) * x) * x) * (1 / 5040)))
+-1 (105): exp = -53: (4179834293212361/1267650600228229401496703205376)
+1 (1): exp = -53: (((((((((((((((1 + (-(((1 / 6) * ((x * x) * 1))))) + (-(((1 / 6) * (x * (x * 1)))))) + (-(((1 / 6) * (x * (x * 1)))))) + ((1 / 120) * ((((x * x) * x) * x) * 1))) + ((1 / 120) * (x * (((x * x) * x) * 1)))) + ((1 / 120) * (x * (x * ((x * x) * 1))))) + ((1 / 120) * (x * (x * (x * (x * 1)))))) + ((1 / 120) * (x * (x * (x * (x * 1)))))) + (-(((1 / 5040) * ((((((x * x) * x) * x) * x) * x) * 1))))) + (-(((1 / 5040) * (x * (((((x * x) * x) * x) * x) * 1)))))) + (-(((1 / 5040) * (x * (x * ((((x * x) * x) * x) * 1))))))) + (-(((1 / 5040) * (x * (x * (x * (((x * x) * x) * 1)))))))) + (-(((1 / 5040) * (x * (x * (x * (x * ((x * x) * 1))))))))) + (-(((1 / 5040) * (x * (x * (x * (x * (x * (x * 1)))))))))) + (-(((1 / 5040) * (x * (x * (x * (x * (x * (x * 1))))))))))
+2 (5): exp = -53: (((-(((1 / 6) * (x * (x * x))))) + ((1 / 120) * (x * (x * (x * (x * x)))))) + (-(((1 / 5040) * (x * (x * (x * (x * (x * (x * x))))))))))
+3 (9): exp = -53: (((-(((1 / 6) * ((x * x) * x)))) + ((1 / 120) * (x * (x * ((x * x) * x))))) + (-(((1 / 5040) * (x * (x * (x * (x * ((x * x) * x)))))))))
+4 (13): exp = -53: (-((((x * x) * x) * (1 / 6))))
+5 (15): exp = -53: (x - (((x * x) * x) * (1 / 6)))
+6 (28): exp = -53: (((1 / 120) * (x * (((x * x) * x) * x))) + (-(((1 / 5040) * (x * (x * (x * (((x * x) * x) * x))))))))
+7 (32): exp = -53: (((1 / 120) * ((((x * x) * x) * x) * x)) + (-(((1 / 5040) * (x * (x * ((((x * x) * x) * x) * x)))))))
+8 (36): exp = -53: (((((x * x) * x) * x) * x) * (1 / 120))
+9 (38): exp = -53: ((x - (((x * x) * x) * (1 / 6))) + (((((x * x) * x) * x) * x) * (1 / 120)))
+10 (59): exp = -53: (-(((1 / 5040) * (x * (((((x * x) * x) * x) * x) * x)))))
+11 (63): exp = -53: (-(((1 / 5040) * ((((((x * x) * x) * x) * x) * x) * x))))
+12 (67): exp = -53: (-((((((((x * x) * x) * x) * x) * x) * x) * (1 / 5040))))
+13 (69): exp = -53: (((x - (((x * x) * x) * (1 / 6))) + (((((x * x) * x) * x) * x) * (1 / 120))) - (((((((x * x) * x) * x) * x) * x) * x) * (1 / 5040)))
+
+Corresponding original subexpressions:
+1: rnd64(x)
+2: rnd64((rnd64(x) * rnd64(x)))
+3: rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x)))
+4: rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) / 6))
+5: rnd(64,ne,1.000000,-53,0)((rnd64(x) - rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) / 6))))
+6: rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x)))
+7: rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x)))
+8: rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / 120))
+9: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x) - rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) / 6)))) + rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / 120))))
+10: rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x)))
+11: rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x)))
+12: rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / 5040))
+13: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x) - rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) / 6)))) + rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / 120)))) - rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) * rnd64(x))) / 5040))))
+
+bounds: [-inf, inf]
+
+Computing absolute errors
+-1: exp = -53: 3.297308e-15 (low = 3.297308e-15, subopt = 0.0%)
+
+Solving the approximate optimization problem
+
+Absolute errors:
+1: exp = -53: 1.015854e+00 (low = 1.000000e+00, subopt = 1.6%)
+2: exp = -53: 5.826509e-01 (low = 5.709532e-01, subopt = 2.0%)
+3: exp = -53: 5.826509e-01 (low = 5.709532e-01, subopt = 2.0%)
+4: exp = -53: 6.459641e-01 (low = 6.459641e-01, subopt = 0.0%)
+5: exp = -53: 9.550747e-01 (low = 9.428029e-01, subopt = 1.3%)
+6: exp = -53: 8.437438e-02 (low = 7.501087e-02, subopt = 11.1%)
+7: exp = -53: 8.437438e-02 (low = 7.501087e-02, subopt = 11.1%)
+8: exp = -53: 7.969263e-02 (low = 7.969263e-02, subopt = 0.0%)
+9: exp = -53: 1.019547e+00 (low = 1.004525e+00, subopt = 1.5%)
+10: exp = -53: 4.681754e-03 (low = 4.681754e-03, subopt = 0.0%)
+11: exp = -53: 4.681754e-03 (low = 4.681754e-03, subopt = 0.0%)
+12: exp = -53: 4.681754e-03 (low = 4.681754e-03, subopt = 0.0%)
+13: exp = -53: 1.015115e+00 (low = 9.998431e-01, subopt = 1.5%)
+total1: 6.749427e-16 (low = 6.637803e-16, subopt = 1.7%)
+total2: 3.660747e-31 (low = 3.660747e-31, subopt = 0.0%)
+total: 6.749427e-16 (low = 6.637803e-16, subopt = 1.7%)
+
+Elapsed time: 3.06157
+*************************************
+
+-------------------------------------------------------------------------------
+Problem: sine
+
+Optimization lower bounds for error models:
+The absolute error model (approximate): 6.637803e-16 (suboptimality = 1.7%)
+
+Bounds (without rounding): [-inf, inf]
+
+Absolute error (approximate): 6.749427e-16
+
+Elapsed time: 3.06
+
+
+
+real	0m3.066s
+user	0m2.572s
+sys	0m0.184s

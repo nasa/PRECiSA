@@ -1,0 +1,18 @@
+Date: Sun Jun 25 08:51:26 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_real2float himmilbeau
+[(-5, 5) ; (-5, 5)]
+[]
+1 problem remaining, 0 cuts done
+Sub box [(-5, 5); (-5, 5); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-1.42109e-12, 1.42109e-12]
+
+
+1 problem solved, 0 cuts done
+End of nonlinear optimization algorithm
+Absolute roundoff error bound = 1.42109e-12 >= 0
+Failed to verify the inequality himmilbeau
+Total time: 0.192791 seconds
+real  0.197

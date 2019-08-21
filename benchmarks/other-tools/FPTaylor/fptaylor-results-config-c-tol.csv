@@ -1,0 +1,23 @@
+case name , approximate absolute error , self-reported time , wall time ,  date, command, exact absolute error
+sphere , , 35.11553, 0m35.121s, Sat Jun 24 09:35:16 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg sphere.txt, 8.107780e-15 
+turbine2 , , 44.13784, 0m44.143s, Sat Jun 24 09:37:44 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg turbine2.txt, 1.985247e-14 
+doppler3 , , 1.47003, 0m1.476s, Sat Jun 24 09:32:57 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg doppler3.txt, 6.629686e-14 
+sineOrder3 , , 17.66048, 0m17.665s, Sat Jun 24 09:34:59 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg sineOrder3.txt, 5.935682e-16 
+rigidBody2 , , 0.51596, 0m0.521s, Sat Jun 24 09:34:58 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg rigidBody2.txt, 3.606626e-11 
+jet , , 2.49115, 0m2.498s, Sat Jun 24 09:32:59 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg jet.txt, 1.030448e-11 
+t_div_t1 , , 6.20788, 0m6.212s, Sat Jun 24 09:36:35 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg t_div_t1.txt, 2.216120e-16 
+doppler2 , , 1.50809, 0m1.513s, Sat Jun 24 09:32:55 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg doppler2.txt, 2.226717e-13 
+turbine3 , , 62.62326, 1m2.628s, Sat Jun 24 09:38:28 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg turbine3.txt, 9.547001e-15 
+sine , , 0.62522, 0m0.630s, Sat Jun 24 09:34:58 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg sine.txt, 3.869553e-16 
+turbine1 , , 62.75982, 1m2.766s, Sat Jun 24 09:36:41 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg turbine1.txt, 1.663744e-14 
+doppler1 , , 1.28178, 0m1.287s, Sat Jun 24 09:32:54 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg doppler1.txt, 1.217871e-13 
+kepler2 , , 0.79051, 0m0.797s, Sat Jun 24 09:34:56 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg kepler2.txt, 1.578175e-12 
+rigidBody1 , , 0.48443, 0m0.489s, Sat Jun 24 09:34:57 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg rigidBody1.txt, 2.948752e-13 
+azimuth , , 26.05022, 0m26.056s, Sat Jun 24 09:32:28 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg azimuth.txt, 8.315007e-15 
+himmilbeau , , 0.47270, 0m0.478s, Sat Jun 24 09:32:58 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg himmilbeau.txt, 1.000089e-12 
+sqroot , , 43.42844, 0m43.434s, Sat Jun 24 09:35:51 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg sqroot.txt, 5.013351e-16 
+kepler1 , , 82.39002, 1m22.396s, Sat Jun 24 09:33:33 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg kepler1.txt, 2.862160e-13 
+carbonGas , , 0.49664, 0m0.502s, Sat Jun 24 09:32:54 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg carbonGas.txt, 5.900460e-09 
+verhustl , , 0.44712, 0m0.452s, Sat Jun 24 09:39:31 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg verhustl.txt, 2.470696e-16 
+kepler0 , , 31.93944, 0m31.945s, Sat Jun 24 09:33:01 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg kepler0.txt, 7.469400e-14 
+predPrey , , 0.55224, 0m0.557s, Sat Jun 24 09:34:56 EDT 2017, ~/FPTaylor/repo/fptaylor -c config-c-tol.cfg predPrey.txt, 1.585754e-16 

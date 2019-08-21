@@ -1,0 +1,9 @@
+test_div1_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f(X: unb_double): unb_double = IF (X /= RtoD(0))
+                                       THEN (Ddiv(RtoD(1), X))
+                                       ELSE X
+                                   ENDIF
+END test_div1_double

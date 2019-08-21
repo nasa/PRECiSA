@@ -1,24 +1,35 @@
-module Test where
+module Main where
 
 import Test.Tasty
-import Test.Tasty.HUnit
 
-import AbstractDomain
-import AbstractSemantics
-import AbstractSemanticsTest
 import AbstractDomainTest
+import AbstractSemanticsTest
+import SMT.Test
+import Common.Test
+import Kodiak.Test
+import Kodiak.GeneratorTest
 import AbsPVSLangTest
-import Common.DecisionPathTest
+import UtilsTest
+import AbsPVSLangTest
+import TransformationTest
 
+main :: IO ()
 main = defaultMain tests
 
 tests :: TestTree
 tests = testGroup "Tests" [unitTests]
 
+unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-    [testAbstractSemantics
+    [testGroup "" []
+    ,testAbstractSemantics
     ,testAbstractDomain
-    ,testDecisionPath
     ,testAbsPVSLang
+    ,testSMT
+    ,testCommon
+    ,testUtils
+    ,testTransformation
+    ,testKodiak
+    ,testKodiakGenerator
     ]
 

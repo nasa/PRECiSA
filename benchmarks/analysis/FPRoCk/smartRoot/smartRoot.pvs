@@ -1,0 +1,16 @@
+smartRoot_err_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+
+smartRoot (A,B,C: unb_double): unb_double =
+	LET D = Dsqrt (Dsub (Dmul(B,B), Dmul (Dmul(A,C), RtoD(4)))) IN
+	IF B > RtoD(0.000000000000001776356839400251)
+	   THEN Ddiv(Dmul(C, RtoD(2)),Dneg(Dadd(B,D)))
+	ELSE IF B <= RtoD(-0.000000000000001776356839400251)
+	   THEN Ddiv(Dsub(D,B), Dmul(A, RtoD(2)))
+	ELSE RtoD(0)
+	     ENDIF
+	ENDIF
+
+END smartRoot_err_double

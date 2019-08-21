@@ -1,0 +1,6 @@
+Date: Sat Jun 24 20:09:34 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time gappa himmilbeau-hints
+Results:
+  |r - Mr| in [0, 479b-49 {8.50875e-13, 2^(-40.0961)}]
+real  1.636

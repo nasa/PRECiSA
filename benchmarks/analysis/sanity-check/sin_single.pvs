@@ -1,0 +1,7 @@
+sin_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+f(X: unb_single): unb_single = Ssin(X)
+
+END sin_single

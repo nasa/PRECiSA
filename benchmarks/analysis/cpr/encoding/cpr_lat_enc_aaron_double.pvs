@@ -1,0 +1,11 @@
+cpr_lat_enc_aaron_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+yz0 (Lat: unb_double): unb_double =
+    Dfloor(Dadd(Dmul(Dsub(Ddiv(Lat, Ddiv(RtoD(360), RtoD(60))), Dfloor(Ddiv(Lat, Ddiv(RtoD(360), RtoD(60))))), RtoD(131072)), RtoD(0.5)))
+
+yz1 (Lat: unb_double): unb_double =
+    Dfloor(Dadd(Dmul(Dsub(Ddiv(Lat, Ddiv(RtoD(360), RtoD(59))), Dfloor(Ddiv(Lat, Ddiv(RtoD(360), RtoD(59))))), RtoD(131072)), RtoD(0.5)))
+
+END cpr_lat_enc_aaron_double

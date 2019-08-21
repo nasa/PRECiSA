@@ -1,0 +1,7 @@
+tau_expr1: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+tau_expr1(S,V: unb_double):unb_double = Dmul(S,V)
+
+END tau_expr1

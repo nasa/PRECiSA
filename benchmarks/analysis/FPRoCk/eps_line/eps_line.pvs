@@ -1,0 +1,12 @@
+eps_line_err_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+eps_line (Sx, Sy, Vx, Vy: unb_double):int =
+	LET S = Dmul(Dadd(Dmul(Sx,Vx),Dmul(Sy,Vy)),Dsub(Dmul(Sx,Vx),Dmul(Sy,Vy))) IN
+	LET E = RtoD(0.03335932642221452) IN
+    IF ( S > E) THEN RtoD(1) ELSE
+    (IF ( S <= -E ) THEN RtoD(-1) ELSE RtoD(0) ENDIF)
+    ENDIF
+
+END eps_line_err_double

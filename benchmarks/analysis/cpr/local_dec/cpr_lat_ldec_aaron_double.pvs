@@ -1,0 +1,15 @@
+cpr_lat_ldec_aaron_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+j0 (LatS, YZ0: unb_double): unb_double =
+	Dfloor(Dadd(Dsub(Ddiv(LatS, Ddiv(RtoD(360), RtoD(60))), Ddiv(YZ0, RtoD(131072))), RtoD(0.5)))
+
+j1 (LatS, YZ1: unb_double): unb_double =
+	Dfloor(Dadd(Dsub(Ddiv(LatS, Ddiv(RtoD(360), RtoD(59))), Ddiv(YZ1, RtoD(131072))), RtoD(0.5)))
+
+rlat0(LatS, YZ0: unb_double): unb_double = Dmul(Ddiv(RtoD(360), RtoD(60)), Dadd(j0(LatS, YZ0), Ddiv(YZ0, RtoD(131072))))
+
+rlat1(LatS, YZ1: unb_double): unb_double = Dmul(Ddiv(RtoD(360), RtoD(59)), Dadd(j1(LatS, YZ1), Ddiv(YZ1, RtoD(131072))))
+ 
+END cpr_lat_ldec_aaron_double

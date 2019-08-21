@@ -1,0 +1,22 @@
+Date: Sun Jun 25 12:42:13 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_rosa rigidBody1
+[ Info  ] Running Compilation phase
+[ Info  ] --- Analysis complete ---
+[ Info  ] 
+[ Info  ] rigidBody1
+[ Info  ] ==== VALID ====
+[ Info  ] result ∈ [-705.000000000000000, 705.000000000000000] ± 3.2152058793144533e-13
+[ Info  ] Verification successful for precision: Float64
+[ Info  ] Generated program with 7 lines.
+[ Info  ] . ┌─────────┐
+          ╔═╡ Summary ╞═══════════════════════════════════════════════════════════════════════╗
+          ║ └─────────┘                                                                       ║
+          ║ rigidBody1                postcond.           VALID                         0.298 ║
+          
+          
+          ╟┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄╢
+          ║ total: 1      valid: 1      invalid: 0      unknown 0                       0.298 ║
+          ║ precision: Float64                                                                ║
+          ╚═══════════════════════════════════════════════════════════════════════════════════╝
+real  4.168

@@ -1,0 +1,5 @@
+Variables
+  real t in [0, 999];
+
+Expressions
+  t_div_t1 rnd64= t / (t + 1);

@@ -1,0 +1,22 @@
+Date: Sun Jun 25 12:42:24 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_rosa sine
+[ Info  ] Running Compilation phase
+[ Info  ] --- Analysis complete ---
+[ Info  ] 
+[ Info  ] sine
+[ Info  ] ==== VALID ====
+[ Info  ] result ∈ [-0.999843499718823400, 0.999843499718823400] ± 5.181361907902548e-16
+[ Info  ] Verification successful for precision: Float64
+[ Info  ] Generated program with 7 lines.
+[ Info  ] . ┌─────────┐
+          ╔═╡ Summary ╞═══════════════════════════════════════════════════════════════════════╗
+          ║ └─────────┘                                                                       ║
+          ║ sine                      postcond.           VALID                         4.513 ║
+          
+          
+          ╟┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄╢
+          ║ total: 1      valid: 1      invalid: 0      unknown 0                       4.513 ║
+          ║ precision: Float64                                                                ║
+          ╚═══════════════════════════════════════════════════════════════════════════════════╝
+real  8.445

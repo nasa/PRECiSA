@@ -1,0 +1,72 @@
+Date: Sat Jun 24 09:31:49 EDT 2017
+Command:  ~/FPTaylor/repo/fptaylor -c config-b.cfg himmilbeau.txt
+FPTaylor, version 0.9.1+dev
+
+Loading: himmilbeau.txt
+
+*************************************
+Taylor form for: rnd64((rnd64((rnd64((rnd64((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - rnd64(11))) * rnd64((rnd64((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - rnd64(11))))) + rnd64((rnd64((rnd64((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - rnd64(7))) * rnd64((rnd64((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - rnd64(7)))))))
+
+Conservative bound: [-0.000000, 890.000000]
+
+Simplified rounding: rnd(64,ne,1.000000,-53,0)((rnd64((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - 11)) * rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - 11)))) + rnd64((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - 7)) * rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - 7))))))
+Building Taylor forms...
+Simplifying Taylor forms...
+success
+v0 = (((((x1 * x1) + x2) - 11) * (((x1 * x1) + x2) - 11)) + (((x1 + (x2 * x2)) - 7) * ((x1 + (x2 * x2)) - 7)))
+-1 (68): exp = -53: (4721440368623627/618970019642690137449562112)
+1 (12): exp = -53: (((((((((x1 * x1) + x2) - 11) * (x1 * 4)) + ((((x1 * x1) + x2) - 11) * (x1 * 4))) + ((((x1 * x1) + x2) - 11) * (x1 * 4))) + ((((x1 * x1) + x2) - 11) * (x1 * 4))) + (((x1 + (x2 * x2)) - 7) * 4)) + (((x1 + (x2 * x2)) - 7) * 4))
+2 (14): exp = -53: (((((x1 * x1) + x2) - 11) * (x1 * x1)) + ((((x1 * x1) + x2) - 11) * (x1 * x1)))
+3 (16): exp = -53: (((((((((x1 * x1) + x2) - 11) * 4) + ((((x1 * x1) + x2) - 11) * 4)) + (((x1 + (x2 * x2)) - 7) * (x2 * 4))) + (((x1 + (x2 * x2)) - 7) * (x2 * 4))) + (((x1 + (x2 * x2)) - 7) * (x2 * 4))) + (((x1 + (x2 * x2)) - 7) * (x2 * 4)))
+4 (17): exp = -53: (((((x1 * x1) + x2) - 11) * ((x1 * x1) + x2)) + ((((x1 * x1) + x2) - 11) * ((x1 * x1) + x2)))
+5 (19): exp = -53: (((((x1 * x1) + x2) - 11) * (((x1 * x1) + x2) - 11)) + ((((x1 * x1) + x2) - 11) * (((x1 * x1) + x2) - 11)))
+6 (22): exp = -53: ((((x1 * x1) + x2) - 11) * (((x1 * x1) + x2) - 11))
+7 (38): exp = -53: ((((x1 + (x2 * x2)) - 7) * (x2 * x2)) + (((x1 + (x2 * x2)) - 7) * (x2 * x2)))
+8 (40): exp = -53: ((((x1 + (x2 * x2)) - 7) * (x1 + (x2 * x2))) + (((x1 + (x2 * x2)) - 7) * (x1 + (x2 * x2))))
+9 (42): exp = -53: ((((x1 + (x2 * x2)) - 7) * ((x1 + (x2 * x2)) - 7)) + (((x1 + (x2 * x2)) - 7) * ((x1 + (x2 * x2)) - 7)))
+10 (45): exp = -53: (((x1 + (x2 * x2)) - 7) * ((x1 + (x2 * x2)) - 7))
+11 (47): exp = -53: (((((x1 * x1) + x2) - 11) * (((x1 * x1) + x2) - 11)) + (((x1 + (x2 * x2)) - 7) * ((x1 + (x2 * x2)) - 7)))
+
+Corresponding original subexpressions:
+1: rnd64(x1)
+2: rnd64((rnd64(x1) * rnd64(x1)))
+3: rnd64(x2)
+4: rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2)))
+5: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - 11))
+6: rnd64((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - 11)) * rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - 11))))
+7: rnd64((rnd64(x2) * rnd64(x2)))
+8: rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2)))))
+9: rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - 7))
+10: rnd64((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - 7)) * rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - 7))))
+11: rnd(64,ne,1.000000,-53,0)((rnd64((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - 11)) * rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64((rnd64(x1) * rnd64(x1))) + rnd64(x2))) - 11)))) + rnd64((rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - 7)) * rnd(64,ne,1.000000,-53,0)((rnd(64,ne,1.000000,-53,0)((rnd64(x1) + rnd64((rnd64(x2) * rnd64(x2))))) - 7))))))
+
+bounds: [-inf, inf]
+
+Computing absolute errors
+-1: exp = -53: 7.627898e-12 (low = 7.627898e-12, subopt = 0.0%)
+
+Solving the exact optimization problem
+exact bound (exp = -53): 1.187600e+04 (low = 1.187600e+04, subopt = 0.0%)
+total2: 8.468668e-28 (low = 8.468668e-28, subopt = 0.0%)
+exact total: 1.318501e-12 (low = 1.318501e-12, subopt = 0.0%)
+
+Elapsed time: 0.47259
+*************************************
+
+-------------------------------------------------------------------------------
+Problem: himmilbeau
+
+Optimization lower bounds for error models:
+The absolute error model (exact): 1.318501e-12 (suboptimality = 0.0%)
+
+Bounds (without rounding): [-inf, inf]
+
+Absolute error (exact): 1.318501e-12
+
+Elapsed time: 0.47
+
+
+
+real	0m0.478s
+user	0m0.396s
+sys	0m0.036s

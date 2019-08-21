@@ -24,12 +24,12 @@ import Foreign
 import Foreign.C.Types
 import Foreign.C.String
 
-import System.IO
-
 newtype PInterval     = PInterval     (Ptr ())
 newtype PReal         = PReal         (Ptr ())
+newtype PBool         = PBool         (Ptr ())
 newtype PRealVector   = PRealVector   (Ptr ())
 newtype PMinMaxSystem = PMinMaxSystem (Ptr ())
+newtype PPaver        = PPaver        (Ptr ())
 
 
 {----------------------------------------------------------------------}
@@ -58,16 +58,22 @@ foreign import ccall unsafe ""
   real_print :: PReal -> IO ()
 
 foreign import ccall unsafe ""
-  real_to_string :: PReal -> IO (CString)
+  real_to_string :: PReal -> IO CString
 
 foreign import ccall unsafe ""
-  real_create_value :: PInterval -> IO (PReal)
+  real_equal_to :: PReal -> PReal -> IO CInt
+
+real_equal_to_ :: PReal -> PReal -> IO Bool
+real_equal_to_ p1 p2 = real_equal_to p1 p2 >>= \res -> return (res /= 0)
 
 foreign import ccall unsafe ""
-  real_create_variable :: CUInt -> CString -> IO (PReal)
+  real_create_value :: PInterval -> IO PReal
 
 foreign import ccall unsafe ""
-  real_vector_create :: IO (PRealVector)
+  real_create_variable :: CUInt -> CString -> IO PReal
+
+foreign import ccall unsafe ""
+  real_vector_create :: IO PRealVector
 
 foreign import ccall unsafe ""
   real_vector_add :: PRealVector -> PReal -> IO ()
@@ -76,43 +82,108 @@ foreign import ccall unsafe ""
   real_vector_print :: PRealVector -> IO ()
 
 foreign import ccall unsafe ""
-  real_create_maximum :: PRealVector -> IO (PReal)
+  real_create_maximum :: PRealVector -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_absolute_value :: PReal -> IO (PReal)
+  real_create_absolute_value :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_sine :: PReal -> IO (PReal)
+  real_create_sine :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_cosine :: PReal -> IO (PReal)
+  real_create_cosine :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_floor :: PReal -> IO (PReal)
+  real_create_arctangent :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_double_ulp :: PReal -> IO (PReal)
+  real_create_floor :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_negation :: PReal -> IO (PReal)
+  real_create_double_ulp :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_addition :: PReal -> PReal -> IO (PReal)
+  real_create_single_ulp :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_subtraction :: PReal -> PReal -> IO (PReal)
+  real_create_negation :: PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_multiplication :: PReal -> PReal -> IO (PReal)
+  real_create_addition :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_division :: PReal -> PReal -> IO (PReal)
+  real_create_subtraction :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_eexponent :: PReal -> IO (PReal)
+  real_create_multiplication :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_elogarithm :: PReal -> IO (PReal)
+  real_create_division :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_sqrt :: PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_eexponent :: PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_elogarithm :: PReal -> IO PReal
+
+
+{----------------------------------------------------------------------}
+{-                                                                    -}
+{- C Boolean expressions functions                                    -}
+{-                                                                    -}
+{----------------------------------------------------------------------}
+
+foreign import ccall unsafe ""
+  bool_create_true :: IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_false :: IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_possibly :: IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_within_eps :: IO PBool
+
+foreign import ccall unsafe ""
+  bool_print :: PBool -> IO ()
+
+foreign import ccall unsafe ""
+  bool_equal_to :: PBool -> PBool -> IO CInt
+
+bool_equal_to_ :: PBool -> PBool -> IO Bool
+bool_equal_to_ p1 p2 = bool_equal_to p1 p2 >>= \res -> return (res /= 0)
+
+foreign import ccall unsafe ""
+  bool_create_not :: PBool -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_and :: PBool -> PBool -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_or :: PBool -> PBool -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_implies :: PBool -> PBool -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_equal_to :: PReal -> PReal -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_less_than :: PReal -> PReal -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_less_than_or_equal_to :: PReal -> PReal -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_greater_than :: PReal -> PReal -> IO PBool
+
+foreign import ccall unsafe ""
+  bool_create_greater_than_or_equal_to :: PReal -> PReal -> IO PBool
+
 
 {----------------------------------------------------------------------}
 {-                                                                    -}
@@ -121,53 +192,104 @@ foreign import ccall unsafe ""
 {----------------------------------------------------------------------}
 
 foreign import ccall unsafe ""
-  real_create_error_negation :: PReal -> PReal -> IO (PReal)
+  real_create_error_negation :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_addition :: PReal -> PReal -> PReal -> PReal -> IO (PReal)
+  real_create_error_addition :: PReal -> PReal -> PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_subtraction :: PReal -> PReal -> PReal -> PReal -> IO (PReal)
+  real_create_error_subtraction :: PReal -> PReal -> PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_multiplication :: PReal -> PReal -> PReal -> PReal -> IO (PReal)
+  real_create_error_multiplication :: PReal -> PReal -> PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_division :: PReal -> PReal -> PReal -> PReal -> IO (PReal)
+  real_create_error_division :: PReal -> PReal -> PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_sine :: PReal -> PReal -> IO (PReal)
+  real_create_error_sine :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_cosine :: PReal -> PReal -> IO (PReal)
+  real_create_error_cosine :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_arctangent :: PReal -> PReal -> IO (PReal)
+  real_create_error_arctangent :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_eexponent :: PReal -> PReal -> IO (PReal)
+  real_create_error_arctangent_tight :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_elogarithm :: PReal -> PReal -> IO (PReal)
+  real_create_error_eexponent :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_floor :: PReal -> PReal -> IO (PReal)
+  real_create_error_elogarithm :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_floor_tight :: PReal -> PReal -> IO (PReal)
+  real_create_error_floor :: PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
-  real_create_error_power_of_two_multiplication :: CInt -> PReal -> IO (PReal)
+  real_create_error_floor_tight :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_error_sqrt :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_error_power_of_two_multiplication :: CInt -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_negation :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_addition :: PReal -> PReal -> PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_subtraction :: PReal -> PReal -> PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_multiplication :: PReal -> PReal -> PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_division :: PReal -> PReal -> PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_sine :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_cosine :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_arctangent :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_arctangent_tight :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_eexponent :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_elogarithm :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_floor :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_floor_tight :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_sqrt :: PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
+  real_create_single_error_power_of_two_multiplication :: CInt -> PReal -> IO PReal
 
 
 {----------------------------------------------------------------------}
 {-                                                                    -}
-{- C Real Error expressions functions                                 -}
+{- C MinMaxSystem                                                     -}
 {-                                                                    -}
 {----------------------------------------------------------------------}
 
 foreign import ccall unsafe ""
-  minmax_system_create :: CString -> IO (PMinMaxSystem)
+  minmax_system_create :: CString -> IO PMinMaxSystem
 
 foreign import ccall unsafe ""
   minmax_system_print :: PMinMaxSystem -> IO ()
@@ -185,8 +307,35 @@ foreign import ccall unsafe ""
   minmax_system_maximize :: PMinMaxSystem -> PReal -> IO ()
 
 foreign import ccall unsafe ""
-  minmax_system_maximum_lower_bound :: PMinMaxSystem -> IO (CDouble)
+  minmax_system_maximum_lower_bound :: PMinMaxSystem -> IO CDouble
 
 foreign import ccall unsafe ""
-  minmax_system_maximum_upper_bound :: PMinMaxSystem -> IO (CDouble)
+  minmax_system_maximum_upper_bound :: PMinMaxSystem -> IO CDouble
 
+
+{----------------------------------------------------------------------}
+{-                                                                    -}
+{- C Paver                                                            -}
+{-                                                                    -}
+{----------------------------------------------------------------------}
+
+foreign import ccall unsafe ""
+  paver_create :: CString -> IO PPaver
+
+foreign import ccall unsafe ""
+  paver_print :: PPaver -> IO ()
+
+foreign import ccall unsafe ""
+  paver_register_variable :: PPaver -> CString -> PInterval -> PInterval -> IO ()
+
+foreign import ccall unsafe ""
+  paver_set_maxdepth :: PPaver -> CUInt -> IO ()
+
+foreign import ccall unsafe ""
+  paver_set_precision :: PPaver -> CInt -> IO ()
+
+foreign import ccall unsafe ""
+  paver_pave :: PPaver -> PBool -> IO ()
+
+foreign import ccall unsafe ""
+  paver_save_paving :: PPaver -> CString -> IO ()

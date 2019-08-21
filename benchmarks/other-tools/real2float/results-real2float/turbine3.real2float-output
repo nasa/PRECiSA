@@ -1,0 +1,18 @@
+Date: Sun Jun 25 08:52:56 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_real2float turbine3
+[(-4.5, -0.3) ; (0.4, 0.9) ; (3.8, 7.8)]
+[]
+1 problem remaining, 0 cuts done
+Sub box [(-4.5, -0.3); (0.4, 0.9); (3.8, 7.8); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16); (-1.11022e-16, 1.11022e-16)]
+real2float module for polynomials
+real2float module for polynomials
+[-1.70081e-11, 1.70081e-11]
+
+
+1 problem solved, 0 cuts done
+End of nonlinear optimization algorithm
+Absolute roundoff error bound = 1.70081e-11 >= 0
+Failed to verify the inequality turbine3
+Total time: 66.9908 seconds
+real  66.997

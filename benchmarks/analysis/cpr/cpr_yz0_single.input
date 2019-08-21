@@ -1,0 +1,3 @@
+modu(A, B) : A in [-90, 90], B in [-90, 90]
+
+yz0(Lat) : Lat in [-90, 90]

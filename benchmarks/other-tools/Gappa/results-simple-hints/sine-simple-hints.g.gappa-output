@@ -1,0 +1,6 @@
+Date: Sat Jun 24 20:11:51 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time gappa sine-simple-hints
+Results:
+  |sine - Msine| in [0, 64628361069171131b-106 {7.96606e-16, 2^(-50.157)}]
+real  0.109

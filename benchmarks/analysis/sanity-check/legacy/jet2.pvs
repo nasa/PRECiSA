@@ -1,0 +1,8 @@
+jet: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+jet(X1,X2: unb_double):unb_double = LET T = Dsub(Dadd(Dmul(RtoD(3),Dmul(X1,X1)),Dmul(RtoD(2),X2)),X1) IN Dadd(X1,Dadd(Dmul(Dadd(Dmul(RtoD(2),Dmul(X1,Dmul(Ddiv(T,Dadd(Dmul(X1,X1),RtoD(1))),Dsub(Ddiv(T,Dadd(Dmul(X1,X1),RtoD(1))),RtoD(3))))),Dmul(X1,Dmul(X1,Dsub(Dmul(RtoD(4),Ddiv(T,Dadd(Dmul(X1,X1),RtoD(1)))),RtoD(6))))),Dadd(Dmul(X1,X1),RtoD(1))),Dadd(Dmul(RtoD(3), Dmul(X1,Dmul(X1, Ddiv(T,Dadd(Dmul(X1,X1),RtoD(1)))))),Dadd(Dmul(X1,Dmul(X1,X1)),Dadd(X1,Dmul(RtoD(3),Ddiv(Dadd(Dmul(RtoD(3),Dmul(X1,X1)),Dsub(Dmul(RtoD(2),X2),X1)),Dadd(Dmul(X1,X1),RtoD(1)))))))))
+
+
+END jet

@@ -1,0 +1,14 @@
+fluctuat_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+y(X: unb_single): unb_single = Smul(Ssub(X, RtoS(1)), Smul(Ssub(X, RtoS(1)), Smul(Ssub(X, RtoS(1)), Ssub(X, RtoS(1)))))
+
+z(X: unb_single): unb_single =
+Ssub(Smul(Smul(Smul(X, X),X),X),
+     Sadd(Smul(Smul(Smul(X, X),X),RtoS(4)),
+          Ssub(Smul(Smul(X, X),RtoS(6)), Sadd(Smul(X, RtoS(4)),RtoS(1)))))
+
+t(X: unb_single): unb_single = Ssub(z(X), y(X))
+
+END fluctuat_single

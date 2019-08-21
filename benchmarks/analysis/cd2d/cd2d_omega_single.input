@@ -1,0 +1,7 @@
+omega(Sx, Sy, Vx, Vy, D, T) : Sx in [1,10], Sy in [1,10], Vx in [1,10], Vy in [1,10], D in [1,5], T in [0,20]
+
+tau(Sx, Sy, Vx, Vy, T) : Sx in [1,10], Sy in [1,10], Vx in [1,10], Vy in [1,10], T in [0,20]
+
+max(A,B): A in [-1000,1000], B in [-1000,1000]
+
+min(A,B): A in [-1000,1000], B in [-1000,1000]

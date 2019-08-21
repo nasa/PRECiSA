@@ -1,0 +1,32 @@
+styblinski: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+styblinski(X,Y: unb_double): unb_double =
+    LET EX = RtoD(0.0000000000000004440892098500627) IN
+    LET EY = RtoD(0.0000000000000004440892098500627) IN
+    IF (Y <= - EY) THEN
+		IF (X <= - EX) THEN
+            Dadd(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.83079), X), Dadd(Dmul(RtoD(0.786996), Dmul(X,X)), Dsub(Dmul(RtoD(2.83079),Y),
+            Dadd(Dmul(RtoD(0.000000000000000107939),Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+    	ELSE IF (X > EX) THEN
+                Dsub(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.33079), X), Dadd(Dmul(RtoD(0.786996), Dmul(X,X)), Dadd(Dmul(RtoD(2.83079),Y),
+                Dadd(Dmul(RtoD(0.00000000000000091748),Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+             ELSE RtoD(0)
+             ENDIF
+      	ENDIF
+    ELSE IF (Y > EY) THEN
+    	    IF (X <= - EX) THEN
+               Dadd(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.83079),X), Dsub(Dmul(RtoD(0.786996), Dmul(X,X)), Dadd(Dmul(RtoD(2.33079),Y),
+               Dadd(Dmul(RtoD(0.000000000000000323816), Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+            ELSE IF (X > EX) THEN
+                    Dsub(Dneg(RtoD(1.4717)), Dadd(Dmul(RtoD(2.33079),X), Dsub(Dmul(RtoD(0.786996),Dmul(X,X)),
+                    Dadd(Dmul(RtoD(2.33079),Y), Dadd(Dmul(RtoD(0.00000000000000172702), Dmul(X,Y)), Dmul(RtoD(0.786996),Dmul(Y,Y)))))))
+                 ELSE RtoD(0)
+                 ENDIF
+            ENDIF
+          ELSE RtoD(0)
+        ENDIF
+    ENDIF     
+
+END styblinski

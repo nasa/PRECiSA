@@ -1,0 +1,86 @@
+Date: Sat Jun 24 09:31:40 EDT 2017
+Command:  ~/FPTaylor/repo/fptaylor -c config-b.cfg azimuth.txt
+FPTaylor, version 0.9.1+dev
+
+Loading: azimuth.txt
+
+*************************************
+Taylor form for: rnd(64,ne,1.500000,-53,-1022)(atan(rnd64((rnd64(rnd64((rnd64(rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2)))) * rnd64(rnd(64,ne,1.500000,-53,-1022)(sin(rnd64((rnd64(lon2) - rnd64(lon1))))))))) / rnd64(rnd64((rnd64((rnd64(rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat1)))) * rnd64(rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat2)))))) - rnd64((rnd64((rnd64(rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1)))) * rnd64(rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2)))))) * rnd64(rnd(64,ne,1.500000,-53,-1022)(cos(rnd64((rnd64(lon2) - rnd64(lon1)))))))))))))))
+
+Conservative bound: [-1.457524, 1.457524]
+
+Simplified rounding: rnd(64,ne,1.500000,-53,-1022)(atan(rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1))))))) / rnd(64,ne,1.000000,-53,0)((rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat2))))) - rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))))))))))
+Building Taylor forms...
+Simplifying Taylor forms...
+success
+v0 = atan(((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))))
+-1 (84): exp = -53: (6031995593353211/4835703278458516698824704)
+1 (19): exp = -53: (((((cos(lat2) * sin((lon2 - lon1))) * (-(((cos(lat1) * (cos(lat2) * (1/2))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)) + (((cos(lat2) * sin((lon2 - lon1))) * (-(((-((cos((lon2 - lon1)) * (sin(lat1) * (-((sin(lat2) * (1/2)))))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))) + (((1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) * (sin((lon2 - lon1)) * (-((sin(lat2) * (1/2)))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)))
+2 (32): exp = -53: ((((cos(lat2) * sin((lon2 - lon1))) * (-(((-((cos((lon2 - lon1)) * (sin(lat1) * ((3/2) * cos(lat2)))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)) + (((1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) * (sin((lon2 - lon1)) * ((3/2) * cos(lat2)))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)))
+3 (37): exp = -53: ((((cos(lat2) * sin((lon2 - lon1))) * (-(((-(((sin(lat1) * cos(lat2)) * (-((sin((lon2 - lon1)) * 2)))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)) + (((1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) * (cos(lat2) * (cos((lon2 - lon1)) * 2))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)))
+4 (38): exp = -53: ((((cos(lat2) * sin((lon2 - lon1))) * (-(((-(((sin(lat1) * cos(lat2)) * (-((sin((lon2 - lon1)) * (-(2)))))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)) + (((1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) * (cos(lat2) * (cos((lon2 - lon1)) * (-(2))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)))
+5 (39): exp = -53: ((((cos(lat2) * sin((lon2 - lon1))) * (-(((-(((sin(lat1) * cos(lat2)) * (-((sin((lon2 - lon1)) * (lon2 - lon1))))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)) + (((1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) * (cos(lat2) * (cos((lon2 - lon1)) * (lon2 - lon1)))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)))
+6 (10): exp = -53: (((1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) * (cos(lat2) * ((3/2) * sin((lon2 - lon1))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+7 (13): exp = -53: (((1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) * (cos(lat2) * sin((lon2 - lon1)))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+8 (15): exp = -53: ((((cos(lat2) * sin((lon2 - lon1))) * (-(((sin(lat2) * (-((sin(lat1) * (1/4))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)) + (((cos(lat2) * sin((lon2 - lon1))) * (-(((-((cos((lon2 - lon1)) * (cos(lat2) * (cos(lat1) * (1/4)))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1)))
+9 (17): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-(((sin(lat2) * ((3/2) * cos(lat1))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+10 (21): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-(((cos(lat1) * ((3/2) * sin(lat2))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+11 (24): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-(((cos(lat1) * sin(lat2)) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+12 (28): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-(((-((cos((lon2 - lon1)) * (cos(lat2) * ((3/2) * sin(lat1)))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+13 (35): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-(((-((cos((lon2 - lon1)) * (sin(lat1) * cos(lat2))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+14 (42): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-(((-(((sin(lat1) * cos(lat2)) * ((3/2) * cos((lon2 - lon1)))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+15 (45): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-(((-(((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+16 (47): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (-((((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) / (((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))) * ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+17 (51): exp = -53: (((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) / ((((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1)))))) * ((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))) + 1))
+18 (54): exp = -53: ((3/2) * atan(((cos(lat2) * sin((lon2 - lon1))) * (1 / ((cos(lat1) * sin(lat2)) - ((sin(lat1) * cos(lat2)) * cos((lon2 - lon1))))))))
+
+Corresponding original subexpressions:
+1: rnd64(lat2)
+2: rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2)))
+3: rnd64(lon2)
+4: rnd64(lon1)
+5: rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))
+6: rnd(64,ne,1.500000,-53,-1022)(sin(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))
+7: rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))))
+8: rnd64(lat1)
+9: rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat1)))
+10: rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat2)))
+11: rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat2)))))
+12: rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1)))
+13: rnd64((rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2)))))
+14: rnd(64,ne,1.500000,-53,-1022)(cos(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))
+15: rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))))
+16: rnd(64,ne,1.000000,-53,0)((rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat2))))) - rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))))))
+17: rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1))))))) / rnd(64,ne,1.000000,-53,0)((rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat2))))) - rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))))))))
+18: rnd(64,ne,1.500000,-53,-1022)(atan(rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1))))))) / rnd(64,ne,1.000000,-53,0)((rnd64((rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat2))))) - rnd64((rnd64((rnd(64,ne,1.500000,-53,-1022)(sin(rnd64(lat1))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd64(lat2))))) * rnd(64,ne,1.500000,-53,-1022)(cos(rnd(64,ne,1.000000,-53,0)((rnd64(lon2) - rnd64(lon1)))))))))))))
+
+bounds: [-inf, inf]
+
+Computing absolute errors
+-1: exp = -53: 1.247387e-09 (low = 1.247387e-09, subopt = 0.0%)
+
+Solving the exact optimization problem
+exact bound (exp = -53): 1.046560e+02 (low = 9.174313e+01, subopt = 12.3%)
+total2: 1.384878e-25 (low = 1.384878e-25, subopt = 0.0%)
+exact total: 1.161915e-14 (low = 1.018553e-14, subopt = 12.3%)
+
+Elapsed time: 3.63725
+*************************************
+
+-------------------------------------------------------------------------------
+Problem: azimuth
+
+Optimization lower bounds for error models:
+The absolute error model (exact): 1.018553e-14 (suboptimality = 12.3%)
+
+Bounds (without rounding): [-inf, inf]
+
+Absolute error (exact): 1.161915e-14
+
+Elapsed time: 3.64
+
+
+
+real	0m3.643s
+user	0m3.572s
+sys	0m0.028s

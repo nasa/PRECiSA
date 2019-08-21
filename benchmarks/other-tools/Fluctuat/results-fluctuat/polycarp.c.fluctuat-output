@@ -1,0 +1,21 @@
+Date: Wed Jun 28 14:23:21 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time run_fluctuat polycarp.c
+[PROJECT] daed_project was called with : "polycarp.c"
+[PROJECT] Look at each C file to construct the project
+[PROJECT] Preprocessing polycarp.c
+[ INFO ] FLUCTUAT starts "Nov 17 2016"@"13:53:15"
+[ INFO ] Resource file loaded (project.rc)
+[ INFO ] Start analysis...
+[WARNIN] Sure     -> BUILTIN bounds not exactly represented
+[WARNIN] Possible -> Unstable test (machine and real value do not take the same path)
+CallList(<DirectCallControlPoint[polycarp.c:20:31]>,,function)
+}
+[WARNIN] Possible -> Unstable test (machine and real value do not take the same path)
+CallList(<DirectCallControlPoint[polycarp.c:20:31]>,,function)
+}
+[ANALYZ] Analysis cpu time: 0.00 sec
+[ANALYZ] Analyzer maximal allocated memory: 16384 Kilo Bytes
+[ INFO ] FLUCTUAT ends "Nov 17 2016"@"13:53:15"
+real  0.013
+ABS_ERROR: 1.88737915e-15

@@ -1,0 +1,6 @@
+Date: Sat Jun 24 20:11:51 EDT 2017
+Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+Command: time gappa rigidBody1-simple-hints
+Results:
+  |r1 - Mr1| in [0, 83b-48 {2.94875e-13, 2^(-41.6249)}]
+real  0.080

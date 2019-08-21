@@ -1,0 +1,22 @@
+
+Constants
+  k = 1.3806503e-23
+;
+
+Variables
+  float64 T in [300.0, 300.0],
+  float64 a in [0.401, 0.401],
+  float64 b in [42.7e-6, 42.7e-6],
+  float64 N in [1000, 1000],
+  float64 p in [3.5e7, 3.5e7],
+  float64 V in [0.1, 0.5]
+;
+	
+Definitions
+  res rnd64= (p + a * (N / V) * (N / V)) * (V - N * b) - k * N * T
+;
+  
+
+Expressions
+  carbon_gas = res
+;

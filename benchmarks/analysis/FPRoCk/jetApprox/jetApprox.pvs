@@ -1,0 +1,58 @@
+jetApprox: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+jetApprox (X,Y: unb_double):unb_double =
+  LET E=RtoD(0.0000000000000004440892098500627) IN
+    IF (Y <= -E) THEN
+      IF (X <= -E) THEN
+        Dadd(RtoD(-0.0939097)
+            ,Dadd(Dmul(RtoD(0.313122),X)
+                 ,Dadd(Dmul(RtoD(0.20583),Dmul(X,X))
+                      ,Dsub(Dmul(RtoD(0.00111573),Y)
+                           ,Dadd(Dmul(RtoD(0.00514265),Dmul(X,Y))
+                                ,Dsub(Dmul(RtoD(0.00380476),Dmul(X,Dmul(X,Y)))
+                                     ,Dadd(Dmul(RtoD(0.000567088),Dmul(Y,Y))
+                                               ,Dmul(RtoD(0.000568992),Dmul(X,Dmul(Y,Y))))))))))
+      ELSE 
+        IF (X > E) THEN
+           Dsub(RtoD(-0.0758695)
+            ,Dadd(Dmul(RtoD(0.300328),X)
+                 ,Dadd(Dmul(RtoD(0.168573),Dmul(X,X))
+                      ,Dsub(Dmul(RtoD(0.00633419),Y)
+                           ,Dadd(Dmul(RtoD(0.00910356),Dmul(X,Y))
+                                ,Dadd(Dmul(RtoD(0.0125128),Dmul(X,Dmul(X,Y)))
+                                     ,Dadd(Dmul(RtoD(0.000567088),Dmul(Y,Y))
+                                               ,Dmul(RtoD(0.000568992),Dmul(X,Dmul(Y,Y))))))))))
+        ELSE RtoD(0)
+        ENDIF
+      ENDIF
+    ELSE
+        IF (Y > E) THEN
+          IF (X <= -E) THEN
+            Dadd(RtoD(-0.0939097)
+            ,Dadd(Dmul(RtoD(0.313122),X)
+                 ,Dadd(Dmul(RtoD(0.20583),Dmul(X,X))
+                      ,Dadd(Dmul(RtoD(0.00604201),Y)
+                           ,Dadd(Dmul(RtoD(0.0147615),Dmul(X,Y))
+                                ,Dsub(Dmul(RtoD(0.0087808),Dmul(X,Dmul(X,Y)))
+                                     ,Dadd(Dmul(RtoD(0.000567088),Dmul(Y,Y))
+                                               ,Dmul(RtoD(0.000568992),Dmul(X,Dmul(Y,Y))))))))))
+          ELSE
+            IF (X > E) THEN
+              Dsub(RtoD(-0.0758695)
+              ,Dadd(Dmul(RtoD(0.300328),X)
+                   ,Dadd(Dmul(RtoD(0.168573),Dmul(X,X))
+                        ,Dadd(Dmul(RtoD(0.00140791),Y)
+                             ,Dadd(Dmul(RtoD(0.0108006),Dmul(X,Y))
+                                  ,Dadd(Dmul(RtoD(0.00753679),Dmul(X,Dmul(X,Y)))
+                                       ,Dadd(Dmul(RtoD(0.000567088),Dmul(Y,Y))
+                                                 ,Dmul(RtoD(0.000568992),Dmul(X,Dmul(Y,Y))))))))))
+            ELSE RtoD(0)
+            ENDIF
+          ENDIF
+        ELSE RtoD(0)
+    ENDIF
+    ENDIF
+END jetApprox
+

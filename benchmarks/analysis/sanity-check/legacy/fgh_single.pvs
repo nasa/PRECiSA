@@ -1,0 +1,17 @@
+fgh_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+f (X, Y: unb_single): unb_single = IF (X /= RtoS(0))
+                                       THEN (Sadd(X, Y))
+                                       ELSE (Smul(X, Y))
+                                   ENDIF
+
+g (Z: unb_single): unb_single = Z
+
+h (A, B: unb_single): unb_single = IF (A > RtoS(2))
+                                       THEN g(f(A, B))
+                                       ELSE g(f(B, A))
+                                   ENDIF
+
+END fgh_single

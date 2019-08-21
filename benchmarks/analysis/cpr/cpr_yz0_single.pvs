@@ -1,0 +1,10 @@
+cpr_yz0_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+modu(A, B: unb_single): unb_single = Ssub(A, Smul(B, Sfloor(Sdiv(A,B))))
+
+yz0 (Lat: unb_single): unb_single =
+    Sfloor(Sadd(Smul(Sdiv(modu(Lat, Sdiv(RtoS(360), Ssub(RtoS(60), RtoS(0)))), Sdiv(RtoS(360), Ssub(RtoS(60), RtoS(0)))), RtoS(131072)), RtoS(0.5)))
+
+END cpr_yz0_single

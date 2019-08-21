@@ -1,0 +1,17 @@
+cpr_lon_enc_single: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+dLon0 (NL: unb_single): unb_single = IF (NL > RtoS(0)) THEN Sdiv(RtoS(360), NL) ELSE RtoS(360) ENDIF
+
+dLon1 (NL: unb_single): unb_single = IF ((Ssub(NL, RtoS(1))) > RtoS(0)) THEN Sdiv(RtoS(360), Ssub(NL, RtoS(1))) ELSE RtoS(360) ENDIF
+
+modu(A, B: unb_single): unb_single = Ssub(A, Smul(B, Sfloor(Sdiv(A,B))))
+
+xz0 (Lon, NL: unb_single): unb_single =
+    Sfloor(Sadd(Smul(Sdiv(modu(Lon, dLon0(NL)), dLon0(NL)), RtoS(131072)), RtoS(0.5)))
+
+xz1 (Lon, NL: unb_single): unb_single =
+    Sfloor(Sadd(Smul(Sdiv(modu(Lon, dLon1(NL)), dLon1(NL)), RtoS(131072)), RtoS(0.5)))
+
+END cpr_lon_enc_single
