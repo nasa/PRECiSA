@@ -18,7 +18,7 @@ import Utils
 import Kodiak.KodiakRunnable
 import Kodiak.KodiakRunner
 import NumericalError
-import Numeric (showHFloat)
+import Data.Numbers.FloatingHex (showHFloat)
 import AbstractDomain (Condition)
 
 genFramaCFile :: FPrec -> RProgram -> [(Decl,[(VarName,FAExpr,FBExpr)])] -> Spec -> [(FunName, (EExpr, [Condition]))] -> IO Doc
