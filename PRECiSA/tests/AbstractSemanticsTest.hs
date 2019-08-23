@@ -192,6 +192,7 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                          ,(Lt (Int 3) (Int 4),FLt (FInt 3) (FInt 4))
                          ],
                 rExprs = [Int 3,Int 4],
+                fpExprs = [FInt 3,FInt 4],
                 eExpr  = ErrRat (toRational 2),
                 decisionPath = root,
                 cFlow = Stable
@@ -327,6 +328,7 @@ semEFun__test2 = testCase "it correctly combines arguments-combinations conditio
                          ,(Lt (Var Real "1") (Int 2),FLt (FVar FPDouble "1") (FInt 2))
                          ],
                 rExprs = [Int 1,Int 2],
+                fpExprs = [FInt 1,FInt 2],
                 eExpr  = ErrRat (toRational 1),
                 decisionPath = root,
                 cFlow = Stable
@@ -334,6 +336,7 @@ semEFun__test2 = testCase "it correctly combines arguments-combinations conditio
               ySemantics1 = ACeb {
                 conds  = Cond [(Lt (Var Real "4") (Int 5),FLt (FVar FPDouble "4") (FInt 5))],
                 rExprs = [Int 5,Int 6],
+                fpExprs = [FInt 5,FInt 6],
                 eExpr  = ErrRat (toRational 3),
                 decisionPath = root,
                 cFlow = Stable

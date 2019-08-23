@@ -100,7 +100,7 @@ transformStmSymb decls f be (ListIte listThen elseStm) = do
   where
 
       makeNewListThen :: [(FBExpr, Stm)] -> [FBExpr] -> State ErrVarInterp [(FBExpr, Stm)]
-      makeNewListThen [] []  = error "makeNewListThen: "
+  --    makeNewListThen [] []  = error "makeNewListThen: "
       makeNewListThen [] listElseBes = do
           transformedElseSmt <- transformStmSymb decls f be elseStm
           newlistElseBes <- mapM (betaMinusVar f be) listElseBes

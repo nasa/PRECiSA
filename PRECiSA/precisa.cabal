@@ -2,15 +2,15 @@ cabal-version:       2.2
 name:                precisa
 version:             2.0.0.0
 synopsis:            PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
--- description:         
+-- description:
 homepage:            http://precisa.nianet.org
 author:              Laura Titolo, Marco A. Feliu
 maintainer:          laura.titolo@nianet.org
                      marco.feliu@nianet.org
--- copyright:           
+-- copyright:
 category:            Language
 build-type:          Simple
--- extra-source-files:  
+-- extra-source-files:
 
 common deps
   default-language:    Haskell2010
@@ -34,8 +34,42 @@ common deps
 
 executable precisa
   import: deps
-  main-is:             Main.hs
-  -- other-modules:
+  main-is:
+    Main.hs
+  other-modules:
+    AbsPVSLang
+    AbsPVSLangTest
+    AbsSpecLang
+    AbstractDomain
+    AbstractDomainTest
+    AbstractSemantics
+    AbstractSemanticsTest
+    Common.ControlFlow
+    Common.ControlFlowTest
+    Common.DecisionPath
+    Common.DecisionPathTest
+    Common.ShowRational
+    Common.ShowRationalTest
+    Common.Test
+    FPrec
+    Kodiak.Expression
+    Kodiak.Generator
+    Kodiak.GeneratorTest
+    Kodiak.Kodiak
+    Kodiak.KodiakRunnable
+    Kodiak.KodiakRunner
+    Kodiak.Test
+    PPExt
+    SMT.GenerateSMTModel
+    SMT.ModelTest
+    SMT.PrettyPrinter
+    SMT.PrettyPrinterTest
+    SMT.Test
+    Transformation
+    TransformationTest
+    Translation.Float2Real
+    Utils
+    UtilsTest
   other-extensions:    MultiParamTypeClasses, FunctionalDependencies, CPP, RecordWildCards, GeneralizedNewtypeDeriving, MagicHash, ForeignFunctionInterface, NoMonomorphismRestriction, FlexibleInstances
   hs-source-dirs:      src
   build-tools:         alex, happy
@@ -49,3 +83,37 @@ test-suite PRECiSA-test-suite
     tests
   main-is:
     Test.hs
+  other-modules:
+    AbsPVSLang
+    AbsPVSLangTest
+    AbsSpecLang
+    AbstractDomain
+    AbstractDomainTest
+    AbstractSemantics
+    AbstractSemanticsTest
+    Common.ControlFlow
+    Common.ControlFlowTest
+    Common.DecisionPath
+    Common.DecisionPathTest
+    Common.ShowRational
+    Common.ShowRationalTest
+    Common.Test
+    FPrec
+    Kodiak.Expression
+    Kodiak.Generator
+    Kodiak.GeneratorTest
+    Kodiak.Kodiak
+    Kodiak.KodiakRunnable
+    Kodiak.KodiakRunner
+    Kodiak.Test
+    PPExt
+    SMT.GenerateSMTModel
+    SMT.ModelTest
+    SMT.PrettyPrinter
+    SMT.PrettyPrinterTest
+    SMT.Test
+    Transformation
+    TransformationTest
+    Translation.Float2Real
+    Utils
+    UtilsTest

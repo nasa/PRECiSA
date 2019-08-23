@@ -348,12 +348,33 @@ getFPrec ae = error $ "getFPrec niy for "++ show ae
 rewriteEquivEExpr :: EExpr -> EExpr
 rewriteEquivEExpr = replaceInAExpr rewriteEquivEExpr'
   where
-  rewriteEquivEExpr' (MaxErr       ees)
-    | and $ zipWith (==) ees' $ tail ees' = Just $ head ees'
-    | otherwise = Just $ MaxErr ees'
-    where
-        ees' = map rewriteEquivEExpr ees
-  rewriteEquivEExpr' _ = Nothing
+    rewriteEquivEExpr' (ErrMulPow2L _ _ ee) = Just $ rewriteEquivEExpr ee
+    rewriteEquivEExpr' (ErrMulPow2R _ _ ee) = Just $ rewriteEquivEExpr ee
+    rewriteEquivEExpr' (ErrAbs      _ _ ee) = Just $ rewriteEquivEExpr ee
+    rewriteEquivEExpr' (ErrNeg      _ _ ee) = Just $ rewriteEquivEExpr ee
+    rewriteEquivEExpr' (ErrFloor  fp ae ee) = Just $ ErrFloor  fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrFloor0 fp ae ee) = Just $ ErrFloor0 fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrSqrt   fp ae ee) = Just $ ErrSqrt   fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrSin    fp ae ee) = Just $ ErrSin    fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrCos    fp ae ee) = Just $ ErrCos    fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrTan    fp ae ee) = Just $ ErrTan    fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrAsin   fp ae ee) = Just $ ErrAsin   fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrAcos   fp ae ee) = Just $ ErrAcos   fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrAtan   fp ae ee) = Just $ ErrAtan   fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrAtanT  fp ae ee) = Just $ ErrAtanT  fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrLn     fp ae ee) = Just $ ErrLn     fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrExpo   fp ae ee) = Just $ ErrExpo   fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrAdd fp ae1 ee1 ae2 ee2) = Just $ ErrAdd fp ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
+    rewriteEquivEExpr' (ErrSub fp ae1 ee1 ae2 ee2) = Just $ ErrSub fp ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
+    rewriteEquivEExpr' (ErrMul fp ae1 ee1 ae2 ee2) = Just $ ErrMul fp ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
+    rewriteEquivEExpr' (ErrDiv fp ae1 ee1 ae2 ee2) = Just $ ErrDiv fp ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
+    rewriteEquivEExpr' (ErrMod fp ae1 ee1 ae2 ee2) = Just $ ErrMod fp ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
+    rewriteEquivEExpr' (MaxErr       ees)
+      | and $ zipWith (==) ees' $ tail ees' = Just $ head ees'
+      | otherwise = Just $ MaxErr ees'
+       where
+         ees' = map rewriteEquivEExpr ees
+    rewriteEquivEExpr' _ = Nothing
 
 equivEExpr :: EExpr -> EExpr -> Bool
 equivEExpr ee ee' = rewriteEquivEExpr ee == rewriteEquivEExpr ee'
