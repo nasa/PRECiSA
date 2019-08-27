@@ -73,7 +73,7 @@ printDeclWithACSL fp (realDecl@(RDecl _ f realArgs _ ), taudecl@(Decl _ _ _ stm)
         numDecl)
 
 prettyErrorHex :: Double -> Doc
-prettyErrorHex roErr = text (show (showHFloat (roErr :: Double) ""))
+prettyErrorHex roErr = text (showHFloat (roErr :: Double) "")
 
 printNumDeclWithACSL :: FPrec -> String -> [Arg] -> [(VarName, FAExpr, FAExpr)] -> Decl -> [(VarName,FAExpr,FBExpr)] -> [VarBind] -> Double -> IO Doc
 printNumDeclWithACSL fp f realArgs forIdx (Decl fpFun _ args _) errVars varBinds roErr = do
@@ -153,13 +153,15 @@ printAxiomaticTranDecl fp f stm tauargs realArgs listStableCond =
 
 printPredTransValue :: FPrec -> String -> Stm -> [Arg] -> Doc
 printPredTransValue fp f stm tauargs =
-     text "predicate" <+> text (f ++ "_trans_value") <> parens (prettyACSLFormalArgs fp tauargs <> comma <+> text "double result")
+     text "predicate" <+> text (f ++ "_trans_value")
+     <> parens (prettyACSLFormalArgs fp tauargs
+     <> comma <+> text "double result")
   $$ text "="
-  <+> (if null funCalls then stmDoc else resValQuant $$ stmDoc)
+  <+> (if null funCalls then stmDoc else resValQuant $$ stmDoc) <+> text ";"
     where
       resValQuant = text "\\exists" <+> listVarRes <> text ";" <+> listFuns <+> text "&&"
       listVarRes = docListComma (map ((\x -> prettyACSLPrec fp <+> x) . text . fst) funCalls)
-      listFuns   = docListAnd (map (prettyDoc . snd) funCalls)
+      listFuns   = docListAnd (map (printACSLFAexpr . snd) funCalls)
       (stmDoc,funCalls) = runState (prettyStmValue stm) []
 
 printPredStablePaths :: FPrec -> String -> [Arg] -> [Condition] -> Doc
@@ -258,7 +260,7 @@ prettyFBExprValue     (FNot e) = do
   bDoc <- prettyFBExprValue e
   return $ text "!" <> bDoc
 prettyFBExprValue  (FEq a1 a2) = prettyBinFormulaValue (text "=" ) a1 a2
-prettyFBExprValue (FNeq a1 a2) = prettyBinFormulaValue (text "/=") a1 a2
+prettyFBExprValue (FNeq a1 a2) = prettyBinFormulaValue (text "!=") a1 a2
 prettyFBExprValue  (FLt a1 a2) = prettyBinFormulaValue (text "<" ) a1 a2
 prettyFBExprValue (FLtE a1 a2) = prettyBinFormulaValue (text "<=") a1 a2
 prettyFBExprValue  (FGt a1 a2) = prettyBinFormulaValue (text "<" ) a2 a1
@@ -283,7 +285,7 @@ prettyFAExprValue (FEFun f fp args)    = do
   currentState <- get
   let n = length currentState
   let res = "res" ++ show n
-  put ((res, FEFun (f ++ "_trans_value") fp (args++[FVar fp res])):currentState)
+  put ((res, FEFun (f ++ "_trans_value") fp (args++[FVar Real res])):currentState)
   return $ text res
 
 prettyFAExprValue (FINeg           a) = prettyUnaryOpValue (text "Ineg"  ) a
@@ -383,8 +385,8 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
                         $$
                         text "ensures \\result.isValid ==>"
                         <+>
-                        text (f ++ "_trans_value") <> parens (docListComma (map (printFPVar fp . argName) fpArgs) <> comma <+> text "result.value") <> text ";"
-    behaviorStablePaths = text "behavior stable paths:"
+                        text (f ++ "_trans_value") <> parens (docListComma (map (printFPVar fp . argName) fpArgs) <> comma <+> text "\\result.value") <> text ";"
+    behaviorStablePaths = text "behavior stable_paths:"
                        $$ text "ensures \\result.isValid"
                        $$ nest 2 (text "==> \\forall" <+> prettyACSLFormalArgs fp realVarArgs <> text ";"
                                               $$ printDefLocalVars errVars locVars
@@ -398,7 +400,7 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
                                                      <>  text ";")
     behaviorSymbolic = text "behavior symbolic:"
                     $$ text "ensures \\forall" <+> prettyACSLFormalArgs fp realVarArgs <+> comma <+> docListComma inputVarErrs <+> text ";"
-                    $$ docListAnd (map (printErrInputVar fp) inputVars)
+                    $$ docListAnd (map (printErrInputVar fp) inputVars) <+> text "&&"
                     $$ printDefLocalVars errVars locVars
                     $$ (text "(" <> printQuantIdx forIdx)
                     $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")" <+> text "&&"
@@ -537,7 +539,7 @@ printACSLlogicDecl fpTarget (RDecl fp f args stm) =
   $$ text "*/"
 
 printVarBinds :: [VarBind] -> Doc
-printVarBinds varBinds = vcat $ map printVarBind varBinds
+printVarBinds varBinds = docListAnd $ map printVarBind varBinds
   where
     printVarBind (VarBind _ _ LInf UInf) = empty
     printVarBind (VarBind x _         LInf   (UBInt    n)) = text x <+> text "<=" <+> integer n
@@ -965,7 +967,7 @@ printACSLFBexpr  (FOr e1 e2) = parens $ printACSLFBexpr e1 <+> text "||"  <+> pr
 printACSLFBexpr (FAnd e1 e2) = parens $ printACSLFBexpr e1 <+> text "&&" <+> printACSLFBexpr e2
 printACSLFBexpr     (FNot e) = text "!" <> parens (printACSLFBexpr e)
 printACSLFBexpr  (FEq a1 a2) = parens $ printACSLFAexpr a1 <+> text "="  <+> printACSLFAexpr a2
-printACSLFBexpr (FNeq a1 a2) = parens $ printACSLFAexpr a1 <+> text "/=" <+> printACSLFAexpr a2
+printACSLFBexpr (FNeq a1 a2) = parens $ printACSLFAexpr a1 <+> text "!=" <+> printACSLFAexpr a2
 printACSLFBexpr  (FLt a1 a2) = parens $ printACSLFAexpr a1 <+> text "<"  <+> printACSLFAexpr a2
 printACSLFBexpr (FLtE a1 a2) = parens $ printACSLFAexpr a1 <+> text "<=" <+> printACSLFAexpr a2
 printACSLFBexpr  (FGt a1 a2) = parens $ printACSLFAexpr a2 <+> text "<"  <+> printACSLFAexpr a1
