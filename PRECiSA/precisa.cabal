@@ -31,45 +31,55 @@ common deps
     tasty-hunit >=0.9 && <0.10
   extra-libraries: stdc++ kodiak
   ghc-options: -fPIC -pgmlg++ "-dynload sysdep" -dynamic
+  other-modules:
+    AbsPVSLang
+    AbsRawPVSLang
+    AbsRawRealPVSLang
+    AbsRawSpecLang
+    AbsSpecLang
+    AbstractDomain
+    AbstractSemantics
+    Common.ControlFlow
+    Common.DecisionPath
+    Common.ShowRational
+    ErrM
+    ErrorExpression
+    FPrec
+    FramaC.PrettyPrint
+    Kodiak.Expression
+    Kodiak.Generator
+    Kodiak.Kodiak
+    Kodiak.KodiakRunnable
+    Kodiak.KodiakRunner
+    MapPVSLangAST
+    MapRealPVSLangAST
+    MapSpecLangAST
+    NumericalError
+    Options
+    Parser.LexDecisionPaths
+    Parser.LexRawPVSLang
+    Parser.LexRawRealPVSLang
+    Parser.LexRawSpecLang
+    Parser.ParDecisionPaths
+    Parser.ParRawPVSLang
+    Parser.ParRawRealPVSLang
+    Parser.ParRawSpecLang
+    Parser.Parser
+    PPExt
+    PVSCert
+    SMT.GenerateSMTModel
+    SMT.PrettyPrinter
+    SMT.SMT
+    Transformation
+    TransformationUtils
+    Translation.Float2Real
+    Translation.Real2Float
+    Utils
 
 executable precisa
   import: deps
   main-is:
     Main.hs
-  other-modules:
-    AbsPVSLang
-    AbsPVSLangTest
-    AbsSpecLang
-    AbstractDomain
-    AbstractDomainTest
-    AbstractSemantics
-    AbstractSemanticsTest
-    Common.ControlFlow
-    Common.ControlFlowTest
-    Common.DecisionPath
-    Common.DecisionPathTest
-    Common.ShowRational
-    Common.ShowRationalTest
-    Common.Test
-    FPrec
-    Kodiak.Expression
-    Kodiak.Generator
-    Kodiak.GeneratorTest
-    Kodiak.Kodiak
-    Kodiak.KodiakRunnable
-    Kodiak.KodiakRunner
-    Kodiak.Test
-    PPExt
-    SMT.GenerateSMTModel
-    SMT.ModelTest
-    SMT.PrettyPrinter
-    SMT.PrettyPrinterTest
-    SMT.Test
-    Transformation
-    TransformationTest
-    Translation.Float2Real
-    Utils
-    UtilsTest
   other-extensions:    MultiParamTypeClasses, FunctionalDependencies, CPP, RecordWildCards, GeneralizedNewtypeDeriving, MagicHash, ForeignFunctionInterface, NoMonomorphismRestriction, FlexibleInstances
   hs-source-dirs:      src
   build-tools:         alex, happy
@@ -84,36 +94,17 @@ test-suite PRECiSA-test-suite
   main-is:
     Test.hs
   other-modules:
-    AbsPVSLang
     AbsPVSLangTest
-    AbsSpecLang
-    AbstractDomain
     AbstractDomainTest
-    AbstractSemantics
     AbstractSemanticsTest
-    Common.ControlFlow
     Common.ControlFlowTest
-    Common.DecisionPath
     Common.DecisionPathTest
-    Common.ShowRational
     Common.ShowRationalTest
     Common.Test
-    FPrec
-    Kodiak.Expression
-    Kodiak.Generator
     Kodiak.GeneratorTest
-    Kodiak.Kodiak
-    Kodiak.KodiakRunnable
-    Kodiak.KodiakRunner
     Kodiak.Test
-    PPExt
-    SMT.GenerateSMTModel
     SMT.ModelTest
-    SMT.PrettyPrinter
     SMT.PrettyPrinterTest
     SMT.Test
-    Transformation
     TransformationTest
-    Translation.Float2Real
-    Utils
     UtilsTest
