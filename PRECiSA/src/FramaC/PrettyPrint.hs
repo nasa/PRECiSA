@@ -2,14 +2,14 @@ module FramaC.PrettyPrint where
 
 import AbsPVSLang
 import AbsSpecLang
-import PPExt
+import AbstractDomain (Condition)
+import Control.Monad.State
 import FPrec
---import Data.List (isSuffixOf)
+import Data.List (init,last)
 import qualified Common.ShowRational as Rat
 import Translation.Float2Real
 import Debug.Trace
 import Data.Set (fromList, toList)
-import Control.Monad.State
 import Data.Maybe (fromJust)
 import Prelude hiding ((<>))
 --import Data.Set (toList, fromList)
@@ -19,7 +19,7 @@ import Kodiak.Runnable
 import Kodiak.Runner
 import NumericalError
 import Data.Numbers.FloatingHex (showHFloat)
-import AbstractDomain (Condition)
+import PPExt
 
 genFramaCFile :: FPrec -> RProgram -> [(Decl,[(VarName,FAExpr,FBExpr)])] -> Spec -> [(FunName, (EExpr, [Condition]))] -> IO Doc
 genFramaCFile fp realDecls tauDecls (Spec specBinds) errs = do
@@ -213,6 +213,21 @@ prettyStmValue (Ite be stmThen stmElse) = do
         <+> parens stmElseDoc
 
 prettyStmValue (ListIte [] _) = error "prettyDoc RListIte: empty stmThen list"
+
+prettyStmValue (ListIte ((beThen,stmThen):thenList) UnstWarning) = do
+  beThenDoc <- prettyFBExprValue beThen
+  stmThenDoc <- prettyStmValue stmThen
+  stmThenListDoc <- mapM (prettyStmValue . snd) (init thenList)
+  stmElseDoc <- prettyStmValue $ (snd . last) thenList
+  beListDoc <-  mapM (prettyFBExprValue . fst) (init thenList)
+  return $  parens beThenDoc
+        $$  text "?"
+        <+> stmThenDoc <+> text ":"
+        $$  vcat (map (\(stmDoc,beDoc) -> beDoc
+                                        $$  text "?"
+                                        <+> stmDoc <+> text ":") (zip stmThenListDoc beListDoc))
+        $$ stmElseDoc
+
 prettyStmValue (ListIte ((beThen,stmThen):thenList) stmElse) = do
   beThenDoc <- prettyFBExprValue beThen
   stmThenDoc <- prettyStmValue stmThen
