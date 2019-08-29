@@ -85,9 +85,13 @@ printNumDeclWithACSL fp f realArgs forIdx (Decl fpFun _ args _) errVars varBinds
     $$ text "==> \\abs(\\result.value - " <> text f <> parens (printRealArgs fp realArgs) <> text ") <=" <+> prettyErrorHex roErr <> text ";"
     $$ text "*/"
     $$ maybeRetType fpFun <+> text fNum <+> parens (printRealArgs fp realArgs) <+> text "{"
-    $$ text "return" <+> text f <> text "_" <> prettyFPrec fpFun <+> parens (printRealArgs fp realArgs <> comma <> docListComma (map prettyErrorHex numErrArgs)) <> text ";"
+    $$ text "return"
+    <+> text f <> text "_" <> prettyFPrec fpFun
+    <+> parens (printRealArgs fp realArgs <> printErrArgs numErrArgs)
+    <> text ";"
     $$ text "}")
   where
+    printErrArgs numErrArgs = if null numErrArgs then emptyDoc else comma <> docListComma (map prettyErrorHex numErrArgs)
     fNum = f ++ "_num"
     errArgs = drop (length realArgs) args
     computeNumErrArgs = mapM (roError varBinds [] . fst . aux) errArgs
@@ -265,8 +269,8 @@ prettyFBExprValue  (FLt a1 a2) = prettyBinFormulaValue (text "<" ) a1 a2
 prettyFBExprValue (FLtE a1 a2) = prettyBinFormulaValue (text "<=") a1 a2
 prettyFBExprValue  (FGt a1 a2) = prettyBinFormulaValue (text "<" ) a2 a1
 prettyFBExprValue (FGtE a1 a2) = prettyBinFormulaValue (text "<=") a2 a1
-prettyFBExprValue       FBTrue = return $ text "TRUE"
-prettyFBExprValue      FBFalse = return $ text "FALSE"
+prettyFBExprValue       FBTrue = return $ text "\\true"
+prettyFBExprValue      FBFalse = return $ text "\\false"
 prettyFBExprValue (IsValid ae) = return $ text "isValid" <> parens (prettyDoc ae)
 
 
@@ -366,7 +370,7 @@ prettyFAExprValue ee = error $ "printACSLFAexpr for " ++ show ee ++ "not impleme
 printFPSymbPrecond :: FPrec -> FunName -> [Arg] -> [Arg] -> [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] -> [(VarName, FAExpr, FAExpr)] -> EExpr -> Doc
 printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
   text "/*@"
-  $$ text "requires" <+> printPosErrReq (listErrEnvVars errVars) <> text ";"
+  <> posErrorPrecond
   $$ text "assigns \\nothing;"
   $$ text ""
   $$ behaviorStructure
@@ -376,6 +380,8 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
   $$ behaviorSymbolic
   $$ text "*/"
   where
+    posErrorPrecond = if null errVars then (emptyDoc) else
+      (emptyDoc $$ text "requires" <+> printPosErrReq (listErrEnvVars errVars) <> text ";")
     realVarArgs = filter (\a -> not (isArgArray a || isArgInt a)) realArgs
     inputVars = map argName realVarArgs
     inputRealVars = map (prettyACSLaexpr . Var fp) inputVars
@@ -389,15 +395,19 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
     behaviorStablePaths = text "behavior stable_paths:"
                        $$ text "ensures \\result.isValid"
                        $$ nest 2 (text "==> \\forall" <+> prettyACSLFormalArgs fp realVarArgs <> text ";"
-                                              $$ printDefLocalVars errVars locVars
-                                              $$ (text "(" <> printQuantIdx forIdx)
-                                              $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")"
-                                              $$ nest 2 (text "==>"
-                                                     <+> text (f ++ "_stable_paths"))
+                                              $$ printLocalAndErrVars (text (f ++ "_stable_paths")
                                                      <>  parens (docListComma inputRealVars
                                                      <>  comma
                                                      <+> docListComma inputFPVars)
-                                                     <>  text ";")
+                                                     <>  text ";"))
+
+    printLocalAndErrVars doc = if null errVars && null locVars
+              then doc
+              else (printDefLocalVars errVars locVars
+               $$ (text "(" <> printQuantIdx forIdx)
+               $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")"
+               $$ nest 2 (text "==>" <>  doc))
+
     behaviorSymbolic = text "behavior symbolic:"
                     $$ text "ensures \\forall" <+> prettyACSLFormalArgs fp realVarArgs <+> comma <+> docListComma inputVarErrs <+> text ";"
                     $$ docListAnd (map (printErrInputVar fp) inputVars) <+> text "&&"
@@ -972,8 +982,8 @@ printACSLFBexpr  (FLt a1 a2) = parens $ printACSLFAexpr a1 <+> text "<"  <+> pri
 printACSLFBexpr (FLtE a1 a2) = parens $ printACSLFAexpr a1 <+> text "<=" <+> printACSLFAexpr a2
 printACSLFBexpr  (FGt a1 a2) = parens $ printACSLFAexpr a2 <+> text "<"  <+> printACSLFAexpr a1
 printACSLFBexpr (FGtE a1 a2) = parens $ printACSLFAexpr a2 <+> text "<=" <+> printACSLFAexpr a1
-printACSLFBexpr       FBTrue = text "TRUE"
-printACSLFBexpr      FBFalse = text "FALSE"
+printACSLFBexpr       FBTrue = text "\\true"
+printACSLFBexpr      FBFalse = text "\\false"
 printACSLFBexpr (IsValid ae) = text "isValid" <> parens (prettyDoc ae)
 
 
