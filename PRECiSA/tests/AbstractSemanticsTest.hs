@@ -15,6 +15,7 @@ import FPrec
 testAbstractSemantics = testGroup "AbstractSemantics"
     [semEFun__tests
     ,equivInterp__tests
+    ,unfoldLocalVars__tests
     ]
 
 
@@ -590,3 +591,24 @@ semEFun__test5 = testCase "it correctly combines function semantics ACebS" $
             cFlow = Stable
             }
         ]
+
+
+unfoldLocalVars__tests = testGroup "unfoldLocalVars"
+    [testCase "" $
+        unfoldLocalVars [] (FCnst FPDouble 1) @?= FCnst FPDouble 1
+    ,testCase "" $
+        unfoldLocalVars [("x",FCnst FPDouble 1)] (FCnst FPDouble 1) @?= FCnst FPDouble 1
+    ,testCase "" $
+        unfoldLocalVars [("x",FCnst FPDouble 1)] (FVar FPDouble "x") @?= FCnst FPDouble 1
+    ,testCase "" $
+        unfoldLocalVars [("y",FCnst FPDouble 1)] (FVar FPDouble "x") @?= FVar FPDouble "x"
+    ,testCase "" $
+        unfoldLocalVars [("x",FCnst FPDouble 1),("y",FCnst FPDouble 2)] (FAdd FPDouble (FVar FPDouble "x") (FVar FPDouble "y"))
+        @?= FAdd FPDouble (FCnst FPDouble 1) (FCnst FPDouble 2)
+    ,testCase "" $
+        unfoldLocalVars [("x",FVar FPDouble "y"),("y",FCnst FPDouble 2)] (FVar FPDouble "x")
+        @?= (FCnst FPDouble 2)
+    ,testCase "" $
+        unfoldLocalVars [("x",FAdd FPDouble (FCnst FPDouble 2) (FVar FPDouble "y")),("y",FCnst FPDouble 2)] (FVar FPDouble "x")
+        @?= FAdd FPDouble (FCnst FPDouble 2) (FCnst FPDouble 2)
+    ]

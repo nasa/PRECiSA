@@ -35,6 +35,7 @@ import FPrec
 import Foreign.C
 import FramaC.PrettyPrint
 import Options
+import NumericalError
 import PPExt
 import Kodiak.Runner
 import Kodiak.Runnable
@@ -50,6 +51,7 @@ import Transformation
 import TransformationUtils
 import Translation.Float2Real
 import Translation.Real2Float
+import Utils (fst3,snd3,trd3)
 
 main :: IO ()
 main = do
@@ -89,13 +91,21 @@ real2FPC fileprog filespec fp = do
   spec <- errify fail errparseSpec
   let dps = map initDpsToNone decls
 
-  let tranProgPairs = transformProgramSymb decls
-  let tranProg = map fst tranProgPairs
+  let tranProgPairs = transformProgramSymb decls -- [(DeclTrans,ErrVarEnv,LocalEnv)]
+  let tranProg = map fst3 tranProgPairs
+  -- let errVarEnv = zip (map snd3 tranProgPairs) (map trd3 tranProgPairs)
   let progSemStable = fixpointSemantics decls (botInterp decls) 3 semConf dps
-  let roErrors = zip (map fst progSemStable) (zip (map (maxRoundOffError . semantics) progSemStable) (map (stableConditions . semantics) progSemStable))
+  let roErrorsDecl = zip (map fst progSemStable) (zip (map (maxRoundOffError . semantics) progSemStable) (map (stableConditions . semantics) progSemStable))
+  errorGuards <- mapM (computeErrorGuards spec) tranProgPairs
 
-  framaCfileContent <- genFramaCFile fp realProg tranProgPairs spec roErrors
-  writeFile framaCfile      (render   framaCfileContent)
+  --- compute the error of each entry of the ErrVarEnv sostituendo con le variabili dentro localEnv
+
+  -------------- to fix
+  -- framaCfileContent <- genFramaCFile fp realProg tranProgPairs spec roErrorsDecl --- FIX local variables not found
+ 
+  -- writeFile framaCfile      (render   framaCfileContent)
+  --------------------------------
+ 
 
   writeFile pvsProgFile     (render $ genFpProgFile fpFileName   decls)
   writeFile pvsTranProgFile (render $ genFpTranProgFile tranFileName tranProg fp)
@@ -110,8 +120,8 @@ real2FPC fileprog filespec fp = do
   results <- computeAllErrorsInKodiak progSemStable spec searchParams
   let numCertificate = render $ genNumCertFile certFileName numCertFileName results spec maxDepth prec time True
   writeFile numCertFile numCertificate
-  funErrEnv <- mapM (computeErrors spec) tranProgPairs
-  writeFile exprCertFile (render $ genExprCertFile exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv)))
+  -- funErrEnv <- mapM (computeErrors spec) tranProgPairs --- FIX local variables not found -- tranProgPairs should not have local vars
+ -- writeFile exprCertFile (render $ genExprCertFile exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv)))
   return ()
     where
       inputFileName = takeBaseName fileprog
@@ -128,6 +138,7 @@ real2FPC fileprog filespec fp = do
       certFile =  filePath ++ certFileName ++ ".pvs"
       numCertFile =  filePath ++ numCertFileName ++ ".pvs"
       semConf = SemConf { assumeTestStability = True, mergeUnstables = True}
+
 
 initDpsToNone :: Decl -> (FunName, [a])
 initDpsToNone (Decl _ f _ _) = (f,[])
@@ -159,6 +170,7 @@ parseAndAnalyze
   time <- getCurrentTime
   -------------
   let progSem = fixpointSemantics decls (botInterp decls) 3 semConf dps
+  putStrLn $ "progSem:\n" ++ (show $ show progSem)
   checkProgSize progSem 0 maxel
   let symbCertificates = render $ genCertFile inputFileName certFileName realProgFileName decls progSem False
   writeFile certFile symbCertificates

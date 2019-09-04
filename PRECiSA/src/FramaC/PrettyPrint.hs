@@ -40,7 +40,7 @@ genFramaCFile fp realDecls tauDecls (Spec specBinds) errs = do
       return (realDecl, tauDecl f, errVars f, initValues f, symbROError f, stableConds f,numROErr)
     findInSymbDecl fun [] = error $ "findInProg: function "++ show fun ++ " not found."
     findInSymbDecl fun (declPair@(Decl _ g _ _,_):ds) | fun==g = declPair
-                                                        | otherwise = findInSymbDecl fun ds
+                                                      | otherwise = findInSymbDecl fun ds
     tauDeclPair f = findInSymbDecl f tauDecls
     tauDecl f = fst $ tauDeclPair f
     errVars f = snd $ tauDeclPair f

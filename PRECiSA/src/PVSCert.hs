@@ -33,10 +33,10 @@ addSuffixToCalls suffix (ForLoop fp idxStart idxEnd initAcc idx acc forBody) = F
 addSuffixToCalls _ UnstWarning = UnstWarning
 
 addSuffixToCallsAE :: String -> FAExpr -> FAExpr
-addSuffixToCallsAE suffix = replaceInFAExpr (addSuffixToCall suffix)
+addSuffixToCallsAE suffix = replaceInFAExpr (\a -> Nothing) (addSuffixToCall suffix)
 
 addSuffixToCallsBE :: String -> FBExpr -> FBExpr
-addSuffixToCallsBE suffix = replaceInFBExpr (addSuffixToCall suffix)
+addSuffixToCallsBE suffix = replaceInFBExpr (\a -> Nothing) (addSuffixToCall suffix)
 
 addSuffixToCall :: String -> FAExpr -> Maybe FAExpr
 addSuffixToCall suffix (FEFun f fp args) = Just $ FEFun (f ++ suffix) fp args

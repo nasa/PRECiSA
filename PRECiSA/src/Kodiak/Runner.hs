@@ -153,7 +153,7 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (RealMark x) vmap = case lookup x vmap of
                                       Just pVar -> return pVar
                                       Nothing -> throw (AssertionFailed $ "TODO: RealMark " ++ x ++ " name not found") >> return undefined
-        run' (ErrorMark _ _) _ = throw (AssertionFailed "ErrorMark should not be used") >> return undefined
+        run' (ErrorMark a b) c = throw (AssertionFailed "ErrorMark should not be used") >> return undefined
         run' (Abs   e) vmap = runUnaryOperator e vmap real_create_absolute_value
         run' (Sqrt  e) vmap = runUnaryOperator e vmap real_create_sqrt
         run' (Neg   e) vmap = runUnaryOperator e vmap real_create_negation

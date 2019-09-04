@@ -188,6 +188,7 @@ data FBExpr
     | FBFalse
     deriving (Eq, Ord, Show, Read)    
 
+
 -- progam
 type Program = [Decl]
 
@@ -346,7 +347,7 @@ getFPrec ae = error $ "getFPrec niy for "++ show ae
 --------------------------------------------
 
 rewriteEquivEExpr :: EExpr -> EExpr
-rewriteEquivEExpr = replaceInAExpr rewriteEquivEExpr'
+rewriteEquivEExpr = replaceInAExpr rewriteEquivEExpr' (\a -> Nothing) 
   where
     rewriteEquivEExpr' (ErrMulPow2L _ _ ee) = Just $ rewriteEquivEExpr ee
     rewriteEquivEExpr' (ErrMulPow2R _ _ ee) = Just $ rewriteEquivEExpr ee
@@ -594,38 +595,39 @@ simplAExpr ae =
     ae' = simplAExprAux ae 
 
 simplAExprAux :: AExpr -> AExpr
-simplAExprAux = replaceInAExpr simplAExprAux'
-  where
-    simplAExprAux' (Add a       (Int 0)) = Just $ simplAExprAux a
-    simplAExprAux' (Add (Int 0)       a) = Just $ simplAExprAux a
-    simplAExprAux' (Add a       (Rat 0)) = Just $ simplAExprAux a
-    simplAExprAux' (Add (Rat 0)       a) = Just $ simplAExprAux a
-    simplAExprAux' (Add (Int n) (Int m)) = Just $ Int (n+m)
-    simplAExprAux' (Add (Int n) (Rat m)) = Just $ Rat (fromIntegral n + m)
-    simplAExprAux' (Add (Rat n) (Int m)) = Just $ Rat (n + fromIntegral m)
-    simplAExprAux' (Add (Rat n) (Rat m)) = Just $ Rat (n+m)
-    simplAExprAux' (Sub a       (Int 0)) = Just $ simplAExprAux a
-    simplAExprAux' (Sub (Int 0)       a) = Just $ Neg $ simplAExprAux a
-    simplAExprAux' (Sub a       (Rat 0)) = Just $ simplAExprAux a
-    simplAExprAux' (Sub (Rat 0)       a) = Just $ Neg $ simplAExprAux a
-    simplAExprAux' (Sub (Int n) (Int m)) = Just $ Int (n-m)
-    simplAExprAux' (Sub (Int n) (Rat m)) = Just $ Rat (fromIntegral n - m)
-    simplAExprAux' (Sub (Rat n) (Int m)) = Just $ Rat (n - fromIntegral m)
-    simplAExprAux' (Sub (Rat n) (Rat m)) = Just $ Rat (n-m)
-    simplAExprAux' (Mul      a  (Int 1)) = Just $ simplAExprAux a
-    simplAExprAux' (Mul (Int 1)       a) = Just $ simplAExprAux a
-    simplAExprAux' (Mul      a  (Rat 1)) = Just $ simplAExprAux a
-    simplAExprAux' (Mul (Rat 1)       a) = Just $ simplAExprAux a
-    simplAExprAux' (Mul (Int 0)      _ ) = Just $ Int 0
-    simplAExprAux' (Mul      _  (Int 0)) = Just $ Int 0
-    simplAExprAux' (Mul (Rat 0)      _ ) = Just $ Rat 0
-    simplAExprAux' (Mul      _  (Rat 0)) = Just $ Rat 0    
-    simplAExprAux' (Mul (Int n) (Int m)) = Just $ Int (n*m)
-    simplAExprAux' (Mul (Int n) (Rat m)) = Just $ Rat (fromIntegral n * m)
-    simplAExprAux' (Mul (Rat n) (Int m)) = Just $ Rat (n * fromIntegral m)
-    simplAExprAux' (Mul (Rat n) (Rat m)) = Just $ Rat (n*m)
-    simplAExprAux' (Neg (Int n))         = Just $ Int (-n)
-    simplAExprAux' _ = Nothing
+simplAExprAux = replaceInAExpr simplAExprAux' simplFAExprAux'
+
+simplAExprAux' :: AExpr -> Maybe AExpr
+simplAExprAux' (Add a       (Int 0)) = Just $ simplAExprAux a
+simplAExprAux' (Add (Int 0)       a) = Just $ simplAExprAux a
+simplAExprAux' (Add a       (Rat 0)) = Just $ simplAExprAux a
+simplAExprAux' (Add (Rat 0)       a) = Just $ simplAExprAux a
+simplAExprAux' (Add (Int n) (Int m)) = Just $ Int (n+m)
+simplAExprAux' (Add (Int n) (Rat m)) = Just $ Rat (fromIntegral n + m)
+simplAExprAux' (Add (Rat n) (Int m)) = Just $ Rat (n + fromIntegral m)
+simplAExprAux' (Add (Rat n) (Rat m)) = Just $ Rat (n+m)
+simplAExprAux' (Sub a       (Int 0)) = Just $ simplAExprAux a
+simplAExprAux' (Sub (Int 0)       a) = Just $ Neg $ simplAExprAux a
+simplAExprAux' (Sub a       (Rat 0)) = Just $ simplAExprAux a
+simplAExprAux' (Sub (Rat 0)       a) = Just $ Neg $ simplAExprAux a
+simplAExprAux' (Sub (Int n) (Int m)) = Just $ Int (n-m)
+simplAExprAux' (Sub (Int n) (Rat m)) = Just $ Rat (fromIntegral n - m)
+simplAExprAux' (Sub (Rat n) (Int m)) = Just $ Rat (n - fromIntegral m)
+simplAExprAux' (Sub (Rat n) (Rat m)) = Just $ Rat (n-m)
+simplAExprAux' (Mul      a  (Int 1)) = Just $ simplAExprAux a
+simplAExprAux' (Mul (Int 1)       a) = Just $ simplAExprAux a
+simplAExprAux' (Mul      a  (Rat 1)) = Just $ simplAExprAux a
+simplAExprAux' (Mul (Rat 1)       a) = Just $ simplAExprAux a
+simplAExprAux' (Mul (Int 0)      _ ) = Just $ Int 0
+simplAExprAux' (Mul      _  (Int 0)) = Just $ Int 0
+simplAExprAux' (Mul (Rat 0)      _ ) = Just $ Rat 0
+simplAExprAux' (Mul      _  (Rat 0)) = Just $ Rat 0    
+simplAExprAux' (Mul (Int n) (Int m)) = Just $ Int (n*m)
+simplAExprAux' (Mul (Int n) (Rat m)) = Just $ Rat (fromIntegral n * m)
+simplAExprAux' (Mul (Rat n) (Int m)) = Just $ Rat (n * fromIntegral m)
+simplAExprAux' (Mul (Rat n) (Rat m)) = Just $ Rat (n*m)
+simplAExprAux' (Neg (Int n))         = Just $ Int (-n)
+simplAExprAux' _ = Nothing
 
 ----------------------------------
 -- fp arith expr simplification --
@@ -640,66 +642,66 @@ simplFAExpr ae =
     ae' = simplFAExprAux ae 
 
 simplFAExprAux :: FAExpr -> FAExpr
-simplFAExprAux = replaceInFAExpr simplFAExprAux'
-  where
-    simplFAExprAux' :: FAExpr -> Maybe FAExpr
-    simplFAExprAux' (FAdd  _          a  (FInt    0)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FAdd  _ (FInt    0)          a ) = Just $ simplFAExprAux a
-    simplFAExprAux' (FAdd  _          a  (FCnst _ 0)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FAdd  _ (FCnst _ 0)          a ) = Just $ simplFAExprAux a
-    simplFAExprAux' (FAdd  _ (FInt    n) (FInt    m)) = Just $ FInt (n+m)
-    simplFAExprAux' (FAdd fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n + m)
-    simplFAExprAux' (FAdd fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n + fromIntegral m)
-    simplFAExprAux' (FAdd fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n+m)
-    simplFAExprAux' (FSub  _          a  (FInt    0)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FSub fp (FInt    0)          a ) = Just $ FNeg fp $ simplFAExprAux a
-    simplFAExprAux' (FSub  _          a  (FCnst _ 0)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FSub fp (FCnst _ 0)          a ) = Just $ FNeg fp $ simplFAExprAux a
-    simplFAExprAux' (FSub  _ (FInt    n) (FInt    m)) = Just $ FInt (n-m)
-    simplFAExprAux' (FSub fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n - m)
-    simplFAExprAux' (FSub fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n - fromIntegral m)
-    simplFAExprAux' (FSub fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n-m)
-    simplFAExprAux' (FMul  _          a  (FInt    1)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FMul  _ (FInt    1)          a ) = Just $ simplFAExprAux a
-    simplFAExprAux' (FMul  _          a  (FCnst _ 1)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FMul  _ (FCnst _ 1)          a ) = Just $ simplFAExprAux a
-    simplFAExprAux' (FMul  _ (FInt    0)          _ ) = Just $ FInt 0
-    simplFAExprAux' (FMul  _          _  (FInt    0)) = Just $ FInt 0
-    simplFAExprAux' (FMul fp (FCnst _ 0)          _ ) = Just $ FCnst fp 0
-    simplFAExprAux' (FMul fp          _  (FCnst _ 0)) = Just $ FCnst fp 0    
-    simplFAExprAux' (FMul  _ (FInt    n) (FInt    m)) = Just $ FInt (n*m)
-    simplFAExprAux' (FMul fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n * m)
-    simplFAExprAux' (FMul fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n * fromIntegral m)
-    simplFAExprAux' (FMul fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n*m)
-    simplFAExprAux' (FIAdd            a  (FInt    0)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FIAdd   (FInt    0)          a ) = Just $ simplFAExprAux a
-    simplFAExprAux' (FIAdd   (FInt    n) (FInt    m)) = Just $ FInt (n+m)
-    simplFAExprAux' (FISub            a  (FInt    0)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FISub   (FInt    0)          a ) = Just $ FINeg $ simplFAExprAux a
-    simplFAExprAux' (FISub   (FInt    n) (FInt    m)) = Just $ FInt (n-m)
-    simplFAExprAux' (FIMul            a  (FInt    1)) = Just $ simplFAExprAux a
-    simplFAExprAux' (FIMul   (FInt    1)          a ) = Just $ simplFAExprAux a
-    simplFAExprAux' (FIMul   (FInt    0)          _ ) = Just $ FInt 0
-    simplFAExprAux' (FIMul            _  (FInt    0)) = Just $ FInt 0   
-    simplFAExprAux' (FIMul   (FInt    n) (FInt    m)) = Just $ FInt (n*m)
-    simplFAExprAux' (FNeg  _ (FInt    n))             = Just $ FInt (-n)
-    simplFAExprAux' (FAbs  _ (FInt    n))             = Just $ if n>=0 then FInt n else FInt (-n)
-    simplFAExprAux' (FAbs fp (FCnst _ n))             = Just $ if n>=0 then FCnst fp n else FCnst fp (-n)
-    simplFAExprAux' (FINeg   (FInt    n))             = Just $ FInt (-n)
-    simplFAExprAux' (FIAbs   (FInt    n))             = Just $ if n>=0 then FInt n else FInt (-n)
-    simplFAExprAux' ae = Nothing
+simplFAExprAux = replaceInFAExpr simplAExprAux' simplFAExprAux'
+
+simplFAExprAux' :: FAExpr -> Maybe FAExpr
+simplFAExprAux' (FAdd  _          a  (FInt    0)) = Just $ simplFAExprAux a
+simplFAExprAux' (FAdd  _ (FInt    0)          a ) = Just $ simplFAExprAux a
+simplFAExprAux' (FAdd  _          a  (FCnst _ 0)) = Just $ simplFAExprAux a
+simplFAExprAux' (FAdd  _ (FCnst _ 0)          a ) = Just $ simplFAExprAux a
+simplFAExprAux' (FAdd  _ (FInt    n) (FInt    m)) = Just $ FInt (n+m)
+simplFAExprAux' (FAdd fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n + m)
+simplFAExprAux' (FAdd fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n + fromIntegral m)
+simplFAExprAux' (FAdd fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n+m)
+simplFAExprAux' (FSub  _          a  (FInt    0)) = Just $ simplFAExprAux a
+simplFAExprAux' (FSub fp (FInt    0)          a ) = Just $ FNeg fp $ simplFAExprAux a
+simplFAExprAux' (FSub  _          a  (FCnst _ 0)) = Just $ simplFAExprAux a
+simplFAExprAux' (FSub fp (FCnst _ 0)          a ) = Just $ FNeg fp $ simplFAExprAux a
+simplFAExprAux' (FSub  _ (FInt    n) (FInt    m)) = Just $ FInt (n-m)
+simplFAExprAux' (FSub fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n - m)
+simplFAExprAux' (FSub fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n - fromIntegral m)
+simplFAExprAux' (FSub fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n-m)
+simplFAExprAux' (FMul  _          a  (FInt    1)) = Just $ simplFAExprAux a
+simplFAExprAux' (FMul  _ (FInt    1)          a ) = Just $ simplFAExprAux a
+simplFAExprAux' (FMul  _          a  (FCnst _ 1)) = Just $ simplFAExprAux a
+simplFAExprAux' (FMul  _ (FCnst _ 1)          a ) = Just $ simplFAExprAux a
+simplFAExprAux' (FMul  _ (FInt    0)          _ ) = Just $ FInt 0
+simplFAExprAux' (FMul  _          _  (FInt    0)) = Just $ FInt 0
+simplFAExprAux' (FMul fp (FCnst _ 0)          _ ) = Just $ FCnst fp 0
+simplFAExprAux' (FMul fp          _  (FCnst _ 0)) = Just $ FCnst fp 0    
+simplFAExprAux' (FMul  _ (FInt    n) (FInt    m)) = Just $ FInt (n*m)
+simplFAExprAux' (FMul fp (FInt    n) (FCnst _ m)) = Just $ FCnst fp (fromIntegral n * m)
+simplFAExprAux' (FMul fp (FCnst _ n) (FInt    m)) = Just $ FCnst fp (n * fromIntegral m)
+simplFAExprAux' (FMul fp (FCnst _ n) (FCnst _ m)) = Just $ FCnst fp (n*m)
+simplFAExprAux' (FIAdd            a  (FInt    0)) = Just $ simplFAExprAux a
+simplFAExprAux' (FIAdd   (FInt    0)          a ) = Just $ simplFAExprAux a
+simplFAExprAux' (FIAdd   (FInt    n) (FInt    m)) = Just $ FInt (n+m)
+simplFAExprAux' (FISub            a  (FInt    0)) = Just $ simplFAExprAux a
+simplFAExprAux' (FISub   (FInt    0)          a ) = Just $ FINeg $ simplFAExprAux a
+simplFAExprAux' (FISub   (FInt    n) (FInt    m)) = Just $ FInt (n-m)
+simplFAExprAux' (FIMul            a  (FInt    1)) = Just $ simplFAExprAux a
+simplFAExprAux' (FIMul   (FInt    1)          a ) = Just $ simplFAExprAux a
+simplFAExprAux' (FIMul   (FInt    0)          _ ) = Just $ FInt 0
+simplFAExprAux' (FIMul            _  (FInt    0)) = Just $ FInt 0   
+simplFAExprAux' (FIMul   (FInt    n) (FInt    m)) = Just $ FInt (n*m)
+simplFAExprAux' (FNeg  _ (FInt    n))             = Just $ FInt (-n)
+simplFAExprAux' (FAbs  _ (FInt    n))             = Just $ if n>=0 then FInt n else FInt (-n)
+simplFAExprAux' (FAbs fp (FCnst _ n))             = Just $ if n>=0 then FCnst fp n else FCnst fp (-n)
+simplFAExprAux' (FINeg   (FInt    n))             = Just $ FInt (-n)
+simplFAExprAux' (FIAbs   (FInt    n))             = Just $ if n>=0 then FInt n else FInt (-n)
+simplFAExprAux' ae = Nothing
 
 initBExpr :: BExpr -> BExpr
-initBExpr = replaceInBExpr initErrorMark
+initBExpr = replaceInBExpr initErrorMark (\a -> Nothing)
 
 initAExpr :: AExpr -> AExpr
-initAExpr = replaceInAExpr initErrorMark
+initAExpr = replaceInAExpr initErrorMark (\a -> Nothing)
 
 initFAExpr :: FAExpr -> FAExpr
-initFAExpr = replaceInFAExpr initFAExpr' 
+initFAExpr = replaceInFAExpr initErrorMark (\a -> Nothing)
 
 initFBExpr :: FBExpr -> FBExpr
-initFBExpr = replaceInFBExpr initFAExpr' 
+initFBExpr = replaceInFBExpr initErrorMark (\a -> Nothing)
 
 initErrorMark :: AExpr -> Maybe AExpr
 initErrorMark (ErrorMark _ TInt) = Just (Int 0)
@@ -707,10 +709,10 @@ initErrorMark (ErrorMark x   fp) = Just (HalfUlp (RealMark x) fp)
 initErrorMark (StoR fae) = Just (StoR (initFAExpr fae))
 initErrorMark _ = Nothing
 
-initFAExpr' :: FAExpr -> Maybe FAExpr
-initFAExpr' (RtoD a)  = Just (RtoD $ initAExpr  a)
-initFAExpr' (RtoS a)  = Just (RtoS $ initAExpr  a)
-initFAExpr' _ = Nothing
+-- initFAExpr' :: FAExpr -> Maybe FAExpr
+-- initFAExpr' (RtoD a)  = Just (RtoD $ initAExpr  a)
+-- initFAExpr' (RtoS a)  = Just (RtoS $ initAExpr  a)
+-- initFAExpr' _ = Nothing
 
 
 substituteInRStm :: [(VarName, AExpr)] -> RStm -> RStm
@@ -722,15 +724,10 @@ substituteInRStm subs (RStmExpr ae) = RStmExpr $ substituteInAExpr subs ae
 substituteInRStm _ RUnstWarning = RUnstWarning
 
 substituteInBExpr :: [(VarName, AExpr)] -> BExpr -> BExpr
-substituteInBExpr subs = replaceInBExpr (replaceVarWithAExpr subs)
+substituteInBExpr subs = replaceInBExpr (replaceVarWithAExpr subs) (\a -> Nothing) 
 
 substituteInAExpr :: [(VarName, AExpr)] -> AExpr -> AExpr
-substituteInAExpr subs = replaceInAExpr (replaceVarWithAExpr subs)
-
-replaceVarWithAExpr :: [(VarName, AExpr)] -> AExpr -> Maybe AExpr
-replaceVarWithAExpr ((y,ae):subs) var@(Var _ x) | x == y = Just ae
-                                                | otherwise = replaceVarWithAExpr subs var
-replaceVarWithAExpr _ _ = Nothing
+substituteInAExpr subs = replaceInAExpr (replaceVarWithAExpr subs) (\a -> Nothing)
 
 
 isInt :: RealFrac a => a -> Bool
@@ -787,6 +784,8 @@ noRoundOffErrorInAExpr ae = foldFAExpr noRoundOffErrorInAExpr' const ae True
 noRoundOffErrorInAExpr' :: Bool -> FAExpr -> Bool
 noRoundOffErrorInAExpr' acc (FCnst _ n)    = acc && toRational (floor (fromRational n :: Double) :: Integer) == n
 noRoundOffErrorInAExpr' acc (FVar  TInt _) = acc
+noRoundOffErrorInAExpr' acc (RtoD (Int _)) = acc 
+noRoundOffErrorInAExpr' acc (RtoS (Int _)) = acc 
 noRoundOffErrorInAExpr' _   (FVar _ _)     = False
 noRoundOffErrorInAExpr' _   (RtoD _)       = False 
 noRoundOffErrorInAExpr' _   (RtoS _)       = False
@@ -1095,8 +1094,8 @@ foldListAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> AExpr -> [AExpr] -> 
 foldListAExpr faExprF aExprF ae aeList a = foldl aExprF (foldAExpr faExprF aExprF ae a) aeList
 
 
-replaceInFAExpr :: (FAExpr -> Maybe FAExpr) -> FAExpr -> FAExpr
-replaceInFAExpr f fexpr = fromMaybe (replaceInFAExpr' fexpr) (f fexpr)
+replaceInFAExpr :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr) -> FAExpr -> FAExpr
+replaceInFAExpr rf ff fexpr = fromMaybe (replaceInFAExpr' fexpr) (ff fexpr)
   where
     replaceInFAExpr' :: FAExpr -> FAExpr
     replaceInFAExpr' ae@(FInt _)      = ae
@@ -1104,149 +1103,171 @@ replaceInFAExpr f fexpr = fromMaybe (replaceInFAExpr' fexpr) (f fexpr)
     replaceInFAExpr' ae@(FVar  _ _)   = ae
     replaceInFAExpr' ae@(StructVar _) = ae
     replaceInFAExpr' ae@FArrayElem{}  = ae
-    replaceInFAExpr' (FEFun g fp args)   = FEFun g fp (map (replaceInFAExpr f) args)
-    replaceInFAExpr' (FIAdd  ae1 ae2)    = FIAdd     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FISub  ae1 ae2)    = FISub     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FIMul  ae1 ae2)    = FIMul     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FIDiv  ae1 ae2)    = FIDiv     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FItDiv ae1 ae2)    = FItDiv    (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FIMod  ae1 ae2)    = FIMod     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FItMod ae1 ae2)    = FItMod    (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FIPow  ae1 ae2)    = FIPow     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FIExp  ae1 ae2)    = FIExp     (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FAdd   fp ae1 ae2) = FAdd   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FSub   fp ae1 ae2) = FSub   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FMul   fp ae1 ae2) = FMul   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FDiv   fp ae1 ae2) = FDiv   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FPow   fp ae1 ae2) = FPow   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FMod   fp ae1 ae2) = FMod   fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2)
-    replaceInFAExpr' (FINeg  ae)         = FINeg     (replaceInFAExpr f ae)
-    replaceInFAExpr' (FIAbs  ae)         = FIAbs     (replaceInFAExpr f ae)
-    replaceInFAExpr' (FNeg   fp ae)      = FNeg   fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FFloor fp ae)      = FFloor fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FSqrt  fp ae)      = FSqrt  fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FAbs   fp ae)      = FAbs   fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FSin   fp ae)      = FSin   fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FCos   fp ae)      = FCos   fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FTan   fp ae)      = FTan   fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FAcos  fp ae)      = FAcos  fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FAsin  fp ae)      = FAsin  fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FAtan  fp ae)      = FAtan  fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FLn    fp ae)      = FLn    fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FExpo  fp ae) = FExpo  fp (replaceInFAExpr f ae)
-    replaceInFAExpr' (FFma   fp ae1 ae2 ae3) = FFma fp (replaceInFAExpr f ae1) (replaceInFAExpr f ae2) (replaceInFAExpr f ae3)
-    replaceInFAExpr' (FMin aes) = FMin (map (replaceInFAExpr f) aes)
-    replaceInFAExpr' (FMax aes) = FMax (map (replaceInFAExpr f) aes)
+    replaceInFAExpr' (FEFun g fp args)   = FEFun g fp (map (replaceInFAExpr rf ff) args)
+    replaceInFAExpr' (FIAdd  ae1 ae2)    = FIAdd     (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FISub  ae1 ae2)    = FISub     (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FIMul  ae1 ae2)    = FIMul     (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FIDiv  ae1 ae2)    = FIDiv     (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FItDiv ae1 ae2)    = FItDiv    (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FIMod  ae1 ae2)    = FIMod     (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FItMod ae1 ae2)    = FItMod    (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FIPow  ae1 ae2)    = FIPow     (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FIExp  ae1 ae2)    = FIExp     (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FAdd   fp ae1 ae2) = FAdd   fp (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FSub   fp ae1 ae2) = FSub   fp (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FMul   fp ae1 ae2) = FMul   fp (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FDiv   fp ae1 ae2) = FDiv   fp (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FPow   fp ae1 ae2) = FPow   fp (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FMod   fp ae1 ae2) = FMod   fp (replaceInFAExpr rf ff ae1) (replaceInFAExpr rf ff ae2)
+    replaceInFAExpr' (FINeg  ae)         = FINeg     (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FIAbs  ae)         = FIAbs     (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FNeg   fp ae)      = FNeg   fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FFloor fp ae)      = FFloor fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FSqrt  fp ae)      = FSqrt  fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FAbs   fp ae)      = FAbs   fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FSin   fp ae)      = FSin   fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FCos   fp ae)      = FCos   fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FTan   fp ae)      = FTan   fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FAcos  fp ae)      = FAcos  fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FAsin  fp ae)      = FAsin  fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FAtan  fp ae)      = FAtan  fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FLn    fp ae)      = FLn    fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FExpo  fp ae) = FExpo  fp (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (FFma   fp ae1 ae2 ae3) = FFma fp (replaceInFAExpr rf ff ae1)
+                                                       (replaceInFAExpr rf ff ae2)
+                                                       (replaceInFAExpr rf ff ae3)
+    replaceInFAExpr' (FMin aes) = FMin (map (replaceInFAExpr rf ff) aes)
+    replaceInFAExpr' (FMax aes) = FMax (map (replaceInFAExpr rf ff) aes)
     replaceInFAExpr' ae@(RtoD (Int _))  = ae
     replaceInFAExpr' ae@(RtoS (Int _))  = ae
     replaceInFAExpr' ae@(RtoD (Rat _))  = ae
     replaceInFAExpr' ae@(RtoS (Rat _))  = ae
-    replaceInFAExpr' (StoD ae)  = StoD  (replaceInFAExpr f ae) 
-    replaceInFAExpr' (DtoS ae)  = DtoS  (replaceInFAExpr f ae)
-    replaceInFAExpr' (ItoD ae)  = ItoD  (replaceInFAExpr f ae)
-    replaceInFAExpr' (ItoS ae)  = ItoS  (replaceInFAExpr f ae)
-    replaceInFAExpr' (Value ae) = Value (replaceInFAExpr f ae)
+    replaceInFAExpr' (StoD ae)  = StoD  (replaceInFAExpr rf ff ae) 
+    replaceInFAExpr' (DtoS ae)  = DtoS  (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (ItoD ae)  = ItoD  (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (ItoS ae)  = ItoS  (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (Value ae) = Value (replaceInFAExpr rf ff ae)
+    replaceInFAExpr' (RtoD fae)  = RtoD (replaceInAExpr  rf ff fae)
+    replaceInFAExpr' (RtoS fae)  = RtoS (replaceInAExpr  rf ff fae)
     replaceInFAExpr' ae         = error $ "replaceInFAExpr' niy for " ++ show ae
 
-replaceInFBExpr :: (FAExpr -> Maybe FAExpr) -> FBExpr -> FBExpr
-replaceInFBExpr g (FOr  be1 be2) = FOr  (replaceInFBExpr g be1) (replaceInFBExpr g be2)
-replaceInFBExpr g (FAnd be1 be2) = FAnd (replaceInFBExpr g be1) (replaceInFBExpr g be2)
-replaceInFBExpr g (FNot be)      = FNot (replaceInFBExpr g be)
-replaceInFBExpr g (FEq  ae1 ae2) = FEq  (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
-replaceInFBExpr g (FNeq ae1 ae2) = FNeq (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
-replaceInFBExpr g (FLt  ae1 ae2) = FLt  (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
-replaceInFBExpr g (FLtE ae1 ae2) = FLtE (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
-replaceInFBExpr g (FGt  ae1 ae2) = FGt  (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
-replaceInFBExpr g (FGtE ae1 ae2) = FGtE (replaceInFAExpr g ae1) (replaceInFAExpr g ae2)
-replaceInFBExpr g (IsValid ae)   = IsValid (replaceInFAExpr g ae)
-replaceInFBExpr _ FBTrue  = FBTrue
-replaceInFBExpr _ FBFalse = FBFalse
+replaceInFBExpr :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr) -> FBExpr -> FBExpr
+replaceInFBExpr rg fg (FOr  be1 be2) = FOr  (replaceInFBExpr rg fg be1) (replaceInFBExpr rg fg be2)
+replaceInFBExpr rg fg (FAnd be1 be2) = FAnd (replaceInFBExpr rg fg be1) (replaceInFBExpr rg fg be2)
+replaceInFBExpr rg fg (FNot be)      = FNot (replaceInFBExpr rg fg be)
+replaceInFBExpr rg fg (FEq  ae1 ae2) = FEq  (replaceInFAExpr rg fg ae1) (replaceInFAExpr rg fg ae2)
+replaceInFBExpr rg fg (FNeq ae1 ae2) = FNeq (replaceInFAExpr rg fg ae1) (replaceInFAExpr rg fg ae2)
+replaceInFBExpr rg fg (FLt  ae1 ae2) = FLt  (replaceInFAExpr rg fg ae1) (replaceInFAExpr rg fg ae2)
+replaceInFBExpr rg fg (FLtE ae1 ae2) = FLtE (replaceInFAExpr rg fg ae1) (replaceInFAExpr rg fg ae2)
+replaceInFBExpr rg fg (FGt  ae1 ae2) = FGt  (replaceInFAExpr rg fg ae1) (replaceInFAExpr rg fg ae2)
+replaceInFBExpr rg fg (FGtE ae1 ae2) = FGtE (replaceInFAExpr rg fg ae1) (replaceInFAExpr rg fg ae2)
+replaceInFBExpr rg fg (IsValid ae)   = IsValid (replaceInFAExpr rg fg ae)
+replaceInFBExpr _ _ FBTrue  = FBTrue
+replaceInFBExpr _ _ FBFalse = FBFalse
 
-replaceInAExpr :: (AExpr -> Maybe AExpr) -> AExpr -> AExpr
-replaceInAExpr f expr = fromMaybe (replaceInAExpr' f expr) (f expr)
+replaceInAExpr :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr) -> AExpr -> AExpr
+replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
+  where
+    replaceInAExpr' :: AExpr -> AExpr
+    replaceInAExpr' ae@(Int _)         = ae
+    replaceInAExpr' ae@(Rat _)         = ae
+    replaceInAExpr' ae@(Var _ _)       = ae
+    replaceInAExpr' ae@ArrayElem{}     = ae 
+    replaceInAExpr' ae@(RealMark _)    = ae
+    replaceInAExpr' ae@(ErrorMark _ _) = ae
+    replaceInAExpr' ae@(ErrRat _)      = ae
+    replaceInAExpr' Prec = Prec
+    replaceInAExpr' Infinity     = Infinity
+    replaceInAExpr' ErrUndefined = ErrUndefined
+    replaceInAExpr' (Neg   ae)      = Neg   (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Floor ae)      = Floor (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Sqrt  ae)      = Sqrt  (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Abs   ae)      = Abs   (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Sin   ae)      = Sin   (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Cos   ae)      = Cos   (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Tan   ae)      = Tan   (replaceInAExpr rf ff ae)
+    replaceInAExpr' (ASin  ae)      = ASin  (replaceInAExpr rf ff ae)
+    replaceInAExpr' (ACos  ae)      = ACos  (replaceInAExpr rf ff ae)
+    replaceInAExpr' (ATan  ae)      = ATan  (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Ln    ae)      = Ln    (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Expo  ae)      = Expo  (replaceInAExpr rf ff ae)
+    replaceInAExpr' (Add   ae1 ae2) = Add   (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (Sub   ae1 ae2) = Sub   (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (Mul   ae1 ae2) = Mul   (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (Div   ae1 ae2) = Div   (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (Pow   ae1 ae2) = Pow   (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (Mod   ae1 ae2) = Mod   (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (IDiv  ae1 ae2) = IDiv  (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (ItDiv ae1 ae2) = ItDiv (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (IMod  ae1 ae2) = IMod  (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (ItMod ae1 ae2) = ItMod (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (Expt  ae1 ae2) = Expt  (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ae2)
+    replaceInAExpr' (EFun g fp args) = EFun g fp (map (replaceInAExpr rf ff) args)
+    replaceInAExpr' (Min    aes) = Min    (map (replaceInAExpr rf ff) aes)
+    replaceInAExpr' (Max    aes) = Max    (map (replaceInAExpr rf ff) aes)
+    replaceInAExpr' (MaxErr aes) = MaxErr (map (replaceInAExpr rf ff) aes)
+    replaceInAExpr' (Fma   ae1 ae2 ae3) = Fma (replaceInAExpr rf ff ae1)
+                                              (replaceInAExpr rf ff ae2)
+                                              (replaceInAExpr rf ff ae3)
+    replaceInAExpr' (ErrAdd   fp ae1 ee1 ae2 ee2) = ErrAdd fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+    replaceInAExpr' (ErrSub   fp ae1 ee1 ae2 ee2) = ErrSub fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+    replaceInAExpr' (ErrMul   fp ae1 ee1 ae2 ee2) = ErrMul fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+    replaceInAExpr' (ErrDiv   fp ae1 ee1 ae2 ee2) = ErrDiv fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+    replaceInAExpr' (ErrItDiv fp ae1 ee1 ae2 ee2) = ErrItDiv fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                                (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+    replaceInAExpr' (ErrMod   fp ae1 ee1 ae2 ee2) = ErrMod fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+    replaceInAExpr' (ErrItMod fp ae1 ee1 ae2 ee2) = ErrItMod fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                                (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+    replaceInAExpr' (ErrFma fp ae1 ee1 ae2 ee2 ae3 ee3) = ErrFma fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                                    (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
+                                                                    (replaceInAExpr rf ff ae3) (replaceInAExpr rf ff ee3)
+    replaceInAExpr' (ErrFloor  fp ae1 ee1) = ErrFloor  fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrFloor0 fp ae1 ee1) = ErrFloor0 fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrSqrt   fp ae1 ee1) = ErrSqrt   fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrSin    fp ae1 ee1) = ErrSin    fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrCos    fp ae1 ee1) = ErrCos    fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrTan    fp ae1 ee1) = ErrTan    fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrAsin   fp ae1 ee1) = ErrAsin   fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrAcos   fp ae1 ee1) = ErrAcos   fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrAtan   fp ae1 ee1) = ErrAtan   fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrAtanT  fp ae1 ee1) = ErrAtanT  fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrNeg    fp ae1 ee1) = ErrNeg    fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrAbs    fp ae1 ee1) = ErrAbs    fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrLn     fp ae1 ee1) = ErrLn     fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1) 
+    replaceInAExpr' (ErrExpo   fp ae1 ee1) = ErrExpo   fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)  
+    replaceInAExpr' (ErrMulPow2R fp i ee) = ErrMulPow2R fp i (replaceInAExpr rf ff ee)
+    replaceInAExpr' (ErrMulPow2L fp i ee) = ErrMulPow2R fp i (replaceInAExpr rf ff ee)
+    replaceInAExpr' (HalfUlp ae fp) = HalfUlp (replaceInAExpr rf ff ae) fp
+    replaceInAExpr' (ErrStoD ae ee) = ErrStoD (replaceInAExpr rf ff ae) (replaceInAExpr rf ff ee)
+    replaceInAExpr' (ErrDtoS ae ee) = ErrDtoS (replaceInAExpr rf ff ae) (replaceInAExpr rf ff ee)
+    replaceInAExpr' (ErrItoS ae ee) = ErrItoS (replaceInAExpr rf ff ae) (replaceInAExpr rf ff ee)
+    replaceInAExpr' (ErrItoD ae ee) = ErrItoD (replaceInAExpr rf ff ae) (replaceInAExpr rf ff ee)
+    replaceInAExpr' (StoR ae) = StoR (replaceInFAExpr rf ff ae)
+    replaceInAExpr' (DtoR ae) = DtoR (replaceInFAExpr rf ff ae)
+    replaceInAExpr' ae = error $ "replaceInAExpr': niy for " ++ show ae
 
-replaceInAExpr' :: (AExpr -> Maybe AExpr) -> AExpr -> AExpr
-replaceInAExpr' _ ae@(Int _)         = ae
-replaceInAExpr' _ ae@(Rat _)         = ae
-replaceInAExpr' _ ae@(Var _ _)       = ae
-replaceInAExpr' _ ae@ArrayElem{}     = ae 
-replaceInAExpr' _ ae@(RealMark _)    = ae
-replaceInAExpr' _ ae@(ErrorMark _ _) = ae
-replaceInAExpr' _ ae@(ErrRat _)      = ae
-replaceInAExpr' _ Prec = Prec
-replaceInAExpr' _ Infinity     = Infinity
-replaceInAExpr' _ ErrUndefined = ErrUndefined
-replaceInAExpr' f (Neg   ae)      = Neg   (replaceInAExpr f ae)
-replaceInAExpr' f (Floor ae)      = Floor (replaceInAExpr f ae)
-replaceInAExpr' f (Sqrt  ae)      = Sqrt  (replaceInAExpr f ae)
-replaceInAExpr' f (Abs   ae)      = Abs   (replaceInAExpr f ae)
-replaceInAExpr' f (Sin   ae)      = Sin   (replaceInAExpr f ae)
-replaceInAExpr' f (Cos   ae)      = Cos   (replaceInAExpr f ae)
-replaceInAExpr' f (Tan   ae)      = Tan   (replaceInAExpr f ae)
-replaceInAExpr' f (ASin  ae)      = ASin  (replaceInAExpr f ae)
-replaceInAExpr' f (ACos  ae)      = ACos  (replaceInAExpr f ae)
-replaceInAExpr' f (ATan  ae)      = ATan  (replaceInAExpr f ae)
-replaceInAExpr' f (Ln    ae)      = Ln    (replaceInAExpr f ae)
-replaceInAExpr' f (Expo  ae)      = Expo  (replaceInAExpr f ae)
-replaceInAExpr' f (Add   ae1 ae2) = Add   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (Sub   ae1 ae2) = Sub   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (Mul   ae1 ae2) = Mul   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (Div   ae1 ae2) = Div   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (Pow   ae1 ae2) = Pow   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (Mod   ae1 ae2) = Mod   (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (IDiv  ae1 ae2) = IDiv  (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (ItDiv ae1 ae2) = ItDiv (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (IMod  ae1 ae2) = IMod  (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (ItMod ae1 ae2) = ItMod (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (Expt  ae1 ae2) = Expt  (replaceInAExpr f ae1) (replaceInAExpr f ae2)
-replaceInAExpr' f (EFun g fp args) = EFun g fp (map (replaceInAExpr f) args)
-replaceInAExpr' f (Min    aes) = Min    (map (replaceInAExpr f) aes)
-replaceInAExpr' f (Max    aes) = Max    (map (replaceInAExpr f) aes)
-replaceInAExpr' f (MaxErr aes) = MaxErr (map (replaceInAExpr f) aes)
-replaceInAExpr' f (Fma   ae1 ae2 ae3) = Fma (replaceInAExpr f ae1) (replaceInAExpr f ae2) (replaceInAExpr f ae3)
-replaceInAExpr' f (ErrAdd   fp ae1 ee1 ae2 ee2) = ErrAdd fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
-replaceInAExpr' f (ErrSub   fp ae1 ee1 ae2 ee2) = ErrSub fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
-replaceInAExpr' f (ErrMul   fp ae1 ee1 ae2 ee2) = ErrMul fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
-replaceInAExpr' f (ErrDiv   fp ae1 ee1 ae2 ee2) = ErrDiv fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
-replaceInAExpr' f (ErrItDiv fp ae1 ee1 ae2 ee2) = ErrItDiv fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
-replaceInAExpr' f (ErrMod   fp ae1 ee1 ae2 ee2) = ErrMod fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
-replaceInAExpr' f (ErrItMod fp ae1 ee1 ae2 ee2) = ErrItMod fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2)
-replaceInAExpr' f (ErrFma fp ae1 ee1 ae2 ee2 ae3 ee3) = ErrFma fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) (replaceInAExpr f ae2) (replaceInAExpr f ee2) (replaceInAExpr f ae3) (replaceInAExpr f ee3)
-replaceInAExpr' f (ErrFloor  fp ae1 ee1) = ErrFloor  fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrFloor0 fp ae1 ee1) = ErrFloor0 fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrSqrt   fp ae1 ee1) = ErrSqrt   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrSin    fp ae1 ee1) = ErrSin    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrCos    fp ae1 ee1) = ErrCos    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrTan    fp ae1 ee1) = ErrTan    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrAsin   fp ae1 ee1) = ErrAsin   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrAcos   fp ae1 ee1) = ErrAcos   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrAtan   fp ae1 ee1) = ErrAtan   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrAtanT  fp ae1 ee1) = ErrAtanT  fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrNeg    fp ae1 ee1) = ErrNeg    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrAbs    fp ae1 ee1) = ErrAbs    fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrLn     fp ae1 ee1) = ErrLn     fp (replaceInAExpr f ae1) (replaceInAExpr f ee1) 
-replaceInAExpr' f (ErrExpo   fp ae1 ee1) = ErrExpo   fp (replaceInAExpr f ae1) (replaceInAExpr f ee1)  
-replaceInAExpr' f (ErrMulPow2R fp i ee) = ErrMulPow2R fp i (replaceInAExpr f ee)
-replaceInAExpr' f (ErrMulPow2L fp i ee) = ErrMulPow2R fp i (replaceInAExpr f ee)
-replaceInAExpr' f (HalfUlp ae fp) = HalfUlp (replaceInAExpr f ae) fp
-replaceInAExpr' f (ErrStoD ae ee) = ErrStoD (replaceInAExpr f ae) (replaceInAExpr f ee)
-replaceInAExpr' f (ErrDtoS ae ee) = ErrDtoS (replaceInAExpr f ae) (replaceInAExpr f ee)
-replaceInAExpr' f (ErrItoS ae ee) = ErrItoS (replaceInAExpr f ae) (replaceInAExpr f ee)
-replaceInAExpr' f (ErrItoD ae ee) = ErrItoD (replaceInAExpr f ae) (replaceInAExpr f ee)
-replaceInAExpr' _ ae = error $ "replaceInAExpr': niy for " ++ show ae
+replaceInBExpr :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr)  -> BExpr -> BExpr
+replaceInBExpr rg fg (Or  be1 be2) = Or  (replaceInBExpr rg fg be1) (replaceInBExpr rg fg be2)
+replaceInBExpr rg fg (And be1 be2) = And (replaceInBExpr rg fg be1) (replaceInBExpr rg fg be2)
+replaceInBExpr rg fg (Not be)      = Not (replaceInBExpr rg fg be)
+replaceInBExpr rg fg (Eq  ae1 ae2) = Eq  (replaceInAExpr rg fg ae1) (replaceInAExpr rg fg ae2)
+replaceInBExpr rg fg (Neq ae1 ae2) = Neq (replaceInAExpr rg fg ae1) (replaceInAExpr rg fg ae2)
+replaceInBExpr rg fg (Lt  ae1 ae2) = Lt  (replaceInAExpr rg fg ae1) (replaceInAExpr rg fg ae2)
+replaceInBExpr rg fg (LtE ae1 ae2) = LtE (replaceInAExpr rg fg ae1) (replaceInAExpr rg fg ae2)
+replaceInBExpr rg fg (Gt  ae1 ae2) = Gt  (replaceInAExpr rg fg ae1) (replaceInAExpr rg fg ae2)
+replaceInBExpr rg fg (GtE ae1 ae2) = GtE (replaceInAExpr rg fg ae1) (replaceInAExpr rg fg ae2)
+replaceInBExpr  _ _ BTrue  = BTrue
+replaceInBExpr  _ _ BFalse = BFalse
 
-replaceInBExpr :: (AExpr -> Maybe AExpr) -> BExpr -> BExpr
-replaceInBExpr g (Or  be1 be2) = Or  (replaceInBExpr g be1) (replaceInBExpr g be2)
-replaceInBExpr g (And be1 be2) = And (replaceInBExpr g be1) (replaceInBExpr g be2)
-replaceInBExpr g (Not be)      = Not (replaceInBExpr g be)
-replaceInBExpr g (Eq  ae1 ae2) = Eq  (replaceInAExpr g ae1) (replaceInAExpr g ae2)
-replaceInBExpr g (Neq ae1 ae2) = Neq (replaceInAExpr g ae1) (replaceInAExpr g ae2)
-replaceInBExpr g (Lt  ae1 ae2) = Lt  (replaceInAExpr g ae1) (replaceInAExpr g ae2)
-replaceInBExpr g (LtE ae1 ae2) = LtE (replaceInAExpr g ae1) (replaceInAExpr g ae2)
-replaceInBExpr g (Gt  ae1 ae2) = Gt  (replaceInAExpr g ae1) (replaceInAExpr g ae2)
-replaceInBExpr g (GtE ae1 ae2) = GtE (replaceInAExpr g ae1) (replaceInAExpr g ae2)
-replaceInBExpr _ BTrue  = BTrue
-replaceInBExpr _ BFalse = BFalse
+replaceVarWithAExpr :: [(VarName, AExpr)] -> AExpr -> Maybe AExpr
+replaceVarWithAExpr ((y,ae):subs) var@(Var _ x) | x == y = Just ae
+                                                | otherwise = replaceVarWithAExpr subs var
+replaceVarWithAExpr _ _ = Nothing
 
 isZero :: Rational -> Bool
 isZero r = r == toRational (0 :: Integer)
@@ -1293,7 +1314,7 @@ instance PPExt RDecl where
     prettyDoc (RDecl fp fun args stm)
       = text fun <> text "(" <>
         hsep (punctuate comma $ map prettyDoc args)
-        <> text  "):" <+> prettyDoc fp <+> text " =" <+> prettyDoc stm
+        <> text  "):" <+> prettyDoc fp <+> text " =" $$ prettyDoc stm
 
 instance PPExt RStm where
     prettyDoc RUnstWarning = error "Warning should not occur in a real-valued program."-- text "warning"

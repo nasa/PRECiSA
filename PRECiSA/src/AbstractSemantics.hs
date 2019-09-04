@@ -31,6 +31,7 @@ import FPrec
 import Foreign.C.Types (CDouble, CFloat)
 import Data.Maybe
 import Translation.Float2Real
+import Debug.Trace
 
 data SemanticConfiguration = SemConf {
     assumeTestStability :: Bool,
@@ -39,7 +40,9 @@ data SemanticConfiguration = SemConf {
 
 newtype Iteration = Iter Int deriving (Eq,Show,Num)
 
-newtype Env a = Env [(VarName,a)]
+newtype Env a = Env [(VarName,a)] deriving (Show)
+
+type LocalEnv = [(VarName, FAExpr)]
 
 type FunctionInterpretation = (FunName, (FPrec, [Arg] ,ACebS))
 
@@ -924,6 +927,10 @@ collapseSem sem = collapsedStableCase ++ collapsedUnstableCase
     collapsedUnstableCase = if null unstableCases then [] else [mergeACebFold unstableCases]
     (stableCases, unstableCases) = List.partition isStable sem
 
+unfoldLocalVars :: LocalEnv -> FAExpr -> FAExpr
+unfoldLocalVars env = replaceInFAExpr (\a -> Nothing) (unfoldLocalVars' env)
+unfoldLocalVars' env var@(FVar fp x) = unfoldLocalVars env <$> (lookup x env)
+unfoldLocalVars' _ a  = Nothing
 
 
 argsBindAExpr :: [Arg] -> [FAExpr] -> ACebS -> AExpr -> AExpr
@@ -1015,8 +1022,20 @@ argsBindBExpr fa aa sem (GtE a1 a2) = GtE (argsBindAExpr fa aa sem a1) (argsBind
 argsBindBExpr _  _  _   BTrue       = BTrue
 argsBindBExpr _  _  _   BFalse      = BFalse
 
+replaceLocalVarsInErrExpr :: LocalEnv -> AExpr -> AExpr
+replaceLocalVarsInErrExpr localEnv = replaceInAExpr (\a -> Nothing) (replaceLocalVars localEnv) 
+  where
+    replaceLocalVars localEnv (FVar fp x) = Just $ bindVar localEnv
+      where
+        bindVar :: LocalEnv -> FAExpr
+        bindVar [] = FVar fp x
+        bindVar ((y,fae):ys) | y == x = fae
+                             | otherwise = bindVar ys
+        bindVar _ = error $ "replaceLocalVarsInErrExpr: something went wrong."
+    replaceLocalVars _ _          = Nothing
+
 argsBindFAExpr :: [Arg] -> [FAExpr] -> FAExpr -> FAExpr
-argsBindFAExpr fa aa = replaceInFAExpr replaceF
+argsBindFAExpr fa aa = replaceInFAExpr (\a -> Nothing) replaceF
   where
     replaceF (FVar fp x) = Just $ bindVar fa aa
       where

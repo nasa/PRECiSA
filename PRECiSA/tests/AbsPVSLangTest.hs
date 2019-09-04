@@ -317,6 +317,8 @@ noRoundOffErrorInAExpr__tests = testGroup "noRoundOffErrorInAExpr tests"
   ,noRoundOffErrorInAExpr__test4
   ,noRoundOffErrorInAExpr__test5
   ,noRoundOffErrorInAExpr__test6
+  ,noRoundOffErrorInAExpr__test7
+  ,noRoundOffErrorInAExpr__test8
   ]
 
 noRoundOffErrorInAExpr__test1 = testCase "9 has no round-off error" $
@@ -337,6 +339,11 @@ noRoundOffErrorInAExpr__test5 = testCase "4+int_x has no round-off error" $
 noRoundOffErrorInAExpr__test6 = testCase "4+x has round-off error" $
     noRoundOffErrorInAExpr (FMul FPDouble (FInt 4) (FVar FPDouble "x")) @?= False
 
+noRoundOffErrorInAExpr__test7 = testCase "RtoD(4)+int_x has no round-off error" $
+    noRoundOffErrorInAExpr (FSub FPDouble (RtoD (Int 4)) (FVar TInt "x")) @?= True    
+
+noRoundOffErrorInAExpr__test8 = testCase "RtoS(4)+int_x has no round-off error" $
+    noRoundOffErrorInAExpr (FSub FPDouble (RtoS (Int 4)) (FVar TInt "x")) @?= True    
 
 varList__tests = testGroup "varList tests"
   [varList__test1
@@ -377,3 +384,4 @@ varList__test7 = testCase "varList of  floor(x)/f(y,z) is [Var x, Var y, Var z]"
 
 
 
+                                           

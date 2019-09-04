@@ -19,10 +19,20 @@ returnsValueEqualTo' lhs rhs = return (fst $ runState lhs initState) `returnsVal
 testTransformation = testGroup "Transformation"
   [transformProg__tests
   ,transformStmSymb__tests
+--  ,computeErrorGuards__tests
+  ,computeErrorVarValue_tests
 --  ,betaPlus_tests
 --  ,betaMinus_tests
   ]
 
+computeErrorVarValue_tests = testGroup "computeErrorVarValue tests"
+  [computeErrorVarValue__test1
+  ]
+computeErrorVarValue__test1 = testCase "" $
+  computeErrorVarValue [] [] ("E_x", FVar FPDouble "x", FBTrue)
+  @?=
+  return ("E_x", FVar FPDouble "x", 0, FBTrue)
+  
 transformStmSymb__tests = testGroup "transformStm tests"
   [transformStmSymbUnstWarning__tests
   ,transformStmSymbAexpr__tests
@@ -182,34 +192,35 @@ transformStmSymbListIte3__tests = testCase "the transformation is correct for Li
 
 
 transformProg__tests = testGroup "transformProg tests"
-  [transformProg1__tests
+  [
+    -- transformProg1__tests
   ]
 
-transformProg1__tests = testCase "the transformation is correct for a Program" $
-  transformProgramSymb [decl1,decl2,decl3]
-  @?=
-  [(expectedDecl1,[])
-  ,(expectedDecl2,[("E_0",FVar FPDouble "x",FBTrue),("E_1",FVar FPDouble "y",FBTrue)])
-  ,(expectedDecl3,[("E_0",FVar FPDouble "x",FBTrue)])]
-  where
-    decl1 = Decl FPDouble "f" [Arg "x" FPDouble]
-            (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
-    expectedDecl1 = Decl FPDouble "f" [Arg "x" FPDouble]
-                    (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr (FVar TInt "x")) (StmExpr (FInt 4)))
-    --
-    decl2 = Decl FPDouble "g" [Arg "x" FPDouble,Arg "y" FPDouble]
-             (ListIte [(FLtE (FVar FPDouble "x") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 4))
-                      ,(FLtE (FVar FPDouble "y") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 1))]
-                      (StmExpr $ FInt 8))
-    expectedDecl2 = Decl FPDouble "g" [Arg "x" FPDouble,Arg "y" FPDouble,Arg "E_0" FPDouble,Arg "E_1" FPDouble]
-                    (ListIte [(FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0")),StmExpr (FInt 4))
-                    ,(FAnd (FLtE (FVar FPDouble "y") (FNeg FPDouble (FVar FPDouble "E_1"))) (FGt (FVar FPDouble "x") (FVar FPDouble "E_0")),StmExpr (FInt 1))
-                    ,(FAnd (FGt  (FVar FPDouble "y") (FVar FPDouble "E_1")) (FGt (FVar FPDouble "x") (FVar FPDouble "E_0")),StmExpr (FInt 8))] UnstWarning)
-    --
-    decl3 = Decl FPDouble "h" [Arg "x" FPDouble]
-            (Ite (FLtE (FVar FPDouble "x") (FCnst FPDouble (toRational 0))) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
-    expectedDecl3 = Decl FPDouble "h" [Arg "x" FPDouble,Arg "E_0" FPDouble]
-                        (Ite (FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0"))) (StmExpr $ FVar TInt "x")
-                        (Ite (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")) (StmExpr $ FInt 4) UnstWarning))
+-- transformProg1__tests = testCase "the transformation is correct for a Program" $
+--   transformProgramSymb [decl1,decl2,decl3]
+--   @?=
+--   [(expectedDecl1,[])
+--   ,(expectedDecl2,[("E_0",FVar FPDouble "x",FBTrue),("E_1",FVar FPDouble "y",FBTrue)])
+--   ,(expectedDecl3,[("E_0",FVar FPDouble "x",FBTrue)])]
+--   where
+--     decl1 = Decl FPDouble "f" [Arg "x" FPDouble]
+--             (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
+--     expectedDecl1 = Decl FPDouble "f" [Arg "x" FPDouble]
+--                     (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr (FVar TInt "x")) (StmExpr (FInt 4)))
+--     --
+--     decl2 = Decl FPDouble "g" [Arg "x" FPDouble,Arg "y" FPDouble]
+--              (ListIte [(FLtE (FVar FPDouble "x") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 4))
+--                       ,(FLtE (FVar FPDouble "y") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 1))]
+--                       (StmExpr $ FInt 8))
+--     expectedDecl2 = Decl FPDouble "g" [Arg "x" FPDouble,Arg "y" FPDouble,Arg "E_0" FPDouble,Arg "E_1" FPDouble]
+--                     (ListIte [(FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0")),StmExpr (FInt 4))
+--                     ,(FAnd (FLtE (FVar FPDouble "y") (FNeg FPDouble (FVar FPDouble "E_1"))) (FGt (FVar FPDouble "x") (FVar FPDouble "E_0")),StmExpr (FInt 1))
+--                     ,(FAnd (FGt  (FVar FPDouble "y") (FVar FPDouble "E_1")) (FGt (FVar FPDouble "x") (FVar FPDouble "E_0")),StmExpr (FInt 8))] UnstWarning)
+--     --
+--     decl3 = Decl FPDouble "h" [Arg "x" FPDouble]
+--             (Ite (FLtE (FVar FPDouble "x") (FCnst FPDouble (toRational 0))) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
+--     expectedDecl3 = Decl FPDouble "h" [Arg "x" FPDouble,Arg "E_0" FPDouble]
+--                         (Ite (FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0"))) (StmExpr $ FVar TInt "x")
+--                         (Ite (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")) (StmExpr $ FInt 4) UnstWarning))
 
 
