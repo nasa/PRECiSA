@@ -464,14 +464,14 @@ betaMinusVar _ _ FBTrue  = return FBFalse
 betaMinusVar _ _ FBFalse = return FBTrue
 betaMinusVar _ _ be = error $ "betaMinus niy for "++ show be
 
-computeErrorGuards :: Spec -> (Decl, ErrVarEnv, LocalEnv) -> IO (Decl, [(VarName, FAExpr, Double, FBExpr)], LocalEnv)
-computeErrorGuards (Spec spec) (decl@(Decl _ fun _ _), errVarEnv, localEnv) = do
-  errVarEnvWithError <- mapM (computeErrorVarValue varBinds localEnv) errVarEnv
-  return (decl, errVarEnvWithError, localEnv)
-  where
-    varBinds = findInSpec fun spec
+-- computeErrorGuards :: Spec -> (Decl, ErrVarEnv, LocalEnv) -> IO (Decl, [(VarName, FAExpr, Double, FBExpr)], LocalEnv)
+-- computeErrorGuards (Spec spec) (decl@(Decl _ fun _ _), errVarEnv, localEnv) = do
+--   errVarEnvWithError <- mapM (computeErrorVarValue varBinds localEnv) errVarEnv
+--   return (decl, errVarEnvWithError, localEnv)
+--   where
+--     varBinds = findInSpec fun spec
 
-computeErrorVarValue :: [VarBind] -> LocalEnv -> (VarName, FAExpr, FBExpr) -> IO (VarName, FAExpr, Double, FBExpr)
-computeErrorVarValue varBinds localEnv (var, expr, cond) = do
-  err <- roError varBinds [] (unfoldLocalVars localEnv expr)
-  return $ (var, expr, err, cond)
+-- computeErrorVarValue :: [VarBind] -> LocalEnv -> (VarName, FAExpr, FBExpr) -> IO (VarName, FAExpr, Double, FBExpr)
+-- computeErrorVarValue varBinds localEnv (var, expr, cond) = do
+--   err <- roError varBinds [] (unfoldLocalVars localEnv expr)
+--   return $ (var, expr, err, cond)

@@ -14,25 +14,24 @@ returnsValueEqualTo lhs rhs = lhs >>= (@?= rhs)
 returnsValueEqualTo':: State ErrVarInterp Stm -> Stm -> IO ()
 returnsValueEqualTo' lhs rhs = return (fst $ runState lhs initState) `returnsValueEqualTo` rhs
   where
-    initState = [("f",FreshErrVar { env = [], count = 0 })]
+    initState = [("f",FreshErrVar { env = [], count = 0, localEnv = [] })]
+
+checkOutputIs :: (Eq a, Show a) => IO a -> a -> IO ()
+checkOutputIs actual expected =
+  actual >>=
+      \out ->
+          (out == expected)
+              @? ("Output: " ++ show out ++ " is different than expected: " ++ show expected)
 
 testTransformation = testGroup "Transformation"
   [transformProg__tests
   ,transformStmSymb__tests
---  ,computeErrorGuards__tests
-  ,computeErrorVarValue_tests
 --  ,betaPlus_tests
---  ,betaMinus_tests
+--  ,betaMinus_tests0
   ]
 
-computeErrorVarValue_tests = testGroup "computeErrorVarValue tests"
-  [computeErrorVarValue__test1
-  ]
-computeErrorVarValue__test1 = testCase "" $
-  computeErrorVarValue [] [] ("E_x", FVar FPDouble "x", FBTrue)
-  @?=
-  return ("E_x", FVar FPDouble "x", 0, FBTrue)
-  
+
+
 transformStmSymb__tests = testGroup "transformStm tests"
   [transformStmSymbUnstWarning__tests
   ,transformStmSymbAexpr__tests

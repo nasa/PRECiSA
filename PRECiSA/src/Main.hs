@@ -96,9 +96,9 @@ real2FPC fileprog filespec fp = do
   -- let errVarEnv = zip (map snd3 tranProgPairs) (map trd3 tranProgPairs)
   let progSemStable = fixpointSemantics decls (botInterp decls) 3 semConf dps
   let roErrorsDecl = zip (map fst progSemStable) (zip (map (maxRoundOffError . semantics) progSemStable) (map (stableConditions . semantics) progSemStable))
-  errorGuards <- mapM (computeErrorGuards spec) tranProgPairs
+  
+  funErrEnv <- mapM (computeErrorGuards spec) tranProgPairs
 
-  --- compute the error of each entry of the ErrVarEnv sostituendo con le variabili dentro localEnv
 
   -------------- to fix
   -- framaCfileContent <- genFramaCFile fp realProg tranProgPairs spec roErrorsDecl --- FIX local variables not found
@@ -108,7 +108,7 @@ real2FPC fileprog filespec fp = do
  
 
   writeFile pvsProgFile     (render $ genFpProgFile fpFileName   decls)
-  writeFile pvsTranProgFile (render $ genFpTranProgFile tranFileName tranProg fp)
+  -- writeFile pvsTranProgFile (render $ genFpTranProgFile tranFileName tranProg fp)
 
   let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName tranProg progSemStable True
   writeFile certFile symbCertificate
@@ -120,8 +120,7 @@ real2FPC fileprog filespec fp = do
   results <- computeAllErrorsInKodiak progSemStable spec searchParams
   let numCertificate = render $ genNumCertFile certFileName numCertFileName results spec maxDepth prec time True
   writeFile numCertFile numCertificate
-  -- funErrEnv <- mapM (computeErrors spec) tranProgPairs --- FIX local variables not found -- tranProgPairs should not have local vars
- -- writeFile exprCertFile (render $ genExprCertFile exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv)))
+  writeFile exprCertFile (render $ genExprCertFile exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv)))
   return ()
     where
       inputFileName = takeBaseName fileprog
@@ -130,7 +129,7 @@ real2FPC fileprog filespec fp = do
       filePath = dropFileName fileprog
       framaCfile = filePath ++ inputFileName ++ ".c"
       pvsProgFile = filePath ++ fpFileName ++ ".pvs"
-      pvsTranProgFile = filePath ++ tranFileName ++ ".pvs"
+      -- pvsTranProgFile = filePath ++ tranFileName ++ ".pvs"
       certFileName = "cert_" ++ inputFileName
       numCertFileName = "num_cert_" ++ inputFileName
       exprCertFileName = "expr_cert_" ++ inputFileName

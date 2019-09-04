@@ -12,6 +12,7 @@ import AbsPVSLangTest
 import UtilsTest
 import AbsPVSLangTest
 import TransformationTest
+import TransformationUtilsTest
 
 main :: IO ()
 main = defaultMain tests
@@ -29,6 +30,7 @@ unitTests = testGroup "Unit tests"
     ,testCommon
     ,testUtils
     ,testTransformation
+    ,testTransformationUtils
     ,testKodiak
     ,testKodiakGenerator
     ]
