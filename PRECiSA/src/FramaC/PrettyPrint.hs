@@ -10,10 +10,10 @@ import qualified Common.ShowRational as Rat
 import Translation.Float2Real
 import Debug.Trace
 import Data.Set (fromList, toList)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, fromMaybe)
 import Prelude hiding ((<>))
 --import Data.Set (toList, fromList)
-import Transformation (listErrEnvVars)
+import Transformation (listErrEnvVars, ErrVarEnv)
 import Utils
 import Kodiak.Runnable
 import Kodiak.Runner
@@ -21,81 +21,93 @@ import NumericalError
 import Data.Numbers.FloatingHex (showHFloat)
 import PPExt
 
-genFramaCFile :: FPrec -> RProgram -> [(Decl,[(VarName,FAExpr,FBExpr)])] -> Spec -> [(FunName, (EExpr, [Condition]))] -> IO Doc
-genFramaCFile fp realDecls tauDecls (Spec specBinds) errs = do
-  program <- printProgram fp (mapM aux realDecls)
-  return $(
+
+genFramaCFile
+  :: FPrec
+     -> [RDecl]
+     -> Spec
+     -> [(Decl, [(VarName, FAExpr, FBExpr)])]
+     -> [(FunName, (EExpr, [Condition]))]
+     -> [(FunName, Double)]
+     -> p
+     -> [(Decl, [(VarName, b, c, d, e, Double, g, h, i, j)])]
+     -> Doc
+genFramaCFile fp realDecls (Spec specBinds) tauDecls symbErrs errs stableConds funErrEnv = 
     printHeader
     $$
     text (vspace 1)
     $$
-    program
+    (printProgram fp (map aux realDecls))
     $$
     text (vspace 1)
     $$
-    printMain)
+    printMain
   where
-    aux realDecl@(RDecl _ f _ _ ) = do
-      numROErr <- numROError f
-      return (realDecl, tauDecl f, errVars f, initValues f, symbROError f, stableConds f,numROErr)
-    findInSymbDecl fun [] = error $ "findInProg: function "++ show fun ++ " not found."
-    findInSymbDecl fun (declPair@(Decl _ g _ _,_):ds) | fun==g = declPair
-                                                      | otherwise = findInSymbDecl fun ds
-    tauDeclPair f = findInSymbDecl f tauDecls
-    tauDecl f = fst $ tauDeclPair f
-    errVars f = snd $ tauDeclPair f
-    initValues  f = findInSpec f specBinds
-    symbROError f = fst $ fromJust $ lookup f errs
-    stableConds f = snd $ fromJust $ lookup f errs
-    numROError  f = maximumUpperBound <$> run kodiakInput ()
-      where kodiakInput = KI { name = "error",
-                                 expression = initAExpr $ symbROError f,
-                                 bindings = initValues  f,
-                                 maxDepth = 7,
-                                 precision = 14
-                                }
+    aux realDecl@(RDecl _ f _ _ ) = (realDecl, tauDecl f, errVars f, initValues f, symbROError f, stableConds f,numROErr, numErrExprs)
+      where
+        tauDeclPair f = findInSymbDecl f tauDecls
+        tauDecl f = fst $ tauDeclPair f
+        errVars f = snd $ tauDeclPair f
+        initValues  f = findInSpec f specBinds
+        symbROError f = fst $ fromJust $ lookup f symbErrs
+        stableConds f = snd $ fromJust $ lookup f symbErrs
+        numROErr = fromMaybe (error $ "genFramaCFile: function " ++ show f ++ "not found.") (lookup f errs)
+        numErrExprs = findInErrEnv f funErrEnv 
+
+        findInSymbDecl fun [] = error $ "findInProg: function "++ show fun ++ " not found."
+        findInSymbDecl fun (declPair@(Decl _ g _ _,_):ds) | fun==g = declPair
+                                                          | otherwise = findInSymbDecl fun ds
+    
+        findInErrEnv fun [] = error $ "findInErrEnv: function "++ show fun ++ " not found."
+        findInErrEnv fun (((Decl _ g _ _),errVarEnv):ds) | fun==g = map getErrVarValue errVarEnv
+                                                           | otherwise = findInErrEnv fun ds
+      
+        getErrVarValue (ev,_,_,_,_,val,_,_,_,_) = (ev,val)
+    -- tauDecl f = fst $ tauDeclPair f
+    -- numROError  f = maximumUpperBound <$> run kodiakInput ()
+    --   where kodiakInput = KI { name = "error",
+    --                              expression = initAExpr $ symbROError f,
+    --                              bindings = initValues  f,
+    --                              maxDepth = 7,
+    --                              precision = 14
+    --                             }
 
 
-printProgram :: FPrec -> IO [(RDecl, Decl,[(VarName,FAExpr,FBExpr)], [VarBind], EExpr, [Condition], Double)] -> IO Doc
-printProgram fpTarget tuples = do
-  tuples' <- tuples
-  declsDoc <- mapM (printDeclWithACSL fpTarget) tuples'
-  return $ vcat declsDoc
+printProgram :: FPrec -> [(RDecl, Decl,[(VarName,FAExpr,FBExpr)], [VarBind], EExpr, [Condition], Double,[(VarName,Double)])] -> Doc
+printProgram fpTarget tuples = vcat $ map (printDeclWithACSL fpTarget) tuples
 
-printDeclWithACSL :: FPrec -> (RDecl,Decl,[(VarName,FAExpr,FBExpr)],[VarBind], EExpr,[Condition],Double) -> IO Doc
-printDeclWithACSL fp (realDecl@(RDecl _ f realArgs _ ), taudecl@(Decl _ _ _ stm), errVars, varBinds, symbROError, stableConds,numROErr) = do
-  numDecl <- printNumDeclWithACSL fp f realArgs (forIndexes stm) taudecl errVars varBinds numROErr
-  return
-    (printSymbDeclWithACSL fp (realDecl,(taudecl, errVars),symbROError,stableConds)
-        $$
-        text (vspace 1)
-        $$
-        numDecl)
+printDeclWithACSL :: FPrec -> (RDecl,Decl,[(VarName,FAExpr,FBExpr)],[VarBind], EExpr,[Condition],Double,[(VarName,Double)]) -> Doc
+printDeclWithACSL fp (realDecl@(RDecl _ f realArgs _ ), taudecl@(Decl _ _ _ stm), errVars, varBinds, symbROError, stableConds,numROErr,numErrExprs) =
+  printSymbDeclWithACSL fp (realDecl,(taudecl, errVars),symbROError,stableConds)
+  $$
+  text (vspace 1)
+  $$
+  (printNumDeclWithACSL fp f realArgs (forIndexes stm) taudecl errVars varBinds numROErr numErrExprs)
 
 prettyErrorHex :: Double -> Doc
 prettyErrorHex roErr = text (showHFloat (roErr :: Double) "")
 
-printNumDeclWithACSL :: FPrec -> String -> [Arg] -> [(VarName, FAExpr, FAExpr)] -> Decl -> [(VarName,FAExpr,FBExpr)] -> [VarBind] -> Double -> IO Doc
-printNumDeclWithACSL fp f realArgs forIdx (Decl fpFun _ args _) errVars varBinds roErr = do
-  numErrArgs <- computeNumErrArgs
-  return
-    (text "/*@"
-    $$ text "ensures" <+> (text "(" <> printQuantIdx forIdx) <+> printVarBinds varBinds <> text ")" <+> text "&&"
-    $$ text "\\result.isValid"
-    $$ text "==> \\abs(\\result.value - " <> text f <> parens (printRealArgs fp realArgs) <> text ") <=" <+> prettyErrorHex roErr <> text ";"
-    $$ text "*/"
-    $$ maybeRetType fpFun <+> text fNum <+> parens (printRealArgs fp realArgs) <+> text "{"
-    $$ text "return"
-    <+> text f <> text "_" <> prettyFPrec fpFun
-    <+> parens (printRealArgs fp realArgs <> printErrArgs numErrArgs)
-    <> text ";"
-    $$ text "}")
-  where
-    printErrArgs numErrArgs = if null numErrArgs then emptyDoc else comma <> docListComma (map prettyErrorHex numErrArgs)
-    fNum = f ++ "_num"
-    errArgs = drop (length realArgs) args
-    computeNumErrArgs = mapM (roError varBinds [] . fst . aux) errArgs
-    aux (Arg var _) = lookup3 var errVars
+printNumDeclWithACSL :: FPrec -> String -> [Arg] -> [(VarName, FAExpr, FAExpr)] -> Decl -> [(VarName,FAExpr,FBExpr)] -> [VarBind] -> Double -> [(VarName,Double)] -> Doc
+printNumDeclWithACSL fp f realArgs forIdx (Decl fpFun _ args _) errVars varBinds roErr numErrExprs =
+     text "/*@"
+  $$ text "ensures" <+> (text "(" <> printQuantIdx forIdx) <+> printVarBinds varBinds <> text ")" <+> text "&&"
+  $$ text "\\result.isValid"
+  $$ text "==> \\abs(\\result.value - " <> text f <> parens (printRealArgs fp realArgs) <> text ") <=" <+> prettyErrorHex roErr <> text ";"
+  $$ text "*/"
+  $$ maybeRetType fpFun <+> text fNum <+> parens (printRealArgs fp realArgs) <+> text "{"
+  $$ text "return"
+  <+> text f <> text "_" <> prettyFPrec fpFun
+  <+> parens (printRealArgs fp realArgs <> printErrArgs numErrArgs)
+  <> text ";"
+  $$ text "}"
+    where
+      printErrArgs numErrArgs = if null numErrArgs then emptyDoc else comma <> docListComma (map prettyErrorHex numErrArgs)
+      fNum = f ++ "_num"
+      errArgs = drop (length realArgs) args
+      ------ TODO! pass the list already computed by kodiak --
+      -- numErrArgs = undefined
+      numErrArgs = map (\(Arg var _) -> fromMaybe (error "printNumDeclWithACSL: error variable not found.") (lookup var numErrExprs)) errArgs
+      -- aux (Arg var _) = lookup var numErrExprs
 
 maybeRetType :: FPrec -> Doc
 maybeRetType TInt     = text "struct maybeInt"
@@ -127,7 +139,7 @@ printSymbProgram :: FPrec -> [(RDecl, (Decl, [(VarName, FAExpr, FBExpr)]), EExpr
 printSymbProgram fp tuples = vcat $ map (printSymbDeclWithACSL fp) tuples
 
 printSymbDeclWithACSL :: FPrec -> (RDecl, (Decl, [(VarName, FAExpr, FBExpr)]), EExpr, [Condition]) -> Doc
-printSymbDeclWithACSL fp (realDecl@(RDecl _ f realArgs _ ), (decl@(Decl _ _ tauargs taustm),errVars), symbROError, listStableCond)  =
+printSymbDeclWithACSL fp (realDecl@(RDecl _ f realArgs _ ), (decl@(Decl _ _ tauargs taustm),errVars), symbROError, listStableCond)  = do
   vcat (map (printACSLlogicDecl fp) realDeclForList)
   $$
   text (vspace 1)
@@ -385,7 +397,7 @@ prettyFAExprValue ee = error $ "printACSLFAexpr for " ++ show ee ++ "not impleme
 printFPSymbPrecond :: FPrec -> FunName -> [Arg] -> [Arg] -> [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] -> [(VarName, FAExpr, FAExpr)] -> EExpr -> Doc
 printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
   text "/*@"
-  <> posErrorPrecond
+  $$ posErrorPrecond
   $$ text "assigns \\nothing;"
   $$ text ""
   $$ behaviorStructure
@@ -421,7 +433,7 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
               else (printDefLocalVars errVars locVars
                $$ (text "(" <> printQuantIdx forIdx)
                $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")"
-               $$ nest 2 (text "==>" <>  doc))
+               $$ nest 2 (text "==>" <+>  doc))
 
     behaviorSymbolic = text "behavior symbolic:"
                     $$ text "ensures \\forall" <+> prettyACSLFormalArgs fp realVarArgs <+> comma <+> docListComma inputVarErrs <+> text ";"
@@ -621,6 +633,7 @@ prettyACSLaexpr (Sub ae1 ae2) = parens $ prettyACSLaexpr ae1 <+> text "-" <+> pr
 prettyACSLaexpr (Mul ae1 ae2) = parens $ prettyACSLaexpr ae1 <+> text "*" <+> prettyACSLaexpr ae2
 prettyACSLaexpr (Div ae1 ae2) = parens $ prettyACSLaexpr ae1 <+> text "/" <+> prettyACSLaexpr ae2
 prettyACSLaexpr (Mod ae1 ae2) = parens $ prettyACSLaexpr ae1 <+> text "%" <+> prettyACSLaexpr ae2
+prettyACSLaexpr (IMod ae1 ae2) = parens $ prettyACSLaexpr ae1 <+> text "%" <+> prettyACSLaexpr ae2
 prettyACSLaexpr (Pow ae1 ae2) = text "\\pow" <+> parens (prettyACSLaexpr ae1 <+> comma <+> prettyACSLaexpr ae2)
 prettyACSLaexpr   (Neg ae) = text "-"       <> parens (prettyACSLaexpr ae)
 prettyACSLaexpr (Floor ae) = text "\\floor" <> parens (prettyACSLaexpr ae)
@@ -1159,6 +1172,10 @@ replaceCallsInAExpr _ ae@(FInt  _)      = ae
 replaceCallsInAExpr _ ae@(FCnst _ _)    = ae
 replaceCallsInAExpr _ ae@(FVar  _ _)    = ae
 replaceCallsInAExpr _ ae@(StructVar  _) = ae
+replaceCallsInAExpr _ ae@(RtoD (Int _)) = ae
+replaceCallsInAExpr _ ae@(RtoS (Int _)) = ae
+replaceCallsInAExpr _ ae@(RtoD (Rat _)) = ae
+replaceCallsInAExpr _ ae@(RtoS (Rat _)) = ae
 replaceCallsInAExpr callList (FMin aes) = FMin (map (replaceCallsInAExpr callList) aes)
 replaceCallsInAExpr callList (FMax aes) = FMax (map (replaceCallsInAExpr callList) aes)
 replaceCallsInAExpr _ ae = error $ "replaceCallsInAExpr not defined for " ++ show ae

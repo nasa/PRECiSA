@@ -91,33 +91,36 @@ real2FPC fileprog filespec fp = do
   spec <- errify fail errparseSpec
   let dps = map initDpsToNone decls
 
-  let tranProgPairs = transformProgramSymb decls -- [(DeclTrans,ErrVarEnv,LocalEnv)]
-  let tranProg = map fst3 tranProgPairs
-  -- let errVarEnv = zip (map snd3 tranProgPairs) (map trd3 tranProgPairs)
+  let maxDepth = 7
+  let prec = 14
+
+  let tranProgTuples = transformProgramSymb decls
+  let tranProg = map fst3 tranProgTuples
   let progSemStable = fixpointSemantics decls (botInterp decls) 3 semConf dps
-  let roErrorsDecl = zip (map fst progSemStable) (zip (map (maxRoundOffError . semantics) progSemStable) (map (stableConditions . semantics) progSemStable))
+  let progStableConds = map (stableConditions . semantics) progSemStable
+  let progSymbRoundOffErrs = map (maxRoundOffError . semantics) progSemStable
+  let searchParams = SP { maximumDepth = fromInteger . toInteger $ maxDepth, minimumPrecision = fromInteger . toInteger $ prec }
+  results <- computeAllErrorsInKodiak progSemStable spec searchParams
+  let maxErrors = summarizeAllErrors (getKodiakResults results)
+
+  let roErrorsDecl = zip (map fst progSemStable) (zip progSymbRoundOffErrs progStableConds)
   
-  funErrEnv <- mapM (computeErrorGuards spec) tranProgPairs
+  funErrEnv <- mapM (computeErrorGuards spec) tranProgTuples
 
-
-  -------------- to fix
-  -- framaCfileContent <- genFramaCFile fp realProg tranProgPairs spec roErrorsDecl --- FIX local variables not found
+  let tranProgPairs = zip tranProg (map snd3 tranProgTuples)
+  ----- pass to genFramaCFile just the essential information in a data structure --
+  let framaCfileContent = genFramaCFile fp realProg spec tranProgPairs roErrorsDecl maxErrors progStableConds funErrEnv
+  writeFile framaCfile (render   framaCfileContent)
  
-  -- writeFile framaCfile      (render   framaCfileContent)
-  --------------------------------
- 
-
   writeFile pvsProgFile     (render $ genFpProgFile fpFileName   decls)
   -- writeFile pvsTranProgFile (render $ genFpTranProgFile tranFileName tranProg fp)
 
   let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName tranProg progSemStable True
   writeFile certFile symbCertificate
 
-  let maxDepth = 7
-  let prec = 14
+
   time <- getCurrentTime
-  let searchParams = SP { maximumDepth = fromInteger . toInteger $ maxDepth, minimumPrecision = fromInteger . toInteger $ prec }
-  results <- computeAllErrorsInKodiak progSemStable spec searchParams
+
   let numCertificate = render $ genNumCertFile certFileName numCertFileName results spec maxDepth prec time True
   writeFile numCertFile numCertificate
   writeFile exprCertFile (render $ genExprCertFile exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv)))
@@ -213,6 +216,12 @@ parseAndAnalyze
       numCertFileName = "num_cert_" ++ inputFileName
       realProgFileName = inputFileName ++ "_real"
 
+
+getKodiakResults :: [(String,FPrec,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])] -> [(String, [KodiakResult])]
+getKodiakResults = map getKodiakResult
+  where
+     getKodiakResult (f,_,_,errors) = (f, map getKodiakError errors)
+     getKodiakError (_, _,_,err,_,_,_) = err
 
 summarizeAllErrors :: [(String, [KodiakResult])] -> [(String, Double)]
 summarizeAllErrors errorMap = [ (f,maximum $ map maximumUpperBound results) | (f, results) <- errorMap]

@@ -383,12 +383,12 @@ printVarErrBound :: FAExpr -> Doc
 printVarErrBound var@(FVar _ _) = text "abs(" <> prettyDoc var <> text "-" <> prettyDoc (realVar var) <> text ") <=" <> prettyDoc (errVar var)
 printVarErrBound ae = error $ "printVarErrBound: case " ++ show ae ++ " not expected."
 
-printExprFunCert :: FPrec -> (Decl, [(FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind])]) -> Doc
+printExprFunCert :: FPrec -> (Decl, [(VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind])]) -> Doc
 printExprFunCert fp (Decl _ f _ _, exprList) = vcat $ zipWith (printExprCert' fp f) exprList [1, 2 ..]
 
 
-printExprCert' :: FPrec -> String -> (FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind]) -> Int -> Doc
-printExprCert' fp f (fae, ae, be, symbErr, numErr, faeVarList, realVarList, errVarList,varBinds) n =
+printExprCert' :: FPrec -> String -> (VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind]) -> Int -> Doc
+printExprCert' fp f (_,fae, ae, be, symbErr, numErr, faeVarList, realVarList, errVarList,varBinds) n =
   printSymbExprCert fp f faeVarList errVarList realVarList fae ae be symbErr n
   $$
   printNumExprCert fp f faeVarList realVarList fae ae be numErr varBinds n 14 7 
