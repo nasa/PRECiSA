@@ -108,12 +108,10 @@ real2FPC fileprog filespec fp = do
   funErrEnv <- mapM (computeErrorGuards spec) tranProgTuples
 
   let tranProgPairs = zip tranProg (map snd3 tranProgTuples)
-  ----- pass to genFramaCFile just the essential information in a data structure --
   let framaCfileContent = genFramaCFile fp realProg spec tranProgPairs roErrorsDecl maxErrors progStableConds funErrEnv
   writeFile framaCfile (render   framaCfileContent)
  
-  writeFile pvsProgFile     (render $ genFpProgFile fpFileName   decls)
-  -- writeFile pvsTranProgFile (render $ genFpTranProgFile tranFileName tranProg fp)
+  writeFile pvsProgFile     (render $ genFpProgFile fp fpFileName decls)
 
   let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName tranProg progSemStable True
   writeFile certFile symbCertificate
@@ -132,7 +130,6 @@ real2FPC fileprog filespec fp = do
       filePath = dropFileName fileprog
       framaCfile = filePath ++ inputFileName ++ ".c"
       pvsProgFile = filePath ++ fpFileName ++ ".pvs"
-      -- pvsTranProgFile = filePath ++ tranFileName ++ ".pvs"
       certFileName = "cert_" ++ inputFileName
       numCertFileName = "num_cert_" ++ inputFileName
       exprCertFileName = "expr_cert_" ++ inputFileName

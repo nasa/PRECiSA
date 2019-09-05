@@ -304,6 +304,7 @@ prettyFBExprValue (IsValid ae) = return $ text "isValid" <> parens (prettyDoc ae
 prettyFAExprValue :: FAExpr -> State [(VarName, FAExpr)] Doc
 prettyFAExprValue (FVar FPSingle x)           = return $ text $ "single_" ++ x
 prettyFAExprValue (FVar FPDouble x)           = return $ text $ "double_" ++ x
+prettyFAExprValue (FVar TInt     x)           = return $ text x
 prettyFAExprValue (RtoS (Int i))       = return $ integer i <> text ".0"
 prettyFAExprValue (RtoD (Int i))       = return $ integer i <> text ".0"
 prettyFAExprValue (RtoS (Rat d))       = return $ parens $ text $ showRational d
@@ -389,7 +390,7 @@ prettyFAExprValue (FMax as) = do
   asDoc <- mapM prettyFAExprValue as
   return $ text "max" <> parens (hsep $ punctuate comma asDoc)
 
-prettyFAExprValue ee = error $ "printACSLFAexpr for " ++ show ee ++ "not implemented yet."
+prettyFAExprValue ee = error $ "prettyFAExprValue for " ++ show ee ++ "not implemented yet."
 
 
 
@@ -439,10 +440,16 @@ printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdx symbROError =
                     $$ text "ensures \\forall" <+> prettyACSLFormalArgs fp realVarArgs <+> comma <+> docListComma inputVarErrs <+> text ";"
                     $$ docListAnd (map (printErrInputVar fp) inputVars) <+> text "&&"
                     $$ printDefLocalVars errVars locVars
-                    $$ (text "(" <> printQuantIdx forIdx)
-                    $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")" <+> text "&&"
+                    $$ printIdxAndErrVars forIdx errVars
                     $$ text "\\result.isValid"
                     $$ text "==> \\abs(\\result.value -" <+> text f <> parens (printRealArgs fp realArgs) <> text ") <=" <+> prettyACSLaexpr symbROError <+> text ";"
+
+    printIdxAndErrVars forIdx errVars =
+      if null forIdx && null errVars
+      then emptyDoc
+      else ((text "(" <> printQuantIdx forIdx)
+                     $$ vcat (punctuate (text " &&") (map (printErrVar fp) errVars)) <> text ")"
+                     <+> text "&&")
 
 printDefLocalVars :: [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] -> Doc
 printDefLocalVars errVars letVars = vcat $ map printLocalVar vars

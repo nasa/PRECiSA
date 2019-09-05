@@ -25,7 +25,7 @@ module PPExt (
 import Text.PrettyPrint as PPExt
 -- hiding (empty)
 import qualified Text.PrettyPrint as PP
---import FPrec
+import Debug.Trace
 
 class PPExt a where
   prettyDoc :: a -> Doc

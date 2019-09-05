@@ -42,8 +42,6 @@ ensures \result.isValid
 behavior symbolic:
 ensures \forall real X , E_X ;
 \abs(X - double_X) <= E_X &&
-(
-) &&
 \result.isValid
 ==> \abs(\result.value - f(X)) <= errAdd_dp(X, E_X, (X * 2), errMul_dp(X, E_X, 2, 0 % 1)) ;
 */
@@ -85,7 +83,8 @@ predicate g_stable_paths(real X, double double_X)
 */
 
 
-/*@requires 0 <= double_E_0;
+/*@
+requires 0 <= double_E_0;
 assigns \nothing;
 
 behavior structure:
@@ -96,7 +95,7 @@ ensures \result.isValid
   ==> \forall real X;
   (
   \abs(double_X - X) <= double_E_0)
-    ==>g_stable_paths(X, double_X);
+    ==> g_stable_paths(X, double_X);
 
 behavior symbolic:
 ensures \forall real X , E_X ;
