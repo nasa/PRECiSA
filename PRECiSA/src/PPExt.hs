@@ -48,6 +48,7 @@ docListOr list = hsep $ punctuate (text " ||") list
 showRational :: Rational -> String
 showRational x = map (\c -> if c=='%' then '/'; else c) (show x)
 
+
 instance PPExt Int where
   prettyDoc = int
 

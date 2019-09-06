@@ -50,7 +50,7 @@ ensures \forall real S, real V , E_S, E_V ;
 (
 \abs(Dmul(double_S, double_V) - (S * V)) <= double_E_0) &&
 \result.isValid
-==> \abs(\result.value - tcoa(S, V)) <= \max(errDiv_dp(S, E_S, V, E_V) , 0 % 1) ;
+==> \abs(\result.value - tcoa(S, V)) <= \max(errNeg_dp((S / V), errDiv_dp(S, E_S, V, E_V)) , 0 % 1) ;
 */
 struct maybeDouble tcoa_double (double double_S, double double_V, double double_E_0) {
   struct maybeDouble res;
@@ -70,7 +70,7 @@ ensures ( 0 <= S <= 1000 && 1 <= V <= 200) &&
 \result.isValid
 ==> \abs(\result.value - tcoa(S, V)) <= 0x1.9d8000000000dp-41;
 */
-struct maybeDouble tcoa_num (S, V) {
+struct maybeDouble tcoa_num (double S, double V) {
 return tcoa_double (S, V,0x1.6100000000001p-35);
 }
 
@@ -114,7 +114,7 @@ ensures \forall real S, real V , E_S, E_V ;
 (
 \abs(Dmul(double_S, double_V) - (S * V)) <= double_E_0) &&
 \result.isValid
-==> \abs(\result.value - vmd(S, V)) <= \max(errAdd_dp(S, E_S, (-((S / V)) * V), \max(errMul_dp(-((S / V)), \max(errDiv_dp(S, E_S, V, E_V) , 0 % 1), V, E_V) , errMul_dp(0, \max(errDiv_dp(S, E_S, V, E_V) , 0 % 1), V, E_V))) , errAdd_dp(S, E_S, (0 * V), \max(errMul_dp(-((S / V)), \max(errDiv_dp(S, E_S, V, E_V) , 0 % 1), V, E_V) , errMul_dp(0, \max(errDiv_dp(S, E_S, V, E_V) , 0 % 1), V, E_V)))) ;
+==> \abs(\result.value - vmd(S, V)) <= \max(errAdd_dp(S, E_S, (-((S / V)) * V), \max(errMul_dp(-((S / V)), \max(errNeg_dp((S / V), errDiv_dp(S, E_S, V, E_V)) , 0 % 1), V, E_V) , errMul_dp(0, \max(errNeg_dp((S / V), errDiv_dp(S, E_S, V, E_V)) , 0 % 1), V, E_V))) , errAdd_dp(S, E_S, (0 * V), \max(errMul_dp(-((S / V)), \max(errNeg_dp((S / V), errDiv_dp(S, E_S, V, E_V)) , 0 % 1), V, E_V) , errMul_dp(0, \max(errNeg_dp((S / V), errDiv_dp(S, E_S, V, E_V)) , 0 % 1), V, E_V)))) ;
 */
 struct maybeDouble vmd_double (double double_S, double double_V, double double_E_0) {
   struct maybeDouble res;
@@ -132,7 +132,7 @@ ensures ( 0 <= S <= 1000 && 1 <= V <= 200) &&
 \result.isValid
 ==> \abs(\result.value - vmd(S, V)) <= 0x1.37a7400000008p-38;
 */
-struct maybeDouble vmd_num (S, V) {
+struct maybeDouble vmd_num (double S, double V) {
 return vmd_double (S, V,0x1.6100000000001p-35);
 }
 

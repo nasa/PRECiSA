@@ -94,7 +94,7 @@ printNumDeclWithACSL fp f realArgs forIdx (Decl fpFun _ args _) errVars varBinds
   $$ text "\\result.isValid"
   $$ text "==> \\abs(\\result.value - " <> text f <> parens (printRealArgs fp realArgs) <> text ") <=" <+> prettyErrorHex roErr <> text ";"
   $$ text "*/"
-  $$ maybeRetType fpFun <+> text fNum <+> parens (printRealArgs fp realArgs) <+> text "{"
+  $$ maybeRetType fpFun <+> text fNum <+> parens (printFPFormArgs fp realArgs) <+> text "{"
   $$ text "return"
   <+> text f <> text "_" <> prettyFPrec fpFun
   <+> parens (printRealArgs fp realArgs <> printErrArgs numErrArgs)
@@ -712,17 +712,18 @@ prettyACSLaexpr (ErrLn     FPSingle ae ee) = printUnaryOpErrorACSL "errLn_sp"   
 prettyACSLaexpr (ErrLn     FPDouble ae ee) = printUnaryOpErrorACSL "errLn_sp"     ae ee
 prettyACSLaexpr (ErrExpo   FPSingle ae ee) = printUnaryOpErrorACSL "errExpo_sp"   ae ee
 prettyACSLaexpr (ErrExpo   FPDouble ae ee) = printUnaryOpErrorACSL "errExpo_dp"   ae ee
-prettyACSLaexpr (ErrStoD            ae ee) = printUnaryOpErrorACSL "errStoD"   ae ee
-prettyACSLaexpr (ErrDtoS            ae ee) = printUnaryOpErrorACSL "errDtoS"   ae ee
-prettyACSLaexpr (ErrItoS            ae ee) = printUnaryOpErrorACSL "errItoS"   ae ee
-prettyACSLaexpr (ErrItoD            ae ee) = printUnaryOpErrorACSL "errItoD"   ae ee
+prettyACSLaexpr (ErrNeg    FPSingle ae ee) = printUnaryOpErrorACSL "errNeg_sp"    ae ee
+prettyACSLaexpr (ErrNeg    FPDouble ae ee) = printUnaryOpErrorACSL "errNeg_dp"    ae ee
+prettyACSLaexpr (ErrStoD            ae ee) = printUnaryOpErrorACSL "errStoD"      ae ee
+prettyACSLaexpr (ErrDtoS            ae ee) = printUnaryOpErrorACSL "errDtoS"      ae ee
+prettyACSLaexpr (ErrItoS            ae ee) = printUnaryOpErrorACSL "errItoS"      ae ee
+prettyACSLaexpr (ErrItoD            ae ee) = printUnaryOpErrorACSL "errItoD"      ae ee
 prettyACSLaexpr (ErrMulPow2R FPSingle n ee) = text "ErrMulPow2R_sp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
 prettyACSLaexpr (ErrMulPow2R FPDouble n ee) = text "ErrMulPow2R_dp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
 prettyACSLaexpr (ErrMulPow2L FPSingle n ee) = text "ErrMulPow2L_sp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
 prettyACSLaexpr (ErrMulPow2L FPDouble n ee) = text "ErrMulPow2L_dp" <> (text "(" <> integer n <> comma <+> prettyDoc ee <> text ")")
 prettyACSLaexpr (HalfUlp ae FPSingle) = text "ulp_sp" <> (text "(" <> prettyACSLaexpr ae <> text ")/2")
 prettyACSLaexpr (HalfUlp ae FPDouble) = text "ulp_dp" <> (text "(" <> prettyACSLaexpr ae <> text ")/2")
-prettyACSLaexpr (ErrNeg _ _ ee) = prettyACSLaexpr ee
 prettyACSLaexpr (ErrRat rat) = text $ show rat
 prettyACSLaexpr (ErrorMark x _) = text "E_" <> text x
 prettyACSLaexpr (StoR (FVar _ x)) = text x
@@ -762,6 +763,13 @@ printRealArgs fp args = docListComma $ map (aux fp) args
   where
     --aux fp (Arg (VarId x) (Array _ _)) = prettyFPrec fp <> text "_" <> text x
     aux _ (Arg x _) = text x
+
+printFPFormArgs :: FPrec -> [Arg] -> Doc
+printFPFormArgs fp args = docListComma $ map (aux fp) args
+  where
+    --aux fp (Arg (VarId x) (Array _ _)) = prettyFPrec fp <> text "_" <> text x
+    aux FPSingle (Arg x _) = text "single" <+> text x
+    aux FPDouble (Arg x _) = text "double" <+> text x
 
 prettyACSLPrec :: FPrec -> Doc
 prettyACSLPrec TInt = text "integer"
