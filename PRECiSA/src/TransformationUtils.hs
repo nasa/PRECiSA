@@ -27,7 +27,7 @@ computeErrorVarValue varBinds localEnv (errorVariable, fae, be) = do
      faeVarList  = varList fae
      errVarList  = map errVar faeVarList
      realVarList = map realVar faeVarList
-     symbErr = symbolicError [] emptyEnv (unfoldLocalVars localEnv fae) -- trace ("symbolic error: " ++ show (symbolicError fae)) $ replaceLocalVarsInErrExpr localEnv $ symbolicError fae
+     symbErr = symbolicError [] emptyEnv (unfoldLocalVars localEnv fae) 
 
 
 

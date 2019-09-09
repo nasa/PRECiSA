@@ -57,7 +57,7 @@ ensures ( 0 <= X <= 100) &&
 \result.isValid
 ==> \abs(\result.value - f(X)) <= 0x1.2p-44;
 */
-struct maybeDouble f_num (X) {
+struct maybeDouble f_num (double X) {
 return f_double (X);
 }
 
@@ -131,7 +131,7 @@ ensures ( 0 <= X <= 100) &&
 \result.isValid
 ==> \abs(\result.value - g(X)) <= 0x1.8p-44;
 */
-struct maybeDouble g_num (X) {
+struct maybeDouble g_num (double X) {
 return g_double (X,0x1p-47);
 }
 

@@ -169,7 +169,6 @@ parseAndAnalyze
   time <- getCurrentTime
   -------------
   let progSem = fixpointSemantics decls (botInterp decls) 3 semConf dps
-  putStrLn $ "progSem:\n" ++ (show $ show progSem)
   checkProgSize progSem 0 maxel
   let symbCertificates = render $ genCertFile inputFileName certFileName realProgFileName decls progSem False
   writeFile certFile symbCertificates

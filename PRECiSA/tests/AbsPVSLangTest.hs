@@ -353,6 +353,11 @@ varList__tests = testGroup "varList tests"
   ,varList__test5
   ,varList__test6
   ,varList__test7
+  ,varList__test8
+  ,varList__test9
+  ,varList__test10
+  ,varList__test11
+  ,varList__test12
   ]
 
 varList__test1 = testCase "varList of constant 0.1 is []" $
@@ -382,6 +387,17 @@ varList__test7 = testCase "varList of  floor(x)/f(y,z) is [Var x, Var y, Var z]"
     varList (FDiv FPDouble (FFloor FPDouble (FVar FPDouble "x")) (FEFun "f" FPDouble [(FVar FPDouble "x"),(FVar FPDouble "z")]))
     @?= [FVar FPDouble "x", FVar FPDouble "z"]
 
+varList__test8 = testCase "varList of a RtoD(6) is []" $
+    varList (RtoD (Int 6)) @?= []
 
+varList__test9 = testCase "varList of a RtoD(6) is []" $
+    varList (RtoD(DtoR(RtoD (Int 6)))) @?= []                                           
 
-                                           
+varList__test10 = testCase "varList of a RtoD(DtoR(x)) is [x]" $
+    varList (RtoD(Var Real "x")) @?= []   
+
+varList__test11 = testCase "varList of a RtoD(DtoR(x)) is [x]" $
+    varList (RtoD(DtoR(FVar FPDouble "x"))) @?= [FVar FPDouble "x"]   
+
+varList__test12 = testCase "varList of a RtoD(DtoR(x + y)) is [x,y]" $
+    varList (RtoD(DtoR(FAdd FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))) @?= [FVar FPDouble "x",FVar FPDouble "y"]   

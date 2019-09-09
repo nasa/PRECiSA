@@ -767,13 +767,14 @@ forIndexes (ForLoop _ idxStart idxEnd _ idx _ forBody) = (idx, idxStart, idxEnd)
 forIndexes UnstWarning = []
 
 varList :: FAExpr -> [FAExpr]
-varList fae = elimDuplicates (foldFAExpr varList' const fae [])
+varList fae = elimDuplicates (foldFAExpr varList' varListAExpr' fae [])
   where
     varList' :: [FAExpr] -> FAExpr -> [FAExpr]
     varList' acc var@(FVar _ _) = var:acc
-    varList' _   (RtoD ae)      = error $ "varList: niy for " ++ show ae ++ "."
-    varList' _   (RtoS ae)      = error $ "varList: niy for " ++ show ae ++ "."
     varList' acc _              = acc
+
+    varListAExpr' :: [FAExpr] -> AExpr -> [FAExpr]
+    varListAExpr' acc _ = acc
 
 noRoundOffErrorIn :: FBExpr -> Bool
 noRoundOffErrorIn be = foldFBExpr noRoundOffErrorInAExpr' const be True
