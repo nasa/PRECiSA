@@ -31,6 +31,7 @@ import FPrec
 import Foreign.C.Types (CDouble, CFloat)
 import Data.Maybe
 import Translation.Float2Real
+import Debug.Trace
 
 data SemanticConfiguration = SemConf {
     assumeTestStability :: Bool,
@@ -39,7 +40,9 @@ data SemanticConfiguration = SemConf {
 
 newtype Iteration = Iter Int deriving (Eq,Show,Num)
 
-newtype Env a = Env [(VarName,a)]
+newtype Env a = Env [(VarName,a)] deriving (Show)
+
+type LocalEnv = [(VarName, FAExpr)]
 
 type FunctionInterpretation = (FunName, (FPrec, [Arg] ,ACebS))
 
@@ -317,7 +320,7 @@ makeUnstable
       cFlow  = Unstable
   }
   where
-    ee' = MaxErr [Add fpE (Abs (Sub fpR rR)) | fpR <- fpRs, rR <- rRs]
+    ee' = maxErr [Add fpE (Abs (Sub fpR rR)) | fpR <- fpRs, rR <- rRs]
     cs' = [(rCond, fCond) | rCond <- map realCond rCs, fCond <- map fpCond fpCs]
 
 
@@ -325,6 +328,11 @@ unTestSem :: ACebS -> ACebS -> ACebS
 unTestSem semR semFP  = map (uncurry makeUnstable) combinations
   where
     combinations = [(cebR,cebFP) | cebR <- semR, cebFP <- semFP]
+
+maxErr :: [EExpr] -> EExpr
+maxErr [] = error $ "maxError cannot be applied to an empty list."
+maxErr [err] = err
+maxErr listErr = MaxErr listErr
 
 --------------------------------------
 -- Arithmetic Expressions Semantics --
@@ -455,7 +463,7 @@ aexprSem (StoD a) interp env dp fun = collapseSem $ lub semStoD [aexprSem a inte
     semStoD [ceb] = ceb {
                 rExprs  = rExprs ceb,
                 fpExprs = [StoD f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrStoD r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrStoD r (eExpr ceb)| r <- rExprs ceb]
             }
     semStoD _ = error "ErrStoD: something went wrong"
    
@@ -465,7 +473,7 @@ aexprSem (DtoS a) interp env dp fun = collapseSem $ lub semStoD [aexprSem a inte
     semStoD [ceb] = ceb {
                 rExprs  = rExprs ceb,
                 fpExprs = [DtoS f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrDtoS r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrDtoS r (eExpr ceb)| r <- rExprs ceb]
             }
     semStoD _ = error "ErrDtoS: something went wrong"
 
@@ -475,7 +483,7 @@ aexprSem (ItoS a) interp env dp fun = collapseSem $ lub semItoS [aexprSem a inte
     semItoS [ceb] = ceb {
                 rExprs  = rExprs ceb,
                 fpExprs = [ItoS f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrItoS r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrItoS r (eExpr ceb)| r <- rExprs ceb]
             }
     semItoS _ = error "ErrItoD: something went wrong"
 
@@ -485,7 +493,7 @@ aexprSem (ItoD a) interp env dp fun = collapseSem $ lub semItoD [aexprSem a inte
     semItoD [ceb] = ceb {
                 rExprs  = rExprs ceb,
                 fpExprs = [ItoD f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrItoD r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrItoD r (eExpr ceb)| r <- rExprs ceb]
             }
     semItoD _ = error "ErrItoD: something went wrong"
 
@@ -499,7 +507,7 @@ aexprSem (FAdd fp a1 a2) interp env dp fun =
                              (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)],
             rExprs = [Add r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FAdd fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr   = MaxErr [ErrAdd fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr   = maxErr [ErrAdd fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -515,7 +523,7 @@ aexprSem (FIAdd a1 a2) interp env dp fun =
                              (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)],
             rExprs = [Add r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FIAdd f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrAdd TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrAdd TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -531,7 +539,7 @@ aexprSem (FSub fp a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)],
             rExprs = [Sub r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FSub fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrSub fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrSub fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -547,7 +555,7 @@ aexprSem (FISub a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)],
             rExprs = [Sub r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FISub f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrSub TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrSub TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -573,7 +581,7 @@ aexprSem ae@(FMul fp a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)],
             rExprs = [Mul r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FMul fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrMul fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2], 
+            eExpr  = maxErr [ErrMul fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2], 
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -626,7 +634,7 @@ aexprSem (FIMul a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)],
             rExprs = [Mul r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FIMul f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrMul TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrMul TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -644,7 +652,7 @@ aexprSem (FFma fp a1 a2 a3) interp env dp fun =
                        (c3, g3) <- uncond (conds ceb3)],
             rExprs  = [Fma r1 r2 r3 | r1 <- rExprs ceb1, r2 <- rExprs ceb2, r3 <- rExprs ceb3],
             fpExprs = [FFma fp f1 f2 f3 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2, f3 <- fpExprs ceb3],
-            eExpr  = MaxErr [ErrFma fp r1 (eExpr ceb1) r2 (eExpr ceb2) r3 (eExpr ceb3) | r1 <- rExprs ceb1, r2 <- rExprs ceb2, r3 <- rExprs ceb3],
+            eExpr  = maxErr [ErrFma fp r1 (eExpr ceb1) r2 (eExpr ceb2) r3 (eExpr ceb3) | r1 <- rExprs ceb1, r2 <- rExprs ceb2, r3 <- rExprs ceb3],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (mergeControlFlow (cFlow ceb2) (cFlow ceb3))
         }
@@ -662,7 +670,7 @@ aexprSem (FDiv fp a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2), r2 <- rExprs ceb2],
             rExprs = [Div r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FDiv fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrDiv fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrDiv fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -680,7 +688,7 @@ aexprSem (FIDiv a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2), r2 <- rExprs ceb2],
             rExprs = [IDiv r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FIDiv f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrDiv TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrDiv TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -698,7 +706,7 @@ aexprSem (FItDiv a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2), r2 <- rExprs ceb2],
             rExprs = [ItDiv r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FItDiv f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrItDiv TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrItDiv TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -716,7 +724,7 @@ aexprSem (FIMod a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2), r2 <- rExprs ceb2],
             rExprs = [IMod r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FIMod f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrMod TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrMod TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -734,7 +742,7 @@ aexprSem (FItMod a1 a2) interp env dp fun =
                        (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2), r2 <- rExprs ceb2],
             rExprs = [IMod r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             fpExprs = [FItMod f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr  = MaxErr [ErrItMod TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            eExpr  = maxErr [ErrItMod TInt r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
             decisionPath = root,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
@@ -746,7 +754,7 @@ aexprSem (FNeg fp a) interp env dp fun = collapseSem $ lub semNeg [aexprSem a in
     semNeg [ceb] = ceb {
                 rExprs  = [Neg     r | r <-  rExprs ceb],
                 fpExprs = [FNeg fp f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrNeg fp r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrNeg fp r (eExpr ceb)| r <- rExprs ceb]
             }
     semNeg _ = error "aexprSem semNeg: something went wrong"
 
@@ -757,7 +765,7 @@ aexprSem (FINeg a) interp env dp fun = collapseSem $ lub semINeg [aexprSem a int
     semINeg [ceb] = ceb {
                 rExprs  = [Neg  r | r <-  rExprs ceb],
                 fpExprs = [FINeg f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrNeg TInt r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrNeg TInt r (eExpr ceb)| r <- rExprs ceb]
             }
     semINeg _ = error "aexprSem semINeg: something went wrong"
 
@@ -767,7 +775,7 @@ aexprSem (FAbs fp a) interp env dp fun = collapseSem $ lub semAbs [aexprSem a in
     semAbs [ceb] = ceb {
                 rExprs  = [Abs r  | r <-  rExprs ceb],
                 fpExprs = [FAbs fp f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrAbs fp r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrAbs fp r (eExpr ceb)| r <- rExprs ceb]
             }
     semAbs _ = error "aexprSem semAbs: something went wrong"
 
@@ -777,7 +785,7 @@ aexprSem (FIAbs a) interp env dp fun = collapseSem $ lub semIAbs [aexprSem a int
     semIAbs [ceb] = ceb {
                 rExprs  = [Abs  r | r <-  rExprs ceb],
                 fpExprs = [FIAbs f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrAbs TInt r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrAbs TInt r (eExpr ceb)| r <- rExprs ceb]
             }
     semIAbs _ = error "aexprSem semIAbs: something went wrong"
 
@@ -790,7 +798,7 @@ aexprSem (FLn fp a) interp env dp fun = collapseSem $ lub semLn [aexprSem a inte
                                fc) | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb],
                 rExprs  = [Ln  r | r <-  rExprs ceb],
                 fpExprs = [FLn fp f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrLn fp r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrLn fp r (eExpr ceb)| r <- rExprs ceb]
             }
     semLn _ = error "aexprSem semLn: something went wrong"
     f2r = case fp of
@@ -804,7 +812,7 @@ aexprSem (FExpo fp a) interp env dp fun = collapseSem $ lub semExpo [aexprSem a 
     semExpo [ceb] = ceb {
                 rExprs  = [Expo r  | r <-  rExprs ceb],
                 fpExprs = [FExpo fp f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrExpo fp r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrExpo fp r (eExpr ceb)| r <- rExprs ceb]
             }
     semExpo _ = error "aexprSem semExpo: something went wrong"
 
@@ -821,7 +829,7 @@ aexprSem (FFloor fp a) interp env dp fun =
                           fc) | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb],
                 rExprs = [Floor r | r <- rExprs ceb],
                 fpExprs = [FFloor fp f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrFloor fp r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrFloor fp r (eExpr ceb)| r <- rExprs ceb]
             }
     semFloor _ = error "aexprSem semFloor: something went wrong"
 
@@ -832,7 +840,7 @@ aexprSem (FFloor fp a) interp env dp fun =
                           fc) | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb],
                 rExprs = [Floor r | r <- rExprs ceb],
                 fpExprs = [FFloor fp f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrFloor0 fp r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrFloor0 fp r (eExpr ceb)| r <- rExprs ceb]
             }
     semFloor0 _ = error "aexprSem semFloor0: something went wrong"
 
@@ -844,7 +852,7 @@ aexprSem (FSqrt fp a) interp env dp fun = collapseSem $ lub semSqrt [aexprSem a 
                           fc) | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb],
                 rExprs = [Sqrt r | r <- rExprs ceb],
                 fpExprs = [FSqrt fp f | f <- fpExprs ceb],
-                eExpr  = MaxErr [ErrSqrt fp r (eExpr ceb)| r <- rExprs ceb]
+                eExpr  = maxErr [ErrSqrt fp r (eExpr ceb)| r <- rExprs ceb]
             }
     semSqrt _ = error "aexprSem semSqrt: something went wrong"
 
@@ -854,7 +862,7 @@ aexprSem (FSin fp a) interp env dp fun = collapseSem $ lub semSin [aexprSem a in
       semSin [ceb] = ceb {
                   rExprs = [Sin r | r <- rExprs ceb],
                   fpExprs = [FSin fp f | f <- fpExprs ceb],
-                  eExpr  = MaxErr [ErrSin fp r (eExpr ceb)| r <- rExprs ceb]
+                  eExpr  = maxErr [ErrSin fp r (eExpr ceb)| r <- rExprs ceb]
               }
       semSin _ = error "aexprSem semSin: something went wrong"
 
@@ -864,7 +872,7 @@ aexprSem (FCos fp a) interp env dp fun = collapseSem $ lub semCos [aexprSem a in
       semCos [ceb] = ceb {
                   rExprs = [Cos r | r <- rExprs ceb],
                   fpExprs = [FCos fp f | f <- fpExprs ceb],
-                  eExpr  = MaxErr [ErrCos fp r (eExpr ceb)| r <- rExprs ceb]
+                  eExpr  = maxErr [ErrCos fp r (eExpr ceb)| r <- rExprs ceb]
               }
       semCos _ = error "aexprSem semCos: something went wrong"
 
@@ -878,7 +886,7 @@ aexprSem (FAtan fp a) interp env dp fun =
                             fc) | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb],
                   rExprs = [ATan r | r <- rExprs ceb],
                   fpExprs = [FAtan fp f | f <- fpExprs ceb],
-                  eExpr  = MaxErr [ErrAtan fp r (eExpr ceb)| r <- rExprs ceb]
+                  eExpr  = maxErr [ErrAtan fp r (eExpr ceb)| r <- rExprs ceb]
               }
       semAtan _ = error "aexprSem semAtan: something went wrong"
 
@@ -888,7 +896,7 @@ aexprSem (FAtan fp a) interp env dp fun =
                             fc) | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb],
                   rExprs = [ATan r | r <- rExprs ceb],
                   fpExprs = [FAtan fp f | f <- fpExprs ceb],
-                  eExpr  = MaxErr [ErrAtanT fp r (eExpr ceb)| r <- rExprs ceb]
+                  eExpr  = maxErr [ErrAtanT fp r (eExpr ceb)| r <- rExprs ceb]
               }
       semAtanT _ = error "aexprSem semAtanT: something went wrong"
 
@@ -924,6 +932,10 @@ collapseSem sem = collapsedStableCase ++ collapsedUnstableCase
     collapsedUnstableCase = if null unstableCases then [] else [mergeACebFold unstableCases]
     (stableCases, unstableCases) = List.partition isStable sem
 
+unfoldLocalVars :: LocalEnv -> FAExpr -> FAExpr
+unfoldLocalVars env = replaceInFAExpr (\a -> Nothing) (unfoldLocalVars' env)
+unfoldLocalVars' env var@(FVar fp x) = unfoldLocalVars env <$> (lookup x env)
+unfoldLocalVars' _ a  = Nothing
 
 
 argsBindAExpr :: [Arg] -> [FAExpr] -> ACebS -> AExpr -> AExpr
@@ -1015,8 +1027,20 @@ argsBindBExpr fa aa sem (GtE a1 a2) = GtE (argsBindAExpr fa aa sem a1) (argsBind
 argsBindBExpr _  _  _   BTrue       = BTrue
 argsBindBExpr _  _  _   BFalse      = BFalse
 
+replaceLocalVarsInErrExpr :: LocalEnv -> AExpr -> AExpr
+replaceLocalVarsInErrExpr localEnv = replaceInAExpr (\a -> Nothing) (replaceLocalVars localEnv) 
+  where
+    replaceLocalVars localEnv (FVar fp x) = Just $ bindVar localEnv
+      where
+        bindVar :: LocalEnv -> FAExpr
+        bindVar [] = FVar fp x
+        bindVar ((y,fae):ys) | y == x = fae
+                             | otherwise = bindVar ys
+        bindVar _ = error $ "replaceLocalVarsInErrExpr: something went wrong."
+    replaceLocalVars _ _          = Nothing
+
 argsBindFAExpr :: [Arg] -> [FAExpr] -> FAExpr -> FAExpr
-argsBindFAExpr fa aa = replaceInFAExpr replaceF
+argsBindFAExpr fa aa = replaceInFAExpr (\a -> Nothing) replaceF
   where
     replaceF (FVar fp x) = Just $ bindVar fa aa
       where

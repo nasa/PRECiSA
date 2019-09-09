@@ -1,15 +1,19 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 
-module Kodiak.Expression where
+module Kodiak.Expression (
+    module Kodiak.Expression,
+    module FPrec
+) where
 
 import FPrec
 import Kodiak.Kodiak
-import Kodiak.KodiakRunnable
-import Kodiak.KodiakRunner hiding (runBExpr)
+import Kodiak.Runnable
+import Kodiak.Runner hiding (runBExpr)
 
-import Control.Exception (throw,AssertionFailed(..))
+import Control.Exception (throw,AssertionFailed(..),assert)
 import Data.Ratio (numerator,denominator)
-import Foreign.C (newCString)
+import Data.Bits.Floating (nextUp,nextDown)
+import Foreign.C
 import Prelude hiding (True,False,LT,LE,GT,GE)
 
 data AExpr
@@ -36,7 +40,19 @@ instance KodiakRunnable AExpr VariableMap PReal where
     run = runAExpr
 
 runAExpr e vmap@(VMap vMap)
-    | Cnst r  <- e = interval_create_from_rational (fromInteger $ numerator r) (fromInteger $ denominator r) >>= real_create_value
+    | Cnst r  <- e = do
+        let dr = fromRational r :: CDouble
+        pi <- if (toRational dr == r)
+            then interval_create dr dr
+            else let rdr = toRational dr in
+                if (rdr > r)
+                then do let lb = nextDown dr
+                        assert (toRational lb < rdr) $
+                            interval_create lb dr
+                else do let ub = nextUp dr
+                        assert (rdr < toRational ub) $
+                            interval_create dr ub
+        real_create_value pi
 
     | Var v   <- e = case lookup v vMap of
                         Just i -> newCString v >>= real_create_variable i

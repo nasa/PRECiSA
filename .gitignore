@@ -1,3 +1,20 @@
+# OS X
 .DS_Store
+
+# Haskell
 *.o
 *.hi
+cabal.project.local
+cabal.sandbox.config
+dist
+dist-newstyle
+
+# Certificates
+cert_*
+num_cert_*
+
+# CMake
+build
+
+# Kodiak
+*.dat

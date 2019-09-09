@@ -8,8 +8,9 @@ import FPrec
 import Control.Monad.State
 import Data.List(find)
 import Data.Maybe(mapMaybe)
-import Kodiak.KodiakRunnable
-import Kodiak.KodiakRunner
+import qualified Data.Maybe as M
+import Kodiak.Runnable
+import Kodiak.Runner
 import Common.DecisionPath
 import Utils
 import Translation.Float2Real
@@ -55,7 +56,7 @@ generateErrorConstraints aexprMap fpexprMap inputs = do
     where
         getRealVar faexpr = fst <$> find ((== fae2real faexpr) . snd) aexprMap
         triples = mapMaybe (\ (fvar, fpexp, _) -> getRealVar fpexp >>= \ x -> return (x, fvar, fpexp)) fpexprMap
-         
+
 buildErrAssignConstraints :: Real a => (VarName, a) -> BExpr
 buildErrAssignConstraints (e, roError) = Eq (Var Real e) (Rat $ toRational roError)
 

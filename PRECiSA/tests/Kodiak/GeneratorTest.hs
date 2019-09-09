@@ -15,12 +15,13 @@ testKodiakGenerator :: TestTree
 testKodiakGenerator = testGroup "Kodiak Expression Generators"
     [testKodiakAExprGenerator
     ,testKodiakBExprGenerator
+    ,testIntegerExpressionSimplifier
     ]
 
 testKodiakAExprGenerator :: TestTree
 testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
     let x = "x" in
-    [testGroup "Real" 
+    [testGroup "Real"
         [testGroup "Constants"
             [testCase "Int" $
                 (kodiakize $ Int 1)
@@ -117,16 +118,6 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
                     (return $ K.Div (K.Ulp FPDouble (K.Cnst 3)) (K.Cnst 2))
                 ]
             ]
-        -- ,testGroup "Embedded expressions"
-        --    [testCase "AE" $
-        --        (kodiakize $ AE (Rat 1))
-        --        @?=
-        --        (return $ K.Cnst 1)
-        --    ,testCase "EE" $
-        --        (kodiakize $ EE (Rat 1))
-        --        @?=
-        --        (return $ K.Cnst 1)
-        --    ]
         ,testGroup "N-ary operators"
             [testGroup "MaxErr"
                 [testCase "0 expressions fails" $
@@ -143,8 +134,14 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
                     (return $ K.Max [K.Cnst 1,K.Cnst 2])
                 ]
             ]
+        ,testGroup "Integer operators"
+            [testCase "IMod" $
+                (kodiakize $ IMod (Int 4) (Int 3))
+                @?=
+                (return $ K.Cnst 1)
+            ]
         ]
-    ,testGroup "FPDouble" 
+    ,testGroup "FPDouble"
         [testGroup "Constants"
             [testCase "FInt" $
                 (kodiakize $ FInt 1)
@@ -241,6 +238,16 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
                 (kodiakize $ FFloor FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Floor (K.Cnst 2))
+            ,testGroup "RtoD"
+                [testCase "Int" $
+                    (kodiakize $ RtoD $ Int 0)
+                    @?=
+                    (return $ K.Cnst 0)
+                ,testCase "Rat" $
+                    (kodiakize $ RtoD $ Rat 1)
+                    @?=
+                    (return $ K.Cnst 1)
+                ]
             ]
         ,testGroup "N-ary operators"
             [testGroup "FMaxErr"
@@ -258,17 +265,17 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
                     (return $ K.Max [K.Cnst 1,K.Cnst 2])
                 ]
             ]
+        ,testGroup "Integer operators"
+            [testCase "FISub" $
+                (kodiakize $ FISub (FInt 4) (FInt 3))
+                @?=
+                (return $ K.Cnst 1)
+            ,testCase "FIMod" $
+                (kodiakize $ FIMod (FInt 1) (FInt 4))
+                @?=
+                (return $ K.Cnst 1)
+            ]
         ]
-        -- ,testGroup "Embedded expressions"
-        --     [testCase "AE" $
-        --         (kodiakize $ AE (Rat 1))
-        --         @?=
-        --         (return $ K.Cnst 1)
-        --     ,testCase "EE" $
-        --         (kodiakize $ EE (Rat 1))
-        --         @?=
-        --         (return $ K.Cnst 1)
-        --     ]
     ]
 
 testKodiakBExprGenerator :: TestTree
@@ -376,5 +383,50 @@ testKodiakBExprGenerator = testGroup "Kodiak BExpr Generator"
                 @?=
                 (return $ K.GE (K.Cnst 1) (K.Cnst 2))
             ]
+        ]
+    ]
+
+testIntegerExpressionSimplifier :: TestTree
+testIntegerExpressionSimplifier = testGroup "Integer (Sub-)Expression Simplifier" $
+    let evalRI' x = evalRI x :: Except (ToKodiakError AExpr) Integer
+        evalFI' x = evalFI x :: Except (ToKodiakError FAExpr) Integer in
+    [testGroup "Real embedded"
+        [testCase "Int" $
+            (evalRI' $ Int 2)
+            @?=
+            (return 2)
+        ,testCase "IMod" $
+            (evalRI' $ IMod (Int 2) (Int 3))
+            @?=
+            (return 2)
+        ,testCase "Invalid" $
+            (evalRI' $ IMod (Rat 2) (Int 3))
+            @?=
+            (throwError $ InvalidIntegerExpr (Rat 2))
+        ]
+    ,testGroup "FP embedded"
+        [testCase "FInt" $
+            (evalFI' $ FInt 2)
+            @?=
+            (return 2)
+        ,testCase "FIMod" $
+            (evalFI' $ FIMod (FInt 2) (FInt 3))
+            @?=
+            (return 2)
+        ,testGroup "RtoD nested of Real"
+            [testCase "Valid" $
+                (evalFI' $ RtoD $ IMod (Int 2) (Int 3))
+                @?=
+                (return 2)
+            ,testCase "Invalid" $
+                (evalFI' $ RtoD $ IMod (Rat 2) (Int 3))
+                @?=
+                (throwError $ AExprError $ InvalidIntegerExpr $ Rat 2)
+            ]
+        ,testCase "Invalid" $
+            let cnst = FCnst FPDouble 2 in
+            (evalFI' $ FIMod cnst (FInt 3))
+            @?=
+            (throwError $ InvalidIntegerExpr cnst)
         ]
     ]

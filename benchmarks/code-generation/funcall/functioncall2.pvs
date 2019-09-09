@@ -1,0 +1,8 @@
+functioncall2: THEORY
+BEGIN
+
+f(X: real): real  = X + (X*2)
+			  
+g(X: real): real = IF X > 0 THEN f(X) ELSE f(X-1) ENDIF
+
+END functioncall2

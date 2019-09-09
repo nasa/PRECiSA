@@ -38,36 +38,34 @@ If you want to use the SMT optimization you need [FPRock](https://github.com/nas
 
 ## Build
 
-1. Install [Kodiak](https://github.com/nasa/Kodiak) producing `libKodiakDynamic.so` (for Linux) or `libKodiakDynamic.dylib` (for MacOS).
+1. Install [Kodiak](https://github.com/nasa/Kodiak) producing a dynamic library `libKodiakDynamic.so` (for Linux) or `libKodiakDynamic.dylib` (for MacOS).
 
-2. Set the environment variable KODIAK_LIB with the directory in which the `libKodiakDynamic.so` (or `libKodiakDynamic.dylib`) is present.
-   In a bourne shell it can be set like this:
+2. Make accessible the *Kodiak* dynamic library to your linker.
+   Normally, this is done by updating the LD_LIBRARY_PATH environment variable with the directory in which the `libKodiakDynamic.so` (or `libKodiakDynamic.dylib`) file is present.
+   Let `<kodiak-directory>` represent this directory.
+   In a bourne shell that environment variable can be set like this:
    ```
-   $ export KODIAK_LIB=<directory-containing-libKodiakDynamic.so>
+   $ export LD_LIBRARY_PATH="<directory-containing-libKodiakDynamic.so>:$LD_LIBRARY_PATH"
    ```
+   You can add the previous line to your shell initialization script (for example, `~/.profile` or `~/.bashrc`) to make the `LD_LIBRARY_PATH` change permanent.
 
-3. Go to the root repository directory (it depends on where you have downloaded it and how you have named it).
+3. Go to the `PRECiSA` sub-directory of the repository.
    ```
-   $ cd <your-root-repository-directory>
-   ```
-
-4. Create a `build` directory:
-   ```
-   $ mkdir build
+   $ cd <repository-root>/PRECiSA
    ```
 
-5. Invoke CMake on the root of the repository from the build directory
+4. Use the following commands to create a `cabal` *sandbox* in this folder and install the executable in `<repository-root>/.cabal-sandbox/bin/precisa`
    ```
-   $ cd build
-   $ cmake ../PRECiSA
+   $ cabal v1-sandbox init    # Creates a new sandbox.
+                              # Old cabal versions may need the command `cabal sandbox init` instead
+
+   $ cabal v1-install --enable-optimization --extra-lib-dirs=<kodiak-directory>
    ```
 
-6. Invoke CMake's build command on the build directory
+5. Now, the `precisa` executable can be run with:
    ```
-   $ cmake --build .
+   $ .cabal-sandbox/bin/precisa
    ```
-
-At this point, the executable should be in the current `build` directory. You can add the current directory to your `PATH` variable or install (copy) it to your place of choice.
 
 
 
@@ -252,7 +250,7 @@ $ ./precisa gen-code "example.pvs" "example.input"
 
 ## Version
 
-*PRECiSA v-2.1.0* (August 2019)
+*PRECiSA v-2.1.1* (September 2019)
 
 ## Contact information
 If you have any question or problem, please contact:

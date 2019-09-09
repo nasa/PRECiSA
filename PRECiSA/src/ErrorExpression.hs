@@ -5,6 +5,6 @@ import AbstractSemantics
 import AbstractDomain
 import Common.DecisionPath
 
-symbolicError :: FAExpr -> EExpr
-symbolicError fae = eExpr $ mergeACebFold $ aexprSem fae emptyInterpretation emptyEnv root ""
+symbolicError :: Interpretation -> Env ACebS -> FAExpr -> EExpr
+symbolicError interp env fae = eExpr $ mergeACebFold $ aexprSem fae interp env root ""
 

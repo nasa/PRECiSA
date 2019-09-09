@@ -33,11 +33,14 @@ import Data.Time
 import ErrM
 import FPrec
 import Foreign.C
-import Kodiak.KodiakRunner
-import Kodiak.KodiakRunnable
 import FramaC.PrettyPrint
 import Options
+import NumericalError
 import PPExt
+import Kodiak.Runner
+import Kodiak.Runnable
+import Kodiak.Generator
+import qualified Kodiak.Expression as K
 import Prelude hiding ((<>))
 import PVSCert
 import Parser.Parser
@@ -48,6 +51,7 @@ import Transformation
 import TransformationUtils
 import Translation.Float2Real
 import Translation.Real2Float
+import Utils (fst3,snd3,trd3)
 
 main :: IO ()
 main = do
@@ -71,7 +75,7 @@ generateCProg :: GenerateOptions -> IO ()
 generateCProg
   GenerateOptions
     { optRealProgramFile     = prog
-    , optRealInputRangeFile  = inputs 
+    , optRealInputRangeFile  = inputs
     , targetFormat           = fprec }
   = case fprec of
     "double" ->  real2FPC prog inputs FPDouble
@@ -87,28 +91,36 @@ real2FPC fileprog filespec fp = do
   spec <- errify fail errparseSpec
   let dps = map initDpsToNone decls
 
-  let tranProgPairs = transformProgramSymb decls
-  let tranProg = map fst tranProgPairs
+  let maxDepth = 7
+  let prec = 14
+
+  let tranProgTuples = transformProgramSymb decls
+  let tranProg = map fst3 tranProgTuples
   let progSemStable = fixpointSemantics decls (botInterp decls) 3 semConf dps
-  let roErrors = zip (map fst progSemStable) (zip (map (maxRoundOffError . semantics) progSemStable) (map (stableConditions . semantics) progSemStable))
+  let progStableConds = map (stableConditions . semantics) progSemStable
+  let progSymbRoundOffErrs = map (maxRoundOffError . semantics) progSemStable
+  let searchParams = SP { maximumDepth = fromInteger . toInteger $ maxDepth, minimumPrecision = fromInteger . toInteger $ prec }
+  results <- computeAllErrorsInKodiak progSemStable spec searchParams
+  let maxErrors = summarizeAllErrors (getKodiakResults results)
 
-  framaCfileContent <- genFramaCFile fp realProg tranProgPairs spec roErrors
-  writeFile framaCfile      (render   framaCfileContent)
+  let roErrorsDecl = zip (map fst progSemStable) (zip progSymbRoundOffErrs progStableConds)
+  
+  funErrEnv <- mapM (computeErrorGuards spec) tranProgTuples
 
-  writeFile pvsProgFile     (render $ genFpProgFile fpFileName   decls)
-  writeFile pvsTranProgFile (render $ genFpTranProgFile tranFileName tranProg fp)
+  let tranProgPairs = zip tranProg (map snd3 tranProgTuples)
+  let framaCfileContent = genFramaCFile fp realProg spec tranProgPairs roErrorsDecl maxErrors progStableConds funErrEnv
+  writeFile framaCfile (render   framaCfileContent)
+ 
+  writeFile pvsProgFile     (render $ genFpProgFile fp fpFileName decls)
 
   let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName tranProg progSemStable True
   writeFile certFile symbCertificate
 
-  let maxDepth = 7
-  let prec = 14
+
   time <- getCurrentTime
-  let searchParams = SP { maximumDepth = fromInteger . toInteger $ maxDepth, minimumPrecision = fromInteger . toInteger $ prec }
-  results <- computeAllErrorsInKodiak progSemStable spec searchParams
+
   let numCertificate = render $ genNumCertFile certFileName numCertFileName results spec maxDepth prec time True
   writeFile numCertFile numCertificate
-  funErrEnv <- mapM (computeErrors spec) tranProgPairs
   writeFile exprCertFile (render $ genExprCertFile exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv)))
   return ()
     where
@@ -118,7 +130,6 @@ real2FPC fileprog filespec fp = do
       filePath = dropFileName fileprog
       framaCfile = filePath ++ inputFileName ++ ".c"
       pvsProgFile = filePath ++ fpFileName ++ ".pvs"
-      pvsTranProgFile = filePath ++ tranFileName ++ ".pvs"
       certFileName = "cert_" ++ inputFileName
       numCertFileName = "num_cert_" ++ inputFileName
       exprCertFileName = "expr_cert_" ++ inputFileName
@@ -126,6 +137,7 @@ real2FPC fileprog filespec fp = do
       certFile =  filePath ++ certFileName ++ ".pvs"
       numCertFile =  filePath ++ numCertFileName ++ ".pvs"
       semConf = SemConf { assumeTestStability = True, mergeUnstables = True}
+
 
 initDpsToNone :: Decl -> (FunName, [a])
 initDpsToNone (Decl _ f _ _) = (f,[])
@@ -200,6 +212,12 @@ parseAndAnalyze
       numCertFileName = "num_cert_" ++ inputFileName
       realProgFileName = inputFileName ++ "_real"
 
+
+getKodiakResults :: [(String,FPrec,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])] -> [(String, [KodiakResult])]
+getKodiakResults = map getKodiakResult
+  where
+     getKodiakResult (f,_,_,errors) = (f, map getKodiakError errors)
+     getKodiakError (_, _,_,err,_,_,_) = err
 
 summarizeAllErrors :: [(String, [KodiakResult])] -> [(String, Double)]
 summarizeAllErrors errorMap = [ (f,maximum $ map maximumUpperBound results) | (f, results) <- errorMap]

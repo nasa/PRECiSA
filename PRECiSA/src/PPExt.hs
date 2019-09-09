@@ -25,7 +25,7 @@ module PPExt (
 import Text.PrettyPrint as PPExt
 -- hiding (empty)
 import qualified Text.PrettyPrint as PP
---import FPrec
+import Debug.Trace
 
 class PPExt a where
   prettyDoc :: a -> Doc
@@ -47,6 +47,7 @@ docListOr list = hsep $ punctuate (text " ||") list
 
 showRational :: Rational -> String
 showRational x = map (\c -> if c=='%' then '/'; else c) (show x)
+
 
 instance PPExt Int where
   prettyDoc = int

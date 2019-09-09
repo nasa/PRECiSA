@@ -317,6 +317,8 @@ noRoundOffErrorInAExpr__tests = testGroup "noRoundOffErrorInAExpr tests"
   ,noRoundOffErrorInAExpr__test4
   ,noRoundOffErrorInAExpr__test5
   ,noRoundOffErrorInAExpr__test6
+  ,noRoundOffErrorInAExpr__test7
+  ,noRoundOffErrorInAExpr__test8
   ]
 
 noRoundOffErrorInAExpr__test1 = testCase "9 has no round-off error" $
@@ -337,6 +339,11 @@ noRoundOffErrorInAExpr__test5 = testCase "4+int_x has no round-off error" $
 noRoundOffErrorInAExpr__test6 = testCase "4+x has round-off error" $
     noRoundOffErrorInAExpr (FMul FPDouble (FInt 4) (FVar FPDouble "x")) @?= False
 
+noRoundOffErrorInAExpr__test7 = testCase "RtoD(4)+int_x has no round-off error" $
+    noRoundOffErrorInAExpr (FSub FPDouble (RtoD (Int 4)) (FVar TInt "x")) @?= True    
+
+noRoundOffErrorInAExpr__test8 = testCase "RtoS(4)+int_x has no round-off error" $
+    noRoundOffErrorInAExpr (FSub FPDouble (RtoS (Int 4)) (FVar TInt "x")) @?= True    
 
 varList__tests = testGroup "varList tests"
   [varList__test1
@@ -346,6 +353,11 @@ varList__tests = testGroup "varList tests"
   ,varList__test5
   ,varList__test6
   ,varList__test7
+  ,varList__test8
+  ,varList__test9
+  ,varList__test10
+  ,varList__test11
+  ,varList__test12
   ]
 
 varList__test1 = testCase "varList of constant 0.1 is []" $
@@ -375,5 +387,17 @@ varList__test7 = testCase "varList of  floor(x)/f(y,z) is [Var x, Var y, Var z]"
     varList (FDiv FPDouble (FFloor FPDouble (FVar FPDouble "x")) (FEFun "f" FPDouble [(FVar FPDouble "x"),(FVar FPDouble "z")]))
     @?= [FVar FPDouble "x", FVar FPDouble "z"]
 
+varList__test8 = testCase "varList of a RtoD(6) is []" $
+    varList (RtoD (Int 6)) @?= []
 
+varList__test9 = testCase "varList of a RtoD(6) is []" $
+    varList (RtoD(DtoR(RtoD (Int 6)))) @?= []                                           
 
+varList__test10 = testCase "varList of a RtoD(DtoR(x)) is [x]" $
+    varList (RtoD(Var Real "x")) @?= []   
+
+varList__test11 = testCase "varList of a RtoD(DtoR(x)) is [x]" $
+    varList (RtoD(DtoR(FVar FPDouble "x"))) @?= [FVar FPDouble "x"]   
+
+varList__test12 = testCase "varList of a RtoD(DtoR(x + y)) is [x,y]" $
+    varList (RtoD(DtoR(FAdd FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))) @?= [FVar FPDouble "x",FVar FPDouble "y"]   

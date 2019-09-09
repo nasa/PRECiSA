@@ -1,0 +1,79 @@
+cd2d_double: THEORY
+BEGIN
+IMPORTING float@aerr754sp
+
+max (A,B: unb_double):unb_double = IF (A>B) THEN A ELSE B ENDIF
+
+min (A,B: unb_double):unb_double = IF (A<B) THEN A ELSE B ENDIF
+
+tau (Sx, Sy, Vx, Vy, T: unb_double): unb_double =
+   min(
+      max(
+         RtoD(0),
+         Dneg(
+            Dadd(
+               Dmul(Sx, Vx),
+               Dmul(Sy, Vy)
+            )
+         )
+      ),
+      Dmul(
+         T,
+         Dadd(
+            Dmul(Vx, Vx),
+            Dmul(Vy, Vy)
+         )
+      )
+   )
+
+omega (Sx, Sy, Vx, Vy, D, T: unb_double): unb_double =
+   IF (Dadd(Dmul(Sx,Sx),Dmul(Sy,Sy)) = Dmul(D,D))
+   THEN Dadd(Dmul(Sx,Vx),Dmul(Sy,Vy))
+   ELSE
+      LET TauSV = tau(Sx, Sy, Vx, Vy, T) IN
+      Dsub(
+         Dadd(
+            Dadd(
+               Dmul(
+                  Dadd(
+                     Dmul(Vx,Vx),
+                     Dmul(Vy,Vy)
+                  ),
+                  Dadd(
+                     Dmul(Sx,Sx),
+                     Dmul(Sy,Sy)
+                  )
+               ),
+               Dmul(
+                  RtoD(2),
+                  TauSV
+               )
+            ),
+            Dmul(TauSV,TauSV)
+         ),
+         Dmul(
+            Dmul(D,D),
+            Dadd(
+               Dmul(Vx,Vx),
+               Dmul(Vy,Vy)
+            )
+         )
+      )
+   ENDIF
+
+los (Sx, Sy: unb_double): unb_double = Dsqrt (Dadd (Dmul (Sx,Sx), Dmul (Sy,Sy)))
+
+cd2d (S0x, S0y, V0x, V0y, S1x, S1y, V1x, V1y, D, T: unb_double): unb_double =
+   LET Sx = Dsub(S0x, S1x) IN
+   LET Sy = Dsub(S0y, S1y) IN
+   LET Vx = Dsub(V0x, V1x) IN
+   LET Vy = Dsub(V0y, V1y) IN
+   IF (los(Sx,Sy) < D)
+   THEN RtoD(1)
+   ELSE IF (omega(Sx,Sy,Vx,Vy,D,T) < 0)
+      THEN RtoD(1)
+      ELSE RtoD(0)
+      ENDIF
+   ENDIF
+
+END cd2d_double
