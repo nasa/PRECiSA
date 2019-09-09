@@ -250,7 +250,7 @@ $ ./precisa gen-code "example.pvs" "example.input"
 
 ## Version
 
-*PRECiSA v-2.1.0* (August 2019)
+*PRECiSA v-2.1.1* (September 2019)
 
 ## Contact information
 If you have any question or problem, please contact:
