@@ -20,8 +20,8 @@ winding_number(P_x, P_y, V1_x, V1_y, V2_x, V2_y: unb_double):unb_double =
   LET K = quadrant(THIS_x,THIS_y) IN
   LET P = quadrant(NEXT_x,NEXT_y) IN
   IF (K = P) THEN RtoD(0)
-  ELSIF (Isub(P,RtoD(1)) = Imod(K,RtoD(4))) THEN RtoD(1)
-  ELSIF (Isub(K,RtoD(1)) = Imod(P,RtoD(4))) THEN RtoD(-1)
+ % ELSIF (Isub(P,RtoD(1)) = Imod(K,RtoD(4))) THEN RtoD(1)
+ % ELSIF (Isub(K,RtoD(1)) = Imod(P,RtoD(4))) THEN RtoD(-1)
   ELSIF (DET <= RtoD(0)) THEN RtoD(2)
   ELSE RtoD(-2)
   ENDIF

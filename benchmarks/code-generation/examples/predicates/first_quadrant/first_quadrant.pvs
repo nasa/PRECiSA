@@ -1,0 +1,18 @@
+first_quadrant : THEORY
+
+  BEGIN
+  
+  IMPORTING structures@for_iterate
+
+
+   quadrant(X,Y:real): int =
+    IF 0<=X AND 0<=Y THEN 1
+    ELSIF X<=0 AND 0<=Y THEN 2
+    ELSIF X<=0 THEN 3
+    ELSE 4
+    ENDIF
+
+  first_quadrant(X,Y: real): bool =
+     quadrant(X,Y) -1 = 0
+  
+  END first_quadrant

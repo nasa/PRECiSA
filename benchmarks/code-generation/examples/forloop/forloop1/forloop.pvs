@@ -1,0 +1,8 @@
+forloop: THEORY BEGIN
+
+
+  forloop(N: posnat) : int
+  = for[int](0,4,0,LAMBDA (I: subrange(0,4), Acc: int) :
+      I + Acc)
+
+END forloop

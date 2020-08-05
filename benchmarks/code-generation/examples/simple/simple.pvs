@@ -1,0 +1,10 @@
+simple: THEORY BEGIN
+
+ 
+  f(X : real): real
+  = X * 2
+
+  g(X,Y: real) : real
+  = 1 + (X + Y)
+
+END simple

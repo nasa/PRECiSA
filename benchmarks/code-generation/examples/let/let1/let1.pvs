@@ -1,0 +1,9 @@
+let1: THEORY BEGIN
+
+
+  g(X: real) : real
+  = LET Z = 5,
+        Y = X + Z IN 
+       Y + 3
+
+END let1

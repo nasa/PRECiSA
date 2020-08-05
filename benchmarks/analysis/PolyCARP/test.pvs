@@ -1,0 +1,15 @@
+test: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f(X:unb_double):unb_double =
+  IF (X >= RtoD(0)) THEN X-1
+  ELSE X+1
+  ENDIF
+
+g(Y: unb_double):unb_double =
+ IF (f(Y) > 4) THEN RtoD(2)
+  ELSE RtoD(-2)
+  ENDIF
+  
+END test

@@ -1,0 +1,23 @@
+functioncall5: THEORY BEGIN
+
+ 
+  f(V1, V2 : real): int
+  = LET DET : real = (V1 - V2) IN
+       IF DET <= 0 THEN  2
+       ELSE             -2
+       ENDIF
+
+  g(X,Y: real) : int
+  = LET A = f(X, Y),
+        B = f(Y,X),
+	C = X * Y IN
+    IF C<0 THEN
+       1 + A
+     ELSE
+       2 + B
+     ENDIF
+
+
+        
+
+END functioncall5

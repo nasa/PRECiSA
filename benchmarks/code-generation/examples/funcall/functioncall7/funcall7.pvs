@@ -1,0 +1,12 @@
+funcall7: THEORY
+BEGIN
+
+ f(sx,vx:real): real =
+   LET t1 = sx + vx IN
+      IF t1 <= 0 THEN t1 + sx ELSE t1 + vx ENDIF
+ 
+ g(sx,vx:real): real =
+   LET y = f(sx,vx) IN y + 2
+     
+
+END funcall7

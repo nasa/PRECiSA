@@ -1,0 +1,7 @@
+tcoa: THEORY
+BEGIN
+
+ tcoa(sz,vz:real): real = IF (sz*vz < 0) THEN -(sz/vz) 
+                       ELSE 0
+		       ENDIF
+END tcoa

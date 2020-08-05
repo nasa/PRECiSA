@@ -1,3 +1,13 @@
+-- Notices:
+--
+-- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+ 
+-- Disclaimers
+-- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
+ 
+-- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
+  
+
 module SMT.ModelTest where
 
 import Test.Tasty
@@ -7,18 +17,15 @@ import AbstractSemantics
 import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
-import FPrec
+import PVSTypes
 import SMT.PrettyPrinter
 import PPExt
 import Control.Monad.State
 import SMT.GenerateSMTModel
-
-
+import Operators
 import AbsPVSLang
 import AbstractDomain
 import PPExt
-
-
 
 testModel :: TestTree
 testModel = testGroup "Model" 
@@ -28,7 +35,6 @@ testModel = testGroup "Model"
   ,testreplaceFreshVarInBExpr
   ]
 
-
 testreplaceFreshVarInFAExpr :: TestTree
 testreplaceFreshVarInFAExpr = testGroup "replaceFreshVarInFAExpr"
   [testCase "FInt returns itself" $
@@ -36,23 +42,23 @@ testreplaceFreshVarInFAExpr = testGroup "replaceFreshVarInFAExpr"
   ,testCase "FCnst returns itself" $
    (test $ FCnst FPDouble 3.2) @?= FCnst FPDouble 3.2
   ,testCase "RtoD(Int) returns itself" $
-   (test $ RtoD (Int 3)) @?= RtoD (Int 3)
+   (test $ ToFloat FPDouble (Int 3)) @?= ToFloat FPDouble (Int 3)
   ,testCase "RtoS(Int) returns itself" $
-   (test $ RtoS (Int 3)) @?= RtoS (Int 3)
+   (test $ ToFloat FPSingle (Int 3)) @?= ToFloat FPSingle (Int 3)
   ,testCase "RtoD(Rat) returns itself" $
-   (test $ RtoD (Rat 3)) @?= RtoD (Rat 3)
+   (test $ ToFloat FPDouble (Rat 3)) @?= ToFloat FPDouble (Rat 3)
   ,testCase "RtoS(Rat) returns itself" $
-   (test $ RtoS (Rat 3)) @?= RtoS (Rat 3)
+   (test $ ToFloat FPSingle (Rat 3)) @?= ToFloat FPSingle (Rat 3)
   ,testCase "FVar returns itself" $
    (test $ FVar FPDouble "u") @?= FVar FPDouble "u"
   ,testCase "FAExpr returns a fresh variable if not replaced yet" $
-   (test $ FSub FPDouble (FVar FPDouble "u") (FVar FPDouble "v")) @?= FVar FPDouble "Temp_2"
+   (test $ BinaryFPOp SubOp FPDouble (FVar FPDouble "u") (FVar FPDouble "v")) @?= FVar FPDouble "Temp_2"
   ,testCase "FAExpr returns a previous variable if already replaced" $
-   (test $ FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) @?= FVar FPDouble "Temp_1"
+   (test $ BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) @?= FVar FPDouble "Temp_1"
   ]
     where
       test x = fst $ runState (replaceFreshVarInFAExpr x) state
-      state  = (2,[("Temp_1", FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"), FPDouble)])
+      state  = (2,[("Temp_1", BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"), FPDouble)])
 
 testreplaceFreshVarInFBExpr :: TestTree
 testreplaceFreshVarInFBExpr = testGroup "testreplaceFreshVarInFBExpr"
@@ -62,86 +68,86 @@ testreplaceFreshVarInFBExpr = testGroup "testreplaceFreshVarInFBExpr"
    (test $ FBFalse) @?= FBFalse
   ,testCase "FNot propagates replacements" $
    (test $ FNot
-    (FGt
-     (FMul FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-     (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
+    (FRel Gt
+     (BinaryFPOp MulOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
     @?=
     FNot
-    (FGt
+    (FRel Gt
      (FVar FPDouble "Temp_2")
      (FVar FPDouble "Temp_3"))
   ,testCase "FAnd propagates replacements" $
    (test $ FAnd 
-    (FEq
-     (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-     (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")))
-    (FNeq
-     (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) 
-     (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
+    (FRel Eq
+     (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")))
+    (FRel Neq
+     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) 
+     (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
    @?=
    FAnd 
-    (FEq
+    (FRel Eq
      (FVar FPDouble "Temp_1")
      (FVar FPDouble "Temp_2"))
-    (FNeq
+    (FRel Neq
      (FVar FPDouble "Temp_2")
      (FVar FPDouble "Temp_1"))
   ,testCase "FOr propagates replacements" $
    (test $ FOr 
-    (FEq
-     (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-     (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")))
-    (FNeq
-     (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) 
-     (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
+    (FRel Eq
+     (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")))
+    (FRel Neq
+     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) 
+     (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
    @?=
    FOr 
-    (FEq
+    (FRel Eq
      (FVar FPDouble "Temp_1")
      (FVar FPDouble "Temp_2"))
-    (FNeq
+    (FRel Neq
      (FVar FPDouble "Temp_2")
      (FVar FPDouble "Temp_1"))
-  ,testCase "FGt propagates replacements" $
-   (test $ FGt
-    (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-    (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
+  ,testCase "FRel Gt propagates replacements" $
+   (test $ FRel Gt
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+    (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
    @?=
-   FGt (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
-  ,testCase "FGtE propagates replacements" $
-   (test $ FGtE
-    (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-    (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
+   FRel Gt (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
+  ,testCase "FRel GtE propagates replacements" $
+   (test $ FRel GtE
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+    (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
    @?=
-   FGtE (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
-  ,testCase "FLt propagates replacements" $
-   (test $ FLt
-    (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-    (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
+   FRel GtE (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
+  ,testCase "FRel Lt propagates replacements" $
+   (test $ FRel Lt
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+    (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
    @?=
-   FLt (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
-  ,testCase "FLtE propagates replacements" $
-   (test $ FLtE
-    (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-    (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
+   FRel Lt (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
+  ,testCase "FRel LtE propagates replacements" $
+   (test $ FRel LtE
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+    (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
    @?=
-   FLtE (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
-  ,testCase "FNeq propagates replacements" $
-   (test $ FNeq
-    (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-    (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
+   FRel LtE (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
+  ,testCase "FRel Neq propagates replacements" $
+   (test $ FRel Neq
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+    (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
    @?=
-   FNeq (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
-  ,testCase "FEq propagates replacements" $
-   (test $ FEq
-    (FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
-    (FSub FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
+   FRel Neq (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
+  ,testCase "FRel Eq propagates replacements" $
+   (test $ FRel Eq
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
+    (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
    @?=
-   FEq (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
+   FRel Eq (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
   ] 
     where
       test x = fst $ runState (replaceFreshVarInFBExpr x) state
-      state  = (2,[("Temp_1", FAdd FPDouble (FVar FPDouble "y") (FVar FPDouble "z"), FPDouble)])
+      state  = (2,[("Temp_1", BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"), FPDouble)])
       
 testreplaceFreshVarInAExpr :: TestTree
 testreplaceFreshVarInAExpr = testGroup "replaceFreshVarInAExpr"
@@ -156,17 +162,17 @@ testreplaceFreshVarInAExpr = testGroup "replaceFreshVarInAExpr"
   ,testCase "ErrorMark returns itself" $
    (test $ ErrorMark "X" FPDouble) @?= ErrorMark "X" FPDouble 
   ,testCase "AExpr returns a fresh variable if not replaced yet" $
-   (test $ Sub (Var Real "u") (Var Real "v")) @?= Var Real "Real_Temp_2"
+   (test $ BinaryOp SubOp (Var Real "u") (Var Real "v")) @?= Var Real "Real_Temp_2"
   ,testCase "AExpr returns a previous variable if already replaced" $
-   (test $ Add (Var Real "y") (Var Real "z")) @?= Var Real "Real_Temp_1"
+   (test $ BinaryOp AddOp (Var Real "y") (Var Real "z")) @?= Var Real "Real_Temp_1"
   ,testCase "Mul returns a fresh variable if not replaced" $
-   (test $ Mul (Var Real "y") (Var Real "z")) @?= Var Real "Real_Temp_2"
+   (test $ BinaryOp MulOp (Var Real "y") (Var Real "z")) @?= Var Real "Real_Temp_2"
   ,testCase "Sub returns a fresh variable if not replaced" $
-   (test $ Sub (Var Real "y") (Var Real "z")) @?= Var Real "Real_Temp_2"
+   (test $ BinaryOp SubOp (Var Real "y") (Var Real "z")) @?= Var Real "Real_Temp_2"
   ]
     where
       test x = fst $ runState (replaceFreshVarInAExpr x) state
-      state  = (2,[("Real_Temp_1", Add (Var Real "y") (Var Real "z"))])
+      state  = (2,[("Real_Temp_1", BinaryOp AddOp (Var Real "y") (Var Real "z"))])
 
 testreplaceFreshVarInBExpr :: TestTree
 testreplaceFreshVarInBExpr = testGroup "testreplaceFreshVarInBExpr"
@@ -175,43 +181,43 @@ testreplaceFreshVarInBExpr = testGroup "testreplaceFreshVarInBExpr"
   ,testCase "BFalse returns itself" $
    (test $ BFalse) @?= BFalse
   ,testCase "Not propagates replacements" $
-   (test $ Not (Gt (Mul (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z"))) )
-       @?= Not (Gt (Var Real "Real_Temp_2") (Var Real "Real_Temp_3"))
+   (test $ Not (Rel Gt (BinaryOp MulOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z"))) )
+       @?= Not (Rel Gt (Var Real "Real_Temp_2") (Var Real "Real_Temp_3"))
   ,testCase "And propagates replacements" $
-   (test $ And (Eq  (Add (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")))
-               (Neq (Sub (Var Real "y") (Var Real "z")) (Add (Var Real "y") (Var Real "z"))) )
-       @?= And (Eq  (Var Real "Real_Temp_1") (Var Real "Real_Temp_2"))
-               (Neq (Var Real "Real_Temp_2") (Var Real "Real_Temp_1"))
+   (test $ And (Rel Eq  (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")))
+               (Rel Neq (BinaryOp SubOp (Var Real "y") (Var Real "z")) (BinaryOp AddOp (Var Real "y") (Var Real "z"))) )
+       @?= And (Rel Eq  (Var Real "Real_Temp_1") (Var Real "Real_Temp_2"))
+               (Rel Neq (Var Real "Real_Temp_2") (Var Real "Real_Temp_1"))
   ,testCase "Or propagates replacements" $
-   (test $ Or (Eq  (Add (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")))
-              (Neq (Sub (Var Real "y") (Var Real "z")) (Add (Var Real "y") (Var Real "z"))) )
-       @?= Or ( Eq (Var Real "Real_Temp_1") (Var Real "Real_Temp_2"))
-              (Neq (Var Real "Real_Temp_2") (Var Real "Real_Temp_1"))
+   (test $ Or (Rel Eq  (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")))
+              (Rel Neq (BinaryOp SubOp (Var Real "y") (Var Real "z")) (BinaryOp AddOp (Var Real "y") (Var Real "z"))) )
+       @?= Or (Rel Eq (Var Real "Real_Temp_1") (Var Real "Real_Temp_2"))
+              (Rel Neq (Var Real "Real_Temp_2") (Var Real "Real_Temp_1"))
   ,testCase "Gt propagates replacements" $
-   (test $ Gt (Add (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")) )
-       @?= Gt (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
+   (test $ Rel Gt (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")) )
+       @?= Rel Gt (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
   ,testCase "Gt propagates replacements" $
-   (test $ Gt (Mul (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")) )
-       @?= Gt (Var Real "Real_Temp_2") (Var Real "Real_Temp_3")
+   (test $ Rel Gt (BinaryOp MulOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")) )
+       @?= Rel Gt (Var Real "Real_Temp_2") (Var Real "Real_Temp_3")
   ,testCase "GtE propagates replacements" $
-   (test $ GtE (Add (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")) )
-       @?= GtE (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
+   (test $ Rel GtE (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")) )
+       @?= Rel GtE (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
   ,testCase "Lt propagates replacements" $
-   (test $ Lt (Add (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")) )
-       @?= Lt (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
+   (test $ Rel Lt (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")) )
+       @?= Rel Lt (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
   ,testCase "LtE propagates replacements" $
-   (test $ LtE (Add (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")) )
-       @?= LtE (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
+   (test $ Rel LtE (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")) )
+       @?= Rel LtE (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
   ,testCase "Neq propagates replacements" $
-   (test $ Neq (Add (Var Real "y") (Var Real "z"))(Sub (Var Real "y") (Var Real "z")) )
-       @?= Neq (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
+   (test $ Rel Neq (BinaryOp AddOp (Var Real "y") (Var Real "z"))(BinaryOp SubOp (Var Real "y") (Var Real "z")) )
+       @?= Rel Neq (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
   ,testCase "Eq propagates replacements" $
-   (test $ Eq (Add (Var Real "y") (Var Real "z")) (Sub (Var Real "y") (Var Real "z")) )
-       @?= Eq (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
+   (test $ Rel Eq (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")) )
+       @?= Rel Eq (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
   ] 
     where
       test x = fst $ runState (replaceFreshVarInBExpr x) state
-      state  = (2,[("Real_Temp_1", Add (Var Real "y") (Var Real "z"))])
+      state  = (2,[("Real_Temp_1", BinaryOp AddOp (Var Real "y") (Var Real "z"))])
 
 
 --testGenSMTConstraints :: TestTree

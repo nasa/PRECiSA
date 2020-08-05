@@ -1,8 +1,0 @@
-function_fp: THEORY
-BEGIN
-
-  IMPORTING float@ieee754dp_sub, float@ieee754dp_mul, float@ieee754dp_add 
-
-  f(X: unb_double): unb_double = IF RtoD(0) < Dsub(Dmul(X,X),RtoD(2)) THEN Dadd(X,X) ELSE Dsub(X,X) ENDIF
-
-END function_fp

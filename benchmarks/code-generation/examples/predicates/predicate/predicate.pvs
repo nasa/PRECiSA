@@ -1,0 +1,14 @@
+predicate : THEORY
+
+  BEGIN
+  
+  IMPORTING structures@for_iterate
+
+
+   mul(X,Y:real): real = X * Y
+
+   positive(X,Y: real): bool = mul(X,Y)>0
+
+   test(X,Y: real) : int = IF positive(X,Y) THEN 1 ELSE 2 ENDIF
+  
+  END predicate

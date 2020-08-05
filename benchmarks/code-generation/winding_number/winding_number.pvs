@@ -1,0 +1,37 @@
+winding_number: THEORY BEGIN
+
+  IMPORTING for_iterate
+
+  quadrant(X,Y: real): int =
+    IF 0<=X AND 0<=Y THEN 1
+    ELSIF X<=0 AND 0<=Y THEN 2
+    ELSIF X<=0 THEN 3
+    ELSE 4
+    ENDIF
+
+  winding_number_contrib(P_V1_x,P_V1_y,P_V2_x,P_V2_y,S_x,S_y : real): int
+  = LET THIS_x     : real = (P_V1_x - S_x),
+        THIS_y     : real = (P_V1_y - S_y),
+        NEXT_x     : real = (P_V2_x - S_x),
+       	NEXT_y     : real = (P_V2_y - S_y),
+        DISTANCE_x : real = (NEXT_x - THIS_x),
+	DISTANCE_y : real = (NEXT_y - THIS_y),
+	DET : real = ((DISTANCE_x * THIS_y) - (DISTANCE_y * THIS_x)),
+	K : int = quadrant(THIS_x, THIS_y),
+	P : int = quadrant(NEXT_x, NEXT_y) IN
+       IF    K = P   THEN  0
+       ELSIF P - 1 = mod.mod(K,4) THEN  1
+       ELSIF K - 1 = mod.mod(P,4) THEN -1
+       ELSIF DET <= 0             THEN  2
+       ELSE                            -2
+       ENDIF
+
+  winding_number(N: posnat, Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real) : int
+  = for[int](0,2,0,LAMBDA (I: subrange(0,10), Acc: int) :
+     IF I<2 THEN
+       Acc + winding_number_contrib(Px(I),Py(I),Px(I+1),Py(I+1),Sx,Sy)
+     ELSE
+       Acc + winding_number_contrib(Px(I),Py(I),Px(0),Py(0),Sx,Sy) 
+     ENDIF)
+
+END winding_number

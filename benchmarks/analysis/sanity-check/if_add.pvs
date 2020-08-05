@@ -1,0 +1,7 @@
+if_double: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+f (X, Y: unb_double): unb_double = IF (X>2) THEN RtoD(1.1) ELSE 0 ENDIF +
+                                   IF (Y>6) THEN 2 ELSE 3 ENDIF
+END if_double

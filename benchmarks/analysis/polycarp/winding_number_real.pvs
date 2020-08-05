@@ -4,31 +4,29 @@ winding_number_real: THEORY
 BEGIN
 IMPORTING winding_number
 
-quadrant_real(r_X: real, r_Y: real): real  = IF ((r_X >= 0) AND (r_Y >= 0))
-                                             THEN 1
-                                             ELSIF ((r_X <= 0) AND (r_Y >= 0))
-                                             THEN 2
-                                             ELSIF (r_X <= 0)
-                                             THEN 3
-                                             ELSE 4
-                                             ENDIF
-winding_number_real(r_P_V1_x: real, r_P_V1_y: real, r_P_V2_x: real, r_P_V2_y: real, r_S_x: real, r_S_y: real): real  = LET r_THIS_x:real=(r_P_V1_x - r_S_x)
-                                                                                                                       IN LET r_THIS_y:real=(r_P_V1_y - r_S_y)
-                                                                                                                          IN LET r_NEXT_x:real=(r_P_V2_x - r_S_x)
-                                                                                                                             IN LET r_NEXT_y:real=(r_P_V2_y - r_S_y)
-                                                                                                                                IN LET r_DISTANCE_x:real=(r_NEXT_x - r_THIS_x)
-                                                                                                                                   IN LET r_DISTANCE_y:real=(r_NEXT_y - r_THIS_y)
-                                                                                                                                      IN LET r_DET:real=((r_DISTANCE_x * r_THIS_y) - (r_DISTANCE_y * r_THIS_x))
-                                                                                                                                         IN LET r_K:real=quadrant(r_THIS_x, r_THIS_y)
-                                                                                                                                            IN LET r_P:real=quadrant(r_NEXT_x, r_NEXT_y)
-                                                                                                                                               IN IF (r_K = r_P)
-                                                                                                                                                  THEN 0
-                                                                                                                                                  ELSIF ((r_P - 1) = Imod(r_K, 4))
-                                                                                                                                                  THEN 1
-                                                                                                                                                  ELSIF ((r_K - 1) = Imod(r_P, 4))
-                                                                                                                                                  THEN -1
-                                                                                                                                                  ELSIF (r_DET <= 0)
-                                                                                                                                                  THEN 2
-                                                                                                                                                  ELSE -2
-                                                                                                                                                  ENDIF
+quadrant_real(r_X: real, r_Y: real): real  =
+IF ((r_X >= 0) AND (r_Y >= 0))
+THEN 1
+ELSIF ((r_X <= 0) AND (r_Y >= 0))
+THEN 2
+ELSIF (r_X <= 0)
+THEN 3
+ELSE 4
+ENDIF
+winding_number_real(r_P_x: real, r_P_y: real, r_V1_x: real, r_V1_y: real, r_V2_x: real, r_V2_y: real): real  =
+LET r_THIS_x:real=(r_V1_x - r_P_x)
+IN LET r_THIS_y:real=(r_V1_y - r_P_y)
+   IN LET r_NEXT_x:real=(r_V2_x - r_P_x)
+      IN LET r_NEXT_y:real=(r_V2_y - r_P_y)
+         IN LET r_DISTANCE_x:real=(r_NEXT_x - r_THIS_x)
+            IN LET r_DISTANCE_y:real=(r_NEXT_y - r_THIS_y)
+               IN LET r_DET:real=((r_DISTANCE_x * r_THIS_y) - (r_DISTANCE_y * r_THIS_x))
+                  IN LET r_K:real=quadrant(r_THIS_x, r_THIS_y)
+                     IN LET r_P:real=quadrant(r_NEXT_x, r_NEXT_y)
+                        IN IF (r_K = r_P)
+                           THEN 0
+                           ELSIF (r_DET <= 0)
+                           THEN 2
+                           ELSE -2
+                           ENDIF
 END winding_number_real

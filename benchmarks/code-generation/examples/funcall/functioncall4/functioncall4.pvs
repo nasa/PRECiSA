@@ -1,0 +1,20 @@
+functioncall4: THEORY BEGIN
+
+ 
+  f(V1, V2 : real): int
+  = LET DET : real = (V1 - V2)IN
+       IF DET <= 0 THEN  2
+       ELSE             -2
+       ENDIF
+
+  g(X,Y: real) : int
+  = IF X<0 THEN
+       1 + f(X, Y)
+     ELSE
+       2 + f(Y,X)
+     ENDIF
+
+
+        
+
+END functioncall4

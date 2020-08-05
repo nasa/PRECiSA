@@ -1,20 +1,32 @@
+-- Notices:
+--
+-- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+ 
+-- Disclaimers
+-- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
+ 
+-- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
+  
+  
 module TransformationTest where
 
 import Test.Tasty
 import Test.Tasty.HUnit
 import Transformation
 import AbsPVSLang
-import FPrec
+import PVSTypes
 import AbsSpecLang
 import Control.Monad.State
+import Operators
 
 returnsValueEqualTo :: (Eq a, Show a) => IO a -> a -> IO ()
 returnsValueEqualTo lhs rhs = lhs >>= (@?= rhs)
 
-returnsValueEqualTo':: State ErrVarInterp Stm -> Stm -> IO ()
+returnsValueEqualTo':: State TranStateInterp FAExpr -> FAExpr -> IO ()
 returnsValueEqualTo' lhs rhs = return (fst $ runState lhs initState) `returnsValueEqualTo` rhs
   where
-    initState = [("f",FreshErrVar { env = [], count = 0, localEnv = [] })]
+    initState = [("f", TransState { freshErrVar = FreshErrVar { env = [], count = 0, localEnv = [] },
+                                                     forExprMap = [] })]
 
 checkOutputIs :: (Eq a, Show a) => IO a -> a -> IO ()
 checkOutputIs actual expected =
@@ -24,13 +36,146 @@ checkOutputIs actual expected =
               @? ("Output: " ++ show out ++ " is different than expected: " ++ show expected)
 
 testTransformation = testGroup "Transformation"
-  [transformProg__tests
-  ,transformStmSymb__tests
---  ,betaPlus_tests
---  ,betaMinus_tests0
+  [transformStmSymb__tests
+  ,origDeclName__tests
+  ,localVarsInExpr__tests
   ]
 
+localVarsInExpr__tests = testGroup "localVarsInExpr tests"
+  [localVarsInExpr1__test
+  ,localVarsInExpr2__test
+  ,localVarsInExpr3__test
+  ,localVarsInExpr4__test
+  ,localVarsInExpr5__test
+  ,localVarsInExpr6__test
+  ,localVarsInExpr7__test
+  ,localVarsInExpr8__test
+  ,localVarsInExpr9__test
+  ,localVarsInExpr10__test
+  ,localVarsInExpr11__test
+  ,localVarsInExpr12__test
+  ]
 
+localVarsInExpr1__test = testCase "localVarsInExpr1" $
+  localVarsInExpr [("X",FPDouble,FVar FPDouble "Y")] (FInt 1) @?= []
+
+localVarsInExpr2__test = testCase "localVarsInExpr2" $
+  localVarsInExpr [("F", FPDouble, FInt 5)] (FVar FPDouble "X") @?= []
+
+localVarsInExpr3__test = testCase "localVarsInExpr3" $
+  localVarsInExpr [("X",FPDouble,FVar FPDouble "Y")] (FVar FPDouble "X")
+  @?=
+  [("X", FPDouble, FVar FPDouble "Y")]
+
+localVarsInExpr4__test = testCase "localVarsInExpr4" $
+  localVarsInExpr [("X",FPDouble,FVar FPDouble "Y"),("Y",FPDouble,FVar FPDouble "Z")]
+                  (FVar FPDouble "X")
+  @?=
+  [("X",FPDouble,FVar FPDouble "Y"),("Y",FPDouble,FVar FPDouble "Z")]
+
+localVarsInExpr5__test = testCase "localVarsInExpr5" $
+  localVarsInExpr [("X",FPDouble, BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Y"))
+                  ,("Y",FPDouble,FVar FPDouble "Z")]
+                  (FVar FPDouble "X")
+  @?=
+  [("X",FPDouble,BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Y"))
+  ,("Y",FPDouble,FVar FPDouble "Z")]
+
+localVarsInExpr6__test = testCase "localVarsInExpr6" $
+  localVarsInExpr [("X",FPDouble, BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Y"))
+                  ,("Y",FPDouble, FEFun False "f" FPDouble [FVar FPDouble "Z"])]
+                  (FVar FPDouble "X")
+  @?=
+  [("X",FPDouble,BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Y"))
+  ,("Y",FPDouble,FEFun False "f" FPDouble [FVar FPDouble "Z"])]
+
+localVarsInExpr7__test = testCase "localVarsInExpr7" $
+  localVarsInExpr [("X", FPDouble, BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Y"))
+                  ,("Y", FPDouble, BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Z"))
+                  ,("Z", FPDouble, FInt 2)]
+                  (FVar FPDouble "X")
+  @?=
+  [("X",FPDouble,BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Y"))
+  ,("Y",FPDouble,BinaryFPOp AddOp FPDouble (FInt 5) (FVar FPDouble "Z"))
+  ,("Z", FPDouble, FInt 2)]
+
+localVarsInExpr8__test = testCase "localVarsInExpr8" $
+  localVarsInExpr [("X", FPDouble, BinaryFPOp AddOp FPDouble (FVar FPDouble "Z") (FVar FPDouble "Y"))
+                  ,("Y", FPDouble, FEFun False "f" FPDouble [FVar FPDouble "Z"])
+                  ,("Z", FPDouble, FInt 2)
+                  ,("F", FPDouble, FInt 5)]
+                  (FVar FPDouble "X")
+  @?=
+  [("X",FPDouble,BinaryFPOp AddOp FPDouble (FVar FPDouble "Z") (FVar FPDouble "Y"))
+  ,("Y",FPDouble,FEFun False "f" FPDouble [FVar FPDouble "Z"])
+  ,("Z", FPDouble, FInt 2)]
+
+localVarsInExpr9__test = testCase "localVarsInExpr9" $
+  localVarsInExpr [("Y", FPDouble, FEFun False "f" FPDouble [FVar FPDouble "X"])
+                  ,("X", FPDouble, FInt 2)
+                  ,("F", FPDouble, FInt 5)]
+                  (FVar FPDouble "Y")
+  @?=
+  [("Y",FPDouble,FEFun False "f" FPDouble [FVar FPDouble "X"])
+  ,("X",FPDouble,FInt 2)]
+
+localVarsInExpr10__test = testCase "localVarsInExpr10" $
+  localVarsInExpr [("Z", FPDouble, FInt 2)
+                  ,("Y", FPDouble, FEFun False "f" FPDouble [FVar FPDouble "X"])
+                  ,("X", FPDouble, FVar FPDouble "Z")
+                  ,("F", FPDouble, FInt 5)]
+                  (BinaryFPOp AddOp FPDouble (FVar FPDouble "F") (FVar FPDouble "Y"))
+  @?=
+  [("Z", FPDouble, FInt 2)
+  ,("Y", FPDouble, FEFun False "f" FPDouble [FVar FPDouble "X"])
+  ,("X", FPDouble, FVar FPDouble "Z")
+  ,("F", FPDouble, FInt 5)]
+
+localVarsInExpr11__test = testCase "localVarsInExpr11" $
+  localVarsInExpr [("Y", FPDouble, FEFun False "f" FPDouble [FVar FPDouble "X"])
+                  ,("X", FPDouble, FVar FPDouble "Z")
+                  ,("F", FPDouble, FInt 5)]
+                  (BinaryFPOp AddOp FPDouble (FVar FPDouble "F") (FVar FPDouble "Y"))
+  @?=
+  [("Y", FPDouble, FEFun False "f" FPDouble [FVar FPDouble "X"])
+  ,("X", FPDouble, FVar FPDouble "Z")
+  ,("F", FPDouble, FInt 5)]
+
+localVarsInExpr12__test = testCase "localVarsInExpr12" $
+  localVarsInExpr [("THIS_x",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V1_x") (FVar FPDouble "S_x"))
+                  ,("THIS_y",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V1_y") (FVar FPDouble "S_y"))
+                  ,("NEXT_x",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V2_x") (FVar FPDouble "S_x"))
+                  ,("NEXT_y",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V2_y") (FVar FPDouble "S_y"))
+                  ,("DISTANCE_x",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "NEXT_x") (FVar FPDouble "THIS_x"))
+                  ,("DISTANCE_y",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "NEXT_y") (FVar FPDouble "THIS_y"))
+                  ,("DET",FPDouble,BinaryFPOp SubOp FPDouble (BinaryFPOp MulOp FPDouble (FVar FPDouble "DISTANCE_x") (FVar FPDouble "THIS_y")) (BinaryFPOp MulOp FPDouble (FVar FPDouble "DISTANCE_y") (FVar FPDouble "THIS_x")))
+                  ,("K",TInt,TypeCast TInt FPDouble (FEFun True "quadrant" TInt [FVar FPDouble "THIS_x",FVar FPDouble "THIS_y"]))
+                  ,("P",TInt,TypeCast TInt FPDouble (FEFun True "quadrant" TInt [FVar FPDouble "NEXT_x",FVar FPDouble "NEXT_y"]))]
+                  (FVar FPDouble "DET")
+  @?=
+  [("THIS_x",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V1_x") (FVar FPDouble "S_x"))
+   ,("THIS_y",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V1_y") (FVar FPDouble "S_y"))
+   ,("NEXT_x",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V2_x") (FVar FPDouble "S_x"))
+   ,("NEXT_y",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "P_V2_y") (FVar FPDouble "S_y"))
+   ,("DISTANCE_x",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "NEXT_x") (FVar FPDouble "THIS_x"))
+   ,("DISTANCE_y",FPDouble,BinaryFPOp SubOp FPDouble (FVar FPDouble "NEXT_y") (FVar FPDouble "THIS_y"))
+   ,("DET",FPDouble,BinaryFPOp SubOp FPDouble (BinaryFPOp MulOp FPDouble (FVar FPDouble "DISTANCE_x") (FVar FPDouble "THIS_y")) (BinaryFPOp MulOp FPDouble (FVar FPDouble "DISTANCE_y") (FVar FPDouble "THIS_x")))
+   ]
+
+origDeclName__tests = testGroup "origDeclName tests"
+  [origDeclName1__test
+  ,origDeclName2__test
+  ,origDeclName3__test
+  ]
+
+origDeclName1__test = testCase "The original declaration name of f_plus is f" $
+  origDeclName "f_tauplus" @?= "f"
+
+origDeclName2__test = testCase "The original declaration name of f_plus is f" $
+  origDeclName "f_tauminus" @?= "f"
+
+origDeclName3__test = testCase "The original declaration name of f_plus is f" $
+  origDeclName "f" @?= "f"
 
 transformStmSymb__tests = testGroup "transformStm tests"
   [transformStmSymbUnstWarning__tests
@@ -46,180 +191,81 @@ transformStmSymb__tests = testGroup "transformStm tests"
   ]
 
 transformStmSymbUnstWarning__tests = testCase "the symbolic transformation is correct for UnstWarning" $
-  transformStmSymb [] "f" FBTrue UnstWarning
+  transformStmSymb [] "f" FBTrue True UnstWarning
   `returnsValueEqualTo'`
   UnstWarning
 
 transformStmSymbAexpr__tests = testCase "the transformation is correct for AExpr" $
-  transformStmSymb [] "f" FBTrue (StmExpr (FVar FPDouble "x"))
+  transformStmSymb [] "f" FBTrue True (FVar FPDouble "x")
   `returnsValueEqualTo'`
-  StmExpr (FVar FPDouble "x")
+   FVar FPDouble "x"
 
 transformStmSymbLet1__tests = testCase "the transformation is correct for Let 1" $
-  transformStmSymb [] "f" FBTrue (Let "x" FPDouble (FInt 4) (StmExpr $ FAdd FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))
+  transformStmSymb [] "f" FBTrue True (Let [("x", FPDouble, (FInt 4))] (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))
   `returnsValueEqualTo'`
-  Let "x" FPDouble (FInt 4) (StmExpr $ FAdd FPDouble (FVar FPDouble "x") (FVar FPDouble "y"))
+  Let [("x", FPDouble, (FInt 4))] (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y"))
 
 transformStmSymbIte__tests = testCase "the transformation is correct for Ite with no rounding error" $
-  transformStmSymb [] "f" FBTrue
-    (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
+  transformStmSymb [] "f" FBTrue True
+    (Ite (FRel LtE (FVar TInt "x") (FInt 0)) (FVar TInt "x") (FInt 4))
     `returnsValueEqualTo'`
-    Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4)
+     Ite (FRel LtE (FVar TInt "x") (FInt 0)) (FVar TInt "x") (FInt 4)
 
 transformStmSymbIte2__tests = testCase "the transformation is correct for Ite with no rounding error" $
-  transformStmSymb [] "f" FBTrue
-    (Ite (FLtE (FAdd FPDouble (FVar TInt "x") (FVar FPDouble "y")) (FInt 0)) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
+  transformStmSymb [] "f" FBTrue True
+    (Ite (FRel LtE (BinaryFPOp AddOp FPDouble (FVar TInt "x") (FVar FPDouble "y")) (FInt 0)) (FVar TInt "x") (FInt 4))
     `returnsValueEqualTo'`
-    Ite (FLtE (FAdd FPDouble (FVar TInt "x") (FVar FPDouble "y")) (FNeg FPDouble (FVar FPDouble "E_0"))) (StmExpr $ FVar TInt "x")
-    (Ite (FGt (FAdd FPDouble (FVar TInt "x") (FVar FPDouble "y")) (FVar FPDouble "E_0")) (StmExpr $ FInt 4) UnstWarning)
+    Ite (FRel LtE (BinaryFPOp AddOp FPDouble (FVar TInt "x") (FVar FPDouble "y")) (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_0"))) (FVar TInt "x")
+    (Ite (FRel Gt (BinaryFPOp AddOp FPDouble (FVar TInt "x") (FVar FPDouble "y")) (FVar FPDouble "E_0")) (FInt 4) UnstWarning)
 
 transformStmSymbNestedIte__tests = testCase "the transformation is correct for Ite 1" $
-  transformStmSymb [] "f" FBTrue
-    (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FInt 1)
-    (Ite (FLtE (FVar TInt "y") (FInt 0)) (StmExpr $ FInt 2) (StmExpr $ FInt 3)))
+  transformStmSymb [] "f" FBTrue True
+    (Ite (FRel LtE (FVar TInt "x") (FInt 0)) (FInt 1)
+    (Ite (FRel LtE (FVar TInt "y") (FInt 0)) (FInt 2) (FInt 3)))
     `returnsValueEqualTo'`
-    (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FInt 1)
-    (Ite (FLtE (FVar TInt "y") (FInt 0)) (StmExpr $ FInt 2) (StmExpr $ FInt 3)))
+    (Ite (FRel LtE (FVar TInt "x") (FInt 0)) (FInt 1)
+    (Ite (FRel LtE (FVar TInt "y") (FInt 0)) (FInt 2) (FInt 3)))
 
 transformStmSymbNestedIte2__tests = testCase "the transformation is correct for Ite 2" $
-  transformStmSymb [] "f" FBTrue
-    (Ite (FLtE (FVar FPDouble "x") (FInt 0)) (StmExpr $ FInt 1)
-    (Ite (FLtE (FVar FPDouble "y") (FInt 0)) (StmExpr $ FInt 2) (StmExpr $ FInt 3)))
+  transformStmSymb [] "f" FBTrue True
+    (Ite (FRel LtE (FVar FPDouble "x") (FInt 0)) (FInt 1)
+    (Ite (FRel LtE (FVar FPDouble "y") (FInt 0)) (FInt 2) (FInt 3)))
     `returnsValueEqualTo'`
-     Ite (FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_1"))) (StmExpr (FInt 1))
-    (Ite (FGt  (FVar FPDouble "x") (FVar FPDouble "E_1"))
-    (Ite (FLtE (FVar FPDouble "y") (FNeg FPDouble (FVar FPDouble "E_0"))) (StmExpr (FInt 2))
-    (Ite (FGt  (FVar FPDouble "y") (FVar FPDouble "E_0")) (StmExpr (FInt 3)) UnstWarning)) UnstWarning)
+     Ite (FRel LtE (FVar FPDouble "x") (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_1"))) (FInt 1)
+    (Ite (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_1"))
+    (Ite (FRel LtE (FVar FPDouble "y") (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_0"))) (FInt 2)
+    (Ite (FRel Gt  (FVar FPDouble "y") (FVar FPDouble "E_0")) (FInt 3) UnstWarning)) UnstWarning)
 
 transformStmSymbListIte1__tests = testCase "the transformation is correct for ListIte 1" $
-  transformStmSymb [] "f" FBTrue
-  (ListIte [(FLtE (FVar TInt "x") (FInt 0), (StmExpr $ FInt 4)),(FLtE (FVar TInt "y") (FInt 0), (StmExpr $ FInt 1))] (StmExpr $ FInt 8))
+  transformStmSymb [] "f" FBTrue True
+  (ListIte [(FRel LtE (FVar TInt "x") (FInt 0), (FInt 4)),(FRel LtE (FVar TInt "y") (FInt 0), (FInt 1))] (FInt 8))
   `returnsValueEqualTo'`
-  (ListIte [(FLtE (FVar TInt "x") (FInt 0), (StmExpr $ FInt 4))
-           ,(FLtE (FVar TInt "y") (FInt 0), (StmExpr $ FInt 1))]
-           (StmExpr $ FInt 8))
+  (ListIte [(FRel LtE (FVar TInt "x") (FInt 0), (FInt 4))
+           ,(FRel LtE (FVar TInt "y") (FInt 0), (FInt 1))]
+           (FInt 8))
 
 transformStmSymbListIte2__tests = testCase "the transformation is correct for ListIte 2" $
-  transformStmSymb [] "f" FBTrue
-  (ListIte [(FLtE (FVar FPDouble "x") (FInt 0), (StmExpr $ FInt 4)),
-                             (FLtE (FVar FPDouble "y") (FInt 0), (StmExpr $ FInt 1))] (StmExpr $ FInt 8))
+  transformStmSymb [] "f" FBTrue True
+  (ListIte [(FRel LtE (FVar FPDouble "x") (FInt 0), (FInt 4)),
+                             (FRel LtE (FVar FPDouble "y") (FInt 0), (FInt 1))] (FInt 8))
   `returnsValueEqualTo'`
-  (ListIte [(FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0")), (StmExpr $ FInt 4))
-           ,(FAnd (FLtE (FVar FPDouble "y") (FNeg FPDouble (FVar FPDouble "E_1")))
-                  (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (StmExpr $ FInt 1))
-           ,(FAnd (FGt  (FVar FPDouble "y") (FVar FPDouble "E_1"))
-                  (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (StmExpr $ FInt 8))] UnstWarning)
+  (ListIte [(FRel LtE (FVar FPDouble "x") (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_0")), (FInt 4))
+           ,(FAnd (FRel LtE (FVar FPDouble "y") (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_1")))
+                  (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (FInt 1))
+           ,(FAnd (FRel Gt  (FVar FPDouble "y") (FVar FPDouble "E_1"))
+                  (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (FInt 8))] UnstWarning)
 
 transformStmSymbListIte3__tests = testCase "the transformation is correct for ListIte 2" $
-  transformStmSymb [] "f" FBTrue
-  (ListIte [(FLtE (FVar FPDouble "x") (FInt 0), (StmExpr $ FInt 4)),
-                             (FLtE (FVar TInt "y") (FInt 0), (StmExpr $ FInt 1)),
-                             (FLtE (FVar FPDouble "z") (FInt 0), (StmExpr $ FInt 2))] (StmExpr $ FInt 8))
+  transformStmSymb [] "f" FBTrue True
+  (ListIte [(FRel LtE (FVar FPDouble "x") (FInt 0), (FInt 4)),
+                             (FRel LtE (FVar TInt "y") (FInt 0), (FInt 1)),
+                             (FRel LtE (FVar FPDouble "z") (FInt 0), (FInt 2))] (FInt 8))
   `returnsValueEqualTo'`
-  (ListIte [(FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0")), (StmExpr $ FInt 4))
-           ,(FAnd (FLtE (FVar TInt "y") (FInt 0))
-                  (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (StmExpr $ FInt 1))
-           ,(FAnd (FLtE (FVar FPDouble "z") (FNeg FPDouble (FVar FPDouble "E_1")))
-                  (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (StmExpr $ FInt 2))
-           ,(FAnd (FGt  (FVar FPDouble "z") (FVar FPDouble "E_1"))
-                  (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (StmExpr $ FInt 8))] UnstWarning)
-
---transformStm__tests = testGroup "transformStm tests"
---  [transformStmUnstWarning__tests
---  ,transformStmAexpr__tests
---  ,transformStmLet1__tests
---  ,transformStmLet2__tests
---  ,transformStmIte__tests
---  ,transformStmNestedIte__tests
---  ,transformStmListIte1__tests
---  ,transformStmListIte2__tests
---  ]
-
---transformStmUnstWarning__tests = testCase "the transformation is correct for UnstWarning" $
---  transformStm [] [] UnstWarning `returnsValueEqualTo` UnstWarning
-  
---transformStmAexpr__tests = testCase "the transformation is correct for AExpr" $
---  transformStm [] [] (StmExpr (FVar FPDouble "x")) `returnsValueEqualTo` StmExpr (FVar FPDouble "x")
-
---transformStmLet1__tests = testCase "the transformation is correct for Let 1" $
---  transformStm [VarBind "x" FPDouble (LBInt 0) (UBInt 3)] [] (Let "x" FPDouble (FInt 4) (StmExpr $ FAdd FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))
---  `returnsValueEqualTo`
---  Let "x" FPDouble (FInt 4) (StmExpr $ FAdd FPDouble (FVar FPDouble "x") (FVar FPDouble "y"))
-
---transformStmLet2__tests = testCase "the transformation is correct for Let 2" $
---  transformStm [VarBind "x" TInt (LBInt 0) (UBInt 3)] []
---    (Let "x" FPDouble (FInt 4)
---      (Ite (FLtE (FVar FPDouble "x") (FInt 0)) (StmExpr $ FVar FPDouble "x") (StmExpr $ FInt 4)))
---  `returnsValueEqualTo`
---    Let "x" FPDouble (FInt 4)
---      (Ite (FLtE (FVar FPDouble "x") (FCnst FPDouble (toRational 0))) (StmExpr $ FVar FPDouble "x")
---      (Ite (FGt  (FVar FPDouble "x") (FCnst FPDouble (toRational 0))) (StmExpr $ FInt 4) UnstWarning))
-
---transformStmIte__tests = testCase "the transformation is correct for Ite" $
---  transformStm [VarBind "x" TInt (LBInt 0) (UBInt 3)] []
---    (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
---    `returnsValueEqualTo`
---    Ite (FLtE (FVar TInt "x") (FCnst FPDouble (toRational 0))) (StmExpr $ FVar TInt "x") (Ite (FGt (FVar TInt "x") (FCnst FPDouble (toRational 0))) (StmExpr $ FInt 4) UnstWarning)
-
---transformStmNestedIte__tests = testCase "the transformation is correct for Ite" $
---  transformStm [VarBind "x" TInt (LBInt 0) (UBInt 3),VarBind "y" TInt (LBInt 0) (UBInt 8)] []
---    (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FInt 1)
---    (Ite (FLtE (FVar TInt "y") (FInt 0)) (StmExpr $ FInt 2) (StmExpr $ FInt 3)))
---    `returnsValueEqualTo`
---     Ite (FLtE (FVar TInt "x") (FCnst FPDouble (toRational 0))) (StmExpr (FInt 1))
---    (Ite (FGt  (FVar TInt "x") (FCnst FPDouble (toRational 0)))
---    (Ite (FLtE (FVar TInt "y") (FCnst FPDouble (toRational 0))) (StmExpr (FInt 2))
---    (Ite (FGt  (FVar TInt "y") (FCnst FPDouble (toRational 0))) (StmExpr (FInt 3)) UnstWarning)) UnstWarning)
-
---transformStmListIte1__tests = testCase "the transformation is correct for ListIte 1" $
---  transformStm [VarBind "x" TInt (LBInt 0) (UBInt 3),VarBind "y" TInt (LBInt 0) (UBInt 8)] []
---  (ListIte [(FLtE (FVar TInt "x") (FInt 0), (StmExpr $ FInt 4))
---           ,(FLtE (FVar TInt "y") (FInt 0), (StmExpr $ FInt 1))]
---           (StmExpr $ FInt 8))
---  `returnsValueEqualTo`
---  (ListIte [(FLtE (FVar TInt "x") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 4))
---           ,(FAnd (FLtE (FVar TInt "y") (FCnst FPDouble (toRational 0)))
---                  (FGt  (FVar TInt "x") (FCnst FPDouble (toRational 0))), (StmExpr $ FInt 1))
---           ,(FAnd (FGt  (FVar TInt "y") (FCnst FPDouble (toRational 0)))
---                  (FGt  (FVar TInt "x") (FCnst FPDouble (toRational 0))), (StmExpr $ FInt 8))] UnstWarning)
-
---transformStmListIte2__tests = testCase "the transformation is correct for ListIte 2" $
---  transformStm [VarBind "x" TInt (LBInt 0) (UBInt 3)] []
---    (ListIte [(FLtE (FVar TInt "x") (FInt 0), (StmExpr $ FInt 4))] (StmExpr $ FInt 8))
---    `returnsValueEqualTo`
---    (ListIte [(FLtE (FVar TInt "x") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 4)),(FGt (FVar TInt "x") (FCnst FPDouble (toRational 0)),(StmExpr $ FInt 8))] UnstWarning)  
-
-
-transformProg__tests = testGroup "transformProg tests"
-  [
-    -- transformProg1__tests
-  ]
-
--- transformProg1__tests = testCase "the transformation is correct for a Program" $
---   transformProgramSymb [decl1,decl2,decl3]
---   @?=
---   [(expectedDecl1,[])
---   ,(expectedDecl2,[("E_0",FVar FPDouble "x",FBTrue),("E_1",FVar FPDouble "y",FBTrue)])
---   ,(expectedDecl3,[("E_0",FVar FPDouble "x",FBTrue)])]
---   where
---     decl1 = Decl FPDouble "f" [Arg "x" FPDouble]
---             (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
---     expectedDecl1 = Decl FPDouble "f" [Arg "x" FPDouble]
---                     (Ite (FLtE (FVar TInt "x") (FInt 0)) (StmExpr (FVar TInt "x")) (StmExpr (FInt 4)))
---     --
---     decl2 = Decl FPDouble "g" [Arg "x" FPDouble,Arg "y" FPDouble]
---              (ListIte [(FLtE (FVar FPDouble "x") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 4))
---                       ,(FLtE (FVar FPDouble "y") (FCnst FPDouble (toRational 0)), (StmExpr $ FInt 1))]
---                       (StmExpr $ FInt 8))
---     expectedDecl2 = Decl FPDouble "g" [Arg "x" FPDouble,Arg "y" FPDouble,Arg "E_0" FPDouble,Arg "E_1" FPDouble]
---                     (ListIte [(FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0")),StmExpr (FInt 4))
---                     ,(FAnd (FLtE (FVar FPDouble "y") (FNeg FPDouble (FVar FPDouble "E_1"))) (FGt (FVar FPDouble "x") (FVar FPDouble "E_0")),StmExpr (FInt 1))
---                     ,(FAnd (FGt  (FVar FPDouble "y") (FVar FPDouble "E_1")) (FGt (FVar FPDouble "x") (FVar FPDouble "E_0")),StmExpr (FInt 8))] UnstWarning)
---     --
---     decl3 = Decl FPDouble "h" [Arg "x" FPDouble]
---             (Ite (FLtE (FVar FPDouble "x") (FCnst FPDouble (toRational 0))) (StmExpr $ FVar TInt "x") (StmExpr $ FInt 4))
---     expectedDecl3 = Decl FPDouble "h" [Arg "x" FPDouble,Arg "E_0" FPDouble]
---                         (Ite (FLtE (FVar FPDouble "x") (FNeg FPDouble (FVar FPDouble "E_0"))) (StmExpr $ FVar TInt "x")
---                         (Ite (FGt  (FVar FPDouble "x") (FVar FPDouble "E_0")) (StmExpr $ FInt 4) UnstWarning))
-
+  (ListIte [(FRel LtE (FVar FPDouble "x") (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_0")), (FInt 4))
+           ,(FAnd (FRel LtE (FVar TInt "y") (FInt 0))
+                  (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (FInt 1))
+           ,(FAnd (FRel LtE (FVar FPDouble "z") (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_1")))
+                  (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (FInt 2))
+           ,(FAnd (FRel Gt  (FVar FPDouble "z") (FVar FPDouble "E_1"))
+                  (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (FInt 8))] UnstWarning)
 

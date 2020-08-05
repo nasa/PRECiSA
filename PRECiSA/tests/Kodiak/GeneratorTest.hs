@@ -1,3 +1,13 @@
+-- Notices:
+--
+-- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+ 
+-- Disclaimers
+-- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
+ 
+-- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
+    
+    
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Kodiak.GeneratorTest where
@@ -6,10 +16,11 @@ import Control.Monad.Except
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import FPrec
+import PVSTypes
 import AbsPVSLang
 import qualified Kodiak.Expression as K
 import Kodiak.Generator
+import Operators
 
 testKodiakGenerator :: TestTree
 testKodiakGenerator = testGroup "Kodiak Expression Generators"
@@ -54,57 +65,57 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
             ]
         ,testGroup "Binary operators"
             [testCase "Add" $
-                (kodiakize $ Add (Rat 2) (Rat 1))
+                (kodiakize $ BinaryOp AddOp (Rat 2) (Rat 1))
                 @?=
                 (return $ K.Add (K.Cnst 2) (K.Cnst 1))
             ,testCase "Sub" $
-                (kodiakize $ Sub (Rat 1) (Rat 2))
+                (kodiakize $ BinaryOp SubOp (Rat 1) (Rat 2))
                 @?=
                 (return $ K.Sub (K.Cnst 1) (K.Cnst 2))
             ,testCase "Mul" $
-                (kodiakize $ Mul (Rat 1) (Rat 2))
+                (kodiakize $ BinaryOp MulOp (Rat 1) (Rat 2))
                 @?=
                 (return $ K.Mul (K.Cnst 1) (K.Cnst 2))
             ,testCase "Div" $
-                (kodiakize $ Div (Rat 1) (Rat 2))
+                (kodiakize $ BinaryOp DivOp (Rat 1) (Rat 2))
                 @?=
                 (return $ K.Div (K.Cnst 1) (K.Cnst 2))
             ]
         ,testGroup "Unary operators"
             [testCase "Abs" $
-                (kodiakize $ Abs (Rat (-1)))
+                (kodiakize $ UnaryOp AbsOp (Rat (-1)))
                 @?=
                 (return $ K.Abs (K.Cnst (-1)))
             ,testCase "Sqrt" $
-                (kodiakize $ Sqrt (Rat 2))
+                (kodiakize $ UnaryOp SqrtOp (Rat 2))
                 @?=
                 (return $ K.Sqrt (K.Cnst 2))
             ,testCase "Neg" $
-                (kodiakize $ Neg (Rat 2))
+                (kodiakize $ UnaryOp NegOp (Rat 2))
                 @?=
                 (return $ K.Neg (K.Cnst 2))
             ,testCase "Ln" $
-                (kodiakize $ Ln (Rat 2))
+                (kodiakize $ UnaryOp LnOp (Rat 2))
                 @?=
                 (return $ K.Ln (K.Cnst 2))
             ,testCase "Expo" $
-                (kodiakize $ Expo (Rat 2))
+                (kodiakize $ UnaryOp ExpoOp (Rat 2))
                 @?=
                 (return $ K.Exp (K.Cnst 2))
             ,testCase "Sin" $
-                (kodiakize $ Sin (Rat 2))
+                (kodiakize $ UnaryOp SinOp (Rat 2))
                 @?=
                 (return $ K.Sin (K.Cnst 2))
             ,testCase "Cos" $
-                (kodiakize $ Cos (Rat 2))
+                (kodiakize $ UnaryOp CosOp (Rat 2))
                 @?=
                 (return $ K.Cos (K.Cnst 2))
             ,testCase "ATan" $
-                (kodiakize $ ATan (Rat 2))
+                (kodiakize $ UnaryOp AtanOp (Rat 2))
                 @?=
                 (return $ K.ATan (K.Cnst 2))
             ,testCase "Floor" $
-                (kodiakize $ Floor (Rat 2))
+                (kodiakize $ UnaryOp FloorOp (Rat 2))
                 @?=
                 (return $ K.Floor (K.Cnst 2))
             ,testGroup "HalfUlp" $
@@ -136,7 +147,7 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
             ]
         ,testGroup "Integer operators"
             [testCase "IMod" $
-                (kodiakize $ IMod (Int 4) (Int 3))
+                (kodiakize $ BinaryOp ModOp (Int 4) (Int 3))
                 @?=
                 (return $ K.Cnst 1)
             ]
@@ -185,66 +196,66 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
             ]
         ,testGroup "Binary operators"
             [testCase "FAdd" $
-                (kodiakize $ FAdd FPDouble (FCnst FPDouble 2) (FCnst FPDouble 1))
+                (kodiakize $ BinaryFPOp AddOp FPDouble (FCnst FPDouble 2) (FCnst FPDouble 1))
                 @?=
                 (return $ K.Add (K.Cnst 2) (K.Cnst 1))
             ,testCase "FSub" $
-                (kodiakize $ FSub FPDouble (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ BinaryFPOp SubOp FPDouble (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.Sub (K.Cnst 1) (K.Cnst 2))
             ,testCase "FMul" $
-                (kodiakize $ FMul FPDouble (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ BinaryFPOp MulOp FPDouble (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.Mul (K.Cnst 1) (K.Cnst 2))
             ,testCase "FDiv" $
-                (kodiakize $ FDiv FPDouble (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ BinaryFPOp DivOp FPDouble (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.Div (K.Cnst 1) (K.Cnst 2))
             ]
         ,testGroup "Unary operators"
             [testCase "FAbs" $
-                (kodiakize $ FAbs FPDouble (FCnst FPDouble (-1)))
+                (kodiakize $ UnaryFPOp AbsOp FPDouble (FCnst FPDouble (-1)))
                 @?=
                 (return $ K.Abs (K.Cnst (-1)))
             ,testCase "FSqrt" $
-                (kodiakize $ FSqrt FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp SqrtOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Sqrt (K.Cnst 2))
             ,testCase "FNeg" $
-                (kodiakize $ FNeg FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp NegOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Neg (K.Cnst 2))
             ,testCase "FLn" $
-                (kodiakize $ FLn FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp LnOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Ln (K.Cnst 2))
             ,testCase "FExpo" $
-                (kodiakize $ FExpo FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp ExpoOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Exp (K.Cnst 2))
             ,testCase "FSin" $
-                (kodiakize $ FSin FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp SinOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Sin (K.Cnst 2))
             ,testCase "FCos" $
-                (kodiakize $ FCos FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp CosOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Cos (K.Cnst 2))
             ,testCase "FAtan" $
-                (kodiakize $ FAtan FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp AtanOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.ATan (K.Cnst 2))
             ,testCase "FFloor" $
-                (kodiakize $ FFloor FPDouble (FCnst FPDouble 2))
+                (kodiakize $ UnaryFPOp FloorOp FPDouble (FCnst FPDouble 2))
                 @?=
                 (return $ K.Floor (K.Cnst 2))
             ,testGroup "RtoD"
                 [testCase "Int" $
-                    (kodiakize $ RtoD $ Int 0)
+                    (kodiakize $ ToFloat FPDouble $ Int 0)
                     @?=
                     (return $ K.Cnst 0)
                 ,testCase "Rat" $
-                    (kodiakize $ RtoD $ Rat 1)
+                    (kodiakize $ ToFloat FPDouble $ Rat 1)
                     @?=
                     (return $ K.Cnst 1)
                 ]
@@ -267,11 +278,11 @@ testKodiakAExprGenerator = testGroup "Kodiak AExpr Generator" $
             ]
         ,testGroup "Integer operators"
             [testCase "FISub" $
-                (kodiakize $ FISub (FInt 4) (FInt 3))
+                (kodiakize $ BinaryFPOp SubOp TInt (FInt 4) (FInt 3))
                 @?=
                 (return $ K.Cnst 1)
             ,testCase "FIMod" $
-                (kodiakize $ FIMod (FInt 1) (FInt 4))
+                (kodiakize $ BinaryFPOp ModOp TInt (FInt 1) (FInt 4))
                 @?=
                 (return $ K.Cnst 1)
             ]
@@ -307,27 +318,27 @@ testKodiakBExprGenerator = testGroup "Kodiak BExpr Generator"
             ]
         ,testGroup "Relational operators"
             [testCase "Eq" $
-                (kodiakize $ Eq (Rat 1) (Rat 2))
+                (kodiakize $ Rel Eq (Rat 1) (Rat 2))
                 @?=
                 (return $ K.Eq (K.Cnst 1) (K.Cnst 2))
             ,testCase "Neq" $
-                (kodiakize $ Neq (Rat 1) (Rat 2))
+                (kodiakize $ Rel Neq (Rat 1) (Rat 2))
                 @?=
                 (return $ K.NEq (K.Cnst 1) (K.Cnst 2))
             ,testCase "Lt" $
-                (kodiakize $ Lt (Rat 1) (Rat 2))
+                (kodiakize $ Rel Lt (Rat 1) (Rat 2))
                 @?=
                 (return $ K.LT (K.Cnst 1) (K.Cnst 2))
             ,testCase "LtE" $
-                (kodiakize $ LtE (Rat 1) (Rat 2))
+                (kodiakize $ Rel LtE (Rat 1) (Rat 2))
                 @?=
                 (return $ K.LE (K.Cnst 1) (K.Cnst 2))
             ,testCase "Gt" $
-                (kodiakize $ Gt (Rat 1) (Rat 2))
+                (kodiakize $ Rel Gt (Rat 1) (Rat 2))
                 @?=
                 (return $ K.GT (K.Cnst 1) (K.Cnst 2))
             ,testCase "GtE" $
-                (kodiakize $ GtE (Rat 1) (Rat 2))
+                (kodiakize $ Rel GtE (Rat 1) (Rat 2))
                 @?=
                 (return $ K.GE (K.Cnst 1) (K.Cnst 2))
             ]
@@ -359,27 +370,27 @@ testKodiakBExprGenerator = testGroup "Kodiak BExpr Generator"
             ]
         ,testGroup "Relational operators"
             [testCase "FEq" $
-                (kodiakize $ FEq (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ FRel Eq (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.Eq (K.Cnst 1) (K.Cnst 2))
             ,testCase "FNeq" $
-                (kodiakize $ FNeq (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ FRel Neq (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.NEq (K.Cnst 1) (K.Cnst 2))
             ,testCase "FLt" $
-                (kodiakize $ FLt (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ FRel Lt (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.LT (K.Cnst 1) (K.Cnst 2))
             ,testCase "FLtE" $
-                (kodiakize $ FLtE (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ FRel LtE (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.LE (K.Cnst 1) (K.Cnst 2))
             ,testCase "FGt" $
-                (kodiakize $ FGt (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ FRel Gt (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.GT (K.Cnst 1) (K.Cnst 2))
             ,testCase "FGtE" $
-                (kodiakize $ FGtE (FCnst FPDouble 1) (FCnst FPDouble 2))
+                (kodiakize $ FRel GtE (FCnst FPDouble 1) (FCnst FPDouble 2))
                 @?=
                 (return $ K.GE (K.Cnst 1) (K.Cnst 2))
             ]
@@ -396,11 +407,11 @@ testIntegerExpressionSimplifier = testGroup "Integer (Sub-)Expression Simplifier
             @?=
             (return 2)
         ,testCase "IMod" $
-            (evalRI' $ IMod (Int 2) (Int 3))
+            (evalRI' $ BinaryOp ModOp (Int 2) (Int 3))
             @?=
             (return 2)
         ,testCase "Invalid" $
-            (evalRI' $ IMod (Rat 2) (Int 3))
+            (evalRI' $ BinaryOp ModOp (Rat 2) (Int 3))
             @?=
             (throwError $ InvalidIntegerExpr (Rat 2))
         ]
@@ -410,22 +421,22 @@ testIntegerExpressionSimplifier = testGroup "Integer (Sub-)Expression Simplifier
             @?=
             (return 2)
         ,testCase "FIMod" $
-            (evalFI' $ FIMod (FInt 2) (FInt 3))
+            (evalFI' $ BinaryFPOp ModOp TInt (FInt 2) (FInt 3))
             @?=
             (return 2)
         ,testGroup "RtoD nested of Real"
             [testCase "Valid" $
-                (evalFI' $ RtoD $ IMod (Int 2) (Int 3))
+                (evalFI' $ ToFloat FPDouble $ BinaryOp ModOp (Int 2) (Int 3))
                 @?=
                 (return 2)
             ,testCase "Invalid" $
-                (evalFI' $ RtoD $ IMod (Rat 2) (Int 3))
+                (evalFI' $ ToFloat FPDouble $ BinaryOp ModOp (Rat 2) (Int 3))
                 @?=
                 (throwError $ AExprError $ InvalidIntegerExpr $ Rat 2)
             ]
         ,testCase "Invalid" $
             let cnst = FCnst FPDouble 2 in
-            (evalFI' $ FIMod cnst (FInt 3))
+            (evalFI' $ BinaryFPOp ModOp TInt cnst (FInt 3))
             @?=
             (throwError $ InvalidIntegerExpr cnst)
         ]

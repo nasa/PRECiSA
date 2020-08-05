@@ -1,0 +1,10 @@
+let2: THEORY BEGIN
+ 
+  f(X : real): real
+  = X * 2
+
+  g(X,Y: real) : real
+  = LET A = f(X) IN 
+       1 + A
+
+END let2

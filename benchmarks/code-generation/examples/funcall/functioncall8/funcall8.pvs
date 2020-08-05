@@ -1,0 +1,10 @@
+funcall8: THEORY
+BEGIN
+
+ f(sx,vx:real): real = IF sx<0 THEN sx + vx ELSE sx - vx ENDIF
+ 
+ g(sx,vx:real): bool = 
+    LET y = f(sx,vx) IN y<0
+     
+
+END funcall8

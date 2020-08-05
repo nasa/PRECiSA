@@ -1,0 +1,14 @@
+forloop: THEORY BEGIN
+
+  f(X:real) : int = IF X>0 THEN 1 ELSE 2 ENDIF
+
+  forloop(N: posnat) : int
+  = for[int](0,4,0,LAMBDA (I: subrange(0,4), Acc: int) :
+      IF I<2 THEN
+       Acc + f(1)
+      ELSE
+       Acc * f(2)
+     ENDIF)
+     
+END forloop
+

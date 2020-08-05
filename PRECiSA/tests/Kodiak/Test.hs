@@ -1,3 +1,13 @@
+-- Notices:
+--
+-- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+ 
+-- Disclaimers
+-- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
+ 
+-- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
+    
+    
 module Kodiak.Test where
 
 import Control.Exception (tryJust,AssertionFailed(..))
@@ -8,12 +18,17 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import AbsPVSLang
-import FPrec
+import AbsSpecLang (VarBind(..),UBound(..),LBound(..))
+import PVSTypes
 import Kodiak.Kodiak
 import Kodiak.Runnable
 import Kodiak.Runner
 import qualified Kodiak.Expression as K
+import Kodiak.ExpressionTest
 import Kodiak.GeneratorTest
+import Kodiak.PaverTest
+import Kodiak.PrettyPrintTest as KPT
+import Operators
 
 testKodiak :: TestTree
 testKodiak = testGroup "Kodiak"
@@ -21,7 +36,10 @@ testKodiak = testGroup "Kodiak"
     ,testPaver
     ,testBooleanExpressionKodiakRunnable
     ,testKodiakExpressionsAreKodiakRunnable
+    ,testKodiakExpression
     ,testKodiakGenerator
+    ,testKodiakPaver
+    ,KPT.testAll
     ]
 
 testBooleanExpressions :: TestTree
@@ -241,27 +259,27 @@ testBooleanExpressionKodiakRunnable = testGroup "KodiakRunnable Boolean Expressi
         ,testCase "Eq" $
             (join $ bool_create_equal_to <$> zero <*> one)
             `areIdenticalBoolExpression`
-            run (Eq (Int 0) (Int 1)) (VMap [])
+            run (Rel Eq (Int 0) (Int 1)) (VMap [])
         ,testCase "Neq" $
             (join $ bool_create_not <$> (join $ bool_create_equal_to <$> zero <*> one))
             `areIdenticalBoolExpression`
-            run (Neq (Int 0) (Int 1)) (VMap [])
+            run (Rel Neq (Int 0) (Int 1)) (VMap [])
         ,testCase "Lt" $
             (join $ bool_create_less_than <$> zero <*> one)
             `areIdenticalBoolExpression`
-            run (Lt (Int 0) (Int 1)) (VMap [])
+            run (Rel Lt (Int 0) (Int 1)) (VMap [])
         ,testCase "LtE" $
             (join $ bool_create_less_than_or_equal_to <$> zero <*> one)
             `areIdenticalBoolExpression`
-            run (LtE (Int 0) (Int 1)) (VMap [])
+            run (Rel LtE (Int 0) (Int 1)) (VMap [])
         ,testCase "Gt" $
             (join $ bool_create_greater_than <$> zero <*> one)
             `areIdenticalBoolExpression`
-            run (Gt (Int 0) (Int 1)) (VMap [])
+            run (Rel Gt (Int 0) (Int 1)) (VMap [])
         ,testCase "GtE" $
             (join $ bool_create_greater_than_or_equal_to <$> zero <*> one)
             `areIdenticalBoolExpression`
-            run (GtE (Int 0) (Int 1)) (VMap [])
+            run (Rel GtE (Int 0) (Int 1)) (VMap [])
         ]
     ]
     where
@@ -282,6 +300,7 @@ testKodiakArithmeticExpressionsAreKodiakRunnable = testGroup "Kodiak Arithmetic 
     let vMap = VMap [("x",0)]
         createVariableX0  = newCString "x" >>= real_create_variable 0
         createCnstTwo     = interval_create_from_rational (fromInteger 2) (fromInteger 1) >>= real_create_value
+        createCnstOne     = interval_create_from_rational (fromInteger 1) (fromInteger 1) >>= real_create_value
         createVectorTwoX0 = do v <- real_vector_create
                                createCnstTwo    >>= real_vector_add v 
                                createVariableX0 >>= real_vector_add v 
@@ -298,6 +317,49 @@ testKodiakArithmeticExpressionsAreKodiakRunnable = testGroup "Kodiak Arithmetic 
             run (K.Var "x") vMap
         ,testCase "Unknown variable raises exception" $
             arisesException $ run (K.Var "y") vMap
+        ]
+    ,testGroup "Letin" $
+        [testCase "One definition" $
+            (do
+                x <- createVariableX0
+                yStr <- newCString "y"
+                y <- real_create_local_variable yStr
+                one <- createCnstOne
+                two <- createCnstTwo
+                xPlusOne <- real_create_addition x one
+                yPlusTwo <- real_create_addition y two
+                real_create_letin yStr xPlusOne yPlusTwo
+            )
+            `areIdenticalExpressions`
+            run (RLet [(LetElem "y" FPDouble (BinaryOp AddOp (Var FPDouble "x") (Int 1)))] (BinaryOp AddOp (Var FPDouble "y") (Int 2))) vMap
+        ,testCase "Two definitions" $
+            (do
+                x <- createVariableX0
+                yStr <- newCString "y"
+                y <- real_create_local_variable yStr
+                zStr <- newCString "z"
+                z <- real_create_local_variable zStr
+                one <- createCnstOne
+                two <- createCnstTwo
+                xPlusOne <- real_create_addition x one
+                xPlusTwo <- real_create_addition x two
+                yPlusZ <- real_create_addition y z
+                innerLet <- real_create_letin zStr xPlusTwo yPlusZ
+                ret <- real_create_letin yStr xPlusOne innerLet
+                putStrLn "Expected: "
+                real_print ret
+                return ret
+
+            )
+            `areIdenticalExpressions`
+            (do
+                ret <- run (RLet [LetElem "y" FPDouble (BinaryOp AddOp (Var FPDouble "x") (Int 1))
+                          ,LetElem "z" FPDouble (BinaryOp AddOp (Var FPDouble "x") (Int 2))
+                          ] (BinaryOp AddOp (Var FPDouble "y") (Var FPDouble "z"))) vMap
+                putStrLn "Actual: "
+                real_print ret
+                return ret
+            )
         ]
     ,testCase "Add" $
         do

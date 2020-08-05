@@ -1,0 +1,9 @@
+quadrant(X,Y): X in [-60000,60000], Y in [-10000,10000]
+
+winding_number_contrib(P_V1_x,P_V1_y,P_V2_x,P_V2_y,S_x,S_y) :
+   P_V1_x in [-60000,60000],
+   P_V1_y in [-60000,60000],
+   P_V2_x in [-60000,60000],
+   P_V2_y in [-60000,60000],
+   S_x in [-60000,60000],
+   S_y in [-60000,60000]

@@ -1,0 +1,18 @@
+let3: THEORY BEGIN
+
+ 
+  f(X : real): real
+  = X * 2
+
+  g(X,Y: real) : real
+  = LET A = X+Y,
+        B = f(A) IN
+    IF B<0 THEN
+       1 + A
+     ELSE
+       2 + B
+     ENDIF
+
+
+END let3
+

@@ -1,0 +1,3 @@
+
+forloop(N) :
+   N in [0,10]

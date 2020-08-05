@@ -9,4 +9,5 @@ LET r_DLon:real=(r_Lon2 - r_Lon1)
 IN LET r_Y:real=(cos(r_Lat2) * sin(r_DLon))
    IN LET r_X:real=((cos(r_Lat1) * sin(r_Lat2)) - (sin(r_Lat1) * (cos(r_Lat2) * cos(r_DLon))))
       IN atan((r_Y / r_X))
+
 END azimuth_real

@@ -1,0 +1,11 @@
+funcall6: THEORY
+BEGIN
+
+ f(sx,vx:real): bool =
+   LET t = sx + vx IN
+      t <= 0
+ 
+ g(sx,vx:real): bool =
+   f(sx,vx)
+
+END funcall6

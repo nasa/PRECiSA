@@ -1,2 +1,2 @@
-quadrant(X,Y): None
+quadrant(X,Y): All
 winding_number(P_x, P_y, V1_x, V1_y, V2_x, V2_y): All

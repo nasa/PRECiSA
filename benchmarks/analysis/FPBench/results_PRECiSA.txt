@@ -1,0 +1,342 @@
+:set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/azimuth.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/azimuth.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function azimuth
+0- path []: 58.34771282773979
+1- path []: 0.00000000000013215014169705978
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_azimuth.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_azimuth.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/bisect.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/bisect.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_bisect.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_bisect.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/caronGas.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/carbonGas.input 
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/carbonGas.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/carbonGas.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function carbonGas
+0- path []: 0.000000007094169630339794
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_carbonGas.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_carbonGas.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/doppler1.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/doppler1.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function dop1
+0- path []: 0.00000000000020853586331318475
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_doppler1.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_doppler1.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/doppler2.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/doppler2.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function dop2
+0- path []: 0.0000000000003072090096647472
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_doppler2.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_doppler2.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/doppler3.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/doppler3.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function dop3
+0- path []: 0.00000000000009497066698588023
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_doppler3.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_doppler3.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/hartman3.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/hartman3.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function hartman3
+0- path []: 0.000000000000021546379917069302
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_hartman3.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_hartman3.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/hartman6.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/hartman6.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function hartman6
+0- path []: 0.000000000000467577463997847
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_hartman6.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_hartman6.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/himmilbeau.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/himmilbeau.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function himmilbeau
+0- path []: 0.0000000000010000889005823416
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_himmilbeau.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_himmilbeau.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/jet.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/jet.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function jet
+0- path []: 0.000000000017974903537857227
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_jet.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_jet.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/kepler0.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/kepler0.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function kepler0
+0- path []: 0.00000000000010950795825692697
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_kepler0.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_kepler0.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/kepler1.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/kepler1.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function kepler1
+0- path []: 0.00000000000040300003334436973
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_kepler1.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_kepler1.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/kepler2.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/kepler2.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function kepler2
+0- path []: 0.0000000000016606636954463748
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_kepler2.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_kepler2.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/logExp.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/logExp.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function logExp
+0- path []: 0.0000000000000067723604502134786
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_logExp.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_logExp.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/polycarp.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/polycarp.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function polycarp
+0- path []: 0.000000000000001887379141862766
+1- unstable paths ++ []: 0.6000000000000019
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_polycarp.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_polycarp.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/predPrey.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/predPrey.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function predatorPrey
+0- path []: 0.0000000000000002085865360867823
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_predPrey.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_predPrey.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/rigidBody1.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/rigidBody1.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function rigidBody1
+0- path []: 0.00000000000032329694477084564
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_rigidBody1.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_rigidBody1.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/rigidBody2.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/rigidBody2.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function rigidBody2
+0- path []: 0.00000000003649969215757666
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_rigidBody2.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_rigidBody2.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sine.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sine.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function sine
+0- path []: 0.0000000000000007480337960472862
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_sine.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_sine.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sineOrder3.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sineOrder3.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function sineOrder3
+0- path []: 0.0000000000000012290285263299633
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_sineOrder3.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_sineOrder3.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sphere.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sphere.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function sphere
+0- path []: 0.000000000000009992007221626194
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_sphere.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_sphere.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sqroot.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/sqroot.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function sqroot
+0- path []: 0.0000000000000004293440603042598
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_sqroot.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_sqroot.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/stynlinski.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/stynslinski.input 
+*Main> main
+*** Exception: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/stynslinski.input: openFile: does not exist (No such file or directory)
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/stynlinski.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/stynlinski.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function stynlinski
+0- path []: 0.00000000000004049981150444638
+1- unstable paths ++ []: 93.46560000000008
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_stynlinski.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_stynlinski.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/t_div_t1.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/t_div_t1.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function t_div_t1
+0- path []: 0.00000000000005723199691942932
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_t_div_t1.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_t_div_t1.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine1.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine1.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function turbine1
+0- path []: 0.000000000000025157342944241553
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_turbine1.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_turbine1.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine2.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine2.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function turbine2
+0- path []: 0.000000000000030087323086061825
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_turbine2.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_turbine2.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine3.input 
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine3.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/turbine3.input 
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function turbine3
+0- path []: 0.000000000000018288292228323346
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_turbine3.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_turbine3.pvs
+*Main> :set args analyze /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/verhulst.pvs /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/verhulst.input
+*Main> main
+********************************************************************
+****************************** PRECiSA *****************************
+
+Function verhulst
+0- path []: 0.0000000000000005137805199232649
+
+********************************************************************
+***** Files generated successfully *****
+Symbolic lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/cert_verhulst.pvs
+Numeric lemmas and proofs in: /Users/ltitolo/Desktop/precisa/benchmarks/analysis/FPBench/num_cert_verhulst.pvs

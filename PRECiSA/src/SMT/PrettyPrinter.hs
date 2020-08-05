@@ -1,13 +1,24 @@
+-- Notices:
+--
+-- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+ 
+-- Disclaimers
+-- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
+ 
+-- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
+    
+    
 module SMT.PrettyPrinter where
 
 import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
 import PPExt
---import Text.PrettyPrint
-import FPrec
+import PVSTypes
 import Prelude hiding ((<>))
 import qualified Common.ShowRational as Rat
+import Operators
+import Common.TypesUtils
 
 baseRVarName:: String
 baseRVarName  = "Real_"
@@ -18,10 +29,10 @@ prettySMTVarId var = text var <> text "[real]"
 prettySMTVarIds :: [VarName] -> Doc
 prettySMTVarIds vars = hsep $ punctuate comma (map prettySMTVarId vars)
 
-prettySMTFVarId :: VarName -> FPrec -> Doc
-prettySMTFVarId var fp = text var <> text "[" <> prettySMTFPrec fp <> text "]"
+prettySMTFVarId :: VarName -> PVSType -> Doc
+prettySMTFVarId var fp = text var <> text "[" <> prettySMTPVSType fp <> text "]"
 
-prettySMTFVarIds :: [(VarName,FPrec)] -> Doc
+prettySMTFVarIds :: [(VarName,PVSType)] -> Doc
 prettySMTFVarIds vars = hsep $ punctuate comma (map (uncurry prettySMTFVarId) vars)
 
 prettySMTVarBinds :: [VarBind] -> Doc
@@ -29,9 +40,9 @@ prettySMTVarBinds varBinds = hsep $ punctuate comma (map prettySMTVarBind varBin
 
 prettySMTVarBind :: VarBind -> Doc
 prettySMTVarBind (VarBind var fp LInf UInf) =
-    text var <> text "[" <> prettySMTFPrec fp <> text "]"
+    text var <> text "[" <> prettySMTPVSType fp <> text "]"
 prettySMTVarBind (VarBind var fp lb ub) =
-    text var <> text "[" <> prettySMTFPrec fp <> text "] ="
+    text var <> text "[" <> prettySMTPVSType fp <> text "] ="
     <+> text "["<> prettySMTLBound lb <> semi <> prettySMTUBound ub <> text "]"
 
 prettySMTVarBindsReal :: [VarBind] -> Doc
@@ -60,10 +71,10 @@ prettySMTInt n = integer n <> text ".0"
 prettySMTRat :: Rational -> Doc
 prettySMTRat rat = text $ Rat.showRational Nothing rat -- double $ ((fromRat rat) :: Double) --
 
-prettySMTFPrec :: FPrec -> Doc
-prettySMTFPrec FPSingle = text "single"
-prettySMTFPrec FPDouble = text "double"
-prettySMTFPrec _ = error "prettySMTFPrec: unexpected value" 
+prettySMTPVSType :: PVSType -> Doc
+prettySMTPVSType FPSingle = text "single"
+prettySMTPVSType FPDouble = text "double"
+prettySMTPVSType _ = error "prettySMTPVSType: unexpected value" 
 
 prettySMT :: Conditions -> Doc
 prettySMT (Cond [])       = text "false"
@@ -86,35 +97,37 @@ prettySMTCondition' (be    ,     fbe) = text "and" <> parens (prettySMTbexpr' be
 
 
 prettySMTbexpr :: BExpr -> Doc
+prettySMTbexpr BTrue  = text "true"
+prettySMTbexpr BFalse = text "false"
 prettySMTbexpr (Or  be1 be2) = text "or"  <> parens (prettySMTbexpr' be1 <+> comma <+> prettySMTbexpr' be2)
 prettySMTbexpr (And be1 be2) = prettySMTbexpr be1 $$ prettySMTbexpr be2
 prettySMTbexpr (Not be)      = text "not" <> parens (prettySMTbexpr' be)
-prettySMTbexpr (Eq  ae1 ae2) = prettySMTaexpr ae1 <+> text "="   <+> prettySMTaexpr ae2
-prettySMTbexpr (Neq ae1 ae2) = prettySMTaexpr ae1 <+> text "!="  <+> prettySMTaexpr ae2
-prettySMTbexpr (Lt  ae1 ae2) = prettySMTaexpr ae1 <+> text "<"   <+> prettySMTaexpr ae2
-prettySMTbexpr (LtE ae1 ae2) = prettySMTaexpr ae1 <+> text "<="  <+> prettySMTaexpr ae2
-prettySMTbexpr (Gt  ae1 ae2) = prettySMTaexpr ae1 <+> text ">"   <+> prettySMTaexpr ae2
-prettySMTbexpr (GtE ae1 ae2) = prettySMTaexpr ae1 <+> text ">="  <+> prettySMTaexpr ae2
-prettySMTbexpr BTrue  = text "true"
-prettySMTbexpr BFalse = text "false"
+prettySMTbexpr (Rel Eq  ae1 ae2) = prettySMTaexpr ae1 <+> text "="   <+> prettySMTaexpr ae2
+prettySMTbexpr (Rel Neq ae1 ae2) = prettySMTaexpr ae1 <+> text "!="  <+> prettySMTaexpr ae2
+prettySMTbexpr (Rel Lt  ae1 ae2) = prettySMTaexpr ae1 <+> text "<"   <+> prettySMTaexpr ae2
+prettySMTbexpr (Rel LtE ae1 ae2) = prettySMTaexpr ae1 <+> text "<="  <+> prettySMTaexpr ae2
+prettySMTbexpr (Rel Gt  ae1 ae2) = prettySMTaexpr ae1 <+> text ">"   <+> prettySMTaexpr ae2
+prettySMTbexpr (Rel GtE ae1 ae2) = prettySMTaexpr ae1 <+> text ">="  <+> prettySMTaexpr ae2
+prettySMTbexpr be = error $ "prettySMTbexpr: " ++ show be ++ "not supported yet."
 
 prettySMTbexpr' :: BExpr -> Doc
 prettySMTbexpr' (And be1 be2) = text "and" <> parens (prettySMTbexpr' be1 <> comma <+> prettySMTbexpr' be2)
 prettySMTbexpr' fbe = prettySMTbexpr fbe
 
 prettySMTfbexpr :: FBExpr -> Doc
+prettySMTfbexpr FBTrue         = text "true"
+prettySMTfbexpr FBFalse        = text "false"
 prettySMTfbexpr (FOr  be1 be2) = text "or"  <> parens (prettySMTfbexpr' be1 <> comma <+> prettySMTfbexpr' be2)
 prettySMTfbexpr (FAnd be1 be2) = prettySMTfbexpr be1 $$ prettySMTfbexpr be2
 prettySMTfbexpr (FNot be)      = text "not" <> parens (prettySMTfbexpr' be)
-prettySMTfbexpr (FEq  ae1 ae2) = prettySMTfaexpr ae1 <+> text "="   <+> prettySMTfaexpr ae2
-prettySMTfbexpr (FNeq ae1 ae2) = prettySMTfaexpr ae1 <+> text "!="  <+> prettySMTfaexpr ae2
-prettySMTfbexpr (FLt  ae1 ae2) = prettySMTfaexpr ae1 <+> text "<"   <+> prettySMTfaexpr ae2
-prettySMTfbexpr (FLtE ae1 ae2) = prettySMTfaexpr ae1 <+> text "<="  <+> prettySMTfaexpr ae2
-prettySMTfbexpr (FGt  ae1 ae2) = prettySMTfaexpr ae1 <+> text ">"   <+> prettySMTfaexpr ae2
-prettySMTfbexpr (FGtE ae1 ae2) = prettySMTfaexpr ae1 <+> text ">="  <+> prettySMTfaexpr ae2
-prettySMTfbexpr FBTrue         = text "true"
-prettySMTfbexpr FBFalse        = text "false"
+prettySMTfbexpr (FRel Eq  ae1 ae2) = prettySMTfaexpr ae1 <+> text "="   <+> prettySMTfaexpr ae2
+prettySMTfbexpr (FRel Neq ae1 ae2) = prettySMTfaexpr ae1 <+> text "!="  <+> prettySMTfaexpr ae2
+prettySMTfbexpr (FRel Lt  ae1 ae2) = prettySMTfaexpr ae1 <+> text "<"   <+> prettySMTfaexpr ae2
+prettySMTfbexpr (FRel LtE ae1 ae2) = prettySMTfaexpr ae1 <+> text "<="  <+> prettySMTfaexpr ae2
+prettySMTfbexpr (FRel Gt  ae1 ae2) = prettySMTfaexpr ae1 <+> text ">"   <+> prettySMTfaexpr ae2
+prettySMTfbexpr (FRel GtE ae1 ae2) = prettySMTfaexpr ae1 <+> text ">="  <+> prettySMTfaexpr ae2
 prettySMTfbexpr (IsValid _)    = error "prettySMTfbexpr not defined for IsValid."
+prettySMTfbexpr be = error $ "prettySMTfbexpr: " ++ show be ++ "not supported yet."
 
 prettySMTfbexpr' :: FBExpr -> Doc
 prettySMTfbexpr' (FAnd be1 be2) = text "and" <> parens (prettySMTfbexpr' be1 <+> comma <+> prettySMTfbexpr' be2)
@@ -122,37 +135,37 @@ prettySMTfbexpr' fbe = prettySMTfbexpr fbe
 
 
 prettySMTfaexpr :: FAExpr -> Doc
-prettySMTfaexpr (FAdd _ ae1 ae2) = text "+FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
-prettySMTfaexpr (FSub _ ae1 ae2) = text "-FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
-prettySMTfaexpr (FMul _ ae1 ae2) = text "*FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
-prettySMTfaexpr (FDiv _ ae1 ae2) = text "/FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
-prettySMTfaexpr (FNeg _ ae) = text "-" <+> prettySMTfaexpr ae
-prettySMTfaexpr (FAbs _ ae) = text "abs" <> parens (prettySMTfaexpr ae)
+prettySMTfaexpr (BinaryFPOp AddOp _ ae1 ae2) = text "+FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
+prettySMTfaexpr (BinaryFPOp SubOp _ ae1 ae2) = text "-FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
+prettySMTfaexpr (BinaryFPOp MulOp _ ae1 ae2) = text "*FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
+prettySMTfaexpr (BinaryFPOp DivOp _ ae1 ae2) = text "/FP" <+> prettySMTfaexpr ae1 <+> prettySMTfaexpr ae2
+prettySMTfaexpr (UnaryFPOp  NegOp _ ae) = text "-" <+> prettySMTfaexpr ae
+prettySMTfaexpr (UnaryFPOp  AbsOp _ ae) = text "abs" <> parens (prettySMTfaexpr ae)
 prettySMTfaexpr (FCnst _ d) = prettySMTRat d
 prettySMTfaexpr (FVar _ x) = text x
 prettySMTfaexpr (FInt i) = integer i <> text ".0"
-prettySMTfaexpr (RtoD (Int i)) = integer i <> text ".0"
-prettySMTfaexpr (RtoS (Int i)) = integer i <> text ".0"
-prettySMTfaexpr (RtoD (Rat d)) = prettySMTRat d
-prettySMTfaexpr (RtoS (Rat d)) = prettySMTRat d
+prettySMTfaexpr (ToFloat FPDouble (Int i)) = integer i <> text ".0"
+prettySMTfaexpr (ToFloat FPSingle (Int i)) = integer i <> text ".0"
+prettySMTfaexpr (ToFloat FPDouble (Rat d)) = prettySMTRat d
+prettySMTfaexpr (ToFloat FPSingle (Rat d)) = prettySMTRat d
 prettySMTfaexpr fa = error $ "prettySMTfaexpr niy: " ++ show fa
 
 prettySMTaexpr :: AExpr -> Doc
-prettySMTaexpr (Add ae1 ae2) = prettySMTaexpr ae1 <+> text "+" <+> prettySMTaexpr ae2
-prettySMTaexpr (Sub ae1 ae2) = prettySMTaexpr ae1 <+> text "-" <+> prettySMTaexpr ae2
-prettySMTaexpr (Mul ae1 ae2) = prettySMTaexpr ae1 <+> text "*" <+> prettySMTaexpr ae2
-prettySMTaexpr (Div ae1 ae2) = prettySMTaexpr ae1 <+> text "/" <+> prettySMTaexpr ae2
-prettySMTaexpr (Neg ae) = text "-" <+> prettySMTaexpr ae
-prettySMTaexpr (Abs ae) = text "abs" <> parens (prettySMTaexpr ae)
 prettySMTaexpr (Rat d) = prettySMTRat d
 prettySMTaexpr (Var _ x) = text x
 prettySMTaexpr (Int i) = integer i <> text ".0"
 prettySMTaexpr (RealMark x) = text $ baseRVarName ++ x
-prettySMTaexpr (DtoR (FVar _ x)) = text x
-prettySMTaexpr (StoR (FVar _ x)) = text x
-prettySMTaexpr (DtoR (FInt i)) = integer i <> text ".0"
-prettySMTaexpr (StoR (FInt i)) = integer i <> text ".0"
-prettySMTaexpr (DtoR (FCnst _ d)) = prettySMTRat d
+
+prettySMTaexpr (BinaryOp AddOp ae1 ae2) = prettySMTaexpr ae1 <+> text "+" <+> prettySMTaexpr ae2
+prettySMTaexpr (BinaryOp SubOp ae1 ae2) = prettySMTaexpr ae1 <+> text "-" <+> prettySMTaexpr ae2
+prettySMTaexpr (BinaryOp MulOp ae1 ae2) = prettySMTaexpr ae1 <+> text "*" <+> prettySMTaexpr ae2
+prettySMTaexpr (BinaryOp DivOp ae1 ae2) = prettySMTaexpr ae1 <+> text "/" <+> prettySMTaexpr ae2
+prettySMTaexpr (UnaryOp  NegOp ae) = text "-" <+> prettySMTaexpr ae
+prettySMTaexpr (UnaryOp  AbsOp ae) = text "abs" <> parens (prettySMTaexpr ae)
+
+prettySMTaexpr (FromFloat _ (FVar _  x)) = text x
+prettySMTaexpr (FromFloat _ (FInt    i)) = integer i <> text ".0"
+prettySMTaexpr (FromFloat _ (FCnst _ d)) = prettySMTRat d
 prettySMTaexpr ae = error $ "prettySMTaexpr: " ++ show ae ++ "not supported yet."
 
 
