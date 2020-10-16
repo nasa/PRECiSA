@@ -58,6 +58,8 @@ If you want to use the SMT optimization you need [FPRock](https://github.com/nas
    ```
    $ cabal v1-sandbox init    # Creates a new sandbox.
                               # Old cabal versions may need the command `cabal sandbox init` instead
+			      
+   $ cabal v1-update          # Downloads the latest list of packages from the Hackage repository.			      
 
    $ cabal v1-install --enable-optimization --extra-lib-dirs=<kodiak-directory>
    ```
