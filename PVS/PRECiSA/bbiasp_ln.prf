@@ -56,43 +56,43 @@
         nil))
       nil))
     nil)
-   ((Pos? const-decl "bool" interval "interval_arith/")
+   ((Pos? const-decl "bool" interval interval_arith)
     (real nonempty-type-from-decl nil reals nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
+    (Interval type-eq-decl nil interval interval_arith)
     (boolean nonempty-type-decl nil booleans nil)
     (bool nonempty-type-eq-decl nil booleans nil)
-    (Proper? const-decl "bool" interval "interval_arith/")
-    (ProperInterval type-eq-decl nil interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
+    (Proper? const-decl "bool" interval interval_arith)
+    (ProperInterval type-eq-decl nil interval interval_arith)
+    (NonNeg? const-decl "bool" interval interval_arith)
     (NOT const-decl "[bool -> bool]" booleans nil)
-    (lt const-decl "bool" interval "interval_arith/")
-    (gt const-decl "bool" interval "interval_arith/")
+    (lt const-decl "bool" interval interval_arith)
+    (gt const-decl "bool" interval interval_arith)
     (real_gt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
-    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (gt_realorder name-judgement "RealOrder" real_orders reals)
     (real_lt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (lt_realorder name-judgement "RealOrder" real_orders reals)
     (lt_weak_cancelation_div formula-decl nil interval_props
-     "interval_arith/")
-    (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
+     interval_arith)
+    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
     (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
-    (Div const-decl "Interval" interval "interval_arith/")
+     interval_arith)
+    (Div const-decl "Interval" interval interval_arith)
     (both_sides_1minus_lt1 formula-decl nil interval_props
-     "interval_arith/")
+     interval_arith)
     (Pos_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Gt const-decl "bool" interval "interval_arith/")
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
+     interval_arith)
+    (Gt const-decl "bool" interval interval_arith)
+    (le_realorder name-judgement "RealOrder" real_orders reals)
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (ge_realorder name-judgement "RealOrder" real_orders reals)
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (Ge const-decl "bool" interval "interval_arith/")
+    (Ge const-decl "bool" interval interval_arith)
     (gt_weak_cancelation_sub formula-decl nil interval_props
-     "interval_arith/"))
+     interval_arith))
    shostak))
  (aeb_lgn_pre2_predondition_j 0
   (aeb_lgn_pre2_predondition_j-1 nil 3711301484
@@ -124,31 +124,33 @@
         nil))
       nil))
     nil)
-   ((Pos? const-decl "bool" interval "interval_arith/")
-    (Sub const-decl "Interval" interval "interval_arith/")
+   ((Pos? const-decl "bool" interval interval_arith)
+    (Sub const-decl "Interval" interval interval_arith)
     (number nonempty-type-decl nil numbers nil)
     (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)
     (number_field nonempty-type-from-decl nil number_fields nil)
     (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (Sub_fundamental formula-decl nil interval "interval_arith/")
-    (Gt_fundamental formula-decl nil interval "interval_arith/")
-    (NonNeg_Incl formula-decl nil interval "interval_arith/")
+    (Sub_fundamental formula-decl nil interval interval_arith)
+    (Gt_fundamental formula-decl nil interval interval_arith)
+    (NonNeg_Incl formula-decl nil interval interval_arith)
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
+     interval_arith)
     (Pos_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (ProperInterval type-eq-decl nil interval "interval_arith/")
-    (Proper? const-decl "bool" interval "interval_arith/")
+     interval_arith)
+    (ProperInterval type-eq-decl nil interval interval_arith)
+    (Proper? const-decl "bool" interval interval_arith)
     (bool nonempty-type-eq-decl nil booleans nil)
     (boolean nonempty-type-decl nil booleans nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
+    (Interval type-eq-decl nil interval interval_arith)
     (real nonempty-type-from-decl nil reals nil)
     (aeb_lgn_pre2 const-decl "bool" bbiasp_ln nil)
     (Proper_Sub application-judgement "ProperInterval" interval
-     "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/"))
-   nil))
+     interval_arith)
+    (Precondition2? const-decl "bool" interval interval_arith))
+   nil
+   (aeb_lgn_pre2_predondition_j subtype "bbiasp_ln.aeb_lgn_pre2"
+    "(interval.Precondition2?)")))
  (AEB_LN_inclusion_j 0
   (AEB_LN_inclusion_j-9 "" 3712257637
    (""
@@ -512,53 +514,47 @@
     (boolean nonempty-type-decl nil booleans nil)
     (>= const-decl "bool" reals nil)
     (aeboundsp_ln_safe const-decl "real" bbiasp_ln nil)
-    (aeboundsp_ln const-decl "nonneg_real" aerr754sp_ln "float/")
+    (aeboundsp_ln const-decl "nonneg_real" aerr754sp_ln float)
     (real_div_nzreal_is_real application-judgement "real" reals nil)
     (real_minus_real_is_real application-judgement "real" reals nil)
-    (x2 skolem-const-decl "real" bbiasp_ln nil)
-    (x1 skolem-const-decl "real" bbiasp_ln nil)
-    (ln const-decl "real" ln_exp "lnexp_fnd/")
+    nil nil (ln const-decl "real" ln_exp lnexp)
     (posreal nonempty-type-eq-decl nil real_types nil)
     (Pos_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
+     interval_arith)
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Proper? const-decl "bool" interval "interval_arith/")
-    (X1 skolem-const-decl "(Any?)" bbiasp_ln nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (X2 skolem-const-decl "{X2: Interval | aeb_lgn_pre2(X1, X2)}"
-     bbiasp_ln nil)
-    (ProperInterval type-eq-decl nil interval "interval_arith/")
+     interval_arith)
+    (Proper? const-decl "bool" interval interval_arith) nil
+    (AND const-decl "[bool, bool -> bool]" booleans nil) nil
+    (ProperInterval type-eq-decl nil interval interval_arith)
     (NOT const-decl "[bool -> bool]" booleans nil)
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
     (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Zeroless? const-decl "bool" interval "interval_arith/")
+     interval_arith)
+    (Zeroless? const-decl "bool" interval interval_arith)
     (nzreal_div_nzreal_is_nzreal application-judgement "nzreal"
      real_types nil)
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (Ge const-decl "bool" interval "interval_arith/")
-    ([\|\|] const-decl "Interval" interval "interval_arith/")
-    (Gt const-decl "bool" interval "interval_arith/")
-    (Pos? const-decl "bool" interval "interval_arith/")
-    (pXp const-decl "Interval" interval "interval_arith/")
-    (Le const-decl "bool" interval "interval_arith/")
-    (nXp const-decl "Interval" interval "interval_arith/")
-    (pXn const-decl "Interval" interval "interval_arith/")
-    (pXm const-decl "Interval" interval "interval_arith/")
-    (nXn const-decl "Interval" interval "interval_arith/")
-    (nXm const-decl "Interval" interval "interval_arith/")
-    (mXp const-decl "Interval" interval "interval_arith/")
-    (mXn const-decl "Interval" interval "interval_arith/")
+    (le_realorder name-judgement "RealOrder" real_orders reals)
+    (Ge const-decl "bool" interval interval_arith) nil
+    (Gt const-decl "bool" interval interval_arith)
+    (Pos? const-decl "bool" interval interval_arith)
+    (pXp const-decl "Interval" interval interval_arith)
+    (Le const-decl "bool" interval interval_arith)
+    (nXp const-decl "Interval" interval interval_arith)
+    (pXn const-decl "Interval" interval interval_arith)
+    (pXm const-decl "Interval" interval interval_arith)
+    (nXn const-decl "Interval" interval interval_arith)
+    (nXm const-decl "Interval" interval interval_arith)
+    (mXp const-decl "Interval" interval interval_arith)
+    (mXn const-decl "Interval" interval interval_arith)
     (min const-decl "{p: real | p <= m AND p <= n}" real_defs nil)
     (max const-decl "{p: real | p >= m AND p >= n}" real_defs nil)
-    (mXm const-decl "Interval" interval "interval_arith/")
-    (Mult const-decl "Interval" interval "interval_arith/")
-    (EmptyInterval const-decl "Interval" interval "interval_arith/")
-    (|##| const-decl "bool" interval "interval_arith/")
+    (mXm const-decl "Interval" interval interval_arith)
+    (Mult const-decl "Interval" interval interval_arith)
+    (EmptyInterval const-decl "Interval" interval interval_arith)
+    (|##| const-decl "bool" interval interval_arith)
     (real_times_real_is_real application-judgement "real" reals nil)
     (minus_odd_is_odd application-judgement "odd_int" integers nil)
     (posint_exp application-judgement "posint" exponentiation nil)
@@ -571,28 +567,28 @@
      nil)
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (mult_divides2 application-judgement "(divides(m))" divides nil)
-    (Div_inclusion formula-decl nil interval "interval_arith/")
-    (Sub_inclusion formula-decl nil interval "interval_arith/")
-    (Ln_inclusion formula-decl nil interval_lnexp "interval_arith/")
+    (Div_inclusion formula-decl nil interval interval_arith)
+    (Sub_inclusion formula-decl nil interval interval_arith)
+    (Ln_inclusion formula-decl nil interval_lnexp interval_arith)
     (minus_real_is_real application-judgement "real" reals nil)
     (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
-    (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
+     interval_arith)
+    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
+    (lt_realorder name-judgement "RealOrder" real_orders reals)
     (real_lt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
     (both_sides_div_pos_lt1 formula-decl nil real_props nil)
-    (Neg_inclusion formula-decl nil interval "interval_arith/")
+    (Neg_inclusion formula-decl nil interval interval_arith)
     (Ulp_sp_inclusion formula-decl nil interval_ulp_sp nil)
     (nonneg_real_max application-judgement
      "{z: nonneg_real | z >= x AND z >= y}" real_defs nil)
-    (Abs_inclusion formula-decl nil interval "interval_arith/")
+    (Abs_inclusion formula-decl nil interval interval_arith)
     (real_plus_real_is_real application-judgement "real" reals nil)
     (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
     (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
          nil)
     (- const-decl "[numfield -> numfield]" number_fields nil)
-    (Max_inclusion formula-decl nil interval "interval_arith/")
+    (Max_inclusion formula-decl nil interval interval_arith)
     (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
      interval_ulp_sp nil)
     (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
@@ -601,61 +597,57 @@
      real_types nil)
     (rtos_canonicroundfun_exactrepconservation_j name-judgement
      "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
-         exact_rep_conservation[2]
-             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
-     "float/")
+   exact_rep_conservation[2](single_precision_format, sp_closest?)(RtoF)}"
+     ieee754sp float)
     (sp_closest?_j name-judgement
      "{round: RestrictedRounding[2](single_precision_format, EvenClosest?) |
-         rounded_mode?(single_precision_format)(round)}" ieee754sp
-     "float/")
+   rounded_mode?(single_precision_format)(round)}" ieee754sp float)
     (sp_closest?_closestroundingpred_j name-judgement
-     "ClosestRoundingPred[2](single_precision_format)" ieee754sp
-     "float/")
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Neg const-decl "Interval" interval "interval_arith/")
+     "ClosestRoundingPred[2](single_precision_format)" ieee754sp float)
+    (Interval type-eq-decl nil interval interval_arith)
+    (Neg const-decl "Interval" interval interval_arith)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (int nonempty-type-eq-decl nil integers nil)
     (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (Ln const-decl "Interval" interval_lnexp "interval_arith/")
-    (Sub const-decl "Interval" interval "interval_arith/")
-    ([\|\|] const-decl "Interval" interval "interval_arith/")
-    (Div const-decl "Interval" interval "interval_arith/")
+    (Ln const-decl "Interval" interval_lnexp interval_arith)
+    (Sub const-decl "Interval" interval interval_arith) nil
+    (Div const-decl "Interval" interval interval_arith)
     (aeb_lgn_pre2 const-decl "bool" bbiasp_ln nil)
-    (Any? const-decl "bool" interval "interval_arith/")
+    (Any? const-decl "bool" interval interval_arith)
     (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
-    (Max const-decl "Interval" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (Abs const-decl "(NonNeg?)" interval "interval_arith/")
-    (Add const-decl "Interval" interval "interval_arith/")
+    (Max const-decl "Interval" interval interval_arith)
+    (NonNeg? const-decl "bool" interval interval_arith)
+    (Abs const-decl "(NonNeg?)" interval interval_arith)
+    (Add const-decl "Interval" interval interval_arith)
     (nonneg_real nonempty-type-eq-decl nil real_types nil)
     (< const-decl "bool" reals nil)
     (numfield nonempty-type-eq-decl nil number_fields nil)
     (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
     (above nonempty-type-eq-decl nil integers nil)
-    (Format type-eq-decl nil float "float/")
-    (single_precision_format const-decl "Format" ieee754sp "float/")
-    (float type-eq-decl nil float "float/")
-    (Fbounded? const-decl "bool" float "float/")
-    (sp_closest? const-decl "bool" ieee754sp "float/")
-    (Fcanonic? const-decl "bool" float "float/")
-    (unb_single type-eq-decl nil ieee754sp "float/")
-    (closest_single? const-decl "bool" ieee754sp "float/")
+    (Format type-eq-decl nil float float)
+    (single_precision_format const-decl "Format" ieee754sp float)
+    (float type-eq-decl nil float float)
+    (Fbounded? const-decl "bool" float float)
+    (sp_closest? const-decl "bool" ieee754sp float)
+    (Fcanonic? const-decl "bool" float float)
+    (unb_single type-eq-decl nil ieee754sp float)
+    (closest_single? const-decl "bool" ieee754sp float)
     (RtoS const-decl "{f: unb_single | closest_single?(x1)(f)}"
-     ieee754sp "float/")
-    (ln_aerr_bound const-decl "nonneg_real" accum_err_ln "float/")
+     ieee754sp float)
+    (ln_aerr_bound const-decl "nonneg_real" accum_err_ln float)
     (/= const-decl "boolean" notequal nil)
     (nznum nonempty-type-eq-decl nil number_fields nil)
     (/ const-decl "[numfield, nznum -> numfield]" number_fields nil)
-    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
-    (ln_ulp_bound const-decl "real" accum_err_ln "float/")
-    (Add_inclusion formula-decl nil interval "interval_arith/")
+    (ulp_sp const-decl "nonneg_real" ieee754sp float)
+    (ln_ulp_bound const-decl "real" accum_err_ln float)
+    (Add_inclusion formula-decl nil interval interval_arith)
     (aeboundsp_ln_ia const-decl "Interval" bbiasp_ln nil)
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (ge_realorder name-judgement "RealOrder" real_orders reals)
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (gt_realorder name-judgement "RealOrder" real_orders reals)
     (real_gt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
     (number nonempty-type-decl nil numbers nil)
@@ -665,10 +657,12 @@
     (real_pred const-decl "[number_field -> boolean]" reals nil)
     (real nonempty-type-from-decl nil reals nil)
     (> const-decl "bool" reals nil)
-    (Inclusion2? const-decl "bool" interval "interval_arith/")
+    (Inclusion2? const-decl "bool" interval interval_arith)
     (aeb_lgn_pre2_is_enough_for_aeboundsp_ln_ia_tccs formula-decl nil
      bbiasp_ln nil))
-   nil)
+   nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-8 "" 3712237310
    (""
     (with-labels
@@ -1095,117 +1089,109 @@
         nil))
       nil))
     nil)
-   ((Div const-decl "Interval" interval "interval_arith/")
-    (Sub const-decl "Interval" interval "interval_arith/")
-    (Pos? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (ProperInterval type-eq-decl nil interval "interval_arith/")
-    (Proper? const-decl "bool" interval "interval_arith/")
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (Inclusion2? const-decl "bool" interval "interval_arith/")
-    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
-    (Add_inclusion formula-decl nil interval "interval_arith/")
-    (ln_ulp_bound const-decl "real" accum_err_ln "float/")
-    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
-    (ln_aerr_bound const-decl "nonneg_real" accum_err_ln "float/")
-    (closest_single? const-decl "bool" ieee754sp "float/")
-    (unb_single type-eq-decl nil ieee754sp "float/")
-    (Fcanonic? const-decl "bool" float "float/")
-    (Add const-decl "Interval" interval "interval_arith/")
-    (Abs const-decl "(NonNeg?)" interval "interval_arith/")
-    (Max const-decl "Interval" interval "interval_arith/")
+   ((Div const-decl "Interval" interval interval_arith)
+    (Sub const-decl "Interval" interval interval_arith)
+    (Pos? const-decl "bool" interval interval_arith)
+    (NonNeg? const-decl "bool" interval interval_arith)
+    (ProperInterval type-eq-decl nil interval interval_arith)
+    (Proper? const-decl "bool" interval interval_arith)
+    (Interval type-eq-decl nil interval interval_arith)
+    (Inclusion2? const-decl "bool" interval interval_arith)
+    (gt_realorder name-judgement "RealOrder" real_orders reals)
+    (ge_realorder name-judgement "RealOrder" real_orders reals)
+    (Add_inclusion formula-decl nil interval interval_arith)
+    (ln_ulp_bound const-decl "real" accum_err_ln float)
+    (ulp_sp const-decl "nonneg_real" ieee754sp float)
+    (ln_aerr_bound const-decl "nonneg_real" accum_err_ln float)
+    (closest_single? const-decl "bool" ieee754sp float)
+    (unb_single type-eq-decl nil ieee754sp float)
+    (Fcanonic? const-decl "bool" float float)
+    (Add const-decl "Interval" interval interval_arith)
+    (Abs const-decl "(NonNeg?)" interval interval_arith)
+    (Max const-decl "Interval" interval interval_arith)
     (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
-    (Any? const-decl "bool" interval "interval_arith/")
-    (Ln const-decl "Interval" interval_lnexp "interval_arith/")
-    (Neg const-decl "Interval" interval "interval_arith/")
-    (EvenClosest? const-decl "bool" float "float/")
-    (sp_closest? const-decl "bool" ieee754sp "float/")
-    (single_precision_format const-decl "Format" ieee754sp "float/")
-    (Fbounded? const-decl "bool" float "float/")
-    (Format type-eq-decl nil float "float/")
-    (float type-eq-decl nil float "float/")
+    (Any? const-decl "bool" interval interval_arith)
+    (Ln const-decl "Interval" interval_lnexp interval_arith)
+    (Neg const-decl "Interval" interval interval_arith)
+    (EvenClosest? const-decl "bool" float float)
+    (sp_closest? const-decl "bool" ieee754sp float)
+    (single_precision_format const-decl "Format" ieee754sp float)
+    (Fbounded? const-decl "bool" float float)
+    (Format type-eq-decl nil float float)
+    (float type-eq-decl nil float float)
     (sp_closest?_closestroundingpred_j name-judgement
-     "ClosestRoundingPred[2](single_precision_format)" ieee754sp
-     "float/")
+     "ClosestRoundingPred[2](single_precision_format)" ieee754sp float)
     (sp_closest?_j name-judgement
      "{round: RestrictedRounding[2](single_precision_format, EvenClosest?) |
-         rounded_mode?(single_precision_format)(round)}" ieee754sp
-     "float/")
+   rounded_mode?(single_precision_format)(round)}" ieee754sp float)
     (rtos_canonicroundfun_exactrepconservation_j name-judgement
      "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
-         exact_rep_conservation[2]
-             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
-     "float/")
+   exact_rep_conservation[2](single_precision_format, sp_closest?)(RtoF)}"
+     ieee754sp float)
     (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
      interval_ulp_sp nil)
     (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
      interval_ulp_sp nil)
-    (Max_inclusion formula-decl nil interval "interval_arith/")
-    (Abs_inclusion formula-decl nil interval "interval_arith/")
-    (vNum const-decl "posnat" float "float/")
-    (RND_Min const-decl "(Fcanonic?(b))" float "float/")
-    (Closest? const-decl "bool" float "float/")
-    (Zeroin? const-decl "bool" interval "interval_arith/")
-    (ulp const-decl "posreal" float "float/")
-    (Fulp const-decl "real" float "float/")
-    (RND_Max const-decl "(Fcanonic?(b))" float "float/")
-    (Fopp const-decl "float" float "float/")
-    (FtoR const-decl "real" float "float/")
-    (Fulp_posreal_j application-judgement "posreal" ieee754sp "float/")
-    (rndeclosest_j application-judgement
-     "CanonicRoundingFun[2](b, EvenClosest?(b))" ieee754sp "float/")
-    (rndminismin_j application-judgement
-     "CanonicRoundingFun[2](b, isMin?(b))" ieee754sp "float/")
-    (rndmaxismax_j application-judgement
-     "CanonicRoundingFun[2](b, isMax?(b))" ieee754sp "float/")
+    (Max_inclusion formula-decl nil interval interval_arith)
+    (Abs_inclusion formula-decl nil interval interval_arith)
+    (vNum const-decl "posnat" float float)
+    (RND_Min const-decl "(Fcanonic?(b))" float float)
+    (Closest? const-decl "bool" float float)
+    (Zeroin? const-decl "bool" interval interval_arith)
+    (ulp const-decl "posreal" float float)
+    (Fulp const-decl "real" float float)
+    (RND_Max const-decl "(Fcanonic?(b))" float float)
+    (Fopp const-decl "float" float float)
+    (FtoR const-decl "real" float float) nil nil nil nil
     (Ulp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp))"
      interval_ulp nil)
     (Ulp_Fundamental name-judgement "(Fundamental?(PreTrue))"
      interval_ulp nil)
     (Ulp_sp_inclusion formula-decl nil interval_ulp_sp nil)
-    (Neg_inclusion formula-decl nil interval "interval_arith/")
-    (lt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
+    (Neg_inclusion formula-decl nil interval interval_arith)
+    (lt_realorder name-judgement "RealOrder" real_orders reals)
+    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
     (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
-    (Ln_inclusion formula-decl nil interval_lnexp "interval_arith/")
-    (Sub_inclusion formula-decl nil interval "interval_arith/")
-    (Div_inclusion formula-decl nil interval "interval_arith/")
-    (|##| const-decl "bool" interval "interval_arith/")
-    (EmptyInterval const-decl "Interval" interval "interval_arith/")
-    (Mult const-decl "Interval" interval "interval_arith/")
-    (mXm const-decl "Interval" interval "interval_arith/")
-    (mXn const-decl "Interval" interval "interval_arith/")
-    (mXp const-decl "Interval" interval "interval_arith/")
-    (nXm const-decl "Interval" interval "interval_arith/")
-    (nXn const-decl "Interval" interval "interval_arith/")
-    (pXm const-decl "Interval" interval "interval_arith/")
-    (pXn const-decl "Interval" interval "interval_arith/")
-    (nXp const-decl "Interval" interval "interval_arith/")
-    (Le const-decl "bool" interval "interval_arith/")
-    (pXp const-decl "Interval" interval "interval_arith/")
-    (Gt const-decl "bool" interval "interval_arith/")
-    (Ge const-decl "bool" interval "interval_arith/")
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (Zeroless? const-decl "bool" interval "interval_arith/")
+     interval_arith)
+    (Ln_inclusion formula-decl nil interval_lnexp interval_arith)
+    (Sub_inclusion formula-decl nil interval interval_arith)
+    (Div_inclusion formula-decl nil interval interval_arith)
+    (|##| const-decl "bool" interval interval_arith)
+    (EmptyInterval const-decl "Interval" interval interval_arith)
+    (Mult const-decl "Interval" interval interval_arith)
+    (mXm const-decl "Interval" interval interval_arith)
+    (mXn const-decl "Interval" interval interval_arith)
+    (mXp const-decl "Interval" interval interval_arith)
+    (nXm const-decl "Interval" interval interval_arith)
+    (nXn const-decl "Interval" interval interval_arith)
+    (pXm const-decl "Interval" interval interval_arith)
+    (pXn const-decl "Interval" interval interval_arith)
+    (nXp const-decl "Interval" interval interval_arith)
+    (Le const-decl "bool" interval interval_arith)
+    (pXp const-decl "Interval" interval interval_arith)
+    (Gt const-decl "bool" interval interval_arith)
+    (Ge const-decl "bool" interval interval_arith)
+    (le_realorder name-judgement "RealOrder" real_orders reals)
+    (Zeroless? const-decl "bool" interval interval_arith)
     (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
+     interval_arith)
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
+     interval_arith)
     (Pos_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (ln const-decl "real" ln_exp "lnexp_fnd/")
-    (aeboundsp_ln const-decl "nonneg_real" aerr754sp_ln "float/")
+     interval_arith)
+    (ln const-decl "real" ln_exp lnexp)
+    (aeboundsp_ln const-decl "nonneg_real" aerr754sp_ln float)
     (gt_weak_cancelation_sub formula-decl nil interval_props
-     "interval_arith/")
+     interval_arith)
     (both_sides_1minus_lt1 formula-decl nil interval_props
-     "interval_arith/")
+     interval_arith)
     (lt_weak_cancelation_div formula-decl nil interval_props
-     "interval_arith/")
-    (gt const-decl "bool" interval "interval_arith/")
-    (lt const-decl "bool" interval "interval_arith/"))
-   nil)
+     interval_arith)
+    (gt const-decl "bool" interval interval_arith)
+    (lt const-decl "bool" interval interval_arith))
+   nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-7 "" 3712237216
    (""
     (with-labels
@@ -1469,7 +1455,9 @@
                   (("1" (postpone) nil) ("2" (postpone) nil)
                    ("3" (postpone) nil))))))))))))))))
     nil)
-   nil nil)
+   nil nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-6 "" 3712234757
    (""
     (with-labels
@@ -1732,7 +1720,9 @@
                   (("1" (postpone) nil) ("2" (postpone) nil)
                    ("3" (postpone) nil))))))))))))))))
     nil)
-   nil nil)
+   nil nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-5 "" 3712234317
    (""
     (with-labels
@@ -2104,7 +2094,9 @@
         nil))
       nil))
     nil)
-   nil nil)
+   nil nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-4 "" 3712150244
    (""
     (with-labels
@@ -2450,7 +2442,9 @@
         nil))
       nil))
     nil)
-   nil nil)
+   nil nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-3 "" 3711302161
    (""
     (with-labels
@@ -2786,7 +2780,9 @@
       nil)
      ("2" (hide 2) (("2" (postpone) nil nil)) nil))
     nil)
-   nil shostak)
+   nil shostak
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-2 nil 3699953981
    ("" (expand "Inclusion2?")
     (("" (skeep*)
@@ -2953,66 +2949,67 @@
         nil))
       nil))
     nil)
-   ((Add_inclusion formula-decl nil interval "interval_arith/")
-    (ln_ulp_bound const-decl "real" accum_err_ln "float/")
-    (ulp_sp const-decl "nonneg_real" ieee754sp "float/")
-    (ln_aerr_bound const-decl "nonneg_real" accum_err_ln "float/")
-    (closest_single? const-decl "bool" ieee754sp "float/")
-    (unb_single type-eq-decl nil ieee754sp "float/")
-    (Fcanonic? const-decl "bool" float "float/")
-    (sp_closest? const-decl "bool" ieee754sp "float/")
-    (Fbounded? const-decl "bool" float "float/")
-    (float type-eq-decl nil float "float/")
-    (single_precision_format const-decl "Format" ieee754sp "float/")
-    (Format type-eq-decl nil float "float/")
-    (Abs const-decl "(NonNeg?)" interval "interval_arith/")
-    (Add const-decl "Interval" interval "interval_arith/")
+   ((Add_inclusion formula-decl nil interval interval_arith)
+    (ln_ulp_bound const-decl "real" accum_err_ln float)
+    (ulp_sp const-decl "nonneg_real" ieee754sp float)
+    (ln_aerr_bound const-decl "nonneg_real" accum_err_ln float)
+    (closest_single? const-decl "bool" ieee754sp float)
+    (unb_single type-eq-decl nil ieee754sp float)
+    (Fcanonic? const-decl "bool" float float)
+    (sp_closest? const-decl "bool" ieee754sp float)
+    (Fbounded? const-decl "bool" float float)
+    (float type-eq-decl nil float float)
+    (single_precision_format const-decl "Format" ieee754sp float)
+    (Format type-eq-decl nil float float)
+    (Abs const-decl "(NonNeg?)" interval interval_arith)
+    (Add const-decl "Interval" interval interval_arith)
     (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
-    (Div const-decl "Interval" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
-    (Min const-decl "Interval" interval "interval_arith/")
-    (Interval type-eq-decl nil interval "interval_arith/")
+    (Div const-decl "Interval" interval interval_arith)
+    (Any? const-decl "bool" interval interval_arith)
+    (NonNeg? const-decl "bool" interval interval_arith)
+    (pre1to2b const-decl "(Precondition2?)" interval interval_arith)
+    (Precondition2? const-decl "bool" interval interval_arith)
+    (Precondition? const-decl "bool" interval interval_arith)
+    (Min const-decl "Interval" interval interval_arith)
+    (Interval type-eq-decl nil interval interval_arith)
     (sp_closest?_closestroundingpred_j name-judgement
-     "ClosestRoundingPred[2](single_precision_format)" ieee754sp
-     "float/")
+     "ClosestRoundingPred[2](single_precision_format)" ieee754sp float)
     (sp_closest?_j name-judgement
      "{round: RestrictedRounding[2](single_precision_format, EvenClosest?) |
-         rounded_mode?(single_precision_format)(round)}" ieee754sp
-     "float/")
+   rounded_mode?(single_precision_format)(round)}" ieee754sp float)
     (rtos_canonicroundfun_exactrepconservation_j name-judgement
      "{RtoF: CanonicRoundingFun(single_precision_format, sp_closest?) |
-         exact_rep_conservation[2]
-             (single_precision_format, sp_closest?)(RtoF)}" ieee754sp
-     "float/")
-    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+   exact_rep_conservation[2](single_precision_format, sp_closest?)(RtoF)}"
+     ieee754sp float)
+    (gt_realorder name-judgement "RealOrder" real_orders reals)
+    (ge_realorder name-judgement "RealOrder" real_orders reals)
     (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
+     interval_arith)
     (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
      interval_ulp_sp nil)
     (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
      interval_ulp_sp nil)
-    (Abs_inclusion formula-decl nil interval "interval_arith/")
+    (Abs_inclusion formula-decl nil interval interval_arith)
     (Ulp_sp_inclusion formula-decl nil interval_ulp_sp nil)
-    (Div_inclusion formula-decl nil interval "interval_arith/")
-    (Min_inclusion formula-decl nil interval "interval_arith/")
+    (Div_inclusion formula-decl nil interval interval_arith)
+    (Min_inclusion formula-decl nil interval interval_arith)
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
+     interval_arith)
+    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
     (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
-    (aeboundsp_ln const-decl "nonneg_real" aerr754sp_ln "float/")
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (Ge const-decl "bool" interval "interval_arith/")
-    (|##| const-decl "bool" interval "interval_arith/")
-    (Inclusion2? const-decl "bool" interval "interval_arith/"))
-   nil)
+     interval_arith)
+    (aeboundsp_ln const-decl "nonneg_real" aerr754sp_ln float)
+    (le_realorder name-judgement "RealOrder" real_orders reals)
+    (Ge const-decl "bool" interval interval_arith)
+    (|##| const-decl "bool" interval interval_arith)
+    (Inclusion2? const-decl "bool" interval interval_arith))
+   nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))"))
   (AEB_LN_inclusion_j-1 nil 3699953937 ("" (judgement-tcc) nil nil) nil
-   nil))
+   nil
+   (AEB_LN_inclusion_j subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe))")))
  (AEB_LN_fundmental_j 0
   (AEB_LN_fundmental_j-2 nil 3699954036
    ("" (skeep)
@@ -3040,58 +3037,288 @@
                                     (("1"
                                       (assert)
                                       (("1"
-                                        (flatten)
+                                        (use "Add_fundamental")
                                         (("1"
                                           (assert)
                                           (("1"
-                                            (use "Add_fundamental")
+                                            (hide 2)
                                             (("1"
-                                              (assert)
+                                              (split 1)
                                               (("1"
-                                                (hide 2)
+                                                (use "Neg_fundamental")
                                                 (("1"
-                                                  (split 1)
+                                                  (assert)
                                                   (("1"
-                                                    (use
-                                                     "Neg_fundamental")
+                                                    (hide 2)
                                                     (("1"
-                                                      (assert)
+                                                      (use
+                                                       "Ln_fundamental")
                                                       (("1"
-                                                        (hide 2)
+                                                        (assert)
                                                         (("1"
-                                                          (use
-                                                           "Ln_fundamental")
+                                                          (hide 2)
                                                           (("1"
-                                                            (assert)
+                                                            (case
+                                                             "Sub([|1|], Div(Y1, X1)) << Sub([|1|], Div(Y, X))")
                                                             (("1"
-                                                              (hide 2)
+                                                              (assert)
                                                               (("1"
+                                                                (lemma
+                                                                 "Proper_Sub")
+                                                                (("1"
+                                                                  (inst?
+                                                                   -1
+                                                                   :where
+                                                                   1)
+                                                                  (("1"
+                                                                    (hide
+                                                                     2)
+                                                                    (("1"
+                                                                      (use
+                                                                       "Proper_Div")
+                                                                      (("1"
+                                                                        (lemma
+                                                                         "Pos_Zeroless")
+                                                                        (("1"
+                                                                          (inst?
+                                                                           -1
+                                                                           :where
+                                                                           1)
+                                                                          (("1"
+                                                                            (hide
+                                                                             -1)
+                                                                            (("1"
+                                                                              (use
+                                                                               "Incl_Pos")
+                                                                              (("1"
+                                                                                (assert)
+                                                                                nil
+                                                                                nil))
+                                                                              nil))
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil))
+                                                                    nil))
+                                                                  nil))
+                                                                nil))
+                                                              nil)
+                                                             ("2"
+                                                              (hide 2)
+                                                              (("2"
+                                                                (use
+                                                                 "Sub_fundamental")
+                                                                (("2"
+                                                                  (assert)
+                                                                  (("2"
+                                                                    (hide
+                                                                     2)
+                                                                    (("2"
+                                                                      (use
+                                                                       "Div_fundamental")
+                                                                      (("2"
+                                                                        (assert)
+                                                                        (("2"
+                                                                          (lemma
+                                                                           "Pos_Zeroless")
+                                                                          (("2"
+                                                                            (inst?
+                                                                             -1
+                                                                             :where
+                                                                             1)
+                                                                            nil
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil))
+                                                                    nil))
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil))
+                                                          nil))
+                                                        nil))
+                                                      nil))
+                                                    nil))
+                                                  nil))
+                                                nil)
+                                               ("2"
+                                                (use "Div_fundamental")
+                                                (("2"
+                                                  (assert)
+                                                  (("2"
+                                                    (hide 2)
+                                                    (("2"
+                                                      (case
+                                                       "Ulp_sp(Max(Abs(Ln(n)(Sub(X1, Y1))), Abs(Ln(n)(Add(X1, Y1))))) <<
+                   Ulp_sp(Max(Abs(Ln(n)(Sub(X, Y))), Abs(Ln(n)(Add(X, Y)))))")
+                                                      (("1"
+                                                        (assert)
+                                                        (("1"
+                                                          (split 1)
+                                                          (("1"
+                                                            (use
+                                                             "Ulp_sp_proper")
+                                                            (("1"
+                                                              (assert)
+                                                              (("1"
+                                                                (hide
+                                                                 2)
+                                                                (("1"
+                                                                  (use
+                                                                   "Proper_Max")
+                                                                  (("1"
+                                                                    (hide
+                                                                     2)
+                                                                    (("1"
+                                                                      (lemma
+                                                                       "Proper_Abs")
+                                                                      (("1"
+                                                                        (inst?
+                                                                         -1
+                                                                         :where
+                                                                         1)
+                                                                        (("1"
+                                                                          (hide
+                                                                           2)
+                                                                          (("1"
+                                                                            (use
+                                                                             "Proper_Ln")
+                                                                            (("1"
+                                                                              (hide
+                                                                               -1)
+                                                                              (("1"
+                                                                                (use
+                                                                                 "Pos_Add_NonNeg")
+                                                                                (("1"
+                                                                                  (use
+                                                                                   "Incl_Pos")
+                                                                                  (("1"
+                                                                                    (assert)
+                                                                                    nil
+                                                                                    nil))
+                                                                                  nil))
+                                                                                nil))
+                                                                              nil))
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil))
+                                                                    nil)
+                                                                   ("2"
+                                                                    (hide
+                                                                     2)
+                                                                    (("2"
+                                                                      (lemma
+                                                                       "Proper_Abs")
+                                                                      (("2"
+                                                                        (inst?
+                                                                         -1
+                                                                         :where
+                                                                         1)
+                                                                        (("2"
+                                                                          (hide
+                                                                           2)
+                                                                          (("2"
+                                                                            (use
+                                                                             "Proper_Ln")
+                                                                            nil
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil))
+                                                                    nil))
+                                                                  nil))
+                                                                nil))
+                                                              nil))
+                                                            nil)
+                                                           ("2"
+                                                            (eval-formula)
+                                                            nil
+                                                            nil))
+                                                          nil))
+                                                        nil)
+                                                       ("2"
+                                                        (hide 2)
+                                                        (("2"
+                                                          (use
+                                                           "Ulp_sp_fundamental")
+                                                          (("2"
+                                                            (assert)
+                                                            (("2"
+                                                              (hide 2)
+                                                              (("2"
                                                                 (case
-                                                                 "Sub([|1|], Div(Y1, X1)) << Sub([|1|], Div(Y, X))")
+                                                                 "Max(Abs(Ln(n)(Sub(X1, Y1))), Abs(Ln(n)(Add(X1, Y1)))) <<
+                     Max(Abs(Ln(n)(Sub(X, Y))), Abs(Ln(n)(Add(X, Y))))")
                                                                 (("1"
                                                                   (assert)
                                                                   (("1"
-                                                                    (lemma
-                                                                     "Proper_Sub")
+                                                                    (use
+                                                                     "Proper_Max")
                                                                     (("1"
-                                                                      (inst?
-                                                                       -1
-                                                                       :where
-                                                                       1)
+                                                                      (hide
+                                                                       2)
                                                                       (("1"
-                                                                        (hide
-                                                                         2)
+                                                                        (lemma
+                                                                         "Proper_Abs")
                                                                         (("1"
-                                                                          (use
-                                                                           "Proper_Div")
+                                                                          (inst?
+                                                                           -1
+                                                                           :where
+                                                                           1)
                                                                           (("1"
-                                                                            (lemma
-                                                                             "Pos_Zeroless")
+                                                                            (hide
+                                                                             2)
                                                                             (("1"
-                                                                              (inst?
-                                                                               -1
-                                                                               :where
-                                                                               1)
+                                                                              (use
+                                                                               "Proper_Ln")
+                                                                              (("1"
+                                                                                (hide
+                                                                                 -1)
+                                                                                (("1"
+                                                                                  (use
+                                                                                   "Pos_Add_NonNeg")
+                                                                                  (("1"
+                                                                                    (use
+                                                                                     "Proper_Ln")
+                                                                                    (("1"
+                                                                                      (use
+                                                                                       "Pos_Add_NonNeg")
+                                                                                      (("1"
+                                                                                        (use
+                                                                                         "Incl_Pos")
+                                                                                        (("1"
+                                                                                          (assert)
+                                                                                          nil
+                                                                                          nil))
+                                                                                        nil))
+                                                                                      nil))
+                                                                                    nil))
+                                                                                  nil))
+                                                                                nil))
+                                                                              nil))
+                                                                            nil))
+                                                                          nil))
+                                                                        nil))
+                                                                      nil)
+                                                                     ("2"
+                                                                      (hide
+                                                                       2)
+                                                                      (("2"
+                                                                        (lemma
+                                                                         "Proper_Abs")
+                                                                        (("2"
+                                                                          (inst?
+                                                                           -1
+                                                                           :where
+                                                                           1)
+                                                                          (("2"
+                                                                            (hide
+                                                                             2)
+                                                                            (("2"
+                                                                              (use
+                                                                               "Proper_Ln")
                                                                               nil
                                                                               nil))
                                                                             nil))
@@ -3105,250 +3332,92 @@
                                                                    2)
                                                                   (("2"
                                                                     (use
-                                                                     "Sub_fundamental")
+                                                                     "Max_fundamental")
                                                                     (("2"
                                                                       (assert)
                                                                       (("2"
                                                                         (hide
                                                                          2)
                                                                         (("2"
-                                                                          (use
-                                                                           "Div_fundamental")
-                                                                          (("2"
-                                                                            (assert)
-                                                                            (("2"
-                                                                              (lemma
-                                                                               "Pos_Zeroless")
-                                                                              (("2"
-                                                                                (inst?
-                                                                                 -1
-                                                                                 :where
-                                                                                 1)
-                                                                                nil
-                                                                                nil))
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil)
-                                                   ("2"
-                                                    (use
-                                                     "Div_fundamental")
-                                                    (("2"
-                                                      (assert)
-                                                      (("2"
-                                                        (hide 2)
-                                                        (("2"
-                                                          (case
-                                                           "Ulp_sp(Max(Abs(Ln(n)(Sub(X1, Y1))), Abs(Ln(n)(Add(X1, Y1))))) <<
-                   Ulp_sp(Max(Abs(Ln(n)(Sub(X, Y))), Abs(Ln(n)(Add(X, Y)))))")
-                                                          (("1"
-                                                            (assert)
-                                                            (("1"
-                                                              (split 1)
-                                                              (("1"
-                                                                (use
-                                                                 "Ulp_sp_proper")
-                                                                (("1"
-                                                                  (assert)
-                                                                  (("1"
-                                                                    (hide
-                                                                     2)
-                                                                    (("1"
-                                                                      (use
-                                                                       "Proper_Max")
-                                                                      (("1"
-                                                                        (hide
-                                                                         2)
-                                                                        (("1"
-                                                                          (lemma
-                                                                           "Proper_Abs")
+                                                                          (split
+                                                                           1)
                                                                           (("1"
-                                                                            (inst?
-                                                                             -1
-                                                                             :where
-                                                                             1)
+                                                                            (use
+                                                                             "Abs_fundamental")
                                                                             (("1"
-                                                                              (hide
-                                                                               2)
-                                                                              (("1"
-                                                                                (use
-                                                                                 "Proper_Ln")
-                                                                                (("1"
-                                                                                  (use
-                                                                                   "Pos_Add_NonNeg")
-                                                                                  nil
-                                                                                  nil))
-                                                                                nil))
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil)
-                                                                       ("2"
-                                                                        (hide
-                                                                         2)
-                                                                        (("2"
-                                                                          (lemma
-                                                                           "Proper_Abs")
-                                                                          (("2"
-                                                                            (inst?
-                                                                             -1
-                                                                             :where
-                                                                             1)
-                                                                            (("2"
-                                                                              (hide
-                                                                               2)
-                                                                              (("2"
-                                                                                (use
-                                                                                 "Proper_Ln")
-                                                                                nil
-                                                                                nil))
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil)
-                                                               ("2"
-                                                                (eval-formula)
-                                                                nil
-                                                                nil))
-                                                              nil))
-                                                            nil)
-                                                           ("2"
-                                                            (hide 2)
-                                                            (("2"
-                                                              (use
-                                                               "Ulp_sp_fundamental")
-                                                              (("2"
-                                                                (assert)
-                                                                (("2"
-                                                                  (hide
-                                                                   2)
-                                                                  (("2"
-                                                                    (case
-                                                                     "Max(Abs(Ln(n)(Sub(X1, Y1))), Abs(Ln(n)(Add(X1, Y1)))) <<
-                     Max(Abs(Ln(n)(Sub(X, Y))), Abs(Ln(n)(Add(X, Y))))")
-                                                                    (("1"
-                                                                      (assert)
-                                                                      (("1"
-                                                                        (use
-                                                                         "Proper_Max")
-                                                                        (("1"
-                                                                          (hide
-                                                                           2)
-                                                                          (("1"
-                                                                            (lemma
-                                                                             "Proper_Abs")
-                                                                            (("1"
-                                                                              (inst?
-                                                                               -1
-                                                                               :where
-                                                                               1)
+                                                                              (assert)
                                                                               (("1"
                                                                                 (hide
                                                                                  2)
                                                                                 (("1"
-                                                                                  (use
-                                                                                   "Proper_Ln")
+                                                                                  (case
+                                                                                   " Ln(n)(Sub(X1, Y1)) << Ln(n)(Sub(X, Y))")
                                                                                   (("1"
-                                                                                    (hide
-                                                                                     2)
+                                                                                    (assert)
                                                                                     (("1"
                                                                                       (use
-                                                                                       "Pos_Add_NonNeg")
+                                                                                       "Proper_Ln")
                                                                                       nil
+                                                                                      nil))
+                                                                                    nil)
+                                                                                   ("2"
+                                                                                    (hide
+                                                                                     2)
+                                                                                    (("2"
+                                                                                      (use
+                                                                                       "Ln_fundamental")
+                                                                                      (("2"
+                                                                                        (assert)
+                                                                                        (("2"
+                                                                                          (hide
+                                                                                           2)
+                                                                                          (("2"
+                                                                                            (use
+                                                                                             "Sub_fundamental")
+                                                                                            (("2"
+                                                                                              (assert)
+                                                                                              nil
+                                                                                              nil))
+                                                                                            nil))
+                                                                                          nil))
+                                                                                        nil))
                                                                                       nil))
                                                                                     nil))
                                                                                   nil))
                                                                                 nil))
                                                                               nil))
-                                                                            nil))
-                                                                          nil)
-                                                                         ("2"
-                                                                          (hide
-                                                                           2)
-                                                                          (("2"
-                                                                            (lemma
-                                                                             "Proper_Abs")
+                                                                            nil)
+                                                                           ("2"
+                                                                            (use
+                                                                             "Abs_fundamental")
                                                                             (("2"
-                                                                              (inst?
-                                                                               -1
-                                                                               :where
-                                                                               1)
+                                                                              (assert)
                                                                               (("2"
                                                                                 (hide
                                                                                  2)
                                                                                 (("2"
-                                                                                  (use
-                                                                                   "Proper_Ln")
-                                                                                  nil
-                                                                                  nil))
-                                                                                nil))
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil)
-                                                                     ("2"
-                                                                      (hide
-                                                                       2)
-                                                                      (("2"
-                                                                        (use
-                                                                         "Max_fundamental")
-                                                                        (("2"
-                                                                          (assert)
-                                                                          (("2"
-                                                                            (hide
-                                                                             2)
-                                                                            (("2"
-                                                                              (split
-                                                                               1)
-                                                                              (("1"
-                                                                                (use
-                                                                                 "Abs_fundamental")
-                                                                                (("1"
-                                                                                  (assert)
+                                                                                  (case
+                                                                                   "Ln(n)(Add(X1, Y1)) << Ln(n)(Add(X, Y))")
                                                                                   (("1"
-                                                                                    (hide
-                                                                                     2)
+                                                                                    (assert)
                                                                                     (("1"
-                                                                                      (case
-                                                                                       " Ln(n)(Sub(X1, Y1)) << Ln(n)(Sub(X, Y))")
+                                                                                      (use
+                                                                                       "Proper_Ln")
                                                                                       (("1"
                                                                                         (assert)
                                                                                         (("1"
-                                                                                          (use
-                                                                                           "Proper_Ln")
-                                                                                          nil
-                                                                                          nil))
-                                                                                        nil)
-                                                                                       ("2"
-                                                                                        (hide
-                                                                                         2)
-                                                                                        (("2"
-                                                                                          (use
-                                                                                           "Ln_fundamental")
-                                                                                          (("2"
-                                                                                            (assert)
-                                                                                            (("2"
-                                                                                              (hide
-                                                                                               2)
-                                                                                              (("2"
+                                                                                          (hide
+                                                                                           2)
+                                                                                          (("1"
+                                                                                            (hide
+                                                                                             -1)
+                                                                                            (("1"
+                                                                                              (use
+                                                                                               "Pos_Add_NonNeg")
+                                                                                              (("1"
                                                                                                 (use
-                                                                                                 "Sub_fundamental")
-                                                                                                (("2"
+                                                                                                 "Incl_Pos")
+                                                                                                (("1"
                                                                                                   (assert)
                                                                                                   nil
                                                                                                   nil))
@@ -3358,66 +3427,32 @@
                                                                                           nil))
                                                                                         nil))
                                                                                       nil))
-                                                                                    nil))
-                                                                                  nil))
-                                                                                nil)
-                                                                               ("2"
-                                                                                (use
-                                                                                 "Abs_fundamental")
-                                                                                (("2"
-                                                                                  (assert)
-                                                                                  (("2"
+                                                                                    nil)
+                                                                                   ("2"
                                                                                     (hide
                                                                                      2)
                                                                                     (("2"
-                                                                                      (case
-                                                                                       "Ln(n)(Add(X1, Y1)) << Ln(n)(Add(X, Y))")
-                                                                                      (("1"
+                                                                                      (use
+                                                                                       "Ln_fundamental")
+                                                                                      (("2"
                                                                                         (assert)
-                                                                                        (("1"
-                                                                                          (use
-                                                                                           "Proper_Ln")
-                                                                                          (("1"
-                                                                                            (assert)
-                                                                                            (("1"
-                                                                                              (hide
-                                                                                               2)
-                                                                                              (("1"
-                                                                                                (use
-                                                                                                 "Pos_Add_NonNeg")
-                                                                                                nil
-                                                                                                nil))
-                                                                                              nil))
-                                                                                            nil))
-                                                                                          nil))
-                                                                                        nil)
-                                                                                       ("2"
-                                                                                        (hide
-                                                                                         2)
                                                                                         (("2"
-                                                                                          (use
-                                                                                           "Ln_fundamental")
+                                                                                          (hide
+                                                                                           2)
                                                                                           (("2"
-                                                                                            (assert)
-                                                                                            (("2"
-                                                                                              (hide
-                                                                                               2)
+                                                                                            (split
+                                                                                             1)
+                                                                                            (("1"
+                                                                                              (use
+                                                                                               "Pos_Add_NonNeg")
+                                                                                              nil
+                                                                                              nil)
+                                                                                             ("2"
+                                                                                              (use
+                                                                                               "Add_fundamental")
                                                                                               (("2"
-                                                                                                (split
-                                                                                                 1)
-                                                                                                (("1"
-                                                                                                  (use
-                                                                                                   "Pos_Add_NonNeg")
-                                                                                                  nil
-                                                                                                  nil)
-                                                                                                 ("2"
-                                                                                                  (use
-                                                                                                   "Add_fundamental")
-                                                                                                  (("2"
-                                                                                                    (assert)
-                                                                                                    nil
-                                                                                                    nil))
-                                                                                                  nil))
+                                                                                                (assert)
+                                                                                                nil
                                                                                                 nil))
                                                                                               nil))
                                                                                             nil))
@@ -3512,95 +3547,100 @@
         nil))
       nil))
     nil)
-   ((Fundamental2? const-decl "bool" interval "interval_arith/")
-    (aeb_lgn_pre2 const-decl "bool" bbiasp_ln nil)
-    (AEB_LN_inclusion_j application-judgement
-     "(Inclusion2?(Any?, aeb_lgn_pre2, aeboundsp_ln_safe))" bbiasp_ln
+   ((aeb_lgn_pre2_is_enough_for_aeboundsp_ln_ia_tccs formula-decl nil
+     bbiasp_ln nil)
+    (NonNeg? const-decl "bool" interval interval_arith)
+    (Any? const-decl "bool" interval interval_arith)
+    (ProperInterval type-eq-decl nil interval interval_arith)
+    (Proper? const-decl "bool" interval interval_arith)
+    (bool nonempty-type-eq-decl nil booleans nil)
+    (boolean nonempty-type-decl nil booleans nil)
+    (Interval type-eq-decl nil interval interval_arith)
+    (real nonempty-type-from-decl nil reals nil)
+    (aeboundsp_ln_ia const-decl "Interval" bbiasp_ln nil)
+    (Proper_Sub application-judgement "ProperInterval" interval
+     interval_arith)
+    (Add_fundamental formula-decl nil interval interval_arith)
+    (Add const-decl "Interval" interval interval_arith)
+    (Abs const-decl "(NonNeg?)" interval interval_arith)
+    (Max const-decl "Interval" interval interval_arith)
+    (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
+    (Div const-decl "Interval" interval interval_arith)
+    ([\|\|] const-decl "Interval" interval interval_arith)
+    (Sub const-decl "Interval" interval interval_arith)
+    (Ln const-decl "Interval" interval_lnexp interval_arith)
+    (nat nonempty-type-eq-decl nil naturalnumbers nil)
+    (>= const-decl "bool" reals nil)
+    (int nonempty-type-eq-decl nil integers nil)
+    (integer_pred const-decl "[rational -> boolean]" integers nil)
+    (rational nonempty-type-from-decl nil rationals nil)
+    (rational_pred const-decl "[real -> boolean]" rationals nil)
+    (real_pred const-decl "[number_field -> boolean]" reals nil)
+    (number_field nonempty-type-from-decl nil number_fields nil)
+    (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)
-    (Pos_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
-    (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
-    (Gt_fundamental formula-decl nil interval "interval_arith/")
-    (Ge_fundamental formula-decl nil interval "interval_arith/")
-    (Proper_Add application-judgement "ProperInterval" interval
-     "interval_arith/")
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp nil)
-    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
-     interval_ulp_sp nil)
-    (Ln_fundamental formula-decl nil interval_lnexp "interval_arith/")
-    (Incl_reflx formula-decl nil interval "interval_arith/")
-    (Div_fundamental formula-decl nil interval "interval_arith/")
-    (Sub_fundamental formula-decl nil interval "interval_arith/")
-    (X1 skolem-const-decl "ProperInterval" bbiasp_ln nil)
-    (Proper_Div judgement-tcc nil interval "interval_arith/")
-    (Zeroless? const-decl "bool" interval "interval_arith/")
-    (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Pos? const-decl "bool" interval "interval_arith/")
-    (Pos_Zeroless judgement-tcc nil interval "interval_arith/")
-    (Proper_Sub judgement-tcc nil interval "interval_arith/")
-    (<< const-decl "bool" interval "interval_arith/")
-    (Neg_fundamental formula-decl nil interval "interval_arith/")
-    (Proper_Max judgement-tcc nil interval "interval_arith/")
-    (n skolem-const-decl "nat" bbiasp_ln nil)
-    (Proper_Abs judgement-tcc nil interval "interval_arith/")
-    (Pos_Add_NonNeg judgement-tcc nil interval "interval_arith/")
-    (PosInterval type-eq-decl nil proper_arith "interval_arith/")
-    (Proper_Ln judgement-tcc nil interval_lnexp "interval_arith/")
-    (Ulp_sp_proper formula-decl nil interval_ulp_sp nil)
+    (number nonempty-type-decl nil numbers nil)
+    (Neg const-decl "Interval" interval interval_arith)
+    (Max_fundamental formula-decl nil interval interval_arith)
+    (Abs_fundamental formula-decl nil interval interval_arith)
+    (Ulp_sp_fundamental formula-decl nil interval_ulp_sp nil)
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
     (TRUE const-decl "bool" booleans nil)
-    (Ulp_sp_fundamental formula-decl nil interval_ulp_sp nil)
-    (Abs_fundamental formula-decl nil interval "interval_arith/")
-    (Max_fundamental formula-decl nil interval "interval_arith/")
-    (Neg const-decl "Interval" interval "interval_arith/")
-    (number nonempty-type-decl nil numbers nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (>= const-decl "bool" reals nil)
-    (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (Ln const-decl "Interval" interval_lnexp "interval_arith/")
-    (Sub const-decl "Interval" interval "interval_arith/")
-    ([\|\|] const-decl "Interval" interval "interval_arith/")
-    (Div const-decl "Interval" interval "interval_arith/")
-    (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
-    (Max const-decl "Interval" interval "interval_arith/")
-    (Abs const-decl "(NonNeg?)" interval "interval_arith/")
-    (Add const-decl "Interval" interval "interval_arith/")
-    (Add_fundamental formula-decl nil interval "interval_arith/")
-    (r2i_Proper application-judgement "ProperInterval" interval
-     "interval_arith/")
+    (Ulp_sp_proper formula-decl nil interval_ulp_sp nil)
+    (Proper_Ln judgement-tcc nil interval_lnexp interval_arith)
+    (PosInterval type-eq-decl nil proper_arith interval_arith)
+    (Pos_Add_NonNeg judgement-tcc nil interval interval_arith)
+    (Proper_Abs judgement-tcc nil interval interval_arith)
+    (n skolem-const-decl "nat" bbiasp_ln nil)
+    (Proper_Max judgement-tcc nil interval interval_arith)
+    (Neg_fundamental formula-decl nil interval interval_arith)
+    (<< const-decl "bool" interval interval_arith)
+    (Proper_Sub judgement-tcc nil interval interval_arith)
+    (Pos_Zeroless judgement-tcc nil interval interval_arith)
+    (Incl_Pos formula-decl nil interval interval_arith)
+    (Pos? const-decl "bool" interval interval_arith)
+    (Zeroless_Precondition name-judgement "(Precondition?)" interval
+     interval_arith)
+    (Zeroless? const-decl "bool" interval interval_arith)
+    (Proper_Div judgement-tcc nil interval interval_arith)
+    (X1 skolem-const-decl "ProperInterval" bbiasp_ln nil)
     (Y1 skolem-const-decl "ProperInterval" bbiasp_ln nil)
-    (Proper_Sub application-judgement "ProperInterval" interval
-     "interval_arith/")
-    (aeboundsp_ln_ia const-decl "Interval" bbiasp_ln nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (boolean nonempty-type-decl nil booleans nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (Proper? const-decl "bool" interval "interval_arith/")
-    (ProperInterval type-eq-decl nil interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (aeb_lgn_pre2_is_enough_for_aeboundsp_ln_ia_tccs formula-decl nil
-     bbiasp_ln nil))
-   nil)
+    (Sub_fundamental formula-decl nil interval interval_arith)
+    (Div_fundamental formula-decl nil interval interval_arith)
+    (Incl_reflx formula-decl nil interval interval_arith)
+    (Ln_fundamental formula-decl nil interval_lnexp interval_arith)
+    (Ulp_sp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_sp))"
+     interval_ulp_sp nil)
+    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
+     interval_ulp_sp nil)
+    (Proper_Add application-judgement "ProperInterval" interval
+     interval_arith)
+    (Ge_fundamental formula-decl nil interval interval_arith)
+    (Gt_fundamental formula-decl nil interval interval_arith)
+    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
+    (r2i_Proper application-judgement "ProperInterval" interval
+     interval_arith)
+    (Any_Precondition name-judgement "(Precondition?)" interval
+     interval_arith)
+    (NonNeg_Precondition name-judgement "(Precondition?)" interval
+     interval_arith)
+    (Pos_Precondition name-judgement "(Precondition?)" interval
+     interval_arith)
+    (AEB_LN_inclusion_j application-judgement
+     "(Inclusion2?(Any?, aeb_lgn_pre2, aeboundsp_ln_safe))" bbiasp_ln
+     nil)
+    (aeb_lgn_pre2 const-decl "bool" bbiasp_ln nil)
+    (Fundamental2? const-decl "bool" interval interval_arith))
+   nil
+   (AEB_LN_fundmental_j subtype
+    "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Fundamental2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2))"))
   (AEB_LN_fundmental_j-1 nil 3699953937 ("" (judgement-tcc) nil nil)
-   nil nil))
+   nil nil
+   (AEB_LN_fundmental_j subtype
+    "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "(interval.Fundamental2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2))")))
  (AEB_LN_TCC1 0
   (AEB_LN_TCC1-1 nil 3699953937 ("" (subtype-tcc) nil nil)
    ((AEB_LN_fundmental_j application-judgement
@@ -3619,5 +3659,7 @@
     (mult_divides1 application-judgement "(divides(n))" divides nil)
     (mult_divides2 application-judgement "(divides(m))" divides nil)
     (real_minus_real_is_real application-judgement "real" reals nil))
-   nil)))
+   nil
+   (AEB_LN subtype "bbiasp_ln.aeboundsp_ln_ia(bbiasp_ln.n)"
+    "{F: [[interval.Interval, interval.Interval] -> interval.Interval] | booleans.AND(interval.Inclusion2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2, bbiasp_ln.aeboundsp_ln_safe)(F), interval.Fundamental2?(interval.Any?, bbiasp_ln.aeb_lgn_pre2)(F))}"))))
 
