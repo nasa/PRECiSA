@@ -1,7 +1,6 @@
 Processing PRECiSA. Writing output to file ./PRECiSA.summary
-Grand Totals: 144 proofs, 144 attempted, 144 succeeded (255.50 s)
+Grand Totals: 144 proofs, 144 attempted, 144 succeeded (223.37 s)
 
-PVS_LIBRARY_PATH=/Users/cmunoz/src/PRECiSA/PRECiSA.gitrelease/PVS:/Users/cmunoz/local/PVS/nasalib
 PRECiSA                  [OK: 144 proofs]
 
 *** Grand Totals: 144 proofs / 144 formulas. Missed: 0 formulas.
