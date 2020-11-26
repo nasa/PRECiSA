@@ -2,9 +2,10 @@
 
 # Contributors
 * Mariano M. Moscato, NIA, USA
+* [César Muñoz](http://shemesh.larc.nasa.gov/people/cam), NASA, USA
 
 ## Maintainer
-* [César Muñoz](http://shemesh.larc.nasa.gov/people/cam), NASA, USA 
+* Mariano M. Moscato, NIA, USA
 
 # Dependencies
 ![dependency graph](./PRECiSA.svg "Dependency Graph")
