@@ -1,5 +1,6 @@
-Processing PRECiSA. Writing output to file ./PRECiSA.summary
-Grand Totals: 144 proofs, 144 attempted, 144 succeeded (223.37 s)
+Processing PRECiSA. Writing output to file summaries/PRECiSA.summary
+Logging PVS information in summaries/PRECiSA.log
+Grand Totals: 144 proofs, 144 attempted, 144 succeeded (294.34 s)
 
 PRECiSA                  [OK: 144 proofs]
 
