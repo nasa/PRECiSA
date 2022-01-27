@@ -1,8 +1,0 @@
-var_aexpr: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-
-var (X: unb_double): unb_double = X
-
-END var_aexpr

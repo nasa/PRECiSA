@@ -2,11 +2,11 @@ doppler3: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
+% @fp-function
 dop3(U,V: unb_double,
      T  : unb_double |
-       DtoR(Dmul( Dadd(Dadd(RtoD(331.4),Dmul(RtoD(0.6),T)),U),
-       		  Dadd(Dadd(RtoD(331.4),Dmul(RtoD(0.6),T)),U)))/=0):unb_double=
-  LET T1 = Dadd(RtoD(331.4),Dmul(RtoD(0.6),T)) IN
-   Ddiv(Dmul(Dneg(T1),V), Dmul(Dadd(T1,U),Dadd(T1,U)))
+       (331.4 + (0.6*T) + U) * (331.4 + (0.6*T) + U) /=0):unb_double=
+  LET T1 = 331.4 + (0.6*T) IN
+   (-T1 * V) / ((T1 + U) * (T1 + U))
 
 END doppler3

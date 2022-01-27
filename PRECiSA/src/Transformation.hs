@@ -1,10 +1,10 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 module Transformation where
@@ -39,7 +39,7 @@ suffixTauPlus :: FunName
 suffixTauPlus  = "_tauplus"
 
 suffixTauMinus :: FunName
-suffixTauMinus = "_tauminus" 
+suffixTauMinus = "_tauminus"
 
 isTauPlus :: PredAbs -> Bool
 isTauPlus TauPlus = True
@@ -72,24 +72,24 @@ findFreshErrsInTranStateInterp f interp = freshErrVar $ fromMaybe
 
 findOrigFunInProg :: FunName -> [Decl] -> Maybe Decl
 findOrigFunInProg f decls =
-  case findInProg f decls of 
+  case findInProg f decls of
     Just d -> Just d
     Nothing -> findInProg (origDeclName f) decls
 
 findOrigFunInRealProg :: FunName -> [RDecl] -> Maybe RDecl
-findOrigFunInRealProg f decls = 
+findOrigFunInRealProg f decls =
   case findInRealProg f decls of
     Just d -> Just d
     Nothing -> findInRealProg (origDeclName f) decls
 
 lookupOrigFun :: FunName -> [(FunName, a)] -> Maybe a
-lookupOrigFun f list = 
+lookupOrigFun f list =
   case lookup f list of
     Just e -> Just e
     Nothing -> lookup (origDeclName f) list
 
 findOrigFunInSpec :: FunName -> [SpecBind] -> Maybe [VarBind]
-findOrigFunInSpec f list = 
+findOrigFunInSpec f list =
   case findInSpec f list of
     Just e -> Just e
     Nothing -> findInSpec (origDeclName f) list
@@ -120,12 +120,12 @@ localVarsInExpr locEnv fae = filter (\(v,_,_) -> v `elem` (localVarsInExpr' (var
   where
     localVarsInExpr' :: [VarName] -> [(VarName, PVSType, FAExpr)] -> [VarName] -> [VarName]
     localVarsInExpr' [] _ acc = acc
-    localVarsInExpr' (x:xs) locEnv acc = maybe (localVarsInExpr' xs locEnv acc)
-                                           (\expr -> localVarsInExpr' (xs++(varNameList expr)) locEnv (x:acc))
-                                           (localEnvLookup x locEnv)
+    localVarsInExpr' (x:xs) locEnv' acc = maybe (localVarsInExpr' xs locEnv' acc)
+                                           (\expr -> localVarsInExpr' (xs++(varNameList expr)) locEnv' (x:acc))
+                                           (localEnvLookup x locEnv')
 
 localEnvLookup :: VarName -> [(VarName, PVSType, FAExpr)] -> Maybe FAExpr
-localEnvLookup var [] = Nothing
+localEnvLookup _ [] = Nothing
 localEnvLookup var ((x,_,expr):rest) | var == x = Just expr
                                      | otherwise = localEnvLookup var rest
 
@@ -156,7 +156,7 @@ transformDeclSymb decls (Pred isTrans _ f args expr) = do
   currentState <- get
   let freshVars = findFreshErrsInTranStateInterp f currentState
   let errVars = map errVar2Arg $ listFst3 $ env freshVars
-  if betaPlusBExpr == betaMinusBExpr 
+  if betaPlusBExpr == betaMinusBExpr
     then return [Pred isTrans Original f (args++errVars) betaPlusBExpr]
     else do
       let tauEnv  = (f, TransState {freshErrVar = freshVars, forExprMap = []})
@@ -203,7 +203,7 @@ addToLocalEnv letElem@(x,t,ae) locEnv | letElem `elem` locEnv = locEnv
                                       | otherwise = locEnv++[(x,t,ae)]
 
 transformLetElem :: [Decl] -> FunName -> FBExpr -> Bool -> FLetElem -> State TranStateInterp FLetElem
-transformLetElem decls f be check (x,t,faexpr) = do
+transformLetElem decls f be _ (x,t,faexpr) = do
   transformedAExpr <- transformStmSymb decls f be False faexpr
   currentStateEnv <- get
   let currentState = findFreshErrsInTranStateInterp f currentStateEnv
@@ -225,7 +225,7 @@ transformStmSymb decls f be check (Let (letElem:rest) stm) = do
     else return $ Let [transformedLetElem] transformedStm
 
 transformStmSymb decls f be check (Ite fbexpr thenStm elseStm) = do
-  thenStmTran <- transformStmSymb decls f (simplFAnd be fbexpr) check thenStm 
+  thenStmTran <- transformStmSymb decls f (simplFAnd be fbexpr) check thenStm
   elseStmTran <- transformStmSymb decls f (simplFAnd be (FNot fbexpr)) check  elseStm
   if noRoundOffErrorIn fbexpr
     then do
@@ -274,10 +274,10 @@ transformStmSymb decls f be check (ListIte listThen elseStm) = do
 
 transformStmSymb decls f be check forOrig@(ForLoop retType startIdx endIdx initValueAcc idx acc forBody) = do
   transformedForBody <- transformStmSymb decls f be check forBody
-  currentState <- get 
+  currentState <- get
   let forTrans = ForLoop retType startIdx endIdx initValueAcc idx acc transformedForBody
   put $ addToForExprMap f (fae2real' forOrig) forTrans currentState
-  return $ forTrans 
+  return $ forTrans
 
 transformStmSymb _ _ _ _ UnstWarning = return UnstWarning
 
@@ -359,13 +359,13 @@ betaBExprStm isTPlus decls f pathCond check (BLet (letElem:rest) stm) = do
   transformedLetElem <- transformLetElem decls f pathCond check letElem
   let funCallListLetElem = funCallListFAExpr  (exprFLetElem transformedLetElem)
   let predListLetElem    = predCallListFAExpr (exprFLetElem transformedLetElem)
-  transformedStm     <- betaBExprStm isTPlus decls f pathCond check (if null rest then stm else (BLet rest stm)) 
+  transformedStm     <- betaBExprStm isTPlus decls f pathCond check (if null rest then stm else (BLet rest stm))
   if check
     then return $ checkFunCallValidityBExprStm funCallListLetElem predListLetElem (BLet [transformedLetElem] transformedStm)
     else return $ BLet [transformedLetElem] transformedStm
 
 betaBExprStm isTPlus decls f pathCond check (BIte be thenStm elseStm) = do
-  thenStmTran <- betaBExprStm isTPlus decls f (simplFAnd be pathCond)        check thenStm 
+  thenStmTran <- betaBExprStm isTPlus decls f (simplFAnd be pathCond)        check thenStm
   elseStmTran <- betaBExprStm isTPlus decls f (simplFAnd be (FNot pathCond)) check elseStm
   if noRoundOffErrorIn pathCond
     then do
@@ -483,7 +483,7 @@ betaPlusVar f pathCond decls (FRel Lt ae1 ae2) | isZeroFAExpr ae2 = do
   return $ FRel Lt ae1Trans (UnaryFPOp NegOp FPDouble (FVar FPDouble freshName))
 
 betaPlusVar f pathCond decls (FRel Lt ae2 ae1) | isZeroFAExpr ae2 = do
-  freshName <- updateBetaState f pathCond ae1 
+  freshName <- updateBetaState f pathCond ae1
   ae1Trans <- transformStmSymb decls f pathCond False ae1
   return $ FRel Lt (FVar FPDouble freshName) ae1Trans
 

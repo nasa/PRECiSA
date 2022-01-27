@@ -2,12 +2,14 @@ carbonGas: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
-carbonGas (V: unb_double | DtoR(V) /= 0):unb_double = LET K = RtoD(0.000000000000000000000013806503) IN
-LET T = RtoD(300) IN
-LET A = RtoD(0.401) IN 
-LET B = RtoD(0.0000427) IN
-LET N = RtoD(1000) IN 
-LET P = RtoD(35000000) IN
-Dsub(Dmul(Dadd(P,Dmul(A, Dmul(Ddiv(N,V), Ddiv(N,V)))), Dsub(V, Dmul(N,B))), Dmul(K, Dmul(N,T)))
+% @fp-function
+carbonGas (V: unb_double | DtoR(V) /= 0):unb_double =
+LET K = 0.000000000000000000000013806503 IN
+LET T = 300 IN
+LET A = 0.401 IN 
+LET B = 0.0000427 IN
+LET N = 1000 IN 
+LET P = 35000000 IN
+(P + A * (N/V) * (N/V)) * (V - N * B) - (K * N * T)
 
 END carbonGas

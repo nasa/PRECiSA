@@ -1,7 +1,0 @@
-los_expr1: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-los_expr1(X,Y,D: unb_double):unb_double = Dsub(Dsqrt(Dadd(Dmul(X,X),Dmul(Y,Y))),D)
-
-END los_expr1

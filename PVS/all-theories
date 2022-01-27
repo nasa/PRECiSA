@@ -1,2 +1,2 @@
-: --log --dir summaries 
+# Program Round-off Error Certifier via Static Analysis
 PRECiSA

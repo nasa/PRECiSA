@@ -1,9 +1,0 @@
-test_div2_double: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-g(X,Y,Z: unb_double): unb_double = IF (Dsub(Dmul(X,Y),Z) > Dmul(Z,Z))
-                                       THEN (Ddiv(Y, (Dsub(Dmul(X,Y), Dmul(Dsub(RtoD(1),Z),Z)))))
-                                       ELSE Dadd(X, Dmul(Y,Z))
-                                   ENDIF
-END test_div2_double

@@ -2,6 +2,7 @@ t_div_t1: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
-t_div_t1 (T: unb_double | DtoR(Dadd(T, RtoD(1))) /= 0):unb_double = Ddiv(T, Dadd(T, RtoD(1)))
+% @fp-function
+t_div_t1 (T: unb_double | DtoR(Dadd(T, RtoD(1))) /= 0):unb_double = T / (T + 1)
 
 END t_div_t1

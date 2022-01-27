@@ -2,6 +2,8 @@ sine: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
-sine(X: unb_double):unb_double = Dsub(X, Dadd(Ddiv(Dmul(X,Dmul(X,X)),RtoD(6)) , Dsub( Ddiv( Dmul(X,Dmul(X,Dmul(X,Dmul(X,X)))),RtoD(120)), Ddiv(Dmul(X,Dmul(X,Dmul(X,Dmul(X,Dmul(X,Dmul(X,X)))))),RtoD(5040)))))
+% @fp-function
+sine(X: unb_double):unb_double =
+  X - (X*X*X)/6 + (X*X*X*X*X)/120 - (X*X*X*X*X*X*X)/5040
 
 END sine

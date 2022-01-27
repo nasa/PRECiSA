@@ -30,13 +30,13 @@ BEGIN
    (((sx+tc*vx)*(sx+tc*vx) + (sy+tc*vy)*(sy+tc*vy)) - DTHR * DTHR <= 0  AND
    0 <= tm AND tm - TTHR <= 0)
    
- vertical_WCV(sz,vz,ZTHR,TCOA:real): bool =
+ vertical_wcv(sz,vz,ZTHR,TCOA:real): bool =
    abs(sz) - ZTHR <= 0 OR
    (0 <= tcoa(sz,vz) AND tcoa(sz,vz) - TCOA <= 0)
 
- WCV(sx,sy,sz,vx,vy,vz,DTHR,TTHR,ZTHR,TCOA:real): bool =
+ wcv(sx,sy,sz,vx,vy,vz,DTHR,TTHR,ZTHR,TCOA:real): bool =
    horizontal_wcv(sx,sy,vx,vy,DTHR,TTHR)
    AND
-   vertical_WCV(sz,vz,ZTHR,TCOA)
+   vertical_wcv(sz,vz,ZTHR,TCOA)
 
 END wcv

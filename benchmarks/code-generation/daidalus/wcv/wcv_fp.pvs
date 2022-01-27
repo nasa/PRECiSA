@@ -20,7 +20,7 @@ taumod_fp(sx: double, vx: double, sy: double, vy: double, DTHR: double): double 
 horizontal_wcv_fp(sx: double, sy: double, vx: double, vy: double, DTHR: double, TTHR: double): bool  = LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR),
                                                                                                            tc:double=tcpa_fp(sx, vx, sy, vy)
                                                                                                        IN ((sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR)) <= integerToDouble(0)) OR (((sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR)) <= integerToDouble(0)) AND (integerToDouble(0) <= tm)) AND (sub_double(tm, TTHR) <= integerToDouble(0))))
-vertical_WCV_fp(sz: double, vz: double, ZTHR: double, TCOA: double): bool  = ((sub_double(abs_double(sz), ZTHR) <= integerToDouble(0)) OR ((integerToDouble(0) <= tcoa_fp(sz, vz)) AND (sub_double(tcoa_fp(sz, vz), TCOA) <= integerToDouble(0))))
-WCV_fp(sx: double, sy: double, sz: double, vx: double, vy: double, vz: double, DTHR: double, TTHR: double, ZTHR: double, TCOA: double): bool  = (horizontal_wcv_fp(sx, sy, vx, vy, DTHR, TTHR) AND vertical_WCV_fp(sz, vz, ZTHR, TCOA))
+vertical_wcv_fp(sz: double, vz: double, ZTHR: double, TCOA: double): bool  = ((sub_double(abs_double(sz), ZTHR) <= integerToDouble(0)) OR ((integerToDouble(0) <= tcoa_fp(sz, vz)) AND (sub_double(tcoa_fp(sz, vz), TCOA) <= integerToDouble(0))))
+wcv_fp(sx: double, sy: double, sz: double, vx: double, vy: double, vz: double, DTHR: double, TTHR: double, ZTHR: double, TCOA: double): bool  = (horizontal_wcv_fp(sx, sy, vx, vy, DTHR, TTHR) AND vertical_wcv_fp(sz, vz, ZTHR, TCOA))
 
 END wcv_fp

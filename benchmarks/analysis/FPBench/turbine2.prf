@@ -1,7 +1,0 @@
-(turbine2
- (turbine2_TCC1 0
-  (turbine2_TCC1-1 nil 3718646122
-   ("" (then (skeep* :preds? t) (assert) (eval-formulas :quiet? t))
-    nil)
-   nil nil)))
-

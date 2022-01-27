@@ -1,10 +1,10 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 
@@ -24,11 +24,11 @@ import Data.Maybe(fromMaybe)
 import Foreign.C
 import Operators
 
-data KodiakInput = KI { name :: String,
-                        expression :: EExpr,
-                        bindings :: [VarBind],
-                        maxDepth :: CUInt,
-                        precision :: CUInt }
+data KodiakInput = KI { kiName :: String,
+                        kiExpression :: EExpr,
+                        kiBindings :: [VarBind],
+                        kiMaxDepth :: CUInt,
+                        kiPrecision :: CUInt }
 
 data KodiakResult = KR { maximumLowerBound :: Double,
                          maximumUpperBound :: Double
@@ -38,36 +38,15 @@ variableMapFromBinds :: [VarBind] -> VariableMap
 variableMapFromBinds binds = VMap $ zip variableNames [(0::CUInt)..]
   where variableNames = map (\(VarBind s _ _ _) -> s) binds
 
-fromLBoundToRational :: LBound -> Rational
-fromLBoundToRational (LBInt i) = toRational i
-fromLBoundToRational (LBDouble r) = toRational r
-fromLBoundToRational LInf = error "not implemented for LInf TODO: Refactor"
-
-fromUBoundToRational :: UBound -> Rational
-fromUBoundToRational (UBInt i) = toRational i
-fromUBoundToRational (UBDouble r) = toRational r
-fromUBoundToRational UInf = error "not implemented for UInf TODO: Refactor"
-
-instance KodiakRunnable VarBind PMinMaxSystem () where
-  run (VarBind x _ lowerBound upperBound) pSys =
-    do
-      cName <- newCString x
-      pLb <- interval_create cLowerBound cLowerBound
-      pUb <- interval_create cUpperBound cUpperBound
-      minmax_system_register_variable pSys cName pLb pUb
-        where
-          cLowerBound = fromRational $ fromLBoundToRational lowerBound
-          cUpperBound = fromRational $ fromUBoundToRational upperBound
-
 instance KodiakRunnable KodiakInput () KodiakResult where
   run kInput _ =
     do
-      let sysName       = name kInput
-          errorExpr     = expression kInput
-          varRanges     = bindings kInput
+      let sysName       = kiName kInput
+          errorExpr     = kiExpression kInput
+          varRanges     = kiBindings kInput
           variableMap   = variableMapFromBinds varRanges
-          thisPrecision = precision kInput
-          thisMaxDepth  = maxDepth kInput
+          thisPrecision = kiPrecision kInput
+          thisMaxDepth  = kiMaxDepth kInput
       cName <- newCString sysName
       pSys <- minmax_system_create cName
       minmax_system_set_maxdepth pSys thisMaxDepth
@@ -109,13 +88,13 @@ instance KodiakRunnable AExpr VariableMap PReal where
       where
         VMap variableToNumberMap = m
 
-        createKodiakVariable (varName,varId) = do
-             cName <- newCString varName
+        createKodiakVariable (vName,varId) = do
+             cName <- newCString vName
              pVariable <- real_create_variable varId cName
-             return (varName,pVariable)
+             return (vName,pVariable)
 
-        createKodiakLocalVariable varName = do
-             cName <- newCString varName
+        createKodiakLocalVariable vName = do
+             cName <- newCString vName
              real_create_local_variable cName
 
         runBinaryOperator l r vmap kodiakFunction = do
@@ -167,7 +146,10 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (UnaryOp LnOp    e) vmap = runUnaryOperator e vmap real_create_elogarithm
         run' (UnaryOp ExpoOp  e) vmap = runUnaryOperator e vmap real_create_eexponent
         run' (UnaryOp SinOp   e) vmap = runUnaryOperator e vmap real_create_sine
+        run' (UnaryOp AsinOp   e) vmap = runUnaryOperator e vmap real_create_arcsine
         run' (UnaryOp CosOp   e) vmap = runUnaryOperator e vmap real_create_cosine
+        run' (UnaryOp AcosOp   e) vmap = runUnaryOperator e vmap real_create_arccosine
+        run' (UnaryOp TanOp  e) vmap = runUnaryOperator e vmap real_create_tangent
         run' (UnaryOp AtanOp  e) vmap = runUnaryOperator e vmap real_create_arctangent
         run' (UnaryOp FloorOp e) vmap = runUnaryOperator e vmap real_create_floor
         run' (HalfUlp e FPDouble) vmap =
@@ -184,8 +166,10 @@ instance KodiakRunnable AExpr VariableMap PReal where
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_addition
         run' (ErrBinOp SubOp FPDouble r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_subtraction
-        run' (ErrBinOp MulOp FPDouble r1 e1 r2 e2) vmap =
-          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_multiplication
+        run' (ErrBinOp MulOp FPDouble r1 e1 r2 e2) vmap
+          | (Int 2) <- r1 = run' e2 vmap
+          | (Int 2) <- r2 = run' e1 vmap
+          | otherwise = runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_multiplication
         run' (ErrBinOp DivOp FPDouble r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_division
         run' (ErrBinOp PowOp FPDouble r1 e1 (Int 2) _) vmap =
@@ -195,12 +179,15 @@ instance KodiakRunnable AExpr VariableMap PReal where
                                                   real_create_error_power_of_two_multiplication (fromInteger i) pe
         run' (ErrMulPow2R FPDouble i e) vmap = do pe <- run' e vmap
                                                   real_create_error_power_of_two_multiplication (fromInteger i) pe
-        run' (ErrUnOp NegOp   _     FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_negation
+        run' (ErrUnOp NegOp   _     FPDouble _ e) vmap = run' e vmap
         run' (ErrUnOp AbsOp   _     FPDouble _ e) vmap = run' e vmap
         run' (ErrUnOp ExpoOp  False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_eexponent
         run' (ErrUnOp LnOp    False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_elogarithm
         run' (ErrUnOp SinOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_sine
+        run' (ErrUnOp AsinOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arcsine
         run' (ErrUnOp CosOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_cosine
+        run' (ErrUnOp AcosOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arccosine
+        run' (ErrUnOp TanOp  False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_tangent
         run' (ErrUnOp AtanOp  False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arctangent
         run' (ErrUnOp AtanOp  True  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arctangent_tight
         run' (ErrUnOp FloorOp False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_floor
@@ -211,12 +198,12 @@ instance KodiakRunnable AExpr VariableMap PReal where
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_addition
         run' (ErrBinOp SubOp FPSingle r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_subtraction
-        run' (ErrBinOp MulOp FPSingle r1 e1 r2 e2) vmap =
-          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_multiplication
+        run' (ErrBinOp MulOp FPSingle r1 e1 r2 e2) vmap
+          | (Int 2) <- r1 = run' e2 vmap
+          | (Int 2) <- r2 = run' e1 vmap
+          | otherwise = runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_multiplication
         run' (ErrBinOp DivOp FPSingle r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_division
-        run' (ErrBinOp MulOp FPSingle r1 e1 (Int 2) _) vmap =
-          runBinaryErrorOperator r1 e1 r1 e1 vmap real_create_single_error_multiplication
         run' (ErrBinOp _   TInt _ _ _ _) vmap = run' (Rat 0) vmap
         run' (ErrMulPow2L FPSingle i e) vmap = do
           pe <- run' e vmap
@@ -224,7 +211,7 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (ErrMulPow2R FPSingle i e) vmap = do
           pe <- run' e vmap
           real_create_single_error_power_of_two_multiplication (fromInteger i) pe
-        run' (ErrUnOp NegOp   _     FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_negation
+        run' (ErrUnOp NegOp   _     FPSingle _ e) vmap = run' e vmap
         run' (ErrUnOp AbsOp   _     FPSingle _ e) vmap = run' e vmap
         run' (ErrUnOp ExpoOp  False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_eexponent
         run' (ErrUnOp LnOp    False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_elogarithm
@@ -289,4 +276,4 @@ runBExpr (Rel GtE lhs rhs) vmap = do
   pLHS <- run lhs vmap
   pRHS <- run rhs vmap
   bool_create_greater_than_or_equal_to pLHS pRHS
-
+runBExpr bexpr _ = error $ "Boolean expression not supported by Kodiak: " ++ show bexpr

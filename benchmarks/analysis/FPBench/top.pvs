@@ -1,9 +1,0 @@
-top: THEORY
-BEGIN
-
-  IMPORTING top_base_real,
- 	    top_base_fp,
-            top_cert,
-	    top_num_cert
-
-END top

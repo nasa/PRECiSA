@@ -1,8 +1,0 @@
-for_loop: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-for_loop(X: unb_double):unb_double =
-   Dmul(Dmul(Dmul(Dmul(Dmul(Dmul(Dmul(Dmul(Dmul(Dmul(X,RtoD(1)), RtoD(2)), RtoD(3)), RtoD(4)), RtoD(5)), RtoD(6)), RtoD(7)), RtoD(8)), RtoD(9)), RtoD(10))
-  
-END for_loop  

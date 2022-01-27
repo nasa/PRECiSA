@@ -1,0 +1,13 @@
+not_upshot_crosses_edge(N,Px,Py,Sx,Sy,i): N in [1,20],
+                                   Px in [-10000,10000],
+                                   Py in [-10000,10000],
+                                   Sx in [-10000,10000],
+                                   Sy in [-10000,10000],
+                                   i in [1,20]
+
+upshot_crosses_edge_valid: N in [1,20],
+                           Px in [-10000,10000],
+                           Py in [-10000,10000],
+                           Sx in [-10000,10000],
+                           Sy in [-10000,10000],
+                           i in [1,20]

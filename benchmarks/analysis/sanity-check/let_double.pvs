@@ -1,7 +1,0 @@
-let_double: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-f (X, Y: unb_double): unb_double = LET Z = Dsub(X,Y) IN Dneg(Z)
-
-END let_double

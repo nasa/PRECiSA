@@ -1,1 +1,0 @@
-rLat1(YZ, Lat) : Lat in [-90, 90], YZ in [0,131072]

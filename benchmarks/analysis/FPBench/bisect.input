@@ -1,1 +1,0 @@
-bisect(X,N): X in [0, 4], N in [0, 10]

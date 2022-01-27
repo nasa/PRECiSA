@@ -1,0 +1,28 @@
+entrypoints Spec;
+
+{- Specification -}
+
+token Id       ( (letter) (letter | digit | '_' | '?')* ) ;
+
+LBInt.       LBound ::= Integer;
+LBDouble.    LBound ::= Double;
+LBNegInt.    LBound ::= "-" Integer;
+LBNegDouble. LBound ::= "-" Double;
+LInf.        LBound ::= "-inf";
+
+UBInt.       UBound ::= Integer;
+UBDouble.    UBound ::= Double;
+UBNegInt.    UBound ::= "-" Integer;
+UBNegDouble. UBound ::= "-" Double;
+UInf.        UBound ::= "+inf";
+
+separator nonempty VarBind "," ;
+VarSpec. VarBind ::= Id "in" "[" LBound "," UBound "]";
+
+separator nonempty Id "," ;
+
+SpecBindN. SpecBind ::= Id "(" [Id] ")" ":" [VarBind] ;
+SpecBind0. SpecBind ::= Id ":" [VarBind] ;
+
+separator nonempty SpecBind "" ;
+Specification. Spec ::= [SpecBind] ;

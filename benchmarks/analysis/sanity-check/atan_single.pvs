@@ -1,7 +1,0 @@
-atan_single: THEORY
-BEGIN
-IMPORTING float@aerr754sp
-
-f(X: unb_single): unb_single = Satan(X)
-
-END atan_single

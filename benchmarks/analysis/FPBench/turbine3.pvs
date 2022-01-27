@@ -2,6 +2,8 @@ turbine3: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
-turbine3(V: unb_double | DtoR(Dsub(RtoD(1),V)) /= 0,W: unb_double,R: unb_double | DtoR(Dmul(R,R)) /= 0):unb_double = Dsub(Dsub(RtoD(3), Dsub(Ddiv(RtoD(2),Dmul(R,R)), Ddiv(Dmul(RtoD(0.125), Dmul(Dadd(RtoD(1), Dmul(RtoD(2),V)), Dmul(Dmul(W,W),Dmul(R,R)))) ,Dsub(RtoD(1),V)))),RtoD(0.5))
+% @fp-function
+turbine3(V: unb_double | 1-V /= 0,W: unb_double,R: unb_double | DtoR(Dmul(R,R)) /= 0):unb_double =
+  3 - 2/(R*R) - 0.125 * (1+2*V) * (W*W*R*R) / (1-V) - 0.5
 
 END turbine3

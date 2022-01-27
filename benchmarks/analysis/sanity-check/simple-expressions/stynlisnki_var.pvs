@@ -1,8 +1,0 @@
-stynlisnki_var: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-
-stynlisnki_var (X: unb_double): unb_double = X
-
-END stynlisnki_var

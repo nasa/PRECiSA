@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"outDir": "out",
+		"rootDir": "src",
+		"lib": ["es6", "dom"],
+		"sourceMap": true,
+		"types": [
+			"handlebars", "jquery"
+		],
+		"typeRoots": [
+            "node_modules/@types"
+        ]
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", ".vscode-test"]
+}

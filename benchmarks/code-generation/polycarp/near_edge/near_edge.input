@@ -1,0 +1,20 @@
+sign(x): x in [-10000,10000]
+
+quadratic(a,b,c,x): a in [-10000,10000],
+                    b in [-10000,10000],
+                    c in [-10000,10000],
+                    x in [-10000,10000]
+
+quad_min_le_D_int(ap,b,c,xl,xu,D): ap in [-10000,10000],
+                                   b in [-10000,10000],
+                                   c in [-10000,10000],
+                                   xl in [0,0],
+                                   xu in [1,1],
+                                   D in [0,0]
+
+near_edge(segstart_x,segstart_y,segend_x,segend_y,s_x,s_y): segstart_x in [-10000,10000],
+                                                            segstart_y in [-10000,10000],
+                                                            segend_x in [-10000,10000],
+                                                            segend_y in [-10000,10000],
+                                                            s_x in [-10000,10000],
+                                                            s_y in [-10000,10000]

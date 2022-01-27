@@ -1,13 +1,13 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-    
-    
+
+
 module Kodiak.Test where
 
 import Control.Exception (tryJust,AssertionFailed(..))
@@ -18,7 +18,6 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import AbsPVSLang
-import AbsSpecLang (VarBind(..),UBound(..),LBound(..))
 import PVSTypes
 import Kodiak.Kodiak
 import Kodiak.Runnable
@@ -82,8 +81,8 @@ testBooleanOperators = testGroup "Operators" $
                                     bool_create_and t f
         createOrTrueFalse      = do t <- bool_create_true
                                     f <- bool_create_false
-                                    or <- bool_create_or t f
-                                    return or
+                                    or' <- bool_create_or t f
+                                    return or'
         createImpliesTrueFalse = do t <- bool_create_true
                                     f <- bool_create_false
                                     implies <- bool_create_implies t f
@@ -182,20 +181,20 @@ testPaver = testGroup "Paver" $
                               ub <- interval_create 1 1
                               paver_register_variable p var lb ub
                               return var
-        createBool varName = do var <- real_create_variable 0 varName
-                                half <- interval_create_from_rational 1 2 >>= real_create_value
-                                bool_create_greater_than_or_equal_to var half
+        createBool vName = do var <- real_create_variable 0 vName
+                              half <- interval_create_from_rational 1 2 >>= real_create_value
+                              bool_create_greater_than_or_equal_to var half
         failLabel = "something unexpected happened"
     in
     [testCase "paver_create" $
-        (createPaver >>= \x -> return True) @? failLabel
+        (createPaver >> return True) @? failLabel
     ,testCase "paver_print" $
-        do p <- createPaver
+        do _ <- createPaver
            return True
         @? failLabel
     ,testCase "paver_register_variable" $
         do p <- createPaver
-           createVariable p
+           _ <- createVariable p
            return True
         @? failLabel
     ,testCase "paver_set_maxdepth" $
@@ -210,8 +209,8 @@ testPaver = testGroup "Paver" $
         @? failLabel
     ,testCase "paver_pave" $
         do p <- createPaver
-           varName <- createVariable p
-           boolExp <- createBool varName
+           vName <- createVariable p
+           boolExp <- createBool vName
            paver_set_maxdepth p 10
            paver_set_precision p (-10)
            paver_pave p boolExp
@@ -219,8 +218,8 @@ testPaver = testGroup "Paver" $
         @? failLabel
     ,testCase "paver_save_paving" $
         do p <- createPaver
-           varName <- createVariable p
-           boolExp <- createBool varName
+           vName <- createVariable p
+           boolExp <- createBool vName
            paver_set_maxdepth p 2
            paver_set_precision p (-1)
            paver_pave p boolExp
@@ -232,8 +231,7 @@ testPaver = testGroup "Paver" $
 
 testBooleanExpressionKodiakRunnable :: TestTree
 testBooleanExpressionKodiakRunnable = testGroup "KodiakRunnable Boolean Expressions" $
-    let failLabel = "Something unexpected happened!"
-        zero = interval_create 0 0 >>= real_create_value
+    let zero = interval_create 0 0 >>= real_create_value
         one  = interval_create 1 1 >>= real_create_value in
     [testGroup "Real Boolean Expression" $
         [testCase "BTrue" $
@@ -302,8 +300,8 @@ testKodiakArithmeticExpressionsAreKodiakRunnable = testGroup "Kodiak Arithmetic 
         createCnstTwo     = interval_create_from_rational (fromInteger 2) (fromInteger 1) >>= real_create_value
         createCnstOne     = interval_create_from_rational (fromInteger 1) (fromInteger 1) >>= real_create_value
         createVectorTwoX0 = do v <- real_vector_create
-                               createCnstTwo    >>= real_vector_add v 
-                               createVariableX0 >>= real_vector_add v 
+                               createCnstTwo    >>= real_vector_add v
+                               createVariableX0 >>= real_vector_add v
                                return v
     in
     [testCase "Cnst" $
@@ -454,8 +452,7 @@ testKodiakArithmeticExpressionsAreKodiakRunnable = testGroup "Kodiak Arithmetic 
 
 testKodiakBooleanExpressionsAreKodiakRunnable :: TestTree
 testKodiakBooleanExpressionsAreKodiakRunnable = testGroup "Kodiak Boolean Expressions are KodiakRunnable" $
-    let failLabel = "Something unexpected happened!"
-        vmap = VMap []
+    let vmap = VMap []
         zero = interval_create 0 0 >>= real_create_value
         one  = interval_create 1 1 >>= real_create_value in
     [testCase "True" $

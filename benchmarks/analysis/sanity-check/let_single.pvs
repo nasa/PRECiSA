@@ -1,7 +1,0 @@
-let_single: THEORY
-BEGIN
-IMPORTING float@aerr754sp
-
-f (X, Y: unb_single): unb_single = LET Z = Ssub(X,Y) IN Sneg(Z)
-
-END let_single

@@ -2,23 +2,24 @@ hartman3: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
+% @fp-function
 hartman3 (X1,X2,X3: unb_double):unb_double =
-LET E1 = Dadd(Dmul(RtoD(3.0), Dmul(Dsub(X1, RtoD(0.3689)),Dsub(X1, RtoD(0.3689)))),
-              Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X2, RtoD(0.117)), Dsub(X2,RtoD(0.117)))),
-                   Dmul(RtoD(30.0), Dmul (Dsub(X3,RtoD(0.2673)), Dsub(X3,RtoD(0.2673))))))
+LET E1 = (3 * (X1 - 0.3689) * (X1 - 0.3689)) +
+              (10 * (X2 - 0.117) * (X2 - 0.117)) +
+                    (30 * (X3 - 0.2673) * (X3 - 0.2673))
 IN
-LET E2 = Dadd(Dmul(RtoD(0.1), Dmul(Dsub(X1, RtoD(0.4699)), Dsub(X1, RtoD(0.4699)))),
-              Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X2, RtoD(0.4387)), Dsub(X2, RtoD(0.4387)))),
-                   Dmul(RtoD(35.0), Dmul(Dsub(X3,RtoD(0.747)), Dsub(X3, RtoD(0.747))))))
+LET E2 = (0.1 * (X1 - 0.4699) * (X1 - 0.4699)) +
+              (10 * (X2 - 0.4387) * (X2 - 0.4387)) +
+                   (35 * (X3 - 0.747) * (X3 - 0.747))
 IN
-LET E3 = Dadd(Dmul(RtoD(3.0), Dmul(Dsub(X1, RtoD(0.1091)), Dsub(X1, RtoD(0.1091)))),
-              Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X2,RtoD(0.8732)), Dsub(X2, RtoD(0.8732)))),
-                   Dmul(RtoD(30.0), Dmul(Dsub(X3,RtoD(0.5547)),Dsub(X3,RtoD(0.5547))))))
+LET E3 = (3 * (X1 - 0.1091) * (X1 - 0.1091)) +
+              (10 * (X2 - 0.8732) * (X2 - 0.8732)) +
+                   (30 * (X3 - 0.5547) * (X3 - 0.5547))
 IN 
-LET E4 = Dadd(Dmul(RtoD(0.1), Dmul(Dsub(X1, RtoD(0.03815)), Dsub(X1,RtoD(0.03815)))),
-              Dadd(Dmul(RtoD(10.0), Dmul(Dsub(X2, RtoD(0.5743)), Dsub(X2, RtoD(0.5743)))),
-                   Dmul(RtoD(35.0), Dmul(Dsub(X3,RtoD(0.8828)), Dsub(X3,RtoD(0.8828))))))
+LET E4 = (0.1 * (X1 - 0.03815) * (X1 - 0.03815)) +
+              (10 * (X2 - 0.5743) * (X2 - 0.5743)) +
+                   (35 * (X3 - 0.8828) * (X3 - 0.8828))
 IN
-Dneg(Dadd(Dmul(RtoD(1.0), Dexp(Dneg(E1))), Dadd(Dmul(RtoD(1.2), Dexp(Dneg(E2))), Dadd(Dmul(RtoD(3.0), Dexp(Dneg(E3))), Dmul(RtoD(3.2), Dexp(Dneg(E4)))))))
+-((1 * exp(-E1)) + (1.2 * exp(-E2)) + (3 * exp(-E3)) + (3.2 * exp(-E4)))
 
 END hartman3

@@ -1,12 +1,12 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-    
+
 
 module AbsPVSLangTest where
 
@@ -16,6 +16,7 @@ import AbsPVSLang
 import PVSTypes
 import Operators
 import Common.TypesUtils
+import UtilsTest (fromDouble2Rat)
 
 
 testAbsPVSLang = testGroup "AbsPVSLang"
@@ -38,7 +39,7 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,forIndexes__tests
    ,funCallList__tests
    ,unfoldForLoop__tests
-   ,isBExprEquivFalse__tests 
+   ,isBExprEquivFalse__tests
    ,isFBExprEquivFalse__tests
    ,makeFPDeclRecursive__tests
    ,isArithExpr__tests
@@ -175,19 +176,19 @@ rewriteEquivEExpr_testsIOs =
             )
             ,("ErrFloor_ErrMulPow2L"
                 ,ErrUnOp FloorOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp FloorOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) 
+                ,ErrUnOp FloorOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrFloor0_ErrMulPow2L"
                 ,ErrUnOp FloorOp True FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp FloorOp True FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) 
+                ,ErrUnOp FloorOp True FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrSqrt_ErrMulPow2L"
                 ,ErrUnOp SqrtOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp SqrtOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) 
+                ,ErrUnOp SqrtOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrSin_ErrMulPow2L"
                 ,ErrUnOp SinOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp SinOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) 
+                ,ErrUnOp SinOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrCos_ErrMulPow2L"
                 ,ErrUnOp CosOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
@@ -195,7 +196,7 @@ rewriteEquivEExpr_testsIOs =
             )
             ,("ErrTan_ErrMulPow2L"
                 ,ErrUnOp TanOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp TanOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) 
+                ,ErrUnOp TanOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrAsin_ErrMulPow2L"
                 ,ErrUnOp AsinOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
@@ -214,11 +215,11 @@ rewriteEquivEExpr_testsIOs =
             )
             ,("ErrLn_ErrMulPow2L"
                 ,ErrUnOp LnOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp LnOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) 
+                ,ErrUnOp LnOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrExpo_ErrMulPow2L"
                 ,ErrUnOp ExpoOp False FPSingle (RealMark "Z") (ErrMulPow2L FPSingle 2 (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)))
-                ,ErrUnOp ExpoOp False FPSingle (RealMark "Z") (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)) 
+                ,ErrUnOp ExpoOp False FPSingle (RealMark "Z") (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle))
             )
             ]
 
@@ -536,10 +537,10 @@ noRoundOffErrorInAExpr__test1 = testCase "9 has no round-off error" $
     noRoundOffErrorInAExpr (FInt 8) @?= True
 
 noRoundOffErrorInAExpr__test2 = testCase "0.1 has round-off error" $
-    noRoundOffErrorInAExpr (FCnst FPDouble (toRational 0.1)) @?= False
+    noRoundOffErrorInAExpr (FCnst FPDouble (fromDouble2Rat 0.1)) @?= False
 
 noRoundOffErrorInAExpr__test3 = testCase "4+0.1 has round-off error" $
-    noRoundOffErrorInAExpr (BinaryFPOp AddOp FPDouble (FInt 4) (FCnst FPDouble (toRational 0.1))) @?= False
+    noRoundOffErrorInAExpr (BinaryFPOp AddOp FPDouble (FInt 4) (FCnst FPDouble (fromDouble2Rat 0.1))) @?= False
 
 noRoundOffErrorInAExpr__test4 = testCase "4+6 has no round-off error" $
     noRoundOffErrorInAExpr (BinaryFPOp AddOp FPDouble (FInt 4) (FInt 6)) @?= True
@@ -551,25 +552,25 @@ noRoundOffErrorInAExpr__test6 = testCase "4+x has round-off error" $
     noRoundOffErrorInAExpr (BinaryFPOp MulOp FPDouble (FInt 4) (FVar FPDouble "x")) @?= False
 
 noRoundOffErrorInAExpr__test7 = testCase "RtoD(4)-int_x has no round-off error" $
-    noRoundOffErrorInAExpr (BinaryFPOp SubOp FPDouble (ToFloat FPDouble (Int 4)) (FVar TInt "x")) @?= True    
+    noRoundOffErrorInAExpr (BinaryFPOp SubOp FPDouble (ToFloat FPDouble (Int 4)) (FVar TInt "x")) @?= True
 
 noRoundOffErrorInAExpr__test8 = testCase "RtoS(4)-int_x has no round-off error" $
-    noRoundOffErrorInAExpr (BinaryFPOp SubOp FPDouble (ToFloat FPSingle (Int 4)) (FVar TInt "x")) @?= True    
+    noRoundOffErrorInAExpr (BinaryFPOp SubOp FPDouble (ToFloat FPSingle (Int 4)) (FVar TInt "x")) @?= True
 
 noRoundOffErrorInAExpr__test9 = testCase "StoD(4) has no round-off error" $
-    noRoundOffErrorInAExpr (TypeCast FPSingle FPDouble (FInt 4)) @?= True    
+    noRoundOffErrorInAExpr (TypeCast FPSingle FPDouble (FInt 4)) @?= True
 
 noRoundOffErrorInAExpr__test10 = testCase "StoD(1) has no round-off error" $
-    noRoundOffErrorInAExpr (TypeCast FPSingle FPDouble (FCnst FPDouble (toRational 1))) @?= True  
+    noRoundOffErrorInAExpr (TypeCast FPSingle FPDouble (FCnst FPDouble (fromDouble2Rat 1))) @?= True
 
 noRoundOffErrorInAExpr__test11 = testCase "StoD(0.1) has round-off error" $
-    noRoundOffErrorInAExpr (TypeCast FPSingle FPDouble (FCnst FPDouble (toRational 0.1))) @?= False 
+    noRoundOffErrorInAExpr (TypeCast FPSingle FPDouble (FCnst FPDouble (fromDouble2Rat 0.1))) @?= False
 
 noRoundOffErrorInAExpr__test12 = testCase "int fun with no args has no round-off error" $
-    noRoundOffErrorInAExpr (FEFun False "f" TInt []) @?= True 
+    noRoundOffErrorInAExpr (FEFun False "f" TInt []) @?= True
 
 noRoundOffErrorInAExpr__test13 = testCase "int fun has no round-off error" $
-    noRoundOffErrorInAExpr (FEFun False "f" TInt [FCnst FPDouble (toRational 0.1)]) @?= True 
+    noRoundOffErrorInAExpr (FEFun False "f" TInt [FCnst FPDouble (fromDouble2Rat 0.1)]) @?= True
 
 varList__tests = testGroup "varList tests"
   [varList__test1
@@ -587,13 +588,13 @@ varList__tests = testGroup "varList tests"
   ]
 
 varList__test1 = testCase "varList of constant 0.1 is []" $
-    varList (FCnst FPDouble (toRational 0.1)) @?= []
+    varList (FCnst FPDouble (fromDouble2Rat 0.1)) @?= []
 
 varList__test2 = testCase "varList of variable x is [Var x]" $
     varList (FVar FPDouble "x") @?= [FVar FPDouble "x"]
 
 varList__test3 = testCase "varList of (0.1 + x) is [Var x]" $
-    varList (BinaryFPOp AddOp FPDouble (FCnst FPDouble (toRational 0.1)) (FVar FPDouble "x"))
+    varList (BinaryFPOp AddOp FPDouble (FCnst FPDouble (fromDouble2Rat 0.1)) (FVar FPDouble "x"))
     @?=
     [FVar FPDouble "x"]
 
@@ -603,11 +604,11 @@ varList__test4 = testCase "varList of (y * x) is [Var x, Var y]" $
     [FVar FPDouble "y", FVar FPDouble "x"]
 
 varList__test5 = testCase "varList of (0.1 + x)*x is [Var x]" $
-    varList (BinaryFPOp MulOp FPDouble (BinaryFPOp AddOp FPDouble (FCnst FPDouble (toRational 0.1)) (FVar FPDouble "x")) (FVar FPDouble "x"))
+    varList (BinaryFPOp MulOp FPDouble (BinaryFPOp AddOp FPDouble (FCnst FPDouble (fromDouble2Rat 0.1)) (FVar FPDouble "x")) (FVar FPDouble "x"))
     @?= [FVar FPDouble "x"]
 
 varList__test6 = testCase "varList of min[(0.1 + x)*x, y, z] is [Var x, Var y, Var z]" $
-    varList (FMin [(BinaryFPOp MulOp FPDouble (BinaryFPOp AddOp FPDouble (FCnst FPDouble (toRational 0.1))
+    varList (FMin [(BinaryFPOp MulOp FPDouble (BinaryFPOp AddOp FPDouble (FCnst FPDouble (fromDouble2Rat 0.1))
                    (FVar FPDouble "x")) (FVar FPDouble "x"))
                    ,FVar FPDouble "y"
                    ,FVar FPDouble "z"])
@@ -623,16 +624,16 @@ varList__test8 = testCase "varList of a RtoD(6) is []" $
     varList (ToFloat FPDouble (Int 6)) @?= []
 
 varList__test9 = testCase "varList of a RtoD(6) is []" $
-    varList (ToFloat FPDouble (FromFloat FPDouble(ToFloat FPDouble (Int 6)))) @?= []                                           
+    varList (ToFloat FPDouble (FromFloat FPDouble(ToFloat FPDouble (Int 6)))) @?= []
 
 varList__test10 = testCase "varList of a RtoD(DtoR(x)) is [x]" $
-    varList (ToFloat FPDouble(Var Real "x")) @?= []   
+    varList (ToFloat FPDouble(Var Real "x")) @?= []
 
 varList__test11 = testCase "varList of a RtoD(DtoR(x)) is [x]" $
-    varList (ToFloat FPDouble(FromFloat FPDouble(FVar FPDouble "x"))) @?= [FVar FPDouble "x"]   
+    varList (ToFloat FPDouble(FromFloat FPDouble(FVar FPDouble "x"))) @?= [FVar FPDouble "x"]
 
 varList__test12 = testCase "varList of a RtoD(DtoR(x + y)) is [x,y]" $
-    varList (ToFloat FPDouble(FromFloat FPDouble(BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))) @?= [FVar FPDouble "x",FVar FPDouble "y"]   
+    varList (ToFloat FPDouble(FromFloat FPDouble(BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))) @?= [FVar FPDouble "x",FVar FPDouble "y"]
 
 
 equivModuloIndex__tests = testGroup "equivModuloIndex tests"
@@ -649,19 +650,19 @@ equivModuloIndex__tests = testGroup "equivModuloIndex tests"
 
 equivModuloIndex__test1 = testCase "v(3) size 8 double not equiv v(4) size 5 double" $
    equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 8) "v" (FInt 3))
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4)) 
+                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4))
                     @?=
                     False
 
 equivModuloIndex__test2 = testCase "" $
    equivModuloIndex (FArrayElem FPSingle (Just $ ArraySizeInt 8) "v" (FInt 3))
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4)) 
+                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4))
                     @?=
                     False
 
 equivModuloIndex__test3 = testCase "v(3) equiv v(4)" $
    equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 3))
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4)) 
+                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4))
                     @?=
                     True
 
@@ -775,7 +776,7 @@ isArithExpr__test4 = testCase "f(2) + (-1) is an arithmetic expression" $
     @?= True
 
 isArithExpr__test5 = testCase "x + (-1) is an arithmetic expression" $
-    isArithExpr (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (UnaryFPOp NegOp FPDouble (FInt 1))) 
+    isArithExpr (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (UnaryFPOp NegOp FPDouble (FInt 1)))
     @?= True
 
 isListArithExprs__tests = testGroup "isListArithExprs tests"
@@ -808,7 +809,7 @@ isListArithExprs__test5 = testCase "isListArithExprs5" $
     @?= False
 
 listLetElems__tests = testGroup "listLetElems tests"
-  [listLetElems__test1 
+  [listLetElems__test1
   ,listLetElems__test2
   ,listLetElems__test3
   ,listLetElems__test4
@@ -855,7 +856,7 @@ listLetElems__test7 = testCase "listLetElems7" $
   [("y",FPDouble,FInt 5),("x",FPDouble,FInt 1)]
 
 removeLetInFAExpr__tests = testGroup "removeLetInFAExpr tests"
-  [removeLetInFAExpr__test1 
+  [removeLetInFAExpr__test1
   ,removeLetInFAExpr__test2
   ,removeLetInFAExpr__test3
   ]

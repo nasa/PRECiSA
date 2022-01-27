@@ -1,13 +1,13 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
-  
+
 module AbstractSemanticsTest where
 
 import Common.ControlFlow
@@ -18,13 +18,13 @@ import Test.Tasty.HUnit
 
 import AbsPVSLang
 import AbstractDomain
-import AbstractSemantics
+import AbstractSemantics hiding (functionSemantics)
 import PVSTypes
 import Operators
 import Data.Set (fromList)
 
 semEquiv :: ACebS -> ACebS -> IO()
-semEquiv sem1 sem2 = fromList sem1 @?= fromList sem2 
+semEquiv sem1 sem2 = fromList sem1 @?= fromList sem2
 
 testAbstractSemantics = testGroup "AbstractSemantics"
     [semEFun__tests
@@ -472,7 +472,7 @@ unfoldFunCallsInCond__test18 = testCase "unfoldFunCallsInCond__test18" $
   unfoldFunCallsInCond interp (Rel  Gt  (EFun "f" Real [Var Real "z"]) (Int 0),
                                FRel LtE (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 0))
   @?=
-  [(And  (Rel GtE (Var  Real     "z") (Int  1)) (Rel  Gt   (Var  Real     "z") (Int  0)) 
+  [(And  (Rel GtE (Var  Real     "z") (Int  1)) (Rel  Gt   (Var  Real     "z") (Int  0))
    ,FAnd (FRel Lt (FVar FPDouble "z") (FInt 1)) (FRel LtE (FVar FPDouble "z") (FInt 0)))
   ,(And  (Rel GtE (Var  Real     "z") (Int  3)) (Rel  Gt   (Var  Real     "z") (Int  0))
    ,FAnd (FRel Lt (FVar FPDouble "z") (FInt 3)) (FRel LtE (FVar FPDouble "z") (FInt 0)))]
@@ -766,20 +766,14 @@ stmSem__Cos = testCase "Cos" $
 
 stmSem__Atan = testCase "ATan" $
     stmSem (UnaryFPOp AtanOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(Rel GtE (ErrRat $ 1 % 180143985094819840) (UnaryOp AbsOp $ Rat 0.1),FBTrue)],
+    [ACeb { conds   = Cond [(BTrue,FBTrue)],
             rExprs  = [UnaryOp   AtanOp (Rat 0.1)],
             fpExprs = [UnaryFPOp AtanOp FPDouble (FCnst FPDouble 0.1)],
             eExpr   =  ErrUnOp AtanOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
-        },
-      ACeb { conds   = Cond [(Rel Lt (ErrRat $ 1 % 180143985094819840) (UnaryOp AbsOp $ Rat 0.1),FBTrue)],
-            rExprs  = [UnaryOp   AtanOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp AtanOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp AtanOp True FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
-            decisionPath = root,
-            cFlow  = Stable
-        }]
+        }
+    ]
 
 stmSem__StoD = testCase "StoD" $
     stmSem (TypeCast FPSingle FPDouble (FCnst FPSingle 0.1)) [] (Env []) semConf (LDP []) [] @?=
@@ -1004,7 +998,7 @@ stmSem__LetIn5 = testCase "LetIn5" $
 stmSem__LetIn6 = testCase "LetIn6" $
     stmSem (Let [("X", FPDouble, FInt 5)
                 ,("Y", FPDouble, FEFun False "f" FPDouble [(FVar FPDouble "X")])]
-    (BinaryFPOp AddOp FPDouble (FVar FPDouble "Y") (FInt 3))) 
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "Y") (FInt 3)))
     [("f", (False, FPSingle, [Arg "x" FPDouble],fSemantics))]
     (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
@@ -1019,7 +1013,7 @@ stmSem__LetIn6 = testCase "LetIn6" $
                             LetElem{letVar = "Err_X", letType = Real, letExpr = ErrRat 0}] (
                      RLet [LetElem{letVar = "Y", letType = Real, letExpr = (RealMark "X") },
                             LetElem{letVar = "Err_Y", letType = Real
-                                   ,letExpr = ErrRat (toRational 5)}] (
+                                   ,letExpr = ErrRat 5}] (
                      ErrBinOp AddOp FPDouble (RealMark "Y") (Var Real "Err_Y") (Int 3) (ErrRat 0)))
           ,decisionPath = LDP []
           ,cFlow = Stable}]
@@ -1028,7 +1022,7 @@ stmSem__LetIn6 = testCase "LetIn6" $
                 conds  = Cond [(BTrue,FBTrue)],
                 rExprs = [Var Real "x"],
                 fpExprs = [FVar FPDouble "x"],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1036,7 +1030,7 @@ stmSem__LetIn6 = testCase "LetIn6" $
 stmSem__LetIn7 = testCase "LetIn7" $
     stmSem (Let [("A", FPDouble, (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y")))
                 ,("B", FPDouble, FEFun False "f" FPDouble [(FVar FPDouble "A")])]
-          (FVar FPDouble "B")) 
+          (FVar FPDouble "B"))
     [("f", (False, FPDouble, [Arg "X" FPDouble],fSemantics))]
     (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
@@ -1137,7 +1131,7 @@ equivInterp__test1 = testCase "Equivalent Interpretation 1" $
                          ],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1155,7 +1149,7 @@ equivInterp__test2 = testCase "Equivalent Interpretation 2" $
                          ],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1165,7 +1159,7 @@ equivInterp__test2 = testCase "Equivalent Interpretation 2" $
                          ],
                 rExprs = [Int 9],
                 fpExprs = [FInt 9],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
@@ -1183,7 +1177,7 @@ equivInterp__test3 = testCase "Equivalent Interpretation 3" $
                          ],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1193,7 +1187,7 @@ equivInterp__test3 = testCase "Equivalent Interpretation 3" $
                          ],
                 rExprs = [Int 9],
                 fpExprs = [FInt 9],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
@@ -1211,7 +1205,7 @@ equivInterp__test4 = testCase "Equivalent Interpretation 3" $
                          ],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 },
@@ -1221,7 +1215,7 @@ equivInterp__test4 = testCase "Equivalent Interpretation 3" $
                          ],
                 rExprs = [Var Real "v"],
                 fpExprs = [FVar FPSingle "v"],
-                eExpr  = ErrRat (toRational 0),
+                eExpr  = ErrRat 0,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
@@ -1231,7 +1225,7 @@ equivInterp__test4 = testCase "Equivalent Interpretation 3" $
                          ],
                 rExprs = [Var Real "v"],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 0),
+                eExpr  = ErrRat 0,
                 decisionPath = root,
                 cFlow = Unstable
                 },
@@ -1241,7 +1235,7 @@ equivInterp__test4 = testCase "Equivalent Interpretation 3" $
                          ],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1251,7 +1245,7 @@ equivInterp__test4 = testCase "Equivalent Interpretation 3" $
                          ],
                 rExprs = [Int 9],
                 fpExprs = [FInt 9],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
@@ -1272,7 +1266,6 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
     where
       actual = semEFun "f" formalParams actualParams semanticArgumentCombinations functionSemantics 1 (LDP [])
         where
-          functionName = "f"
           formalParams = [Arg "x" FPDouble
                          ,Arg "y" FPDouble
                          ]
@@ -1293,7 +1286,7 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                          ],
                 rExprs = [Int 1,Int 2],
                 fpExprs = [FInt 3, FInt 2],
-                eExpr  = ErrRat (toRational 1),
+                eExpr  = ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1303,7 +1296,7 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                          ],
                 rExprs = [Int 3,Int 4],
                 fpExprs = [FInt 3,FInt 4],
-                eExpr  = ErrRat (toRational 2),
+                eExpr  = ErrRat 2,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1313,7 +1306,7 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                          ],
                 rExprs = [Int 5,Int 6],
                 fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat (toRational 3),
+                eExpr  = ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1323,7 +1316,7 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                          ],
                 rExprs = [Int 7,Int 8],
                 fpExprs = [FInt 7,FInt 8],
-                eExpr  = ErrRat (toRational 4),
+                eExpr  = ErrRat 4,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1337,7 +1330,7 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                          ],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1347,7 +1340,7 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                          ],
                 rExprs = [Int 11,Int 12],
                 fpExprs = [FInt 11,FInt 12],
-                eExpr  = ErrRat (toRational 6),
+                eExpr  = ErrRat 6,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1423,7 +1416,6 @@ semEFun__test2 = testCase "it correctly combines arguments-combinations conditio
     where
       actual = semEFun "f" formalParams actualParams semanticArgumentCombinations functionSemantics 1 (LDP [])
         where
-          functionName = "f"
           formalParams = [Arg "x" FPDouble
                          ,Arg "y" FPDouble
                          ]
@@ -1439,7 +1431,7 @@ semEFun__test2 = testCase "it correctly combines arguments-combinations conditio
                          ],
                 rExprs = [Int 1,Int 2],
                 fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat (toRational 1),
+                eExpr  = ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1447,7 +1439,7 @@ semEFun__test2 = testCase "it correctly combines arguments-combinations conditio
                 conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
                 rExprs = [Int 5,Int 6],
                 fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat (toRational 3),
+                eExpr  = ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1457,7 +1449,7 @@ semEFun__test2 = testCase "it correctly combines arguments-combinations conditio
                 conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1482,7 +1474,6 @@ semEFun__test3 = testCase "it correctly combines arguments-combinations conditio
     where
       actual = semEFun "f" formalParams actualParams semanticArgumentCombinations functionSemantics 1 (LDP [])
         where
-          functionName = "f"
           formalParams = [Arg "x" FPDouble
                          ,Arg "y" FPDouble
                          ]
@@ -1497,7 +1488,7 @@ semEFun__test3 = testCase "it correctly combines arguments-combinations conditio
                          ],
                 rExprs = [Int 1,Int 2],
                 fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat (toRational 1),
+                eExpr  = ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1506,7 +1497,7 @@ semEFun__test3 = testCase "it correctly combines arguments-combinations conditio
                          ,(Rel Lt (Var Real "6") (Int 7),FRel Lt (FVar FPDouble "6") (FInt 7))],
                 rExprs = [Int 5,Int 6],
                 fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat (toRational 3),
+                eExpr  = ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1516,7 +1507,7 @@ semEFun__test3 = testCase "it correctly combines arguments-combinations conditio
                 conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1538,7 +1529,7 @@ semEFun__test3 = testCase "it correctly combines arguments-combinations conditio
               decisionPath = root,
               cFlow = Stable
             }
-        ] 
+        ]
 
 
 semEFun__test4 = testCase "it correctly combines argument combinations" $
@@ -1546,7 +1537,6 @@ semEFun__test4 = testCase "it correctly combines argument combinations" $
     where
       actual = semEFun "f" formalParams actualParams semanticArgumentCombinations functionSemantics 1 (LDP [])
         where
-          functionName = "f"
           formalParams = [Arg "x" FPDouble
                          ,Arg "y" FPDouble
                          ]
@@ -1566,7 +1556,7 @@ semEFun__test4 = testCase "it correctly combines argument combinations" $
                     ],
                 rExprs = [Int 1,Int 2],
                 fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat (toRational 1),
+                eExpr  = ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1574,7 +1564,7 @@ semEFun__test4 = testCase "it correctly combines argument combinations" $
                 conds  = Cond [(Rel Lt (Var Real "2") (Int 3),FRel Lt (FVar FPDouble "2") (FInt 3))],
                 rExprs = [Int 3,Int 4],
                 fpExprs = [FInt 3,FInt 4],
-                eExpr  = ErrRat (toRational 2),
+                eExpr  = ErrRat 2,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1582,7 +1572,7 @@ semEFun__test4 = testCase "it correctly combines argument combinations" $
                 conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
                 rExprs = [Int 5,Int 6],
                 fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat (toRational 3),
+                eExpr  = ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1592,7 +1582,7 @@ semEFun__test4 = testCase "it correctly combines argument combinations" $
                 conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1628,7 +1618,6 @@ semEFun__test5 = testCase "it correctly combines function semantics ACebS" $
     where
       actual = semEFun "f" formalParams actualParams semanticArgumentCombinations functionSemantics 1 (LDP [])
         where
-          functionName = "f"
           formalParams = [Arg "x" FPDouble
                          ,Arg "y" FPDouble
                          ]
@@ -1644,7 +1633,7 @@ semEFun__test5 = testCase "it correctly combines function semantics ACebS" $
                     ],
                 rExprs = [Int 1,Int 2],
                 fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat (toRational 1),
+                eExpr  = ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1652,7 +1641,7 @@ semEFun__test5 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
                 rExprs = [Int 5,Int 6],
                 fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat (toRational 3),
+                eExpr  = ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1662,7 +1651,7 @@ semEFun__test5 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1670,7 +1659,7 @@ semEFun__test5 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "10") (Int 11), FRel Lt (FVar FPDouble "10") (FInt 11))],
                 rExprs = [Int 11,Int 12],
                 fpExprs = [FInt 11,FInt 12],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1706,7 +1695,6 @@ semEFun__test6 = testCase "it correctly combines function semantics ACebS" $
     where
       actual = semEFun "f" formalParams actualParams semanticArgumentCombinations functionSemantics 1 (LDP [])
         where
-          functionName = "f"
           formalParams = [Arg "x" FPDouble
                          ,Arg "y" FPDouble
                          ]
@@ -1722,7 +1710,7 @@ semEFun__test6 = testCase "it correctly combines function semantics ACebS" $
                     ],
                 rExprs = [Int 1,Int 2],
                 fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat (toRational 1),
+                eExpr  = ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1730,7 +1718,7 @@ semEFun__test6 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
                 rExprs = [Int 5,Int 6],
                 fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat (toRational 3),
+                eExpr  = ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1740,7 +1728,7 @@ semEFun__test6 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }
@@ -1748,7 +1736,7 @@ semEFun__test6 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "10") (Int 11), FRel Lt (FVar FPDouble "10") (FInt 11))],
                 rExprs = [Int 11,Int 12],
                 fpExprs = [FInt 11,FInt 12],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1784,7 +1772,6 @@ semEFun__test7 = testCase "it correctly combines function semantics ACebS" $
     where
       actual = semEFun "f" formalParams actualParams semanticArgumentCombinations functionSemantics 1 (LDP [])
         where
-          functionName = "f"
           formalParams = [Arg "x" FPDouble
                          ,Arg "y" FPDouble
                          ]
@@ -1800,7 +1787,7 @@ semEFun__test7 = testCase "it correctly combines function semantics ACebS" $
                     ],
                 rExprs = [Int 1,Int 2],
                 fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat (toRational 1),
+                eExpr  = ErrRat 1,
                 decisionPath = root,
                 cFlow = Unstable
                 }
@@ -1808,7 +1795,7 @@ semEFun__test7 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
                 rExprs = [Int 5,Int 6],
                 fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat (toRational 3),
+                eExpr  = ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1818,7 +1805,7 @@ semEFun__test7 = testCase "it correctly combines function semantics ACebS" $
                 conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
                 rExprs = [Int 9,Int 10],
                 fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat (toRational 5),
+                eExpr  = ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }

@@ -1,10 +1,10 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 
@@ -92,13 +92,13 @@ errorNotGrowing [] _ = True
 errorNotGrowing ((fName, (_,_,_,acebs)):current) next = localGrowingError && errorNotGrowing current next
     where
         localGrowingError = errorNotGrowingFun acebs (frt4 $ fromMaybe (error $ "errorNotGrowing: function " ++ show fName ++ " not found.") (lookup fName next))
-     
+
 errorNotGrowingFun :: ACebS -> ACebS -> Bool
 errorNotGrowingFun current = all (`existsEquivError` current)
 
 existsEquivError :: ACeb -> ACebS -> Bool
 existsEquivError aceb iter = result
-    where 
+    where
         result = any hasEquivError iter
         ACeb{conds = cc, eExpr = ee} = aceb
         hasEquivError aceb' = equivEExpr ee (eExpr aceb') && cc /= conds aceb'
@@ -114,13 +114,13 @@ emptyEnv = Env []
 
 insertEnv :: VarName -> a -> Env a -> Env a
 insertEnv var a (Env env) =
-  case lookup var env of 
+  case lookup var env of
     Just _ -> error "insertVarEnv: Variable already present in the environment"
     Nothing -> Env $ (var, a):env
 
 addCond :: Condition -> ACeb -> ACeb
 addCond (be,fbe) ceb@ACeb{ conds = Cond cs } = ceb{conds = Cond (map aux cs)}
-  where 
+  where
     aux (rc,fc) = (simplBExprFix $ And rc be, simplFBExprFix $  FAnd fc fbe)
 
 addCondS :: Condition -> ACebS -> ACebS
@@ -137,14 +137,14 @@ fixpointSemantics pgm interp max_ite = iterateImmediateConsequence pgm interp ma
 
 iterateImmediateConsequence :: Program -> Interpretation -> Iteration -> Iteration -> SemanticConfiguration -> TargetDPs -> Interpretation
 iterateImmediateConsequence pgm interp max_ite n semConf dps
-  | n == max_ite                    = widening interp 
-  | equivInterp interp nextIter     = interp 
-  | errorNotGrowing interp nextIter = nextIter 
+  | n == max_ite                    = widening interp
+  | equivInterp interp nextIter     = interp
+  | errorNotGrowing interp nextIter = nextIter
   | otherwise                       = iterateImmediateConsequence pgm nextIter max_ite (n + 1) semConf dps
     where
       nextIter = immediateConsequence pgm interp semConf dps
 
-widening :: Interpretation -> Interpretation 
+widening :: Interpretation -> Interpretation
 widening = map convergeToTop
   where
     convergeToTop (funName, (isTrans,fp, args, _)) = (funName, (isTrans,fp, args, [topAceb]))
@@ -172,9 +172,9 @@ zeroErrAceb = ACeb {
 immediateConsequence :: Program -> Interpretation -> SemanticConfiguration -> TargetDPs -> Interpretation
 immediateConsequence decls interps semConf decPaths =
   foldl (\interp decl -> declSem decl interp decPaths semConf) interps decls
-  
+
 declSem :: Decl -> Interpretation -> TargetDPs -> SemanticConfiguration -> Interpretation
-declSem (Decl _ _ fun _ stm) interp decPaths semConf = 
+declSem (Decl _ _ fun _ stm) interp decPaths semConf =
   addDeclInterp fun (stmSem stm interp emptyEnv semConf root dps) interp
   where
     dps = fromMaybe (error $ "declSem: function " ++ fun ++ "not found.") (lookup fun decPaths)
@@ -182,24 +182,24 @@ declSem (Pred _ _ fun _ stm) interp decPaths semConf = addDeclInterp fun (bexprS
   where
     dps = fromMaybe (error $ "declSem: function " ++ fun ++ "not found.") (lookup fun decPaths)
 
-addDeclInterp :: FunName -> ACebS -> Interpretation -> Interpretation                       
+addDeclInterp :: FunName -> ACebS -> Interpretation -> Interpretation
 addDeclInterp fun sem interp =
     let (l1,l2) = List.partition (isFun fun) interp in
-        case l1 of 
+        case l1 of
           [] -> error $ "addDeclInterp: function " ++ show fun ++ " not found."
-          [(_, (isTrans, fp, args, cebs))] -> 
+          [(_, (isTrans, fp, args, cebs))] ->
                 if hasInfiniteError cebs then
                     l2 ++ [(fun, (isTrans, fp, args, replaceInfFun sem))]
                 else
                     l2 ++ [(fun, (isTrans, fp, args,  unionACebS cebs sem))]
-          _ -> error ("addDeclInterp: More than one occurrence of function " ++ fun ++ " in the interpretation.")    
+          _ -> error ("addDeclInterp: More than one occurrence of function " ++ fun ++ " in the interpretation.")
     where
         isFun f1 (f2, (_,_,_,_)) = f1 == f2
         hasInfiniteError = any isErrorInfinite
         replaceInfFun = map replaceInfFun'
         replaceInfFun' ceb =  ceb { rExprs = [Infinity] }
         isErrorInfinite aceb = ee == Infinity
-            where 
+            where
                 ACeb{ eExpr = ee} = aceb
 
 representative :: (b -> b -> Bool) -> [b] -> [b]
@@ -308,10 +308,6 @@ conditionUnOp FloorOp _ False ceb = Cond [(simplBExprFix $ And rc (Or (Rel Neq (
 conditionUnOp FloorOp _ True ceb = Cond [(simplBExprFix $ And rc (And (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (eExpr ceb))))
                                                                   (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (eExpr ceb))))),fc)
                                          | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
-conditionUnOp AtanOp _ False ceb = Cond [(simplBExprFix $ And rc (Rel GtE (eExpr ceb) (UnaryOp AbsOp r)), fc)
-                                         | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
-conditionUnOp AtanOp _ True  ceb = Cond [(simplBExprFix $ And rc (Rel Lt (eExpr ceb) (UnaryOp AbsOp r)), fc)
-                                         | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
 conditionUnOp _ _ _ ceb = conds ceb
 
 conditionBinOp :: Operators.BinOp -> PVSType -> ACeb -> ACeb -> Conditions
@@ -321,7 +317,7 @@ conditionBinOp ItDivOp fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
 conditionBinOp ModOp   fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
 conditionBinOp ItModOp fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
 conditionBinOp       _  _ ceb1 ceb2 = Cond [(simplBExprFix $ And c1 c2, simplFBExprFix $ FAnd g1 g2) |
-                                         (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)] 
+                                         (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)]
 
 semUnOp :: Operators.UnOp -> PVSType -> Bool -> [ACeb] -> [ACeb]
 semUnOp op fp tight semOp1 = collapseSem $ filterCondFalse $ map makeCeb semOp1
@@ -369,11 +365,11 @@ unstableCasesIteSem :: ACebS
                     -> ACebS
                     -> FBExpr
                     -> ACebS
-unstableCasesIteSem semThen semElse fbe = filter isUnstable (stableCases ++ unstableCases)  
+unstableCasesIteSem semThen semElse fbe = filter isUnstable (stableCases ++ unstableCases)
   where
     be = fbe2be fbe
     semThenStable = filter isStable semThen
-    semElseStable = filter isStable semElse 
+    semElseStable = filter isStable semElse
     unstableCases = addCondS (be,FNot fbe)
                              (unTestSem (representative realEquivalence semThenStable)
                                         (representative fpEquivalence   semElseStable))
@@ -383,7 +379,7 @@ unstableCasesIteSem semThen semElse fbe = filter isUnstable (stableCases ++ unst
                                         (representative fpEquivalence   semThenStable))
     stableCases = addCondS (be, fbe) semThen ++
                   addCondS (Not be, FNot fbe) semElse
-                    
+
 semIte :: Bool -> Bool -> [LDecisionPath] -> ACebS -> ACebS -> FBExpr -> ACebS
 semIte sta mu dps semThen semElse fbe | sta = stableCases
                                       | mu = case mergedUnstableCase of
@@ -428,22 +424,22 @@ semIteList sta mu dps listSemThen semElse | sta = stableCases
                                           | mu = case mergedUnstableCase of
                                                   Nothing -> stableCases
                                                   Just uc -> uc : stableCases
-                                          | otherwise = unstableCases ++ stableCases       
+                                          | otherwise = unstableCases ++ stableCases
   where
-    (basicStable, basicUnstable) = List.partition isStable (addCondsToSem listSemThen 0 BTrue FBTrue)
+    (basicStable, basicUnstable) = List.partition isStable (addCondsToSem listSemThen (0::Int) BTrue FBTrue)
 
     addCondsToSem [] _ neg_bes neg_fbes = addCondS (neg_bes, neg_fbes) semElse
     addCondsToSem ((fbe_i,sem_i):restThen) i neg_bes neg_fbes =
       addCondS (And (fbe2be fbe_i) neg_bes, FAnd fbe_i neg_fbes) sem_i
-      ++ 
+      ++
       addCondsToSem restThen (i+1) (And (Not (fbe2be fbe_i)) neg_bes) (FAnd (FNot fbe_i) neg_fbes)
-      
-    stableCases   = stableCasesListIte   dps basicStable  
+
+    stableCases   = stableCasesListIte   dps basicStable
     unstableCases = unstableCasesListIte     basicUnstable listSemThen semElse
     mergedUnstableCase = if null unstableCases then Nothing else Just $ mergeACebFold unstableCases
 
 addLetElem2Env :: Interpretation
-               -> SemanticConfiguration 
+               -> SemanticConfiguration
                -> LDecisionPath
                -> [LDecisionPath]
                -> Env ACebS
@@ -453,7 +449,7 @@ addLetElem2Env interp config dp dps accEnv (var,_,aexpr) = insertEnv var sem acc
   where
     sem = stmSem aexpr interp accEnv config dp dps
 
-  
+
 bexprStmSem :: FBExprStm
             -> Interpretation
             -> Env ACebS
@@ -465,10 +461,10 @@ bexprStmSem :: FBExprStm
 bexprStmSem (BLet [] _) _ _ _ _ _ = error "stmSem: something went wrong, let-in with empty list of assigments."
 
 bexprStmSem (BLet (letElem:rest) stm) interp env config dp dps
-  | isArithExpr (exprFLetElem letElem) = 
+  | isArithExpr (exprFLetElem letElem) =
     [ACeb{
        conds = simplifyConditions $ mergeConds (varBindConds [var] [expr] [cebExpr] $ conds cebStm) (conds cebExpr)
-      ,rExprs  = [RLet [realLetElem realExprLetElem] realExpr | realExpr <- rExprs cebStm] 
+      ,rExprs  = [RLet [realLetElem realExprLetElem] realExpr | realExpr <- rExprs cebStm]
       ,fpExprs = [Let  [letElem]      fpExpr  | fpExpr   <- fpExprs cebStm]
       ,eExpr   = RLet [realLetElem realExprLetElem
                       ,errorLetElem cebExpr] (replaceInAExpr (replaceErrorMarks var) (const Nothing) $ eExpr cebStm)
@@ -479,6 +475,7 @@ bexprStmSem (BLet (letElem:rest) stm) interp env config dp dps
     , cebExpr <- stmSem expr    interp env config dp dps
     , realExprLetElem <- rExprs cebExpr
     ]
+  | otherwise = []
   where
     var  = varFLetElem  letElem
     expr = exprFLetElem letElem
@@ -519,9 +516,9 @@ stmSem :: FAExpr
        -> ACebS
 
 stmSem (FInt n)             _ _ _ dp _ = intSem n dp
+stmSem (FCnst fp n)         _ _ _ dp _ = fpSem fp n dp
 stmSem (ToFloat _ (Int n)) _ _ _ dp _ = intSem n dp
 
-stmSem (FCnst fp n)         _ _ _ dp _ = fpSem fp n dp
 stmSem (ToFloat fp (Rat n)) _ _ _ dp _ = fpSem fp n dp
 
 stmSem (ToFloat fp (UnaryOp NegOp (Int n))) _ _ _ dp _ = [ ACeb {
@@ -608,7 +605,7 @@ stmSem (FArrayElem fp _ v _) _ (Env env) _ dp _ =
 stmSem (FEFun _ f _ actArgs) interp env config dp dps =
   case lookup f interp of
     Just (_, _, formArgs, funSem) -> semEFun f formArgs actArgs (combos argSem) funSem (length funSem) dp
-    -- 
+    --
     Nothing -> error ("Function " ++ f ++ " not found")
   where
     argSem = map (\arg -> stmSem arg interp env config dp dps) actArgs
@@ -625,7 +622,7 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env config dp dps =
   where
     pow2Mul :: FAExpr -> Maybe (Either (FAExpr,FAExpr) (FAExpr,FAExpr))
     pow2Mul (BinaryFPOp MulOp _ pow2@(FInt n)         a) | isPow2 (fromInteger  n :: Double) = Just $ Left  (pow2, a)
-    pow2Mul (BinaryFPOp MulOp _ pow2@(FCnst _ n)      a) | isPow2 (fromRational n :: Double) = Just $ Left  (pow2, a)   
+    pow2Mul (BinaryFPOp MulOp _ pow2@(FCnst _ n)      a) | isPow2 (fromRational n :: Double) = Just $ Left  (pow2, a)
     pow2Mul (BinaryFPOp MulOp _ a         pow2@(FInt n)) | isPow2 (fromInteger  n :: Double) = Just $ Right (pow2, a)
     pow2Mul (BinaryFPOp MulOp _ a      pow2@(FCnst _ n)) | isPow2 (fromRational n :: Double) = Just $ Right (pow2, a)
     pow2Mul _ = Nothing
@@ -649,7 +646,7 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env config dp dps =
             getExp [Int m] = round $ logBase (2 :: Double) (fromIntegral m)
             getExp [Rat m] = round $ logBase (2 :: Double) (realToFrac m)
             getExp _ = error "getExp: something went wrong"
-            
+
     semMulPow2 _ cebs = error $ "semMulPow2: something went wrong\n ceb1 = " ++ show cebs ++ "\n"
 
 stmSem (BinaryFPOp op fp a1 a2) interp env config dp dps =
@@ -662,8 +659,6 @@ stmSem (UnaryFPOp FloorOp fp a) interp env config dp dps =
 
 stmSem (UnaryFPOp AtanOp fp a) interp env config dp dps =
   semUnOp AtanOp fp False (stmSem a interp env config dp dps)
-  ++
-  semUnOp AtanOp fp True  (stmSem a interp env config dp dps)
 
 stmSem (UnaryFPOp op fp a) interp env config dp dps = semUnOp op fp False (stmSem a interp env config dp dps)
 
@@ -696,9 +691,9 @@ stmSem UnstWarning _ _ _ dp _ = [ ACeb {
     cFlow  = Stable
     } ]
 
-stmSem (Let [] stm) _ _ _ _ _ = error "stmSem: empty variable list in let-in statement."
+stmSem (Let [] _) _ _ _ _ _ = error "stmSem: empty variable list in let-in statement."
 
-stmSem le@(Let (letElem:rest) stm) interp env config dp dps
+stmSem (Let (letElem:rest) stm) interp env config dp dps
   | isArithExpr (exprFLetElem letElem) =
     [ACeb{
        conds = simplifyConditions $ mergeConds (varBindConds [var] [expr] [cebExpr] $ conds cebStm) (conds cebExpr)
@@ -728,8 +723,8 @@ stmSem le@(Let (letElem:rest) stm) interp env config dp dps
 
 stmSem (Let (letElem:rest) stm) interp env config dp dps = stmSem newStm interp newEnv config dp dps
   where
-    newStm = varBindLetFAExpr [letElem] (if null rest then stm else (Let rest stm))   
-    newEnv = addLetElem2Env interp config dp dps env letElem 
+    newStm = varBindLetFAExpr [letElem] (if null rest then stm else (Let rest stm))
+    newEnv = addLetElem2Env interp config dp dps env letElem
 
 stmSem (Ite fbe stm1 stm2) interp env config@SemConf{ assumeTestStability = sta, mergeUnstables = mu } dp dps =
   semIte sta mu dps semThen semElse fbe
@@ -756,7 +751,7 @@ stmSem forloop@(ForLoop _ (FInt _) (FInt _) _ _ _ forBody) _ _ _ _ _
             cFlow  = Stable
         }]
 
-stmSem forloop@(ForLoop _ (ToFloat _ (Int _)) (ToFloat _ (Int _)) _ _ _ forBody) _ _ _ _ _ 
+stmSem forloop@(ForLoop _ (ToFloat _ (Int _)) (ToFloat _ (Int _)) _ _ _ forBody) _ _ _ _ _
   | isIntFAExpr forBody = [ACeb {
             conds  = Cond [(BTrue, FBTrue)],
             rExprs = [fae2real forloop] ,
@@ -766,7 +761,7 @@ stmSem forloop@(ForLoop _ (ToFloat _ (Int _)) (ToFloat _ (Int _)) _ _ _ forBody)
             cFlow  = Stable
         }]
 
-stmSem (ForLoop _ _ _ _ _ _ _) _ _ _ _ _ = 
+stmSem (ForLoop _ _ _ _ _ _ _) _ _ _ _ _ =
   error $ "stmSem: generic for loop not suported yet."
 
 stmSem fae _ _ _ _ _ = error $ "stmSem: niy for " ++ show fae
@@ -774,7 +769,7 @@ stmSem fae _ _ _ _ _ = error $ "stmSem: niy for " ++ show fae
 semEFun :: FunName -> [Arg] -> [FAExpr] -> [ACebS] -> ACebS -> Int -> LDecisionPath -> ACebS
 semEFun _ _ _ _ [] _ _ = []
 semEFun fun formArgs actualArgs semArgsCombos (c:cs) n dp =
-  map (aux c formArgs actualArgs) semArgsCombos 
+  map (aux c formArgs actualArgs) semArgsCombos
   ++
   semEFun fun formArgs actualArgs semArgsCombos cs n dp
   where
@@ -787,16 +782,16 @@ semEFun fun formArgs actualArgs semArgsCombos (c:cs) n dp =
       }
       where
         combosArgs = combos (map (uncond . conds) argsSem)
-        conjComboArgs = zip (map condArgs combosArgs) (map guardArgs combosArgs)           
+        conjComboArgs = zip (map condArgs combosArgs) (map guardArgs combosArgs)
         newcond [(rc, fpc), (rcargs, fpcargs)] =
            (simplBExprFix  $ And  (argsBindBExpr  fa aa argsSem rc) rcargs,
             simplFBExprFix $ FAnd (argsBindFBExpr fa aa fpc) fpcargs)
         newcond _ = error "semEFun newcond: something went wrong"
-        
+
         condArgs  []  = BTrue
         condArgs  arg = foldl1 And   (map realCond arg)
         guardArgs [] = FBTrue
-        guardArgs arg = foldl1 FAnd (map fpCond   arg) 
+        guardArgs arg = foldl1 FAnd (map fpCond   arg)
 
 collapseSem :: [ACeb] -> [ACeb]
 collapseSem sem = collapsedStableCase ++ collapsedUnstableCase
@@ -853,7 +848,28 @@ varBindAExprReal fa aa sem (ErrMulPow2R fp n e)    = ErrMulPow2R fp n (varBindAE
 varBindAExprReal fa aa sem (HalfUlp a fp)          = HalfUlp      (varBindAExprReal fa aa sem a) fp
 varBindAExprReal fa aa sem (MaxErr es)             = MaxErr (map (varBindAExprReal fa aa sem) es)
 varBindAExprReal _  _  _   Infinity                = Infinity
-varBindAExprReal _  _  _   ee = error $ "varBindAExpr not defined for " ++ show ee
+varBindAExprReal _  _  _   (FExp expr)             = FExp expr
+varBindAExprReal fa aa sem (Max es)                = Max (map (varBindAExprReal fa aa sem) es)
+varBindAExprReal fa aa sem (Min es)                = Min (map (varBindAExprReal fa aa sem) es)
+varBindAExprReal _  _  _   RUnstWarning            = RUnstWarning
+varBindAExprReal fa aa sem (RLet letElems ae)  = RLet (map varBindAExprLetElem letElems)
+                                                  (varBindAExprReal fa aa sem ae)
+  where
+    varBindAExprLetElem letElem = letElem { letExpr =  varBindAExprReal fa aa sem (letExpr letElem)}
+varBindAExprReal fa aa sem  (RIte be aeThen aeElse) = RIte (varBindBExprReal fa aa sem be)
+                                                       (varBindAExprReal fa aa sem aeThen)
+                                                       (varBindAExprReal fa aa sem aeElse)
+varBindAExprReal fa aa sem  (RListIte listThen aeElse) = RListIte (map (varBindlistThen fa aa sem) listThen)
+                                                              (varBindAExprReal fa aa sem aeElse)
+  where
+    varBindlistThen fa' aa' sem' (be,ae) = (varBindBExprReal fa' aa' sem' be, varBindAExprReal fa' aa' sem' ae)
+varBindAExprReal fa aa sem  (RForLoop t idxStart idxEnd initAcc idx acc forBody)
+  = RForLoop t (varBindAExprReal fa aa sem idxStart)
+               (varBindAExprReal fa aa sem idxEnd)
+               (varBindAExprReal fa aa sem initAcc)
+               idx
+               acc
+               (varBindAExprReal fa aa sem forBody)
 
 varBindBExprReal :: [VarName] -> [AExpr] -> ACebS -> BExpr -> BExpr
 varBindBExprReal _  _  _   BTrue       = BTrue
@@ -871,7 +887,7 @@ varBindConds :: [VarName] -> [FAExpr] -> ACebS -> Conditions -> Conditions
 varBindConds varNames exprs sem (Cond cs) = Cond (map (varBindCond varNames exprs sem) cs)
 
 replaceLocalVarsInErrExpr :: LocalEnv -> AExpr -> AExpr
-replaceLocalVarsInErrExpr localEnv = replaceInAExpr (const Nothing) replaceLocalVars 
+replaceLocalVarsInErrExpr localEnv = replaceInAExpr (const Nothing) replaceLocalVars
   where
     replaceLocalVars (FVar fp x) = Just $ bindVar localEnv
       where
@@ -903,7 +919,7 @@ varBindAExpr fa aa sem (ArrayElem t size v idx) = ArrayElem t size v (varBindAEx
 varBindAExpr _  _  _ Prec          = Prec
 varBindAExpr _  _  _ (ErrRat n)    = ErrRat n
 varBindAExpr _  _  _ (Var fp x)    = Var fp x
-varBindAExpr fa aa _   (FExp fae)  = FExp (varBindFAExpr fa aa fae)
+varBindAExpr fa aa _   (FExp a)  = FExp (varBindFAExpr fa aa a)
 varBindAExpr fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExpr  fa aa sem a)
 varBindAExpr fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExpr  fa aa sem a1) (varBindAExpr fa aa sem a2)
 varBindAExpr fa aa _   (FromFloat fp a)      = FromFloat fp   (varBindFAExpr fa aa a)
@@ -947,7 +963,7 @@ varBindAExpr fa aa sem  (RIte be aeThen aeElse) = RIte (varBindBExpr fa aa sem b
 varBindAExpr fa aa sem  (RListIte listThen aeElse) = RListIte (map (varBindlistThen fa aa sem) listThen)
                                                               (varBindAExpr fa aa sem aeElse)
   where
-    varBindlistThen fa aa sem (be,ae) = (varBindBExpr fa aa sem be, varBindAExpr fa aa sem ae)
+    varBindlistThen fa' aa' sem' (be,ae) = (varBindBExpr fa' aa' sem' be, varBindAExpr fa' aa' sem' ae)
 varBindAExpr fa aa sem  (RForLoop t idxStart idxEnd initAcc idx acc forBody)
   = RForLoop t (varBindAExpr fa aa sem idxStart)
                (varBindAExpr fa aa sem idxEnd)
@@ -1033,10 +1049,10 @@ varBindLetFAExpr :: [(VarName, PVSType, FAExpr)] -> FAExpr -> FAExpr
 varBindLetFAExpr letElems stm = varBindFAExpr (map fst3 letElems) (map trd3 letElems) stm
 
 varBindLetFBExprStm :: [(VarName, PVSType, FAExpr)] -> FBExprStm -> FBExprStm
-varBindLetFBExprStm letElems stm = varBindFBExprStm (map fst3 letElems) (map trd3 letElems) stm      
+varBindLetFBExprStm letElems stm = varBindFBExprStm (map fst3 letElems) (map trd3 letElems) stm
 
 varBindLetFBExpr :: [(VarName, PVSType, FAExpr)] -> FBExpr -> FBExpr
-varBindLetFBExpr letElems stm = varBindFBExpr (map fst3 letElems) (map trd3 letElems) stm    
+varBindLetFBExpr letElems stm = varBindFBExpr (map fst3 letElems) (map trd3 letElems) stm
 
 initErrVars :: Interpretation -> Interpretation
 initErrVars = map initErrVarsSem
@@ -1069,7 +1085,7 @@ unfoldFunCallInSem interp (f, (isTrans, fp, args, sem)) = (f, (isTrans, fp, args
     unfoldedSem = map (unfoldFunCallInCeb interp) sem
 
 unfoldFunCallInCeb :: Interpretation -> ACeb -> ACeb
-unfoldFunCallInCeb interp aceb = 
+unfoldFunCallInCeb interp aceb =
   aceb {
         conds  = Cond (elimDuplicates $ concatMap (unfoldFunCallsInCond interp) cs),
         eExpr  = unfoldFunCallInEExprRec interp ee
@@ -1118,13 +1134,13 @@ unfoldRFunCall call actArgs formArgs sem (bexpr,fbexpr) = map (aux (bexpr,fbexpr
 
 unfoldFpFunCall :: IsTrans -> FunName -> PVSType -> [FAExpr] -> [Arg] -> AExpr -> [AExpr] -> [ACeb] -> (BExpr, FBExpr) -> [(BExpr, FBExpr)]
 unfoldFpFunCall isTrans fun fp actArgs formArgs realCall funCallsR sem (bexpr,fbexpr) =
-  concatMap (makeConditions (bexpr,fbexpr)) sem 
+  concatMap (makeConditions (bexpr,fbexpr)) sem
   where
     makeConditions (be,fbe) ceb = map (makeCondition (be,fbe) (rExprs ceb) (fpExprs ceb)) (uncond $ conds ceb)
-    makeCondition  (be,fbe) realExprs fExprs (befun,fbefun) = 
+    makeCondition  (be,fbe) realExprs fExprs (befun,fbefun) =
       (if realCall `notElem` funCallsR then
           be
-        else 
+        else
           simplBExprFix $ And (argsBindBExprReal formArgs realActArgs sem befun)
                            (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) be) realExprs)
       ,
@@ -1139,7 +1155,7 @@ replaceF :: FAExpr -> FAExpr -> FAExpr -> Maybe FAExpr
 replaceF call expr subexpr | call == subexpr = Just expr
                            | otherwise       = Nothing
 
-replaceR :: AExpr -> AExpr -> AExpr -> Maybe AExpr 
+replaceR :: AExpr -> AExpr -> AExpr -> Maybe AExpr
 replaceR call expr subexpr | call == subexpr = Just expr
                            | otherwise       = Nothing
 

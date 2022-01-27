@@ -1,8 +1,0 @@
-sub_winding_number: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-sub(V1, S: unb_double):unb_double =
-  Dsub(V1,S)
-
-END sub_winding_number

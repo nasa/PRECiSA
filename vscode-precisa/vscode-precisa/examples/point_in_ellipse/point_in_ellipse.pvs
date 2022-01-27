@@ -1,0 +1,17 @@
+%%
+% @theory: point_in_ellipse
+%%
+point_in_ellipse: THEORY
+  BEGIN IMPORTING float@aerr754dp
+
+    % Function that checks if a point is inside 
+    % an ellipse-shaped area.
+    % @fp-function
+    % @fp-range x in [-10,10], y in [-10,10]
+    pointInEllipse(x,y: unb_double): unb_double = 
+        IF x * x / 4 +  y * y / 9 <= 10
+        THEN 1
+        ELSE -1
+        ENDIF
+
+  END point_in_ellipse

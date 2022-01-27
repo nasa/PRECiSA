@@ -1,0 +1,38 @@
+near_edge: THEORY
+
+  BEGIN
+
+  sign(x: real): int  = IF (x >= 0)
+                            THEN 1
+                            ELSE -1
+                            ENDIF
+
+  quadratic(a,b,c,x : real): real = a*x*x + b*x + c 
+
+  quad_min_le_D_int(ap,b,c,xl,xu,D : real): bool =
+    xl-xu<=0 OR
+    (2*ap*xl+b<=0 AND 0<=2*ap*xu+b AND b*b-4*ap*(c-D)>0) OR
+    (quadratic(ap,b,c-D,xl)<0 OR quadratic(ap,b,c-D,xu)<0)
+
+  near_edge(segstart_x,segstart_y,segend_x,segend_y,s_x,s_y : real): bool =
+   IF abs(s_x-segstart_x)>0 AND abs(s_x-segend_x)>0 AND sign(s_x-segend_x)=sign(s_x-segstart_x)
+     THEN FALSE
+   ELSIF abs(s_y-segstart_y)>0 AND abs(s_y-segend_y)>0 AND sign(s_y-segend_y)=sign(s_y-segstart_y)
+     THEN FALSE
+   ELSE
+     LET length_x = segend_x - segstart_x IN
+     LET length_y = segend_y - segstart_y IN
+     LET ap = length_x * length_x + length_y * length_y IN
+     LET diffstart_x = segstart_x - s_x IN
+     LET diffstart_y = segstart_y - s_y IN
+     LET diffend_x = segend_x - s_x IN
+     LET diffend_y = segend_y - s_y IN
+     LET b = 2*(diffstart_x * length_x + diffstart_y * length_y) IN
+     LET c = diffstart_x * diffstart_x + diffstart_y * diffstart_y
+     IN
+       diffstart_x * diffstart_x + diffstart_y * diffstart_y <0 OR
+       diffend_x * diffend_x + diffend_y * diffend_y<0 OR
+       (ap>0 AND quad_min_le_D_int(ap,b,c,0,1,0))
+   ENDIF
+
+  END near_edge

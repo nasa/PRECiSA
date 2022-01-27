@@ -138,6 +138,7 @@ data Pred = PredBExpr  BExpr
           | LoopAssigns [VarName]
           | AExprPred AExpr
           | FAExprPred FAExpr
+          | IsFiniteFP FAExpr
   deriving (Eq, Ord, Show, Read) 
 
 data Decl = Decl IsRec Type FunName [Arg] AExpr
@@ -495,8 +496,10 @@ instance PPExt Pred where
   prettyDoc (Pred p args) = text p <> parens (docListComma $ map prettyDoc args)
   prettyDoc (Ensures  p) = text "ensures"  <+> prettyDoc p <+> semi
   prettyDoc (Requires p) = text "requires" <+> prettyDoc p <+> semi
-  prettyDoc (PredLet  x expr p) = text "\\let" <+> text x <+> text "=" <+> prettyDoc expr <> semi $$ prettyDoc p 
-  prettyDoc (FPredLet t x expr p) = text "\\let" <+> prVarName x t <+> text "=" <+> prettyDoc expr <> semi $$ prettyDoc p 
+  prettyDoc (PredLet  x   expr p) = text "\\let" <+> text x <+> text "="
+                                    <+> prettyDoc expr <> semi $$ parens (prettyDoc p)
+  prettyDoc (FPredLet t x expr p) = text "\\let" <+> prVarName x t <+> text "="
+                                    <+> prettyDoc expr <> semi $$ parens (prettyDoc p) 
   prettyDoc (ErrorDiseq fpexpr expr err) = text "\\abs" <> parens (prettyDoc fpexpr <+> text "-" <+> prettyDoc expr) <+> text "<=" <+> prettyDoc err
   prettyDoc (FErrorDiseq fpexpr expr err) = text "\\abs" <> parens (prettyDoc fpexpr <+> text "-" <+> prettyDoc expr) <+> text "<=" <+> prettyDoc err
   prettyDoc (LoopAssigns   vars) = text "loop assigns"   <+> docListComma (map text vars) <+> semi
@@ -504,6 +507,7 @@ instance PPExt Pred where
   prettyDoc (LoopInvariant expr) = text "loop invariant" <+> prettyDoc expr<+> semi
   prettyDoc (AExprPred ae) = prettyDoc ae
   prettyDoc (FAExprPred ae) = prettyDoc ae
+  prettyDoc (IsFiniteFP ae) = text "\\is_finite" <> parens (prettyDoc ae)
   prettyDoc be = error $ "prettyDoc Pred not defined for " ++ show be
 
 prettyDocVarList :: [(String,Type)] -> Doc

@@ -1,8 +1,0 @@
-(verhulst_real
- (verhulst_real_TCC1 0
-  (verhulst_real_TCC1-1 nil 3718646125 ("" (skeep* :preds? t) nil nil)
-   ((real_div_nzreal_is_real application-judgement "real" reals nil)
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil))
-   nil)))
-

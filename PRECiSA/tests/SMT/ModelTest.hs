@@ -1,34 +1,26 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-  
+
 
 module SMT.ModelTest where
 
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import AbstractSemantics
-import AbstractDomain
-import AbsPVSLang
-import AbsSpecLang
 import PVSTypes
-import SMT.PrettyPrinter
-import PPExt
-import Control.Monad.State
+import Control.Monad.State hiding (state)
 import SMT.GenerateSMTModel
 import Operators
 import AbsPVSLang
-import AbstractDomain
-import PPExt
 
 testModel :: TestTree
-testModel = testGroup "Model" 
+testModel = testGroup "Model"
   [testreplaceFreshVarInFAExpr
   ,testreplaceFreshVarInFBExpr
   ,testreplaceFreshVarInAExpr
@@ -77,15 +69,15 @@ testreplaceFreshVarInFBExpr = testGroup "testreplaceFreshVarInFBExpr"
      (FVar FPDouble "Temp_2")
      (FVar FPDouble "Temp_3"))
   ,testCase "FAnd propagates replacements" $
-   (test $ FAnd 
+   (test $ FAnd
     (FRel Eq
      (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
      (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")))
     (FRel Neq
-     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) 
+     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
      (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
    @?=
-   FAnd 
+   FAnd
     (FRel Eq
      (FVar FPDouble "Temp_1")
      (FVar FPDouble "Temp_2"))
@@ -93,15 +85,15 @@ testreplaceFreshVarInFBExpr = testGroup "testreplaceFreshVarInFBExpr"
      (FVar FPDouble "Temp_2")
      (FVar FPDouble "Temp_1"))
   ,testCase "FOr propagates replacements" $
-   (test $ FOr 
+   (test $ FOr
     (FRel Eq
      (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
      (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")))
     (FRel Neq
-     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) 
+     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))
      (BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"))) )
    @?=
-   FOr 
+   FOr
     (FRel Eq
      (FVar FPDouble "Temp_1")
      (FVar FPDouble "Temp_2"))
@@ -144,11 +136,11 @@ testreplaceFreshVarInFBExpr = testGroup "testreplaceFreshVarInFBExpr"
     (BinaryFPOp SubOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z")) )
    @?=
    FRel Eq (FVar FPDouble "Temp_1") (FVar FPDouble "Temp_2")
-  ] 
+  ]
     where
       test x = fst $ runState (replaceFreshVarInFBExpr x) state
       state  = (2,[("Temp_1", BinaryFPOp AddOp FPDouble (FVar FPDouble "y") (FVar FPDouble "z"), FPDouble)])
-      
+
 testreplaceFreshVarInAExpr :: TestTree
 testreplaceFreshVarInAExpr = testGroup "replaceFreshVarInAExpr"
   [testCase "Int returns itself" $
@@ -160,7 +152,7 @@ testreplaceFreshVarInAExpr = testGroup "replaceFreshVarInAExpr"
   ,testCase "RealMark returns itself" $
    (test $ RealMark "X") @?= RealMark "X"
   ,testCase "ErrorMark returns itself" $
-   (test $ ErrorMark "X" FPDouble) @?= ErrorMark "X" FPDouble 
+   (test $ ErrorMark "X" FPDouble) @?= ErrorMark "X" FPDouble
   ,testCase "AExpr returns a fresh variable if not replaced yet" $
    (test $ BinaryOp SubOp (Var Real "u") (Var Real "v")) @?= Var Real "Real_Temp_2"
   ,testCase "AExpr returns a previous variable if already replaced" $
@@ -214,7 +206,7 @@ testreplaceFreshVarInBExpr = testGroup "testreplaceFreshVarInBExpr"
   ,testCase "Eq propagates replacements" $
    (test $ Rel Eq (BinaryOp AddOp (Var Real "y") (Var Real "z")) (BinaryOp SubOp (Var Real "y") (Var Real "z")) )
        @?= Rel Eq (Var Real "Real_Temp_1") (Var Real "Real_Temp_2")
-  ] 
+  ]
     where
       test x = fst $ runState (replaceFreshVarInBExpr x) state
       state  = (2,[("Real_Temp_1", BinaryOp AddOp (Var Real "y") (Var Real "z"))])
@@ -224,7 +216,7 @@ testreplaceFreshVarInBExpr = testGroup "testreplaceFreshVarInBExpr"
 --testGenSMTConstraints = testGroup "testGenSMTConstraints"
 --  [testCase "BTrue returns itself" $
 --   (test $ BTrue) @?= BTrue
---  ] 
+--  ]
 --  where
 --      test x = fst $ runState (replaceFreshVarInBExpr x) state
 -- testGenerateErrorConstraints :: TestTree

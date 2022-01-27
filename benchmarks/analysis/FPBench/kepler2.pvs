@@ -2,12 +2,13 @@ kepler2: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
+% @fp-function
 kepler2 (X1,X2,X3,X4,X5,X6: unb_double):unb_double = 
-    Dsub(Dsub(Dadd(Dadd(Dmul(X1, Dmul(X4, (Dadd(Dadd(Dsub(Dadd(Dadd(Dneg(X1),X2),X3),X4), X5),X6)))),
-         Dmul(X2, Dmul(X5, (Dsub(X1, Dadd(X2,Dadd(X3,Dsub(X4,Dadd(X5,X6))))))))),
-         Dmul(X3, Dmul(X6, Dadd(X1, Dsub(X2,Dadd(X3,Dadd(X4,Dsub(X5,X6)))))))),
-         Dsub(Dmul(Dmul(X2,X3), X4), Dmul(Dmul(X1,X3),X5))),
-         Dsub(Dmul(Dmul(X1,X2), X6), Dmul(Dmul(X4,X5),X6)))
+    X1 * X4 * (-X1 + X2 + X3 - X4 + X5 + X6)
+                 + X2 * X5 * (X1 - X2 + X3 + X4 - X5 + X6)
+		 + X3 * X6 * (X1 + X2 - X3 + X4 + X5 - X6)
+		 - X2 * X3 * X4 - X1 * X3 * X5
+		 - X1 * X2 * X6 - X4 * X5 * X6
 
 END kepler2
 

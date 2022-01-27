@@ -1,0 +1,25 @@
+styblinski: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+% @fp-function
+styblinski(X,Y: unb_double): unb_double =
+    IF (Y <= 0) THEN
+		IF (X <= 0) THEN
+            -1.4717 +  2.83079 * X + 0.786996 * X * X
+            + 2.83079 * Y - 0.000000000000000107939 * X * Y + 0.786996 * Y * Y
+    	ELSE
+            -1.4717 - 2.33079 * X + 0.786996 * X*X + 2.83079 * Y
+            + 0.00000000000000091748 * X * Y + 0.786996 * Y * Y
+      	ENDIF
+    ELSE
+    	IF (X <= 0) THEN
+            -1.4717 + (2.83079 * X) + (0.786996 * X * X)
+            - 2.33079 * Y + 0.000000000000000323816 * X * Y + 0.786996 * Y * Y
+        ELSE
+            -1.4717 - 2.33079 * X + 0.786996 * X * X
+            - 2.33079 * Y + 0.00000000000000172702 * X * Y + 0.786996 * Y * Y
+        ENDIF
+    ENDIF     
+
+END styblinski

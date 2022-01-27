@@ -1,0 +1,16 @@
+%%
+% @theory: nl_comp2
+% alternative version of the Compact Position Reporting (CPR) algorithm
+%%
+nl_comp2: THEORY
+  BEGIN IMPORTING float@aerr754dp
+
+    % @fp-function
+    % @fp-range nl in [2,59], nz in [59,60]
+    nl_comp2(nl, nz: unb_double): unb_double =  
+    	(180/3.14) 
+        * acos( sin(3.14 / (4 * nz)) 
+								/ sin(3.14 / nl) )
+
+    
+  END nl_comp2

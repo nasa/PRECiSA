@@ -1,6 +1,0 @@
-Date: Sun Jun 25 12:33:32 EDT 2017
-Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
-Command: time run_rosa azimuth
-[ Info  ] Running Compilation phase
-[ Error ] Did not find function "azimuth" though it was marked for analysis.
-real  3.823

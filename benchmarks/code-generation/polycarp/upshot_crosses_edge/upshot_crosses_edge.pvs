@@ -1,0 +1,19 @@
+upshot_crosses_edge : THEORY
+
+  BEGIN
+  
+  not_upshot_crosses_edge(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:int): bool =
+  IF i<N-1
+  THEN (Px(i)-Px(i+1)/= 0 OR (Py(i)-Sy<0 OR Py(i+1)-Sy<0)) AND
+           (Px(i+1)-Px(i))^2*(Py(i)-Sy) + (Sx-Px(i))*(Py(i+1)-Py(i))*(Px(i+1)-Px(i))<0
+  ELSE (Px(N)-Px(0)/= 0 OR (Py(N)-Sy<0 OR Py(0)-Sy<0)) AND
+           (Px(0)-Px(N))^2*(Py(N)-Sy) + (Sx-Px(N))*(Py(0)-Py(N))*(Px(0)-Px(N))<0
+  ENDIF
+
+  upshot_crosses_edge_valid(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:int): bool =
+  IF i<N-1
+  THEN Px(i)-Px(i+1)/= 0 OR (Py(i)-Sy<0 AND Py(i+1)-Sy<0)
+  ELSE Px(N)-Px(0)/= 0 OR (Py(N)-Sy<0 AND Py(0)-Sy<0)
+  ENDIF
+
+  END upshot_crosses_edge

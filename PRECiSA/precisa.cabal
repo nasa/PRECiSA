@@ -1,6 +1,6 @@
-cabal-version:       2.2
+cabal-version:       3.0
 name:                precisa
-version:             3.0.0.0
+version:             3.1.0
 synopsis:            PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
 homepage:            http://precisa.nianet.org
 author:              Laura Titolo, Marco A. Feliu
@@ -12,6 +12,7 @@ build-type:          Simple
 
 common shared
   default-language:    Haskell2010
+  ghc-options: -Wall
   build-depends:
       base                 >= 4.8
     , array                >= 0.5  && <0.6
@@ -100,6 +101,7 @@ executable precisa
 
 test-suite precisaTests
   import: shared
+  ghc-options: -Wno-missing-signatures
   build-depends:
       base >=4.8
     , containers >=0.5 && <0.7
@@ -124,9 +126,11 @@ test-suite precisaTests
     Common.Test
     FramaC.PVS2CTest
     Kodiak.GeneratorTest
+    Kodiak.ExpressionTest
     Kodiak.PaverTest
     Kodiak.PrettyPrintTest
     Kodiak.Test
+    MapRealPVSLangASTTest
     SMT.ModelTest
     SMT.PrettyPrinterTest
     SMT.Test

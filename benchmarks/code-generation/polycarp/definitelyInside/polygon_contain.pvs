@@ -1,0 +1,108 @@
+polygon_contain : THEORY
+
+  BEGIN
+  
+  IMPORTING structures@for_iterate
+
+
+   quadrant(X,Y: real): int =
+    IF 0<=X AND 0<=Y THEN 1
+    ELSIF X<=0 AND 0<=Y THEN 2
+    ELSIF X<=0 THEN 3
+    ELSE 4
+    ENDIF
+
+  winding_number_contrib(P_V1_x,P_V1_y,P_V2_x,P_V2_y,S_x,S_y : real): int
+  = LET THIS_x     : real = (P_V1_x - S_x) IN
+     LET THIS_y     : real = (P_V1_y - S_y) IN
+      LET NEXT_x     : real = (P_V2_x - S_x) IN 
+       LET	NEXT_y     : real = (P_V2_y - S_y) IN
+        LET	DISTANCE_x : real = (NEXT_x - THIS_x) IN
+	       LET DISTANCE_y : real = (NEXT_y - THIS_y) IN
+	        LET DET : real = ((DISTANCE_x * THIS_y) - (DISTANCE_y * THIS_x)) IN
+	         LET K : int = quadrant(THIS_x, THIS_y) IN
+	          LET P : int = quadrant(NEXT_x, NEXT_y) IN
+       IF    K = P   THEN  0
+       ELSIF P - 1 = mod.mod(K,4) THEN  1
+       ELSIF K - 1 = mod.mod(P,4) THEN -1
+       ELSIF DET <= 0           THEN  2
+       ELSE                            -2
+       ENDIF
+
+  winding_number(N: posnat, Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real) : int
+  = for[int](0,2,0,LAMBDA (i: subrange(0,10), Acc: int) :
+     IF i<2 THEN
+       Acc + winding_number_contrib(Px(i),Py(i),Px(i+1),Py(i+1),Sx,Sy)
+     ELSE
+       Acc + winding_number_contrib(Px(i),Py(i),Px(0),Py(0),Sx,Sy) 
+     ENDIF)
+
+  %upshot_crosses_edge(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:below(N)): bool =
+  %IF i<N-1
+  %THEN (Px(i) = Px(i+1) AND (Py(i)>=Sy OR Py(i+1)>=Sy)) OR
+  %         (Px(i+1)-Px(i))^2*(Py(i)-Sy) + (Sx-Px(i))*(Py(i+1)-Py(i))*(Px(i+1)-Px(i))>=0
+  %ELSE (Px(N) = Px(0) AND (Py(N)>=Sy OR Py(0)>=Sy)) OR
+  %         (Px(0)-Px(N))^2*(P(N)-Sy) + (Sx-Px(N))*(Py(0)-Py(N))*(Px(0)-Px(N))>=0
+  %ENDIF
+  
+  not_upshot_crosses_edge(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:below(N)): bool =
+  IF i<N-1
+  THEN (Px(i) /= Px(i+1) OR (Py(i)<Sy OR Py(i+1)<Sy)) AND
+           (Px(i+1)-Px(i))^2*(Py(i)-Sy) + (Sx-Px(i))*(Py(i+1)-Py(i))*(Px(i+1)-Px(i))<0
+  ELSE (Px(N) /= Px(0) OR (Py(N)<Sy OR Py(0)<Sy)) AND
+           (Px(0)-Px(N))^2*(Py(N)-Sy) + (Sx-Px(N))*(Py(0)-Py(N))*(Px(0)-Px(N))<0
+  ENDIF
+
+  upshot_crosses_edge_valid(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:below(N)): bool =
+  IF i<N-1
+  THEN Px(i) /= Px(i+1) OR (Py(i)<Sy AND Py(i+1)<Sy)
+  ELSE Px(N) /= Px(0) OR (Py(N)<Sy AND Py(0)<Sy)
+  ENDIF
+
+  compute_intercept_index(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:below(N)): int
+  = IF (Px(i)>Sx AND Px(i+1)>Sx) OR
+       (Px(i)<Sx AND Px(i+1)<Sx) OR
+       Px(i)=Px(i+1)
+    THEN -1
+    ELSE LET 
+          newnum = (Py(i)-Sy)*(Px(i+1)-Px(i)) + 
+	  	    (Sx-Px(i))*(Py(i+1)-Py(i)),
+          newdenom = Px(i+1)-Px(i)
+         IN
+	   IF newnum*newdenom<0
+	   THEN -1
+	   ELSE i
+	   ENDIF
+    ENDIF
+
+  compute_intercept_index_N(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real): int
+  = IF (Px(N)>Sx AND Px(0)>Sx) OR
+       (Px(N)<Sx AND Px(0)<Sx) OR
+       Px(N)=Px(0)
+    THEN -1
+    ELSE LET 
+          newnum = (Py(N)-Sy)*(Px(0)-Px(N)) + 
+	  	    (Sx-Px(N))*(Py(0)-Py(N)),
+          newdenom = Px(0)-Px(N)
+         IN
+	   IF newnum*newdenom<0
+	   THEN -1
+	   ELSE N
+	   ENDIF
+    ENDIF
+
+  %min_cross_dist_index_upto_index(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:below(N)): RECURSIVE int =
+  %IF i=0 THEN compute_intercept_index_N(N,Px,Py,Sx,Sy)
+  %ELSE LET cii = compute_intercept_index(N,Px,Py,Sx,Sy,i),
+  %     	   cin = min_cross_dist_index_upto(N,Px,Py,Sx,Sy,i-1)
+  %     IN IF cin`index<0 THEN cii
+  %     	  ELSIF cii`index<0 THEN cin
+  %	  ELSIF cin`denom^2*cii`num*cii`denom<cin`num*cin`denom*cii`denom^2 THEN cii
+  %	  ELSE cin ENDIF
+  %ENDIF MEASURE i
+
+  definitely_inside(N: posnat, Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real): bool =
+     % definitely_inside_prelim(N,Px,Py,Sx,Sy) AND
+     winding_number(N,Px,Py,Sx,Sy)=1
+
+  END polygon_contain

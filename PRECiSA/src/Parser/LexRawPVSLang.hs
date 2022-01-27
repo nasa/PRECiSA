@@ -1,13 +1,3 @@
--- Notices:
---
--- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
--- Disclaimers
--- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
--- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-  
-  
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-missing-signatures #-}
 {-# LANGUAGE CPP #-}
 {-# LINE 3 "LexRawPVSLang.x" #-}
@@ -150,9 +140,9 @@ alex_table = listArray (0 :: Int, 1621)
   , 20
   , 20
   , 20
-  , 19
   , 0
-  , 19
+  , 0
+  , 0
   , 19
   , 0
   , 0
@@ -1776,9 +1766,9 @@ alex_check = listArray (0 :: Int, 1621)
   , 88
   , 89
   , 90
-  , 91
   , -1
-  , 93
+  , -1
+  , -1
   , 94
   , -1
   , -1
@@ -3455,7 +3445,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "NOT" 54 (b "Dmod" 27 (b ">=" 14 (b "/" 7 (b "+" 4 (b ")" 2 (b "(" 1 N N) (b "*" 3 N N)) (b "-" 6 (b "," 5 N N) N)) (b "<=" 11 (b ":" 9 (b "/=" 8 N N) (b "<" 10 N N)) (b ">" 13 (b "=" 12 N N) N))) (b "Datan" 21 (b "Dacos" 18 (b "BEGIN" 16 (b "AND" 15 N N) (b "Dabs" 17 N N)) (b "Dasin" 20 (b "Dadd" 19 N N) N)) (b "Dexp" 24 (b "Ddiv" 23 (b "Dcos" 22 N N) N) (b "Dln" 26 (b "Dfloor" 25 N N) N)))) (b "IMPORTING" 41 (b "DtoR" 34 (b "Dsqrt" 31 (b "Dneg" 29 (b "Dmul" 28 N N) (b "Dsin" 30 N N)) (b "Dtan" 33 (b "Dsub" 32 N N) N)) (b "ENDIF" 38 (b "ELSIF" 36 (b "ELSE" 35 N N) (b "END" 37 N N)) (b "IF" 40 (b "FALSE" 39 N N) N))) (b "Ineg" 48 (b "Idiv" 45 (b "Iabs" 43 (b "IN" 42 N N) (b "Iadd" 44 N N)) (b "Imul" 47 (b "Imod" 46 N N) N)) (b "ItoS" 51 (b "ItoD" 50 (b "Isub" 49 N N) N) (b "LET" 53 (b "LAMBDA" 52 N N) N))))) (b "]" 81 (b "Smod" 68 (b "Sasin" 61 (b "Sabs" 58 (b "RtoD" 56 (b "OR" 55 N N) (b "RtoS" 57 N N)) (b "Sadd" 60 (b "Sacos" 59 N N) N)) (b "Sexp" 65 (b "Scos" 63 (b "Satan" 62 N N) (b "Sdiv" 64 N N)) (b "Sln" 67 (b "Sfloor" 66 N N) N))) (b "StoR" 75 (b "Ssqrt" 72 (b "Sneg" 70 (b "Smul" 69 N N) (b "Ssin" 71 N N)) (b "Stan" 74 (b "Ssub" 73 N N) N)) (b "TRUE" 78 (b "THEORY" 77 (b "THEN" 76 N N) N) (b "[" 80 (b "VAR" 79 N N) N)))) (b "mod" 95 (b "cos" 88 (b "asin" 85 (b "abs" 83 (b "^" 82 N N) (b "acos" 84 N N)) (b "bool" 87 (b "atan" 86 N N) N)) (b "int" 92 (b "floor" 90 (b "exp" 89 N N) (b "for" 91 N N)) (b "ln" 94 (b "integer" 93 N N) N))) (b "unb_nz_single" 102 (b "tan" 99 (b "sqrt" 97 (b "sin" 96 N N) (b "subrange" 98 N N)) (b "unb_nz_double" 101 (b "unb_double" 100 N N) N)) (b "unb_single" 105 (b "unb_pos_single" 104 (b "unb_pos_double" 103 N N) N) (b "|" 107 (b "warning" 106 N N) N)))))
+resWords = b "ELSIF" 18 (b ":" 9 (b "," 5 (b "*" 3 (b ")" 2 (b "(" 1 N N) N) (b "+" 4 N N)) (b "/" 7 (b "-" 6 N N) (b "/=" 8 N N))) (b ">=" 14 (b "=" 12 (b "<=" 11 (b "<" 10 N N) N) (b ">" 13 N N)) (b "BEGIN" 16 (b "AND" 15 N N) (b "ELSE" 17 N N)))) (b "OR" 27 (b "IMPORTING" 23 (b "FALSE" 21 (b "ENDIF" 20 (b "END" 19 N N) N) (b "IF" 22 N N)) (b "LET" 25 (b "IN" 24 N N) (b "NOT" 26 N N))) (b "^" 32 (b "TRUE" 30 (b "THEORY" 29 (b "THEN" 28 N N) N) (b "VAR" 31 N N)) (b "subrange" 34 (b "for" 33 N N) (b "|" 35 N N))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

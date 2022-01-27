@@ -2,10 +2,12 @@ azimuth: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
-azimuth(Lat1,Lon1,Lat2: unb_double,Lon2: unb_double | DtoR(Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1),Dmul(Dcos(Lat2),Dcos(Dsub(Lon2,Lon1)))))) /= 0):unb_double = 
-  LET DLon = Dsub(Lon2,Lon1) IN
-  LET Y = Dmul(Dcos(Lat2), Dsin(DLon)) IN
-  LET X = Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1),Dmul(Dcos(Lat2),Dcos(DLon)))) IN
-  Datan(Ddiv(Y,X))
+% @fp-function
+azimuth(Lat1,Lon1,Lat2: unb_double,Lon2: unb_double
+  | (cos(Lat1) * sin(Lat2)) - (sin(Lat1) * cos(Lat2) * cos(Lon2-Lon1)) /= 0):unb_double = 
+  LET DLon = Lon2 - Lon1 IN
+  LET Y = cos(Lat2) *  sin(DLon) IN
+  LET X = (cos(Lat1) * sin(Lat2)) - (sin(Lat1) * (cos(Lat2) * cos(DLon))) IN
+  atan(Y/X)
 
 END azimuth  

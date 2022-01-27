@@ -1,9 +1,0 @@
-eps_line_expr: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-sum(Sx,Vx,Sy,Vy: unb_double):unb_double = Dadd(Dmul(Sx,Vx),Dmul(Sy,Vy))
-
-sub(Sx,Vx,Sy,Vy: unb_double):unb_double = Dsub(Dmul(Sx,Vx),Dmul(Sy,Vy))
-
-END eps_line_expr

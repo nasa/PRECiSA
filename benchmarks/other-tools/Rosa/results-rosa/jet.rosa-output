@@ -1,8 +1,0 @@
-Date: Sun Jun 25 12:35:29 EDT 2017
-Config: Linux laura-Alienware-17 4.4.0-81-generic #104-Ubuntu SMP Wed Jun 14 08:17:06 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
-Command: time run_rosa jet
-[ Info  ] Running Compilation phase
-[ Info  ] --- Analysis complete ---
-[ Info  ] 
-[ Info  ] jet
-real  162.659

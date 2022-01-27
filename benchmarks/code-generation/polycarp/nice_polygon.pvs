@@ -1,0 +1,154 @@
+nice_polygon : THEORY
+
+BEGIN
+
+IMPORTING vectors@vectors_2D,
+          reals@quad_minmax,
+	  reals@double_quadratic,
+	  vectors@det_2D
+
+
+polygon_2D(N:posnat): TYPE = [below(N) -> Vect2]
+
+corner_lt_3deg(v,w:Vect2): bool =
+    IF norm(v)<=0.1 or norm(w)<=0.1
+    THEN True
+    ELSIF (v*w)<-0.9986295347545738*(norm(v)*norm(w))
+    THEN True
+    ELSE False ENDIF
+
+near_edge(segstart,segend,s:Vect2,BUFF:posreal): bool =
+   IF abs(s`x-segstart`x)>2*BUFF AND abs(s`x-segend`x)>2*BUFF AND sign(s`x-segend`x)=sign(s`x-segstart`x)
+     THEN FALSE
+   ELSIF abs(s`y-segstart`y)>2*BUFF AND abs(s`y-segend`y)>2*BUFF AND sign(s`y-segend`y)=sign(s`y-segstart`y)
+     THEN FALSE
+   ELSE
+     LET
+       ap = sqv(segend-segstart),
+       b = 2*((segstart-s)*(segend-segstart)),
+       c = sqv(segstart-s)
+     IN
+       sqv(segstart-s)<sq(BUFF) OR
+       sqv(segend-s)<sq(BUFF) OR
+       (ap>0 AND quad_min_le_D_int(ap,b,c,0,1,sq(BUFF)))
+   ENDIF
+
+segments_2D_close(segstart1,segend1,segstart2,segend2:Vect2,BUFF:posreal): bool =
+      LET
+        segStartXDiff    = segstart1`x - segstart2`x,
+    	segStartEndXDiff = segstart1`x - segend2`x,
+	segStartYDiff    = segstart1`y - segstart2`y,
+    	segStartEndYDiff = segstart1`y - segend2`y,
+	segEndXDiff      = segend1`x - segend2`x,
+    	segEndStartXDiff = segend1`x - segstart2`x,
+	segEndYDiff      = segend1`y - segend2`y,
+    	segEndStartYDiff = segend1`y - segstart2`y,
+	segXApart  = abs(segStartXDiff)    > 2*BUFF AND
+                      abs(segStartEndXDiff) > 2*BUFF AND
+                      abs(segEndXDiff)      > 2*BUFF AND
+                      abs(segEndStartXDiff) > 2*BUFF AND
+                      sign(segStartXDiff) = sign(segStartEndXDiff) AND
+                      sign(segEndXDiff)   = sign(segEndStartXDiff)  AND
+                      sign(segStartXDiff) = sign(segEndXDiff),
+	segYApart  = abs(segStartYDiff)    > 2*BUFF AND
+                      abs(segStartEndYDiff) > 2*BUFF AND
+                      abs(segEndYDiff)      > 2*BUFF AND
+                      abs(segEndStartYDiff) > 2*BUFF AND
+                      sign(segStartYDiff) = sign(segStartEndYDiff) AND
+                      sign(segEndYDiff)   = sign(segEndStartYDiff)  AND
+                      sign(segStartYDiff) = sign(segEndYDiff)
+      IN
+      IF (segXApart OR segYApart) THEN FALSE
+      ELSIF near_edge(segstart2,segend2,segstart1,BUFF) THEN TRUE
+      ELSIF near_edge(segstart2,segend2,segend1,BUFF) THEN TRUE
+      ELSIF near_edge(segstart1,segend1,segstart2,BUFF) THEN TRUE
+      ELSIF near_edge(segstart1,segend1,segend2,BUFF) THEN TRUE
+      ELSIF sqv(segend1-segstart1)=0 OR sqv(segend2-segstart2)=0 
+             THEN FALSE % almost equal in code
+      ELSE
+        LET s=segstart1-segstart2,
+	    v=segend1-segstart1,
+	    w=segend2-segstart2,
+	    a=sqv(v),
+	    b=sqv(w),
+	    c=-2*(v*w),
+      	    d=2*(s*v),
+	    ee=-2*(s*w),
+	    f=sqv(s)
+        IN quad_min_unit_box(a,b,c,d,ee,f,sq(BUFF))
+      ENDIF
+  
+
+
+near_poly_edge(N:posnat,p:polygon_2D(N),s:Vect2,BUFF:posreal,i:below(N)): bool =
+  LET
+    next = (IF i<N-1 THEN i+1 ELSE 0 ENDIF)
+  IN
+    near_edge(p(i),p(next),s,BUFF)
+ 
+acceptable_polygon_2D(N:posnat,p:polygon_2D(N),BUFF:posreal): bool =
+  N>2
+  AND
+  FORALL (i:subrange(0,N-1)): % Loop
+    FORALL (j:subrange(i,N-1)): % Loop
+      LET mj = mod(j+1,N),
+      	  mi = mod(1+i,N),
+	  pj = p(j),
+	  pi = p(i),
+	  pmi = p(mi),
+	  pmj = p(mj)
+      IN 
+        IF i=j THEN TRUE
+        ELSIF pi=pj THEN FALSE % almost equal
+        ELSIF j=mi AND (near_poly_edge(N,p,pmj,BUFF,i) OR
+	      	        near_poly_edge(N,p,pi,BUFF,j)) THEN FALSE
+        ELSIF j=mi AND corner_lt_3deg(pj-pi,pmj-pj) THEN FALSE
+	ELSIF j=mi THEN TRUE
+        ELSIF i=mj AND (near_poly_edge(N,p,pmi,BUFF,j) OR
+	      	        near_poly_edge(N,p,pj,BUFF,i)) THEN FALSE
+        ELSIF i=mj and corner_lt_3deg(pi-pj,pmi-pi) THEN FALSE
+	ELSIF i=mj THEN TRUE
+       ELSIF segments_2D_close(pi,pmi,pj,pmj,BUFF) THEN FALSE
+        ELSE TRUE
+        ENDIF
+
+
+
+counterclockwise_corner_index(N:posnat,p:polygon_2D(N),i:nat,eps:Sign): RECURSIVE {j:nat|
+  j<N AND FORALL (z:below(N)): z<=i IMPLIES (eps*p(z)`x>=eps*p(j)`x AND 
+      	  	 	         (p(z)`x=p(j)`x IMPLIES p(z)`y>=p(j)`y))} =
+    IF i = 0 THEN i
+    ELSIF i>=N THEN counterclockwise_corner_index(N,p,N-1,eps)
+    ELSE LET windex:nat = counterclockwise_corner_index(N,p,i-1,eps) IN
+      IF p(windex)`x=p(i)`x AND p(windex)`y>=p(i)`y THEN i % use almost equal
+      ELSIF p(windex)`x=p(i)`x THEN windex % use almost equal
+      ELSIF eps*p(windex)`x>eps*p(i)`x THEN i
+      ELSE windex ENDIF
+    ENDIF MEASURE i
+    
+counterclockwise_edges(N:posnat,p:polygon_2D(N)): bool = 
+  LET l = counterclockwise_corner_index(N,p,N-1,1),
+     r = counterclockwise_corner_index(N,p,N-1,-1),
+      lprev = IF l>0 THEN l-1 ELSE N-1 ENDIF,
+      rprev = IF r>0 THEN r-1 ELSE N-1 ENDIF,
+      lnext = IF l<N-1 THEN l+1 ELSE 0 ENDIF,
+      rnext = IF r<N-1 THEN r+1 ELSE 0 ENDIF,
+      LPP:Vect2 = p(l)-p(lprev),
+      LPN:Vect2 = p(lnext)-p(l),
+      RPP:Vect2 = p(r)-p(rprev),
+      RPN:Vect2 = p(rnext)-p(r),
+      Lcc:bool  = (det(LPP,LPN)>0),
+      Rcc:bool  = (det(RPP,RPN)>0)
+  IN Lcc AND Rcc
+
+nice_polygon_2D(N:posnat,p:polygon_2D(N),BUFF:posreal): bool =
+  acceptable_polygon_2D(N,p,BUFF) AND
+  counterclockwise_edges(N,p) % AND
+  % definitely_outside(N,p,test_point_below(N,p,BUFF),BUFF)
+
+      
+
+
+
+
+  END nice_polygon

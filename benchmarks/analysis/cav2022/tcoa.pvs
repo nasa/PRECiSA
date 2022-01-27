@@ -1,0 +1,10 @@
+tcoa: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+% @fp-function
+% @fp-range sz in [1,300], vz in [1,300]
+  tcoa(sz,vz: unb_double): unb_double = 
+    IF sz*vz < 0 THEN -(sz/vz) ELSE -1 ENDIF
+
+END tcoa

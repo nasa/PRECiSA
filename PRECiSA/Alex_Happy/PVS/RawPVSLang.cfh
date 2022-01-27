@@ -1,0 +1,92 @@
+entrypoints Program;
+
+comment "%" ;
+
+token Id       ( (letter) (letter | digit | '_' | '?' | '@')* ) ;
+
+{- Program Expressions -}
+
+separator nonempty Id "," ;
+
+ElsIf.      ElsIf ::= "ELSIF" Expr "THEN" Expr ;
+separator nonempty ElsIf "" ;
+
+LetElem.      LetElem ::= Id "=" Expr;
+LetElemType.  LetElem ::= Id ":" Id "=" Expr ;
+separator nonempty LetElem "," ;
+
+separator nonempty Expr "," ;
+coercions   Expr 11 ;
+
+
+Let.         Expr ::= "LET" [LetElem] "IN" Expr ;
+
+Or.         Expr1 ::= Expr1 "OR" Expr2 ;
+
+And.        Expr2 ::= Expr2 "AND" Expr3 ;
+
+Not.        Expr3 ::= "NOT" Expr4 ;
+
+Eq.         Expr4 ::= Expr5 "="  Expr5 ;
+Neq.        Expr4 ::= Expr5 "/=" Expr5 ;
+Lt.         Expr4 ::= Expr5 "<"  Expr5 ;
+LtE.        Expr4 ::= Expr5 "<=" Expr5 ;
+Gt.         Expr4 ::= Expr5 ">"  Expr5 ;
+GtE.        Expr4 ::= Expr5 ">=" Expr5 ;
+
+ExprAdd.      Expr5 ::= Expr5 "+" Expr6 ;
+ExprSub.      Expr5 ::= Expr5 "-" Expr6 ;
+
+ExprMul.      Expr6 ::= Expr6 "*" Expr7 ;
+ExprDiv.      Expr6 ::= Expr6 "/" Expr7 ;
+
+ExprNeg.      Expr7 ::= "-" Expr8 ;
+
+ExprPow.      Expr8 ::= Expr9 "^" Expr8 ;
+
+If.          Expr9 ::= "IF" Expr "THEN" Expr "ELSE" Expr "ENDIF" ;
+ListIf.      Expr9 ::= "IF" Expr "THEN" Expr [ElsIf] "ELSE" Expr "ENDIF" ;
+For.         Expr9 ::= "for" "(" Integer "," Integer "," Expr "," Id ")";
+
+Call.        Expr10 ::= Id "(" [Expr] ")" ;
+ExprId.      Expr10 ::= Id ;
+Int.         Expr10 ::= Integer ;
+Rat.         Expr10 ::= Double ;
+BTrue.       Expr10 ::= "TRUE" ;
+BFalse.      Expr10 ::= "FALSE" ;
+
+
+
+{- PVS Program -}
+
+
+SubrageType.   Subrange ::= "subrange" "(" Integer "," Integer ")" ;
+
+separator nonempty Arg "," ;
+
+FArg.         Arg ::= [Id] ":" Id ;
+FArgSubrange. Arg ::= [Id] ":" Subrange ;
+FArgGuard.    Arg ::= [Id] ":" Id "|" Expr  ;
+
+FArgs.         Args ::= [Arg] ;
+FArgsNoType.   Args ::= [Id] ;
+
+{- FLambda. ForLambda ::= "LAMBDA" "(" Id ":" "subrange" "(" Integer "," Integer ")" "," Id ":" Id ")" ":" Id "(" Id "," Id ")" ; -}
+
+
+separator nonempty Decl "" ;
+
+DeclN.    Decl ::= Id "(" Args ")" ":" Id "=" Expr ;
+Decl0.    Decl ::= Id ":" Id "=" Expr  ;
+
+
+{- separator nonempty Id "," ; -}
+LibImp.   Imp ::= "IMPORTING" [Id] ;
+
+VarDeclaration. VarDecl ::= Id ":" "VAR" Id ;
+separator VarDecl "" ;
+
+ProgImp.    Program ::= Id ":" "THEORY" "BEGIN" Imp [VarDecl] [Decl] "END" Id ; 
+Prog.       Program ::= Id ":" "THEORY" "BEGIN" [VarDecl] [Decl] "END" Id;
+
+

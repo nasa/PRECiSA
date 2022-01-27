@@ -1,0 +1,9 @@
+## ChangeLog
+### 1.0.0 (2022.01.05)
+Initial distribution of VSCode-PRECiSA.
+The following analysis views are provided:
+- Round-off error analysis view
+- Interval analysis view
+- Sensitivity analysis view
+- Comparative analysis view
+- Conditional instability analysis view

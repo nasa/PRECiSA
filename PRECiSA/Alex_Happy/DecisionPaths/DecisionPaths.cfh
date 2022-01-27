@@ -1,0 +1,24 @@
+entrypoints TargetDPs;
+
+{- TargetDPs -}
+
+token Id       ( (letter) (letter | digit | '_' | '?')* ) ;
+
+Decision.   Decision ::= Integer;
+
+separator nonempty Decision "," ;
+DecisionPath. DecisionPath ::= [Decision];
+
+separator DecisionPath "," ;
+DecisionPathsList. DecisionPaths ::= "[" [DecisionPath] "]";
+DecisionPathsAll.  DecisionPaths ::= "All" ;
+DecisionPathsNone. DecisionPaths ::= "None" ;
+
+
+separator nonempty Id "," ;
+
+DecPathBindN. DecPathBind ::= Id "(" [Id] ")" ":" DecisionPaths ;
+DecPathBind0. DecPathBind ::= Id ":" DecisionPaths ;
+
+separator nonempty DecPathBind "" ;
+TargetDPs. TargetDPs ::= [DecPathBind] ;

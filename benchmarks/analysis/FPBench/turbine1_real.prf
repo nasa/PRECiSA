@@ -1,8 +1,0 @@
-(turbine1_real
- (turbine1_real_TCC1 0
-  (turbine1_real_TCC1-1 nil 3718646121 ("" (skeep* :preds? t) nil nil)
-   nil nil))
- (turbine1_real_TCC2 0
-  (turbine1_real_TCC2-1 nil 3718646121 ("" (skeep* :preds? t) nil nil)
-   nil nil)))
-

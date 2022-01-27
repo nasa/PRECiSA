@@ -17,7 +17,8 @@ tcoa_fp_c_0 : LEMMA
 FORALL(r_sz, r_vz: real, sz: double, vz: double):
 abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2
 AND ((((r_vz /= 0) AND ((r_sz * r_vz) < 0)) AND ((vz /= integerToDouble(0)) AND (mul_double(sz, vz) < integerToDouble(0)))) OR (NOT(((r_sz * r_vz) < 0)) AND NOT((mul_double(sz, vz) < integerToDouble(0)))))
-AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|]
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|] AND
+finite_double?(tcoa_fp(sz, vz)) AND finite_double?(sz) AND finite_double?(vz) AND finite_double?(mul_double(sz, vz)) AND finite_double?(integerToDouble(0))
 IMPLIES
 abs(safe_prjct_double(tcoa_fp(sz, vz)) - tcoa(r_sz, r_vz))<=6876345720111303 / 2475880078570760549798248448
 
@@ -29,7 +30,8 @@ tcoa_fp_err_0 : LEMMA
 FORALL(r_sz, r_vz: real, sz: double, vz: double):
 abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2
 AND ((((r_vz /= 0) AND ((r_sz * r_vz) < 0)) AND ((vz /= integerToDouble(0)) AND (mul_double(sz, vz) < integerToDouble(0)))) OR (NOT(((r_sz * r_vz) < 0)) AND NOT((mul_double(sz, vz) < integerToDouble(0)))))
-AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|]
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|] AND
+finite_double?(tcoa_fp(sz, vz)) AND finite_double?(sz) AND finite_double?(vz) AND finite_double?(mul_double(sz, vz)) AND finite_double?(integerToDouble(0))
 IMPLIES
 max(aebounddp_neg((r_sz / r_vz), aebounddp_div(r_sz, ulp_dp(r_sz)/2, r_vz, ulp_dp(r_vz)/2)), (0 / 1))<=6876345720111303 / 2475880078570760549798248448
 
@@ -40,7 +42,8 @@ tcpa_fp_c_0 : LEMMA
 FORALL(r_sx, r_vx, r_sy, r_vy: real, sx: double, vx: double, sy: double, vy: double):
 abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
 AND ((((((r_vx * r_vx) + (r_vy * r_vy)) /= 0) AND (((r_vx * r_vx) + (r_vy * r_vy)) /= 0)) AND ((add_double(mul_double(vx, vx), mul_double(vy, vy)) /= integerToDouble(0)) AND (add_double(mul_double(vx, vx), mul_double(vy, vy)) /= integerToDouble(0)))) OR (NOT((((r_vx * r_vx) + (r_vy * r_vy)) /= 0)) AND NOT((add_double(mul_double(vx, vx), mul_double(vy, vy)) /= integerToDouble(0)))))
-AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND
+finite_double?(tcpa_fp(sx, vx, sy, vy)) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(integerToDouble(0))
 IMPLIES
 abs(safe_prjct_double(tcpa_fp(sx, vx, sy, vy)) - tcpa(r_sx, r_vx, r_sy, r_vy))<=4300455909721841 / 4722366482869645213696
 
@@ -52,7 +55,8 @@ tcpa_fp_err_0 : LEMMA
 FORALL(r_sx, r_vx, r_sy, r_vy: real, sx: double, vx: double, sy: double, vy: double):
 abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
 AND ((((((r_vx * r_vx) + (r_vy * r_vy)) /= 0) AND (((r_vx * r_vx) + (r_vy * r_vy)) /= 0)) AND ((add_double(mul_double(vx, vx), mul_double(vy, vy)) /= integerToDouble(0)) AND (add_double(mul_double(vx, vx), mul_double(vy, vy)) /= integerToDouble(0)))) OR (NOT((((r_vx * r_vx) + (r_vy * r_vy)) /= 0)) AND NOT((add_double(mul_double(vx, vx), mul_double(vy, vy)) /= integerToDouble(0)))))
-AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND
+finite_double?(tcpa_fp(sx, vx, sy, vy)) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(integerToDouble(0))
 IMPLIES
 max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, ulp_dp(r_sx)/2, r_vx, ulp_dp(r_vx)/2), (r_sy * r_vy), aebounddp_mul(r_sy, ulp_dp(r_sy)/2, r_vy, ulp_dp(r_vy)/2))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, ulp_dp(r_vx)/2, r_vx, ulp_dp(r_vx)/2), (r_vy * r_vy), aebounddp_mul(r_vy, ulp_dp(r_vy)/2, r_vy, ulp_dp(r_vy)/2))), (0 / 1))<=4300455909721841 / 4722366482869645213696
 
@@ -63,7 +67,8 @@ taumod_fp_c_0 : LEMMA
 FORALL(r_sx, r_vx, r_sy, r_vy, r_DTHR: real, sx: double, vx: double, sy: double, vy: double, DTHR: double):
 abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
 AND ((((((r_sx * r_vx) + (r_sy * r_vy)) /= 0) AND (((r_sx * r_vx) + (r_sy * r_vy)) < 0)) AND ((add_double(mul_double(sx, vx), mul_double(sy, vy)) /= integerToDouble(0)) AND (add_double(mul_double(sx, vx), mul_double(sy, vy)) < integerToDouble(0)))) OR (NOT((((r_sx * r_vx) + (r_sy * r_vy)) < 0)) AND NOT((add_double(mul_double(sx, vx), mul_double(sy, vy)) < integerToDouble(0)))))
-AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND
+finite_double?(taumod_fp(sx, vx, sy, vy, DTHR)) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR) AND finite_double?(add_double(mul_double(sx, vx), mul_double(sy, vy))) AND finite_double?(integerToDouble(0))
 IMPLIES
 abs(safe_prjct_double(taumod_fp(sx, vx, sy, vy, DTHR)) - taumod(r_sx, r_vx, r_sy, r_vy, r_DTHR))<=8710991797552241 / 18889465931478580854784
 
@@ -75,7 +80,8 @@ taumod_fp_err_0 : LEMMA
 FORALL(r_sx, r_vx, r_sy, r_vy, r_DTHR: real, sx: double, vx: double, sy: double, vy: double, DTHR: double):
 abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
 AND ((((((r_sx * r_vx) + (r_sy * r_vy)) /= 0) AND (((r_sx * r_vx) + (r_sy * r_vy)) < 0)) AND ((add_double(mul_double(sx, vx), mul_double(sy, vy)) /= integerToDouble(0)) AND (add_double(mul_double(sx, vx), mul_double(sy, vy)) < integerToDouble(0)))) OR (NOT((((r_sx * r_vx) + (r_sy * r_vy)) < 0)) AND NOT((add_double(mul_double(sx, vx), mul_double(sy, vy)) < integerToDouble(0)))))
-AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND
+finite_double?(taumod_fp(sx, vx, sy, vy, DTHR)) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR) AND finite_double?(add_double(mul_double(sx, vx), mul_double(sy, vy))) AND finite_double?(integerToDouble(0))
 IMPLIES
 max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, ulp_dp(r_DTHR)/2, r_DTHR, ulp_dp(r_DTHR)/2), (r_sx * r_sx), aebounddp_mul(r_sx, ulp_dp(r_sx)/2, r_sx, ulp_dp(r_sx)/2)), ((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, ulp_dp(r_sx)/2, r_vx, ulp_dp(r_vx)/2), (r_sy * r_vy), aebounddp_mul(r_sy, ulp_dp(r_sy)/2, r_vy, ulp_dp(r_vy)/2))), (0 / 1))<=8710991797552241 / 18889465931478580854784
 

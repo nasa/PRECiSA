@@ -97,7 +97,6 @@ printDeclWithACSL fp semStable tauDeclInfo =
   $$
   printNumDeclWithACSL (predAbstraction $ tauDecl tauDeclInfo)
                        fp
-                      --  (declName $ tauDecl tauDeclInfo)
                        (declName $ fpDecl tauDeclInfo)
                        (realDeclArgs $ realDecl tauDeclInfo)
                        (declArgs $ fpDecl tauDeclInfo)
@@ -106,14 +105,29 @@ printDeclWithACSL fp semStable tauDeclInfo =
                        (initValues tauDeclInfo)
                        (numError tauDeclInfo)
                        (numErrVars tauDeclInfo)
+                       isFiniteExprList
   where
-    forIdxList decl | isDecl decl = forIndexes $ declBody $ tauDecl tauDeclInfo
+    isFiniteExprList = buildListIsFiniteCheck (declArgs $ fpDecl tauDeclInfo) (declBody $ fpDecl tauDeclInfo)
+    forIdxList decl | isDecl decl = case declBody $ tauDecl tauDeclInfo of 
+                                      Left  body -> forIndexes body
+                                      Right _ -> error "printDeclWithACSL: boolean expression expected in predicate body."
                     | otherwise = []
 
 
-printNumDeclWithACSL :: Maybe PredAbs -> PVSType -> String -> [Arg] -> [Arg] -> [(VarName, FAExpr, FAExpr)] -> Decl -> [VarBind] -> Double -> [(VarName,Double)] -> Doc
-printNumDeclWithACSL predAbs fp f realArgs initArgs forIdx decl varBinds roErr numErrExprs =
-  prettyACSL (generateNumericProp predAbs fp f forIdx realArgs roErr varBinds)
+printNumDeclWithACSL :: Maybe PredAbs
+                     -> PVSType
+                     -> String
+                     -> [Arg]
+                     -> [Arg]
+                     -> [(VarName, FAExpr, FAExpr)]
+                     -> Decl
+                     -> [VarBind]
+                     -> Double
+                     -> [(VarName,Double)]
+                     -> [FAExpr]
+                     -> Doc
+printNumDeclWithACSL predAbs fp f realArgs initArgs forIdx decl varBinds roErr numErrExprs isFiniteExprList =
+  prettyACSL (generateNumericProp predAbs fp f forIdx realArgs roErr varBinds isFiniteExprList)
   $$
   prettyDoc (generateNumericFunction predAbs fpFun f initArgs  errArgs numErrExprs)
     where
@@ -131,8 +145,8 @@ printSymbDeclWithACSL :: PVSType
                       -> [Condition]
                       -> Doc
 printSymbDeclWithACSL fp interp rDecl@(RDecl _ f realArgs _)
-                                fDecl@(Decl _ _ _ fpargs _)
-                                taudecl@(Decl _ _ _ _ taustm)
+                                fDecl@(Decl _ _ _ fpargs stm)
+                                taudecl@(Decl _ _ _ tauargs taustm)
                                 forVarsMap
                                 errVars
                                 listStableCond =
@@ -154,10 +168,11 @@ printSymbDeclWithACSL fp interp rDecl@(RDecl _ f realArgs _)
   $$
   text (vspace 1)
   $$
-  printFPSymbPrecond fp f realArgs fpargs errVars localVariables forIdxs
+  printFPSymbPrecond fp f realArgs fpargs errVars localVariables forIdxs isFiniteExprList
   $$
   prettyDoc (decl2C forListExpr forVarsMap interp taudecl)
     where
+      isFiniteExprList = buildListIsFiniteCheck tauargs (Left stm)
       localVariables = localVars taustm
       forIdxs = forIndexes taustm
       (realDeclMain,(realDeclFor, forListExpr)) = makeRealDeclRecursive rDecl
@@ -170,8 +185,8 @@ printSymbDeclWithACSL fp interp rDecl@(RDecl _ f realArgs _)
                        else vcat (map (prettyACSL . genAxiomaticFPFun True) fpDeclFor)
 
 printSymbDeclWithACSL fp interp rDecl@(RPred f realArgs _ )
-                                fdecl@(Pred _ _ _ fpargs _)
-                                taudecl@(Pred _ predAbs _ _ _)
+                                fdecl@(Pred _ _ _ fpargs stm)
+                                taudecl@(Pred _ predAbs _ tauargs _)
                                 _ errVars listStableCond =
   text (vspace 1)
   $$
@@ -190,9 +205,11 @@ printSymbDeclWithACSL fp interp rDecl@(RPred f realArgs _ )
   $$
   text (vspace 1)
   $$
-  printFPSymbPrecondPred predAbs fp f realArgs fpargs errVars []
+  printFPSymbPrecondPred predAbs fp f realArgs fpargs errVars [] isFiniteExprList
   $$
   prettyDoc (pred2C interp taudecl)
+    where
+      isFiniteExprList = buildListIsFiniteCheck tauargs (Right stm)
 
 printSymbDeclWithACSL _ _ _ _ _ _ _ _ = error "printSymbDeclWithACSL: mismatch type in declarations."
 
@@ -215,24 +232,24 @@ printAxiomaticTranPreds predAbs fp f realArgs listStableCond forIdxs =
     suffixPredAbs        _ = ""
 
 printFPSymbPrecond :: PVSType -> FunName -> [Arg] -> [Arg] -> [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] 
-                    -> [(VarName, FAExpr, FAExpr)] -> Doc
-printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdxs =
+                    -> [(VarName, FAExpr, FAExpr)] -> [FAExpr] -> Doc
+printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdxs isFiniteExprList =
   text "/*@"
   $$ vcat (map prettyDoc (errorVarPrecond (listFst3 errVars)))
   $$ text "\nbehavior structure:"
-  $$ prettyDoc (behaviorStructure f fpArgs)
+  $$ prettyDoc (behaviorStructure f fpArgs isFiniteExprList)
   $$ text "\nbehavior stable_paths:"
-  $$ prettyDoc (behaviorStablePaths f Nothing fp realArgs errVars locVars forIdxs)
+  $$ prettyDoc (behaviorStablePaths f Nothing fp realArgs errVars locVars forIdxs isFiniteExprList)
   $$ text "*/"
 
-printFPSymbPrecondPred :: PredAbs -> PVSType -> FunName -> [Arg] -> [Arg] -> [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] -> Doc
-printFPSymbPrecondPred predAbs fp f realArgs fpArgs errVars locVars =
+printFPSymbPrecondPred :: PredAbs -> PVSType -> FunName -> [Arg] -> [Arg] -> [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] -> [FAExpr] -> Doc
+printFPSymbPrecondPred predAbs fp f realArgs fpArgs errVars locVars isFiniteExprList =
   text "/*@"
   $$ vcat (map prettyDoc (errorVarPrecond (listFst3 errVars)))
   $$ text "\nbehavior structure:"
-  $$ prettyDoc (behaviorStructurePred predAbs f realArgs fpArgs errVars locVars)
+  $$ prettyDoc (behaviorStructurePred predAbs f realArgs fpArgs errVars locVars isFiniteExprList)
   $$ text "\nbehavior stable_paths:"
-  $$ prettyDoc (behaviorStablePaths f (Just predAbs) fp realArgs errVars locVars [])
+  $$ prettyDoc (behaviorStablePaths f (Just predAbs) fp realArgs errVars locVars [] isFiniteExprList)
   $$ text "*/"
 
 printHeader :: Doc

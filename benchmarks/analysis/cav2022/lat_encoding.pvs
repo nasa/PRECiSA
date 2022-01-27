@@ -1,0 +1,10 @@
+lat_encoding: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+% @fp-function
+% @fp-range lat in [0,90]
+lat_enc (lat: unb_double): unb_double =
+    floor(((lat - (6 * floor(lat/6)))/6) * 131072 + 0.5)
+
+END lat_encoding

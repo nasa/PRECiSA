@@ -1,0 +1,39 @@
+polygon_contain : THEORY
+
+  BEGIN
+  
+%  IMPORTING structures@for_iterate
+
+  compute_intercept_index(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real,i:below(N)): int
+  = IF (Px(i)-Sx>0 AND Px(i+1)>Sx) OR
+       (Px(i)-Sx<0 AND Px(i+1)<Sx) OR
+       Px(i)=Px(i+1)
+    THEN -1
+    ELSE LET 
+          newnum = (Py(i)-Sy)*(Px(i+1)-Px(i)) + 
+	  	    (Sx-Px(i))*(Py(i+1)-Py(i)),
+          newdenom = Px(i+1)-Px(i)
+         IN
+	   IF newnum*newdenom<0
+	   THEN -1
+	   ELSE i
+	   ENDIF
+    ENDIF
+
+  compute_intercept_index_N(N:posnat,Px: ARRAY[below(N) -> real], Py: ARRAY[below(N) -> real], Sx: real, Sy: real): int
+  = IF (Px(N)-Sx>0 AND Px(0)-Sx>0) OR
+       (Px(N)-Sx<0 AND Px(0)-Sx<0) OR
+       Px(N)=Px(0)
+    THEN -1
+    ELSE LET 
+          newnum = (Py(N)-Sy)*(Px(0)-Px(N)) + 
+	  	    (Sx-Px(N))*(Py(0)-Py(N)),
+          newdenom = Px(0)-Px(N)
+         IN
+	   IF newnum*newdenom<0
+	   THEN -1
+	   ELSE N
+	   ENDIF
+    ENDIF
+
+  END polygon_contain

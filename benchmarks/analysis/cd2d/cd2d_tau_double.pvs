@@ -2,10 +2,16 @@ cd2d_tau_double: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
+% @fp-function
+% @fp-range A in [-1000,1000], B in [-1000,1000]
 max (A,B: unb_double):unb_double = IF (A>B) THEN A ELSE B ENDIF
 
+% @fp-function
+% @fp-range A in [-1000,1000], B in [-1000,1000]
 min (A,B: unb_double):unb_double = IF (A<B) THEN A ELSE B ENDIF
 
+% @fp-function
+% @fp-range Sx in [-100,100], Sy in [-100,100], Vx in [-600,600], Vy in [-600,600], T in [0.083,0.083]
 tau (Sx, Sy, Vx, Vy, T: unb_double): unb_double =
    min (max (RtoD(0), Dneg(Dadd (Dmul (Sx, Vx), Dmul (Sx, Vx)))), Dmul(T, (Dadd (Dmul(Vx, Vx),Dmul(Vy, Vy)))))
 

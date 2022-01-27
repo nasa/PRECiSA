@@ -1,13 +1,13 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-  
-  
+
+
 module Translation.Real2Float where
 
 import AbsPVSLang
@@ -61,12 +61,12 @@ real2fpBexpr _ _ _ BTrue  = FBTrue
 real2fpBexpr _ _ _ BFalse = FBFalse
 real2fpBexpr isCast fp prog (Or  b1 b2) = FOr  (real2fpBexpr isCast fp prog b1) (real2fpBexpr isCast fp prog b2)
 real2fpBexpr isCast fp prog (And b1 b2) = FAnd (real2fpBexpr isCast fp prog b1) (real2fpBexpr isCast fp prog b2)
-real2fpBexpr isCast fp prog (Not b)     = FNot (real2fpBexpr isCast fp prog b) 
-real2fpBexpr isCast fp prog (Rel rel  a1 a2) = real2fpRel fp prog rel a1 a2
+real2fpBexpr isCast fp prog (Not b)     = FNot (real2fpBexpr isCast fp prog b)
+real2fpBexpr _ fp prog (Rel rel  a1 a2) = real2fpRel fp prog rel a1 a2
 real2fpBexpr isCast fp prog (EPred f args) = FEPred True Original f (real2fpActArgs isCast fp prog formArgs args)
   where
     formArgs = realDeclArgs $ fromMaybe (error $ "real2fpAexpr: function " ++ f ++ " not found in program.")
-                            (findInRealProg f prog) 
+                            (findInRealProg f prog)
 
 real2fpRel :: PVSType -> RProgram -> RelOp -> AExpr -> AExpr -> FBExpr
 real2fpRel fp prog rel ae1 ae2
@@ -94,11 +94,11 @@ real2fpAexpr _    fp    _ (FromFloat fp' ae) = ToFloat fp (FromFloat fp' ae)
 real2fpAexpr isCast fp prog (EFun f TInt args) = FEFun True f TInt (real2fpActArgs isCast fp prog formArgs args)
   where
     formArgs = realDeclArgs $ fromMaybe (error $ "real2fpAexpr: function " ++ f ++ " not found in program.")
-                            (findInRealProg f prog) 
+                            (findInRealProg f prog)
 real2fpAexpr isCast fp prog (EFun f _ args)    = FEFun True f fp   (real2fpActArgs isCast fp prog formArgs args)
   where
     formArgs = realDeclArgs $ fromMaybe (error $ "real2fpAexpr: function " ++ f ++ " not found in program.")
-                            (findInRealProg f prog) 
+                            (findInRealProg f prog)
 real2fpAexpr isCast fp prog (UnaryOp  op ae1)  = UnaryFPOp op fp' (real2fpAexpr isCast fp prog ae1)
   where
     fp' = unaryOpPVSType fp ae1
@@ -115,7 +115,7 @@ real2fpAexpr isCast fp prog (RListIte thenList stmElse) = ListIte (map real2fpIt
                                                              (real2fpAexpr isCast fp prog stmElse)
   where
     real2fpItePair (fbe, stm) = (real2fpBexpr isCast fp prog fbe, real2fpAexpr isCast fp prog stm)
-real2fpAexpr isCast fp prog rfor@(RForLoop retType startIdx endIdx initValueAcc idx acc forBody) =
+real2fpAexpr isCast fp prog (RForLoop retType startIdx endIdx initValueAcc idx acc forBody) =
   ForLoop retType (real2fpAexpr isCast fp prog startIdx)
                              (real2fpAexpr isCast fp prog endIdx)
                              (real2fpAexpr isCast fp prog initValueAcc)
@@ -131,7 +131,7 @@ real2fpActArgs isCast fp prog ((Arg x TInt):formArgs) (expr:actArgs)
   | otherwise = error $ "real2fpActArgs: type mismatch. Argument "
                         ++ x ++ " is of type integer, but expression"
                         ++ show expr ++ " is not."
-real2fpActArgs isCast fp prog ((Arg x _):formArgs) (expr:actArgs)
+real2fpActArgs isCast fp prog ((Arg _ _):formArgs) (expr:actArgs)
   | isIntAExpr expr = ((TypeCast TInt fp (real2fpAexpr True fp prog expr)):real2fpActArgs isCast fp prog formArgs actArgs)
   | otherwise       = ((real2fpAexpr isCast fp prog expr):real2fpActArgs isCast fp prog formArgs actArgs)
 real2fpActArgs _ _ _ _ _ = error $ "real2fpActArgs: argument list size mismatch."

@@ -1,9 +1,0 @@
-modu(A, B): A in [-90,90], B in [0,6]
-
-dLon0 (NL): NL in [0,60]
-
-dLon1 (NL): NL in [0,60]
-
-xz0 (Lon, NL): Lon in [-90,90], NL in [0,60]
-
-xz1 (Lon, NL): Lon in [-90,90], NL in [0,60]

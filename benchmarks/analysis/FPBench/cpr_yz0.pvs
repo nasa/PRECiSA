@@ -2,8 +2,9 @@ cpr_yz0: THEORY
 BEGIN
 IMPORTING float@aerr754dp
 
+% @fp-function
 yz0 (Lat: unb_double): unb_double =
-    Dfloor(Dadd(Dmul(Ddiv( Dsub(Lat, Dmul(Ddiv(RtoD(360), Dsub(RtoD(60), RtoD(0))), Dfloor(Ddiv(Lat,Ddiv(RtoD(360), Dsub(RtoD(60), RtoD(0)))))))  , Ddiv(RtoD(360), Dsub(RtoD(60), RtoD(0)))), RtoD(131072)), RtoD(0.5)))
+    floor(((((Lat - (360/60) * floor(Lat/(360/ 60))) / (360/ 60)) * 131072) + 0.5))
 
 END cpr_yz0
 

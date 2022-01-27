@@ -1,8 +1,0 @@
-eps_line_mul: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-eps_line_mul(Sx, Sy, Vx, Vy: unb_double):unb_double =
-	Dmul(Dadd(Dmul(Sx,Vx),Dmul(Sy,Vy)),Dsub(Dmul(Sx,Vx),Dmul(Sy,Vy)))
-
-END eps_line_mul

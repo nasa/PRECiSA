@@ -1,6 +1,0 @@
-Date: Sat Jun 24 20:09:20 EDT 2017
-Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
-Command: time gappa doppler2
-Results:
-  |r - Mr| in [0, 496322781842951389b-100 {3.9153e-13, 2^(-41.2159)}]
-real  0.021

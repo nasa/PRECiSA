@@ -22,8 +22,7 @@ import qualified FramaC.ACSLTypes as ACSL
 import PVSTypes
 import Operators
 import Translation.Float2Real (fae2real)
-import Utils (fst3,snd3,elimDuplicates) 
-import Debug.Trace
+import Utils (fst3,snd3,elimDuplicates)
 import Transformation (isTauMinus, isTauPlus)
 import Data.Maybe (fromJust)
 
@@ -77,13 +76,21 @@ requirePositive vars = ACSL.PredBExpr $ foldl1 ACSL.And (map positiveVar vars)
 fpFunName :: FunName -> FunName
 fpFunName f = "fp_" ++ f
 
-behaviorStructure :: FunName -> [Arg] -> ACSL.Pred
-behaviorStructure f fpArgs
-  = ACSL.Ensures $ ACSL.Implies (ACSL.IsValid ACSL.Result)
+checkIsFiniteList :: [ACSL.FAExpr] -> ACSL.Pred
+checkIsFiniteList exprList = foldl1 ACSL.PredAnd (map ACSL.IsFiniteFP exprList)
+
+behaviorStructure :: FunName -> [Arg] -> [FAExpr] -> ACSL.Pred
+behaviorStructure f fpArgs isFiniteExprList
+  = ACSL.Ensures $ ACSL.Implies (isFiniteHypothesis isFiniteExprList)
                                 (ACSL.PredFBExpr $ ACSL.FRel Eq (ACSL.FValue ACSL.FResult)
                                                   (ACSL.FEFun (fpFunName f) (ACSL.Float DoublePrec) args))
   where
     args = map (ACSL.arg2fpvar . args2ACSL) fpArgs
+
+isFiniteHypothesis :: [FAExpr] -> ACSL.Pred
+isFiniteHypothesis   [] = ACSL.IsValid ACSL.Result
+isFiniteHypothesis list = ACSL.PredAnd (ACSL.IsValid ACSL.Result)
+                           (checkIsFiniteList $ ACSL.FValue ACSL.FResult:map faexpr2acsl list)
 
 behaviorStructurePred :: PredAbs
                       -> FunName
@@ -91,8 +98,9 @@ behaviorStructurePred :: PredAbs
                       -> [Arg]
                       -> [(VarName,FAExpr,FBExpr)]
                       -> [(VarName,FAExpr)]
+                      -> [FAExpr]
                       -> ACSL.Pred
-behaviorStructurePred predAbs f rArgs fpArgs errArgs locVars
+behaviorStructurePred predAbs f rArgs fpArgs errArgs locVars isFiniteExprList
   = if null rArgs 
       then ACSL.Ensures $ structBehaPred predAbs
       else ACSL.Ensures $  ACSL.Forall (zip (map argName rArgs) (repeat ACSL.Real))
@@ -101,14 +109,14 @@ behaviorStructurePred predAbs f rArgs fpArgs errArgs locVars
     fpActArgs = map (ACSL.arg2fpvar . args2ACSL) fpArgs
     realActArgs = map (ACSL.arg2var . args2ACSL) $  filter (\a -> not (isArgArray a || isArgInt a)) rArgs
     structBehaPred TauPlus  = ACSL.Implies (ACSL.PredAnd (ACSL.AExprPred $ ACSL.Value ACSL.Result)
-                               (ACSL.IsValid ACSL.Result))
+                               (isFiniteHypothesis isFiniteExprList))
                                (ACSL.PredAnd (ACSL.AExprPred $ ACSL.EFun  f ACSL.Real realActArgs)
                                            (ACSL.FAExprPred $ ACSL.FEFun (fpFunName f) ACSL.Real fpActArgs))
     structBehaPred TauMinus = ACSL.Implies (ACSL.PredAnd (ACSL.AExprPred $ ACSL.Value ACSL.Result)
-                               (ACSL.IsValid ACSL.Result))
+                               (isFiniteHypothesis isFiniteExprList))
                                (ACSL.PredAnd (ACSL.PredNot $ ACSL.AExprPred $ ACSL.EFun  f ACSL.Real realActArgs)
                                            (ACSL.PredNot $ ACSL.FAExprPred $ ACSL.FEFun (fpFunName f) ACSL.Real fpActArgs))
-    structBehaPred _ = ACSL.Implies (ACSL.IsValid ACSL.Result)
+    structBehaPred _ = ACSL.Implies (isFiniteHypothesis isFiniteExprList)
                       (ACSL.PredAnd 
                       (ACSL.Implies (ACSL.AExprPred $ ACSL.Value ACSL.Result)
                                     (ACSL.PredAnd (ACSL.AExprPred $ ACSL.EFun  f ACSL.Real realActArgs)
@@ -124,8 +132,11 @@ behaviorStablePaths :: FunName
                     -> [(VarName,FAExpr,FBExpr)]
                     -> [(VarName,FAExpr)]
                     -> [(VarName, FAExpr, FAExpr)]
+                    -> [FAExpr]
                     -> ACSL.Pred
-behaviorStablePaths f predAbs fp args errArgs locVars forIdxs = ACSL.Ensures $ ACSL.Implies (ACSL.IsValid ACSL.Result) (quantifyIdx forIdxs acslPred)
+behaviorStablePaths f predAbs fp args errArgs locVars forIdxs isFiniteExprList
+  = ACSL.Ensures $ ACSL.Implies (isFiniteHypothesis isFiniteExprList)
+                                (quantifyIdx forIdxs acslPred)
   where
     acslPred = if null realArgs 
                then stablePathpred
@@ -307,7 +318,7 @@ expr2acsl (ErrUnOp  op tight fp ae ee) = ACSL.ErrUnOp op tight (fprec2acsl fp) (
 expr2acsl (ErrMulPow2R fp n ae) = ACSL.ErrMulPow2R (ACSL.format $ fprec2acsl fp) n (expr2acsl ae)
 expr2acsl (ErrMulPow2L fp n ae) = ACSL.ErrMulPow2L (ACSL.format $ fprec2acsl fp) n (expr2acsl ae)
 expr2acsl (HalfUlp ae fp)       = ACSL.HalfUlp (ACSL.format $ fprec2acsl fp) (expr2acsl ae)
-expr2acsl RForLoop{} = trace "TODO RForLoop" $ ACSL.IntCnst 0
+expr2acsl RForLoop{} = error "Real valued ForLoop not supported."
 -- RForLoop fp idxStart idxEnd initAcc idx acc body
 expr2acsl ae = error $ "expr2acsl " ++ show ae
 
@@ -338,10 +349,20 @@ varBinds2BExpr varBinds = foldl1 ACSL.And (map varBind2BExpr varBinds)
     varBind2BExpr (VarBind x fp (LBDouble lb) (UBInt    ub)) = ACSL.And (ACSL.Rel LtE (ACSL.RatCnst lb) (ACSL.Var (fprec2RealType fp) x)) 
                                                                         (ACSL.Rel LtE (ACSL.Var (fprec2RealType fp) x) (ACSL.IntCnst ub))
  
-generateNumericProp :: Maybe PredAbs -> PVSType -> ACSL.FunName -> [(String, FAExpr, FAExpr)] -> [Arg] -> Double -> [VarBind] -> ACSL.Pred
-generateNumericProp predAbs fp f indexList fpArgs roErr varBinds =
+generateNumericProp :: Maybe PredAbs
+                    -> PVSType
+                    -> ACSL.FunName
+                    -> [(String, FAExpr, FAExpr)]
+                    -> [Arg]
+                    -> Double
+                    -> [VarBind]
+                    -> [FAExpr]
+                    -> ACSL.Pred
+generateNumericProp predAbs fp f indexList fpArgs roErr varBinds isFiniteExprList =
   ACSL.Ensures (ACSL.Implies (quantifyVar $ ACSL.PredAnd (initRangesProp varBinds indexList)
-                             (ACSL.PredAnd (ACSL.IsValid ACSL.Result) (listInputVarErr notIntArgs) ))
+                             (ACSL.PredAnd (ACSL.PredAnd (ACSL.IsValid ACSL.Result)
+                                                         (isFiniteHypothesis isFiniteExprList))
+                                           (listInputVarErr notIntArgs) ))
                              postCond)
   where
     postCond | isPredicate = predPostCond (fromJust predAbs) f actArgs

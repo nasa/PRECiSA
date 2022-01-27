@@ -1,9 +1,0 @@
-modu(A, B): A in [-90,90], B in [0,6]
-
-j0 (LatS, YZ0): LatS in [-90,90], YZ0 in [0, 131072]
-
-j1 (LatS, YZ1): LatS in [-90,90], YZ1 in [0, 131072]
-
-rlat0(YZ0): YZ0 in [0, 131072]
-
-rlat1(YZ1): YZ1 in [0, 131072]

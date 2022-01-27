@@ -1,10 +1,2 @@
-pvsbin/
-orphaned-proofs.prf
-*.tptp
-*.dep
 .pvscontext
 *.bin
-*.log
-*.summary
-*.dump
-*.out

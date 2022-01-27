@@ -1,0 +1,119 @@
+polygon_contain : THEORY
+
+  BEGIN
+
+
+  IMPORTING vectors@vectors_2D,
+          reals@quad_minmax,
+	  reals@double_quadratic,
+	  vectors@det_2D
+
+  EdgeCross: TYPE = [# ans:bool,invalid:bool #]
+  NumEdgesCross: TYPE = [# num:nat,invalid:bool #]
+  CrossAns: TYPE = [# index:int,num:real,denom:nzreal #]
+ 
+  polygon_2D(N:posnat): TYPE = [below(N) -> Vect2]
+
+  quadrant(s:Vect2): subrange(1,4) =
+    IF s`x>=0 AND s`y>=0 THEN 1
+    ELSIF s`x<=0 AND s`y>=0 THEN 2
+    ELSIF s`x<=0 THEN 3
+    ELSE 4 ENDIF
+
+  winding_number_rec(N:posnat,p:polygon_2D(N),s:Vect2,i:below(N)): RECURSIVE int =
+  LET this:Vect2 = p(i)-s,
+      next:Vect2 = IF i<N-1 THEN p(i+1)-s ELSE p(0)-s ENDIF,
+      k:subrange(1,4) = quadrant(this),
+      p:subrange(1,4) = quadrant(next),
+      contrib:subrange(-2,2) = (IF k=p THEN 0
+      			        ELSIF p-1=mod(k,4) THEN 1
+				ELSIF k-1=mod(p,4) THEN -1
+				ELSIF det(next-this,this)<=0 THEN 2
+				ELSE -2 ENDIF)
+  IN
+    IF i=0 THEN contrib
+    ELSE winding_number_rec(N,p,s,i-1)+contrib
+    ENDIF MEASURE i
+
+
+  winding_number(N:posnat,p:polygon_2D(N),s:Vect2): 
+    {ii:int | ii = winding_number_rec(N,p,s,N-1)/4} =
+    winding_number_rec(N,p,s,N-1)/4
+
+  compute_intercept(N:posnat,p:polygon_2D(N),s:Vect2,i:below(N)): CrossAns =
+  LET next = (IF i<N-1 THEN i+1 ELSE 0 ENDIF) IN
+    IF (p(i)`x>s`x AND p(next)`x>s`x) OR
+       (p(i)`x<s`x AND p(next)`x<s`x) OR
+       p(i)`x=p(next)`x
+    THEN (# index:=-1,num:=1,denom:=1 #)
+    ELSE LET 
+          newnum = (p(i)`y-s`y)*(p(next)`x-p(i)`x) + 
+	  	    (s`x-p(i)`x)*(p(next)`y-p(i)`y),
+          newdenom = p(next)`x-p(i)`x
+         IN
+	   IF newnum*newdenom<0 THEN (# index:=-1,num:=1,denom:=1 #)
+	   ELSE (# index:=i,num:=newnum,denom:=newdenom #)
+	   ENDIF
+    ENDIF
+
+  upshot_crosses_edge(N:posnat,p:polygon_2D(N),s:Vect2,i:below(N)): EdgeCross =
+  LET
+    next = (IF i<N-1 THEN i+1 ELSE 0 ENDIF),
+    tester = (p(next)`x-p(i)`x)^2*(p(i)`y-s`y) + (s`x-p(i)`x)*(p(next)`y-p(i)`y)*(p(next)`x-p(i)`x)
+  IN
+    IF p(i)`x>s`x AND p(next)`x>s`x THEN (# ans:=false,invalid:=false #)
+    ELSIF p(i)`x<s`x AND p(next)`x<s`x THEN (# ans:=false,invalid:=false #)
+    ELSIF p(i)`x = p(next)`x AND (p(i)`y>=s`y OR p(next)`y>=s`y) 
+                              THEN (# ans:=true,invalid:=true #) % Call this function when already perturbed.
+    ELSIF p(i)`x = p(next)`x THEN (# ans:=false,invalid:=false #)
+    ELSIF tester>=0 THEN (# ans:=true,invalid:=false #)
+    ELSE (# ans:=false,invalid:=false #) ENDIF
+
+  edges_crossed_upto(N:posnat,p:polygon_2D(N),s:Vect2,i:below(N))(j:upto(i)): bool =
+   j<=i AND upshot_crosses_edge(N,p,s,j)`ans
+
+  number_upshot_crosses_upto(N:posnat,p:polygon_2D(N),s:Vect2,i:below(N)): 
+   RECURSIVE {nec:NumEdgesCross |  nec`num<=i+1 AND
+     (EXISTS (sig:[below(nec`num)->(edges_crossed_upto(N,p,s,i))]): bijective?(sig))
+     AND (nec`invalid IFF (EXISTS (j:upto(i)): 
+       upshot_crosses_edge(N,p,s,j)`invalid))} =
+   LET thiscross = upshot_crosses_edge(N,p,s,i),
+      thisnum = IF thiscross`ans THEN 1 ELSE 0 ENDIF,
+      lastans = IF i=0 THEN (# num:=0,invalid:=false #)
+      	      	ELSE number_upshot_crosses_upto(N,p,s,i-1) ENDIF
+   IN  (# num:=lastans`num+thisnum,invalid:=thiscross`invalid OR lastans`invalid #)
+  MEASURE i
+
+  min_cross_dist_index_upto(N:posnat,p:polygon_2D(N),s:Vect2,i:below(N)):
+  RECURSIVE {ca:CrossAns |
+    (ca`index>=0 IFF EXISTS (j:upto(i)): compute_intercept(N,p,s,j)`index>=0) AND
+    (ca`index>=0 IMPLIES (ca`index<=i AND 
+      ca = compute_intercept(N,p,s,ca`index) AND
+        FORALL (j:upto(i)): 
+	  LET cij = compute_intercept(N,p,s,j) IN
+	    cij`index>=0 IMPLIES
+	      cij`num/cij`denom>=ca`num/ca`denom))} =
+  IF i=0 THEN compute_intercept(N,p,s,i)
+  ELSE LET cii = compute_intercept(N,p,s,i),
+       	   cin = min_cross_dist_index_upto(N,p,s,i-1)
+       IN IF cin`index<0 THEN cii
+       	  ELSIF cii`index<0 THEN cin
+	  ELSIF cin`denom^2*cii`num*cii`denom<cin`num*cin`denom*cii`denom^2 THEN cii
+	  ELSE cin ENDIF
+  ENDIF MEASURE i
+
+  definitely_inside_prelim(N:posnat,p:polygon_2D(N),s:Vect2): bool =
+  LET mcdi = min_cross_dist_index_upto(N,p,s,N-1),
+      nuc  = number_upshot_crosses_upto(N,p,s,N-1)
+  IN mcdi`index>=0 AND
+     nuc`invalid=false AND
+     mod(nuc`num,2)/=0 AND
+     p(mcdi`index)`x>=s`x AND
+     p(mod(mcdi`index+1,N))`x<=s`x
+
+  definitely_inside(N:posnat,p:polygon_2D(N),s:Vect2): bool =
+     definitely_inside_prelim(N,p,s) AND
+     winding_number(N,p,s)=1
+
+
+  END polygon_contain

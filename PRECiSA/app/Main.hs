@@ -19,4 +19,5 @@ module Main where
 
 import qualified Precisa
 
+main :: IO ()
 main = Precisa.main

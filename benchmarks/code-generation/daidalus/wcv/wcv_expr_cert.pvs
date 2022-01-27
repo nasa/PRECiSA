@@ -2,7 +2,7 @@
 
 wcv_expr_cert: THEORY
 BEGIN
-IMPORTING float@extended_float_converter, PRECiSA@strategies, PRECiSA@bbiasp, PRECiSA@bbiadp
+IMPORTING float@extended_float_converter, PRECiSA@strategies, PRECiSA@bbiasp, PRECiSA@bbiadp, wcv, wcv_fp
 
 %|- *_TCC* : PROOF
 %|- (precisa-gen-cert-tcc)
@@ -12,6 +12,8 @@ tcoa_expr_1 : LEMMA
 FORALL(sz: double, vz: double, e_sz, e_vz: nonneg_real, r_sz, r_vz: real):
 abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(vz)-r_vz)<=e_vz
 AND (TRUE)
+AND
+finite_double?(mul_double(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
 IMPLIES
 abs(safe_prjct_double(mul_double(sz, vz)) - (r_sz * r_vz)) <= aebounddp_mul(r_sz, e_sz, r_vz, e_vz)
 
@@ -25,6 +27,8 @@ FORALL(sz: double, vz: double, r_sz, r_vz: real):
 abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2
 AND (TRUE)
 AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|]
+AND
+finite_double?(mul_double(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
 IMPLIES
 abs(safe_prjct_double(mul_double(sz, vz)) - (r_sz * r_vz)) <=6649846324789249 / 38685626227668133590597632
 
@@ -36,6 +40,8 @@ tcpa_expr_1 : LEMMA
 FORALL(vx: double, vy: double, e_vx, e_vy: nonneg_real, r_vx, r_vy: real):
 abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy
 AND (TRUE)
+AND
+finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(vx) AND finite_double?(vy)
 IMPLIES
 abs(safe_prjct_double(add_double(mul_double(vx, vx), mul_double(vy, vy))) - ((r_vx * r_vx) + (r_vy * r_vy))) <= aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))
 
@@ -49,6 +55,8 @@ FORALL(vx: double, vy: double, r_vx, r_vy: real):
 abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
 AND (TRUE)
 AND r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND
+finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(vx) AND finite_double?(vy)
 IMPLIES
 abs(safe_prjct_double(add_double(mul_double(vx, vx), mul_double(vy, vy))) - ((r_vx * r_vx) + (r_vy * r_vy))) <=8901646138474497 / 19342813113834066795298816
 
@@ -60,6 +68,8 @@ taumod_expr_1 : LEMMA
 FORALL(sx: double, vx: double, sy: double, vy: double, e_sx, e_vx, e_sy, e_vy: nonneg_real, r_sx, r_vx, r_sy, r_vy: real):
 abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy
 AND (TRUE)
+AND
+finite_double?(add_double(mul_double(sx, vx), mul_double(sy, vy))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy)
 IMPLIES
 abs(safe_prjct_double(add_double(mul_double(sx, vx), mul_double(sy, vy))) - ((r_sx * r_vx) + (r_sy * r_vy))) <= aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))
 
@@ -73,11 +83,1089 @@ FORALL(sx: double, vx: double, sy: double, vy: double, r_sx, r_vx, r_sy, r_vy: r
 abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
 AND (TRUE)
 AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND
+finite_double?(add_double(mul_double(sx, vx), mul_double(sy, vy))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy)
 IMPLIES
 abs(safe_prjct_double(add_double(mul_double(sx, vx), mul_double(sy, vy))) - ((r_sx * r_vx) + (r_sy * r_vy))) <=8901646138474497 / 19342813113834066795298816
 
 %|- taumod_c_1 : PROOF
 %|- (prove-concrete-lemma taumod_expr_1 14 7)
+%|- QED
+
+horizontal_wcv_expr_1 : LEMMA
+FORALL(sx: double, vx: double, vy: double, e_sx, e_vx, e_vy: nonneg_real, r_sx, r_vx, r_vy: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy
+AND (TRUE)
+AND
+finite_double?(add_double(mul_double(sx, vx), mul_double(vy, vy))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(sx, vx), mul_double(vy, vy))) - ((r_sx * r_vx) + (r_vy * r_vy))) <= aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))
+
+%|- horizontal_wcv_1: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_1 : LEMMA
+FORALL(sx: double, vx: double, vy: double, r_sx, r_vx, r_vy: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND
+finite_double?(add_double(mul_double(sx, vx), mul_double(vy, vy))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(sx, vx), mul_double(vy, vy))) - ((r_sx * r_vx) + (r_vy * r_vy))) <=8901646138474497 / 19342813113834066795298816
+
+%|- horizontal_wcv_c_1 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_1 14 7)
+%|- QED
+
+horizontal_wcv_expr_2 : LEMMA
+FORALL(vx: double, vy: double, e_vx, e_vy: nonneg_real, r_vx, r_vy: real):
+abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy
+AND (TRUE)
+AND
+finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(vx, vx), mul_double(vy, vy))) - ((r_vx * r_vx) + (r_vy * r_vy))) <= aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))
+
+%|- horizontal_wcv_2: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_2 : LEMMA
+FORALL(vx: double, vy: double, r_vx, r_vy: real):
+abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
+AND (TRUE)
+AND r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND
+finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(vx, vx), mul_double(vy, vy))) - ((r_vx * r_vx) + (r_vy * r_vy))) <=8901646138474497 / 19342813113834066795298816
+
+%|- horizontal_wcv_c_2 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_2 14 7)
+%|- QED
+
+horizontal_wcv_expr_3 : LEMMA
+FORALL(sx: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) - (((r_sx * r_vx) + (r_sy * r_vy)) - (r_DTHR * r_DTHR))) <= aebounddp_sub(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy)), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR))
+
+%|- horizontal_wcv_3: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_3 : LEMMA
+FORALL(sx: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) - (((r_sx * r_vx) + (r_sy * r_vy)) - (r_DTHR * r_DTHR))) <=5577685048754177 / 9671406556917033397649408
+
+%|- horizontal_wcv_c_3 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_3 14 7)
+%|- QED
+
+horizontal_wcv_expr_4 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_tc, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(tc)-r_tc)<=e_tc AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <= max(LET tc:real=(-(((r_sx * r_vx) + (r_sy * r_vy))) / ((r_vx * r_vx) + (r_vy * r_vy))),
+                                                                                                                                                                                                                                                                                                                                                                                                Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                            IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)), LET tc:real=0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)))
+
+%|- horizontal_wcv_4: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_4 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(tc) - r_tc)<=ulp_dp(r_tc)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <=7988203179963857 / 1099511627776
+
+%|- horizontal_wcv_c_4 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_4 14 7)
+%|- QED
+
+horizontal_wcv_expr_5 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                   Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                               IN Err_tm, LET tm:real=-1,
+                                                              Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                          IN Err_tm)
+
+%|- horizontal_wcv_5: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_5 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <=4590002968119631 / 75557863725914323419136
+
+%|- horizontal_wcv_c_5 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_5 14 7)
+%|- QED
+
+horizontal_wcv_expr_6 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_TTHR, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(TTHR)-r_TTHR)<=e_TTHR AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR), LET tm:real=-1,
+                                                                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR))
+
+%|- horizontal_wcv_6: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_6 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(TTHR) - r_TTHR)<=ulp_dp(r_TTHR)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND  r_TTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <=6798006142895169 / 9444732965739290427392
+
+%|- horizontal_wcv_c_6 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_6 14 7)
+%|- QED
+
+horizontal_wcv_expr_7 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_tc, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(tc)-r_tc)<=e_tc AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <= max(LET tc:real=(-(((r_sx * r_vx) + (r_sy * r_vy))) / ((r_vx * r_vx) + (r_vy * r_vy))),
+                                                                                                                                                                                                                                                                                                                                                                                                Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                            IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)), LET tc:real=0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)))
+
+%|- horizontal_wcv_7: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_7 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(tc) - r_tc)<=ulp_dp(r_tc)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <=7988203179963857 / 1099511627776
+
+%|- horizontal_wcv_c_7 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_7 14 7)
+%|- QED
+
+horizontal_wcv_expr_8 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                   Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                               IN Err_tm, LET tm:real=-1,
+                                                              Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                          IN Err_tm)
+
+%|- horizontal_wcv_8: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_8 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <=4590002968119631 / 75557863725914323419136
+
+%|- horizontal_wcv_c_8 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_8 14 7)
+%|- QED
+
+horizontal_wcv_expr_9 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_TTHR, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(TTHR)-r_TTHR)<=e_TTHR AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR), LET tm:real=-1,
+                                                                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR))
+
+%|- horizontal_wcv_9: PROOF
+%|- (precisa)
+%|- QED
+
+
+horizontal_wcv_expr_num_9 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(TTHR) - r_TTHR)<=ulp_dp(r_TTHR)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND  r_TTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <=6798006142895169 / 9444732965739290427392
+
+%|- horizontal_wcv_c_9 : PROOF
+%|- (prove-concrete-lemma horizontal_wcv_expr_9 14 7)
+%|- QED
+
+vertical_wcv_expr_1 : LEMMA
+FORALL(sz: double, ZTHR: double, e_sz, e_ZTHR: nonneg_real, r_sz, r_ZTHR: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(ZTHR)-r_ZTHR)<=e_ZTHR
+AND (TRUE)
+AND
+finite_double?(sub_double(abs_double(sz), ZTHR)) AND finite_double?(sz) AND finite_double?(ZTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(abs_double(sz), ZTHR)) - (abs(r_sz) - r_ZTHR)) <= aebounddp_sub(abs(r_sz), aebounddp_abs(r_sz, e_sz), r_ZTHR, e_ZTHR)
+
+%|- vertical_wcv_1: PROOF
+%|- (precisa)
+%|- QED
+
+
+vertical_wcv_expr_num_1 : LEMMA
+FORALL(sz: double, ZTHR: double, r_sz, r_ZTHR: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(ZTHR) - r_ZTHR)<=ulp_dp(r_ZTHR)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_ZTHR ## [|0,20|]
+AND
+finite_double?(sub_double(abs_double(sz), ZTHR)) AND finite_double?(sz) AND finite_double?(ZTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(abs_double(sz), ZTHR)) - (abs(r_sz) - r_ZTHR)) <=65 / 562949953421312
+
+%|- vertical_wcv_c_1 : PROOF
+%|- (prove-concrete-lemma vertical_wcv_expr_1 14 7)
+%|- QED
+
+vertical_wcv_expr_2 : LEMMA
+FORALL(sz: double, vz: double, e_sz, e_vz: nonneg_real, r_sz, r_vz: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(vz)-r_vz)<=e_vz
+AND (TRUE)
+AND
+finite_double?(tcoa_fp(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(tcoa_fp(sz, vz)) - tcoa(r_sz, r_vz)) <= max(aebounddp_neg((r_sz / r_vz), aebounddp_div(r_sz, e_sz, r_vz, e_vz)), (0 / 1))
+
+%|- vertical_wcv_2: PROOF
+%|- (precisa)
+%|- QED
+
+
+vertical_wcv_expr_num_2 : LEMMA
+FORALL(sz: double, vz: double, r_sz, r_vz: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|]
+AND
+finite_double?(tcoa_fp(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(tcoa_fp(sz, vz)) - tcoa(r_sz, r_vz)) <=6876345720111303 / 2475880078570760549798248448
+
+%|- vertical_wcv_c_2 : PROOF
+%|- (prove-concrete-lemma vertical_wcv_expr_2 14 7)
+%|- QED
+
+vertical_wcv_expr_3 : LEMMA
+FORALL(sz: double, vz: double, e_sz, e_vz: nonneg_real, r_sz, r_vz: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(vz)-r_vz)<=e_vz
+AND (TRUE)
+AND
+finite_double?(mul_double(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(mul_double(sz, vz)) - (r_sz * r_vz)) <= aebounddp_mul(r_sz, e_sz, r_vz, e_vz)
+
+%|- vertical_wcv_3: PROOF
+%|- (precisa)
+%|- QED
+
+
+vertical_wcv_expr_num_3 : LEMMA
+FORALL(sz: double, vz: double, r_sz, r_vz: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|]
+AND
+finite_double?(mul_double(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(mul_double(sz, vz)) - (r_sz * r_vz)) <=6649846324789249 / 38685626227668133590597632
+
+%|- vertical_wcv_c_3 : PROOF
+%|- (prove-concrete-lemma vertical_wcv_expr_3 14 7)
+%|- QED
+
+vertical_wcv_expr_4 : LEMMA
+FORALL(sz: double, vz: double, TCOA: double, e_sz, e_vz, e_TCOA: nonneg_real, r_sz, r_vz, r_TCOA: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(vz)-r_vz)<=e_vz AND abs(safe_prjct_double(TCOA)-r_TCOA)<=e_TCOA
+AND (TRUE)
+AND
+finite_double?(sub_double(tcoa_fp(sz, vz), TCOA)) AND finite_double?(sz) AND finite_double?(vz) AND finite_double?(TCOA)
+IMPLIES
+abs(safe_prjct_double(sub_double(tcoa_fp(sz, vz), TCOA)) - (tcoa(r_sz, r_vz) - r_TCOA)) <= max(aebounddp_sub(-((r_sz / r_vz)), max(aebounddp_neg((r_sz / r_vz), aebounddp_div(r_sz, e_sz, r_vz, e_vz)), (0 / 1)), r_TCOA, e_TCOA), aebounddp_sub(0, max(aebounddp_neg((r_sz / r_vz), aebounddp_div(r_sz, e_sz, r_vz, e_vz)), (0 / 1)), r_TCOA, e_TCOA))
+
+%|- vertical_wcv_4: PROOF
+%|- (precisa)
+%|- QED
+
+
+vertical_wcv_expr_num_4 : LEMMA
+FORALL(sz: double, vz: double, TCOA: double, r_sz, r_vz, r_TCOA: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2 AND abs(safe_prjct_double(TCOA) - r_TCOA)<=ulp_dp(r_TCOA)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|] AND  r_TCOA ## [|0,20|]
+AND
+finite_double?(sub_double(tcoa_fp(sz, vz), TCOA)) AND finite_double?(sz) AND finite_double?(vz) AND finite_double?(TCOA)
+IMPLIES
+abs(safe_prjct_double(sub_double(tcoa_fp(sz, vz), TCOA)) - (tcoa(r_sz, r_vz) - r_TCOA)) <=7021481254977735 / 2475880078570760549798248448
+
+%|- vertical_wcv_c_4 : PROOF
+%|- (prove-concrete-lemma vertical_wcv_expr_4 14 7)
+%|- QED
+
+wcv_expr_1 : LEMMA
+FORALL(sx: double, vx: double, vy: double, e_sx, e_vx, e_vy: nonneg_real, r_sx, r_vx, r_vy: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy
+AND (TRUE)
+AND
+finite_double?(add_double(mul_double(sx, vx), mul_double(vy, vy))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(sx, vx), mul_double(vy, vy))) - ((r_sx * r_vx) + (r_vy * r_vy))) <= aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))
+
+%|- wcv_1: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_1 : LEMMA
+FORALL(sx: double, vx: double, vy: double, r_sx, r_vx, r_vy: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND
+finite_double?(add_double(mul_double(sx, vx), mul_double(vy, vy))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(sx, vx), mul_double(vy, vy))) - ((r_sx * r_vx) + (r_vy * r_vy))) <=8901646138474497 / 19342813113834066795298816
+
+%|- wcv_c_1 : PROOF
+%|- (prove-concrete-lemma wcv_expr_1 14 7)
+%|- QED
+
+wcv_expr_2 : LEMMA
+FORALL(vx: double, vy: double, e_vx, e_vy: nonneg_real, r_vx, r_vy: real):
+abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy
+AND (TRUE)
+AND
+finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(vx, vx), mul_double(vy, vy))) - ((r_vx * r_vx) + (r_vy * r_vy))) <= aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))
+
+%|- wcv_2: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_2 : LEMMA
+FORALL(vx: double, vy: double, r_vx, r_vy: real):
+abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2
+AND (TRUE)
+AND r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|]
+AND
+finite_double?(add_double(mul_double(vx, vx), mul_double(vy, vy))) AND finite_double?(vx) AND finite_double?(vy)
+IMPLIES
+abs(safe_prjct_double(add_double(mul_double(vx, vx), mul_double(vy, vy))) - ((r_vx * r_vx) + (r_vy * r_vy))) <=8901646138474497 / 19342813113834066795298816
+
+%|- wcv_c_2 : PROOF
+%|- (prove-concrete-lemma wcv_expr_2 14 7)
+%|- QED
+
+wcv_expr_3 : LEMMA
+FORALL(sx: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) - (((r_sx * r_vx) + (r_sy * r_vy)) - (r_DTHR * r_DTHR))) <= aebounddp_sub(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy)), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR))
+
+%|- wcv_3: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_3 : LEMMA
+FORALL(sx: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(add_double(mul_double(sx, vx), mul_double(sy, vy)), mul_double(DTHR, DTHR))) - (((r_sx * r_vx) + (r_sy * r_vy)) - (r_DTHR * r_DTHR))) <=5577685048754177 / 9671406556917033397649408
+
+%|- wcv_c_3 : PROOF
+%|- (prove-concrete-lemma wcv_expr_3 14 7)
+%|- QED
+
+wcv_expr_4 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_tc, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(tc)-r_tc)<=e_tc AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <= max(LET tc:real=(-(((r_sx * r_vx) + (r_sy * r_vy))) / ((r_vx * r_vx) + (r_vy * r_vy))),
+                                                                                                                                                                                                                                                                                                                                                                                                Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                            IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)), LET tc:real=0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)))
+
+%|- wcv_4: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_4 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(tc) - r_tc)<=ulp_dp(r_tc)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <=7988203179963857 / 1099511627776
+
+%|- wcv_c_4 : PROOF
+%|- (prove-concrete-lemma wcv_expr_4 14 7)
+%|- QED
+
+wcv_expr_5 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                   Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                               IN Err_tm, LET tm:real=-1,
+                                                              Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                          IN Err_tm)
+
+%|- wcv_5: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_5 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <=4590002968119631 / 75557863725914323419136
+
+%|- wcv_c_5 : PROOF
+%|- (prove-concrete-lemma wcv_expr_5 14 7)
+%|- QED
+
+wcv_expr_6 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_TTHR, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(TTHR)-r_TTHR)<=e_TTHR AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR), LET tm:real=-1,
+                                                                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR))
+
+%|- wcv_6: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_6 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(TTHR) - r_TTHR)<=ulp_dp(r_TTHR)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND  r_TTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <=6798006142895169 / 9444732965739290427392
+
+%|- wcv_c_6 : PROOF
+%|- (prove-concrete-lemma wcv_expr_6 14 7)
+%|- QED
+
+wcv_expr_7 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_tc, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(tc)-r_tc)<=e_tc AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <= max(LET tc:real=(-(((r_sx * r_vx) + (r_sy * r_vy))) / ((r_vx * r_vx) + (r_vy * r_vy))),
+                                                                                                                                                                                                                                                                                                                                                                                                Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                            IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)), LET tc:real=0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)))
+
+%|- wcv_7: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_7 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(tc) - r_tc)<=ulp_dp(r_tc)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <=7988203179963857 / 1099511627776
+
+%|- wcv_c_7 : PROOF
+%|- (prove-concrete-lemma wcv_expr_7 14 7)
+%|- QED
+
+wcv_expr_8 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                   Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                               IN Err_tm, LET tm:real=-1,
+                                                              Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                          IN Err_tm)
+
+%|- wcv_8: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_8 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <=4590002968119631 / 75557863725914323419136
+
+%|- wcv_c_8 : PROOF
+%|- (prove-concrete-lemma wcv_expr_8 14 7)
+%|- QED
+
+wcv_expr_9 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_TTHR, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(TTHR)-r_TTHR)<=e_TTHR AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR), LET tm:real=-1,
+                                                                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR))
+
+%|- wcv_9: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_9 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(TTHR) - r_TTHR)<=ulp_dp(r_TTHR)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND  r_TTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <=6798006142895169 / 9444732965739290427392
+
+%|- wcv_c_9 : PROOF
+%|- (prove-concrete-lemma wcv_expr_9 14 7)
+%|- QED
+
+wcv_expr_10 : LEMMA
+FORALL(sz: double, ZTHR: double, e_sz, e_ZTHR: nonneg_real, r_sz, r_ZTHR: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(ZTHR)-r_ZTHR)<=e_ZTHR
+AND (TRUE)
+AND
+finite_double?(sub_double(abs_double(sz), ZTHR)) AND finite_double?(sz) AND finite_double?(ZTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(abs_double(sz), ZTHR)) - (abs(r_sz) - r_ZTHR)) <= aebounddp_sub(abs(r_sz), aebounddp_abs(r_sz, e_sz), r_ZTHR, e_ZTHR)
+
+%|- wcv_10: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_10 : LEMMA
+FORALL(sz: double, ZTHR: double, r_sz, r_ZTHR: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(ZTHR) - r_ZTHR)<=ulp_dp(r_ZTHR)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_ZTHR ## [|0,20|]
+AND
+finite_double?(sub_double(abs_double(sz), ZTHR)) AND finite_double?(sz) AND finite_double?(ZTHR)
+IMPLIES
+abs(safe_prjct_double(sub_double(abs_double(sz), ZTHR)) - (abs(r_sz) - r_ZTHR)) <=65 / 562949953421312
+
+%|- wcv_c_10 : PROOF
+%|- (prove-concrete-lemma wcv_expr_10 14 7)
+%|- QED
+
+wcv_expr_11 : LEMMA
+FORALL(sz: double, vz: double, e_sz, e_vz: nonneg_real, r_sz, r_vz: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(vz)-r_vz)<=e_vz
+AND (TRUE)
+AND
+finite_double?(tcoa_fp(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(tcoa_fp(sz, vz)) - tcoa(r_sz, r_vz)) <= max(aebounddp_neg((r_sz / r_vz), aebounddp_div(r_sz, e_sz, r_vz, e_vz)), (0 / 1))
+
+%|- wcv_11: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_11 : LEMMA
+FORALL(sz: double, vz: double, r_sz, r_vz: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|]
+AND
+finite_double?(tcoa_fp(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(tcoa_fp(sz, vz)) - tcoa(r_sz, r_vz)) <=6876345720111303 / 2475880078570760549798248448
+
+%|- wcv_c_11 : PROOF
+%|- (prove-concrete-lemma wcv_expr_11 14 7)
+%|- QED
+
+wcv_expr_12 : LEMMA
+FORALL(sz: double, vz: double, e_sz, e_vz: nonneg_real, r_sz, r_vz: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(vz)-r_vz)<=e_vz
+AND (TRUE)
+AND
+finite_double?(mul_double(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(mul_double(sz, vz)) - (r_sz * r_vz)) <= aebounddp_mul(r_sz, e_sz, r_vz, e_vz)
+
+%|- wcv_12: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_12 : LEMMA
+FORALL(sz: double, vz: double, r_sz, r_vz: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|]
+AND
+finite_double?(mul_double(sz, vz)) AND finite_double?(sz) AND finite_double?(vz)
+IMPLIES
+abs(safe_prjct_double(mul_double(sz, vz)) - (r_sz * r_vz)) <=6649846324789249 / 38685626227668133590597632
+
+%|- wcv_c_12 : PROOF
+%|- (prove-concrete-lemma wcv_expr_12 14 7)
+%|- QED
+
+wcv_expr_13 : LEMMA
+FORALL(sz: double, vz: double, TCOA: double, e_sz, e_vz, e_TCOA: nonneg_real, r_sz, r_vz, r_TCOA: real):
+abs(safe_prjct_double(sz)-r_sz)<=e_sz AND abs(safe_prjct_double(vz)-r_vz)<=e_vz AND abs(safe_prjct_double(TCOA)-r_TCOA)<=e_TCOA
+AND (TRUE)
+AND
+finite_double?(sub_double(tcoa_fp(sz, vz), TCOA)) AND finite_double?(sz) AND finite_double?(vz) AND finite_double?(TCOA)
+IMPLIES
+abs(safe_prjct_double(sub_double(tcoa_fp(sz, vz), TCOA)) - (tcoa(r_sz, r_vz) - r_TCOA)) <= max(aebounddp_sub(-((r_sz / r_vz)), max(aebounddp_neg((r_sz / r_vz), aebounddp_div(r_sz, e_sz, r_vz, e_vz)), (0 / 1)), r_TCOA, e_TCOA), aebounddp_sub(0, max(aebounddp_neg((r_sz / r_vz), aebounddp_div(r_sz, e_sz, r_vz, e_vz)), (0 / 1)), r_TCOA, e_TCOA))
+
+%|- wcv_13: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_13 : LEMMA
+FORALL(sz: double, vz: double, TCOA: double, r_sz, r_vz, r_TCOA: real):
+abs(safe_prjct_double(sz) - r_sz)<=ulp_dp(r_sz)/2 AND abs(safe_prjct_double(vz) - r_vz)<=ulp_dp(r_vz)/2 AND abs(safe_prjct_double(TCOA) - r_TCOA)<=ulp_dp(r_TCOA)/2
+AND (TRUE)
+AND r_sz ## [|1,1000|] AND  r_vz ## [|1,1000|] AND  r_TCOA ## [|0,20|]
+AND
+finite_double?(sub_double(tcoa_fp(sz, vz), TCOA)) AND finite_double?(sz) AND finite_double?(vz) AND finite_double?(TCOA)
+IMPLIES
+abs(safe_prjct_double(sub_double(tcoa_fp(sz, vz), TCOA)) - (tcoa(r_sz, r_vz) - r_TCOA)) <=7021481254977735 / 2475880078570760549798248448
+
+%|- wcv_c_13 : PROOF
+%|- (prove-concrete-lemma wcv_expr_13 14 7)
+%|- QED
+
+wcv_expr_14 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_tc, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(tc)-r_tc)<=e_tc AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <= max(LET tc:real=(-(((r_sx * r_vx) + (r_sy * r_vy))) / ((r_vx * r_vx) + (r_vy * r_vy))),
+                                                                                                                                                                                                                                                                                                                                                                                                Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                            IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)), LET tc:real=0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)))
+
+%|- wcv_14: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_14 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(tc) - r_tc)<=ulp_dp(r_tc)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <=7988203179963857 / 1099511627776
+
+%|- wcv_c_14 : PROOF
+%|- (prove-concrete-lemma wcv_expr_14 14 7)
+%|- QED
+
+wcv_expr_15 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                   Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                               IN Err_tm, LET tm:real=-1,
+                                                              Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                          IN Err_tm)
+
+%|- wcv_15: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_15 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <=4590002968119631 / 75557863725914323419136
+
+%|- wcv_c_15 : PROOF
+%|- (prove-concrete-lemma wcv_expr_15 14 7)
+%|- QED
+
+wcv_expr_16 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_TTHR, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(TTHR)-r_TTHR)<=e_TTHR AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR), LET tm:real=-1,
+                                                                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR))
+
+%|- wcv_16: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_16 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(TTHR) - r_TTHR)<=ulp_dp(r_TTHR)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND  r_TTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <=6798006142895169 / 9444732965739290427392
+
+%|- wcv_c_16 : PROOF
+%|- (prove-concrete-lemma wcv_expr_16 14 7)
+%|- QED
+
+wcv_expr_17 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, e_sx, e_tc, e_vx, e_sy, e_vy, e_DTHR: nonneg_real, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(tc)-r_tc)<=e_tc AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(sy)-r_sy)<=e_sy AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <= max(LET tc:real=(-(((r_sx * r_vx) + (r_sy * r_vy))) / ((r_vx * r_vx) + (r_vy * r_vy))),
+                                                                                                                                                                                                                                                                                                                                                                                                Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                            IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)), LET tc:real=0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Err_tc:real=max(aebounddp_div(-(((r_sx * r_vx) + (r_sy * r_vy))), aebounddp_neg(((r_sx * r_vx) + (r_sy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_sy * r_vy), aebounddp_mul(r_sy, e_sy, r_vy, e_vy))), ((r_vx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_vx * r_vx), aebounddp_mul(r_vx, e_vx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        IN aebounddp_sub((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))), aebounddp_add(((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))), aebounddp_mul((r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx)), (r_sx + (r_tc * r_vx)), aebounddp_add(r_sx, e_sx, (r_tc * r_vx), aebounddp_mul(r_tc, Err_tc, r_vx, e_vx))), ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy))), aebounddp_mul((r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)), (r_sy + (r_tc * r_vy)), aebounddp_add(r_sy, e_sy, (r_tc * r_vy), aebounddp_mul(r_tc, Err_tc, r_vy, e_vy)))), (r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR)))
+
+%|- wcv_17: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_17 : LEMMA
+FORALL(sx: double, tc: double, vx: double, sy: double, vy: double, DTHR: double, r_sx, r_tc, r_vx, r_sy, r_vy, r_DTHR: real):
+abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(tc) - r_tc)<=ulp_dp(r_tc)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(sy) - r_sy)<=ulp_dp(r_sy)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_sy ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+               IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) AND finite_double?(sx) AND finite_double?(tc) AND finite_double?(vx) AND finite_double?(sy) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tc:double=tcpa_fp(sx, vx, sy, vy)
+                      IN sub_double(add_double(mul_double(add_double(sx, mul_double(tc, vx)), add_double(sx, mul_double(tc, vx))), mul_double(add_double(sy, mul_double(tc, vy)), add_double(sy, mul_double(tc, vy)))), mul_double(DTHR, DTHR))) - LET r_tc:real=tcpa(r_sx, r_vx, r_sy, r_vy)
+                                                                                                                                                                                                                                                   IN ((((r_sx + (r_tc * r_vx)) * (r_sx + (r_tc * r_vx))) + ((r_sy + (r_tc * r_vy)) * (r_sy + (r_tc * r_vy)))) - (r_DTHR * r_DTHR))) <=7988203179963857 / 1099511627776
+
+%|- wcv_c_17 : PROOF
+%|- (prove-concrete-lemma wcv_expr_17 14 7)
+%|- QED
+
+wcv_expr_18 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                   Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                               IN Err_tm, LET tm:real=-1,
+                                                              Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                          IN Err_tm)
+
+%|- wcv_18: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_18 : LEMMA
+FORALL(tm: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN tm) AND finite_double?(tm) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN tm) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                               IN r_tm) <=4590002968119631 / 75557863725914323419136
+
+%|- wcv_c_18 : PROOF
+%|- (prove-concrete-lemma wcv_expr_18 14 7)
+%|- QED
+
+wcv_expr_19 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, e_tm, e_TTHR, e_sx, e_vx, e_vy, e_DTHR: nonneg_real, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm)-r_tm)<=e_tm AND abs(safe_prjct_double(TTHR)-r_TTHR)<=e_TTHR AND abs(safe_prjct_double(sx)-r_sx)<=e_sx AND abs(safe_prjct_double(vx)-r_vx)<=e_vx AND abs(safe_prjct_double(vy)-r_vy)<=e_vy AND abs(safe_prjct_double(DTHR)-r_DTHR)<=e_DTHR
+AND (TRUE)
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <= max(LET tm:real=(((r_DTHR * r_DTHR) - (r_sx * r_sx)) / ((r_sx * r_vx) + (r_vy * r_vy))),
+                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR), LET tm:real=-1,
+                                                                                                                                Err_tm:real=max(aebounddp_div(((r_DTHR * r_DTHR) - (r_sx * r_sx)), aebounddp_sub((r_DTHR * r_DTHR), aebounddp_mul(r_DTHR, e_DTHR, r_DTHR, e_DTHR), (r_sx * r_sx), aebounddp_mul(r_sx, e_sx, r_sx, e_sx)), ((r_sx * r_vx) + (r_vy * r_vy)), aebounddp_add((r_sx * r_vx), aebounddp_mul(r_sx, e_sx, r_vx, e_vx), (r_vy * r_vy), aebounddp_mul(r_vy, e_vy, r_vy, e_vy))), (0 / 1))
+                                                                                                                            IN aebounddp_sub(r_tm, Err_tm, r_TTHR, e_TTHR))
+
+%|- wcv_19: PROOF
+%|- (precisa)
+%|- QED
+
+
+wcv_expr_num_19 : LEMMA
+FORALL(tm: double, TTHR: double, sx: double, vx: double, vy: double, DTHR: double, r_tm, r_TTHR, r_sx, r_vx, r_vy, r_DTHR: real):
+abs(safe_prjct_double(tm) - r_tm)<=ulp_dp(r_tm)/2 AND abs(safe_prjct_double(TTHR) - r_TTHR)<=ulp_dp(r_TTHR)/2 AND abs(safe_prjct_double(sx) - r_sx)<=ulp_dp(r_sx)/2 AND abs(safe_prjct_double(vx) - r_vx)<=ulp_dp(r_vx)/2 AND abs(safe_prjct_double(vy) - r_vy)<=ulp_dp(r_vy)/2 AND abs(safe_prjct_double(DTHR) - r_DTHR)<=ulp_dp(r_DTHR)/2
+AND (TRUE)
+AND r_sx ## [|1,1000|] AND  r_vx ## [|1,1000|] AND  r_vy ## [|1,1000|] AND  r_DTHR ## [|0,20|] AND  r_TTHR ## [|0,20|]
+AND
+finite_double?(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+               IN sub_double(tm, TTHR)) AND finite_double?(tm) AND finite_double?(TTHR) AND finite_double?(sx) AND finite_double?(vx) AND finite_double?(vy) AND finite_double?(DTHR)
+IMPLIES
+abs(safe_prjct_double(LET tm:double=taumod_fp(sx, vx, vy, vy, DTHR)
+                      IN sub_double(tm, TTHR)) - LET r_tm:real=taumod(r_sx, r_vx, r_vy, r_vy, r_DTHR)
+                                                 IN (r_tm - r_TTHR)) <=6798006142895169 / 9444732965739290427392
+
+%|- wcv_c_19 : PROOF
+%|- (prove-concrete-lemma wcv_expr_19 14 7)
 %|- QED
 
 

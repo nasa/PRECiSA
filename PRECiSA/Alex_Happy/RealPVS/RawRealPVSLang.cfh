@@ -1,0 +1,130 @@
+entrypoints Program;
+
+comment "%" ;
+
+token Id       ( (letter) (letter | digit | '_' | '?' | '@')* ) ;
+
+{- Arithmetic Expressions -}
+
+ElsIf.      ElsIf ::= "ELSIF" BExpr "THEN" AExpr ;
+separator nonempty ElsIf "" ;
+
+LetElem.      LetElem ::= Id "=" AExpr;
+LetElemType.  LetElem ::= Id ":" Type "=" AExpr ;
+separator nonempty LetElem "," ;
+
+separator nonempty AExpr "," ;
+
+coercions   AExpr 10 ;
+
+Let.         AExpr  ::= "LET" [LetElem] "IN" AExpr ;
+
+Add.         AExpr1 ::= AExpr1 "+" AExpr2 ;
+Sub.         AExpr1 ::= AExpr1 "-" AExpr2 ;
+
+Mul.         AExpr2 ::= AExpr2 "*" AExpr3 ;
+Div.         AExpr2 ::= AExpr2 "/" AExpr3 ;
+
+Neg.         AExpr3 ::= "-" AExpr4 ;
+
+If.          AExpr4 ::= "IF" BExpr "THEN" AExpr "ELSE" AExpr "ENDIF" ;
+ListIf.      AExpr4 ::= "IF" BExpr "THEN" AExpr [ElsIf] "ELSE" AExpr "ENDIF" ;
+For.         AExpr4 ::= "for" "[" Type "]" "(" AExpr "," AExpr "," AExpr ","  "LAMBDA" "("  Id ":" "subrange" "(" AExpr "," AExpr ")"  "," Id ":"  Type ")" ":" AExpr ")" ;
+
+Pow.         AExpr4 ::= AExpr5 "^" AExpr4 ;
+
+Floor.	     AExpr4 ::= "floor"  "(" AExpr ")" ;
+Sqrt.	       AExpr4 ::= "sqrt"   "(" AExpr ")" ;
+Abs.         AExpr4 ::= "abs"    "(" AExpr ")" ;
+Sin.         AExpr4 ::= "sin"    "(" AExpr ")" ;
+Cos.         AExpr4 ::= "cos"    "(" AExpr ")" ; 
+Tan.         AExpr4 ::= "tan"    "(" AExpr ")" ; 
+ASin.        AExpr4 ::= "asin"   "(" AExpr ")" ;
+ACos.        AExpr4 ::= "acos"   "(" AExpr ")" ;
+ATan.        AExpr4 ::= "atan"   "(" AExpr ")" ;
+Ln.          AExpr4 ::= "ln"     "(" AExpr ")" ;
+Exp.         AExpr4 ::= "exp"    "(" AExpr ")" ;
+Mod1.        AExpr4 ::= "mod"     "(" AExpr "," AExpr ")" ;
+Mod2.        AExpr4 ::= "mod.mod" "(" AExpr "," AExpr ")" ;
+ 
+RtoS.        AExpr4 ::= "RtoS" "(" AExpr ")" ;
+RtoD.        AExpr4 ::= "RtoD" "(" AExpr ")" ;
+ 
+ItoS.        AExpr4 ::= "ItoS" "(" AExpr ")" ;
+ItoD.        AExpr4 ::= "ItoD" "(" AExpr ")" ;
+
+FCallN.      AExpr5 ::= Id "(" [AExpr] ")" ;
+Pi1.         AExpr5 ::= "pi" ;
+Pi2.         AExpr5 ::= "PI" ;
+Int.         AExpr5 ::= Integer ;
+Rat.         AExpr5 ::= Double ;
+Var.         AExpr5 ::= Id ;
+UnstWarning. AExpr5 ::= "warning" ;
+
+{- Boolean Expression (on FP expressions) -}
+
+coercions   BExpr 5 ;
+
+Or.         BExpr ::= BExpr "OR" BExpr1 ;
+And.        BExpr1 ::= BExpr1 "AND" BExpr2 ;
+Not.        BExpr2 ::= "NOT" BExpr3 ;
+
+FPredN.     BExpr3 ::= Id "(" [AExpr] ")" ;
+
+Eq.         BExpr3 ::= AExpr "="  AExpr ;
+Neq.        BExpr3 ::= AExpr "/=" AExpr ;
+Lt.         BExpr3 ::= AExpr "<"  AExpr ;
+LtE.        BExpr3 ::= AExpr "<=" AExpr ;
+Gt.         BExpr3 ::= AExpr ">"  AExpr ;
+GtE.        BExpr3 ::= AExpr ">=" AExpr ;
+
+BTrue.      BExpr4 ::= "TRUE" ;
+BFalse.     BExpr4 ::= "FALSE" ;
+
+
+
+{- PVS Program -}
+
+TypeReal.         Type ::= "real";
+TypeInt.          Type ::= "int" ;
+TypeInteger.      Type ::= "integer" ;
+TypePosNat.       Type ::= "posnat" ;
+TypeBelow.        Type ::= "below" "(" Integer ")" ;
+TypeArrayInteger. Type ::= "ARRAY" "[" "integer" "->" Type "]" ;
+TypeArrayInt.     Type ::= "ARRAY" "[" "int" "->" Type "]" ;
+TypeArrayBelow.   Type ::= "ARRAY" "[" "below" "(" AExpr ")" "->" Type "]" ;
+
+SubrageType.   Subrange ::= "subrange" "(" Integer "," Integer ")" ;
+
+separator nonempty Id "," ;
+
+separator nonempty Arg "," ;
+
+FArg.         Arg ::= [Id] ":" Type ;
+FArgSubrange. Arg ::= [Id] ":" Subrange ;
+FArgGuard.    Arg ::= [Id] ":" Type "|" BExpr  ;
+
+FArgs.         Args ::= [Arg] ;
+FArgsNoType.   Args ::= [Id] ;
+
+
+
+separator nonempty Decl "" ;
+
+DeclN.    Decl ::= Id "(" Args ")" ":" Type "=" AExpr ;
+DeclRec.  Decl ::= Id "(" Args ")" ":" "RECURSIVE" Type "=" AExpr ;
+Decl0.    Decl ::= Id ":" Type "=" AExpr  ;
+PredN.    Decl ::= Id "(" Args ")" ":" "bool" "=" BExpr ;
+Pred0.    Decl ::= Id ":" "bool" "=" BExpr ;
+
+
+LibImp.   Imp ::= "IMPORTING" [Id] ;
+
+
+VarDeclaration. VarDecl ::= Id ":" "VAR" Type ;
+separator VarDecl "" ;
+
+Prog.    Program ::= Id ":" "THEORY" "BEGIN" Imp [VarDecl] [Decl] "END" Id ; 
+ProgImp. Program ::= Id ":" "THEORY" "BEGIN" [VarDecl] [Decl] "END" Id;
+
+

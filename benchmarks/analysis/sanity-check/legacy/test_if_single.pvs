@@ -1,9 +1,0 @@
-test_if_single: THEORY
-BEGIN
-IMPORTING float@aerr754sp
-
-f (X, Y: unb_single): unb_single = IF (X = RtoS(3))
-                                       THEN (Sadd(X, Y))
-                                       ELSE (Smul(X, Y))
-                                   ENDIF
-END test_if_single

@@ -1,10 +1,10 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 
@@ -41,7 +41,6 @@ import Transformation
 import TransformationUtils
 import Translation.Float2Real
 import Translation.Real2Float
-import Utils (fst4)
 
 main :: IO ()
 main = do
@@ -75,8 +74,6 @@ generateCProg
 
 real2FPC :: FilePath -> FilePath -> PVSType -> IO ()
 real2FPC fileprog filespec fp = do
-  -- writeFile preludeFile (render precisaPreludeContent)
-  
   realProg <- parseRealProg fileprog
 
   -- fp progam
@@ -87,9 +84,8 @@ real2FPC fileprog filespec fp = do
 
   -- transfromed program --
   let tranProgTuples = transformProgramSymb decls
-  let tranProg = map fst4 tranProgTuples
 
-  -- program semantics 
+  -- program semantics
   let progSemStable = fixpointSemantics decls (botInterp decls) 3 semConf dpsNone
   let progStableConds = map (stableConditions . semantics) progSemStable
   let progSymbRoundOffErrs = map (maxRoundOffError . semantics) progSemStable
@@ -108,19 +104,19 @@ real2FPC fileprog filespec fp = do
   -- numerical round-off errors error vars
   funErrEnv <- mapM (computeErrorGuards spec progSemStable) tranProgTuples
 
-  let framaCfileContent = genFramaCFile fp spec realProg decls tranProgTuples roErrorsDecl numROErrorsDecl     
+  let framaCfileContent = genFramaCFile fp spec realProg decls tranProgTuples roErrorsDecl numROErrorsDecl
                                         funErrEnv progSemStable
   writeFile framaCfile (render framaCfileContent)
 
   writeFile pvsProgFile (render $ genFpProgFile fp fpFileName decls)
 
-  let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName tranProg progSemStable
+  let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName decls progSemStable
   writeFile certFile symbCertificate
 
-  let numCertificate = render $ genNumCertFile certFileName numCertFileName results spec maxBBDepth prec True
+  let numCertificate = render $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec True
   writeFile numCertFile numCertificate
 
-  let guardExpressionsCert = render $ genExprCertFile exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv))
+  let guardExpressionsCert = render $ genExprCertFile inputFileName fpFileName exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv))
   writeFile exprCertFile guardExpressionsCert
   putStrLn $ "PRECiSA: intrumented C code and PVS certificate generated in " ++ filePath ++ "."
 
@@ -130,7 +126,6 @@ real2FPC fileprog filespec fp = do
       fpFileName = inputFileName ++ "_fp"
       filePath = dropFileName fileprog
       framaCfile = filePath ++ inputFileName ++ ".c"
-      preludeFile = filePath ++ "precisa_prelude.c"
       pvsProgFile = filePath ++ fpFileName ++ ".pvs"
       certFileName = "cert_" ++ inputFileName
       numCertFileName = inputFileName ++ "_num_cert"
@@ -187,13 +182,15 @@ parseAndAnalyze
   let rawPgmSemUlp = initErrVars progSem
   let pgmSemUlp = removeInfiniteCebS rawPgmSemUlp
 
-  createDirectoryIfMissing True filePathSMT
-  filteredPgmSemUlp <- if useSMT then filterUnsatCebs filePathSMT pgmSemUlp spec else return pgmSemUlp
-  
+  filteredPgmSemUlp <- if useSMT
+    then do createDirectoryIfMissing True filePathSMT
+            filterUnsatCebs filePathSMT pgmSemUlp spec
+    else return pgmSemUlp
+
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
   results <- computeAllErrorsInKodiak unfoldedPgmSem spec searchParams
   printAllErrors results
-  let numCertificate = render $ genNumCertFile certFileName numCertFileName results spec maxBBDepth prec False
+  let numCertificate = render $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
   writeFile numCertFile numCertificate
   putStrLn ""
   -------------- just for batch mode
@@ -210,7 +207,7 @@ parseAndAnalyze
   when withPaving $
       mapM_ (\(fun,file) -> putStrLn $ "Paving for function " ++ fun ++ " generated in: " ++ file) pavingFiles
   -------------
-  return ()
+  -- return ()
     where
       mu = not notMu
       semConf = SemConf { assumeTestStability = sta, mergeUnstables = mu}
@@ -220,7 +217,7 @@ parseAndAnalyze
       certFile =  filePath ++ certFileName ++ ".pvs"
       numCertFile = filePath ++ numCertFileName ++ ".pvs"
       realProgFile = filePath ++ inputFileName ++ "_real.pvs"
-      certFileName = inputFileName ++ "_cert" 
+      certFileName = inputFileName ++ "_cert"
       numCertFileName = inputFileName ++ "_num_cert"
       realProgFileName = inputFileName ++ "_real"
       generatePavingFilename pvsFilename functionName = pvsFilename ++ "." ++ functionName ++ ".paving"
@@ -257,7 +254,7 @@ computeAllErrorsInKodiak :: Interpretation
                          -> IO [(String,PVSType,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])]
 computeAllErrorsInKodiak  interp (Spec specBinds) searchParams = mapM runFunction functionNames
   where
-    functionNames = map fst interp
+    functionNames = map fst functionBindingsMap
     functionBindingsMap = map (\(SpecBind f b) -> (f,b)) specBinds
     functionErrorExpressionsMap = map toPathFlowErrorTuple interp
       where
@@ -277,10 +274,10 @@ computeAllErrorsInKodiak  interp (Spec specBinds) searchParams = mapM runFunctio
           result <- run kodiakInput ()
           return (fprec, args, (conditions, path, flow, result, initAExpr err, fpes, res))
             where
-              kodiakInput = KI { name = fname,
-                                 expression = simplAExpr $ initAExpr err,
-                                 bindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
+              kodiakInput = KI { kiName = fname,
+                                 kiExpression = simplAExpr $ initAExpr err,
+                                 kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
                                                       (lookup fname functionBindingsMap),
-                                 maxDepth  = KP.maximumDepth searchParams,
-                                 precision = KP.minimumPrecision searchParams
+                                 kiMaxDepth  = KP.maximumDepth searchParams,
+                                 kiPrecision = KP.minimumPrecision searchParams
                                }

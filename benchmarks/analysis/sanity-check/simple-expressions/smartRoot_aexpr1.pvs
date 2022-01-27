@@ -1,9 +1,0 @@
-smartRoot_aexpr1_double: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-
-aexpr1 (A,B,C: unb_double): unb_double =
-	Dsub(Dmul(B,B),Dmul(A,C))
-
-END smartRoot_aexpr1_double

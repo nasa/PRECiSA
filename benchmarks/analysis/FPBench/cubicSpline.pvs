@@ -1,0 +1,22 @@
+cubicSpline: THEORY
+BEGIN
+IMPORTING float@aerr754dp
+
+cubicSpline (X: unb_double):unb_double =
+    IF (X <= -1.00000000000000022204460492503136)
+    THEN Dmul(Dmul(Dmul(0.25,Dadd(X,2)),Dadd(X,2)),Dadd(X,2))
+    ELSE IF (X <= -0.00000000000000022204460492503136)
+         THEN Dmul(0.25, Dadd(Dsub(Dmul(-3,Dmul(X,Dmul(X,X))), Dmul(6,Dmul(X,X))), 4))
+         ELSE IF (X <= 0.9999999999999998)
+              THEN Dmul(0.25, Dadd(Dsub(Dmul(3,Dmul(X,Dmul(X,X))), Dmul(6,Dmul(X,X))), 4))
+              ELSE IF (X > 1.00000000000000022204460492503136)
+                   THEN Dmul(0.25,Dmul(Dsub(2,X),Dmul(Dsub(2,X),Dsub(2,X))))
+                   ELSE 0
+                   ENDIF
+              ENDIF
+         ENDIF
+    ENDIF
+END cubicSpline
+
+
+  

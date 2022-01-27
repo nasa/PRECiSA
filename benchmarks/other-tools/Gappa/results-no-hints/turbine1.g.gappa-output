@@ -1,6 +1,0 @@
-Date: Sat Jun 24 20:09:21 EDT 2017
-Config: Linux laura-Alienware-17 4.4.0-79-generic #100-Ubuntu SMP Wed May 17 19:58:14 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
-Command: time gappa turbine1
-Results:
-  |r1 - Mr1| in [0, 425776201174865289b-102 {8.39695e-14, 2^(-43.4371)}]
-real  0.061

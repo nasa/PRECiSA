@@ -1,0 +1,161 @@
+{
+	"name": "vscode-precisa",
+	"description": "Integrates PRECiSA into Visual Studio Code",
+	"version": "0.0.32",
+	"author": "Paolo Masci",
+	"displayName": "PRECiSA",
+	"license": "NASA-1.3",
+	"notices": {
+		"copyright": "Copyright 2019 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.",
+		"disclaimers": {
+			"No Warranty": "THE SUBJECT SOFTWARE IS PROVIDED 'AS IS' WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT 'AS IS.'",
+			"Waiver and Indemnity": "RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT."
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/nasa/xxx"
+	},
+	"publisher": "paolomasci",
+	"icon": "icons/precisa-file-icon-large.png",
+	"categories": [],
+	"keywords": [
+		"vscode-precisa",
+		"precisa",
+		"floating point round-off error analysis",
+		"program round-off error certifier",
+		"static analysis"
+	],
+	"engines": {
+		"vscode": "^1.48.0"
+	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"alternativeActivationEvents": [
+		"workspaceContains:**/*.pvs"
+	],
+	"main": "./client/out/vscodePrecisaClient",
+	"contributes": {
+		"notes": {
+			"description": "These contributed settings can be read using vscode.workspace.getConfiguration('precisa')"
+		},
+		"configuration": [
+			{
+				"type": "object",
+				"title": "PRECiSA",
+				"properties": {
+					"precisa.path": {
+						"type": "string",
+						"default": "",
+						"description": "PRECiSA installation folder"
+					},
+					"precisa.xlib.kodiak": {
+						"type": "string",
+						"default": "",
+						"description": "Kodiak library path"
+					}
+				}
+			}
+		],
+		"languageServerExample.trace.server": {
+			"scope": "window",
+			"anyOf": [
+				{
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"verbosity": {
+							"type": "string",
+							"enum": [
+								"off",
+								"messages",
+								"verbose"
+							],
+							"default": "off"
+						},
+						"format": {
+							"type": "string",
+							"enum": [
+								"text",
+								"json"
+							],
+							"default": "text"
+						}
+					}
+				}
+			],
+			"default": "off",
+			"description": "Traces the communication between VS Code and the language server."
+		},
+		"commands": [
+			{
+				"command": "vscode-precisa.compute-error-bounds",
+				"title": "PRECiSA: Compute error bounds",
+				"when": "false && resourceScheme == file && resourceExtname == .pvs"
+			},
+			{
+				"command": "vscode-precisa.display-regions",
+				"title": "PRECiSA: Display regions of instability",
+				"when": "false && resourceScheme == file && resourceExtname == .pvs"
+			},
+			{
+				"command": "vscode-precisa.generate-stable-pvs",
+				"title": "PRECiSA: Generate stable PVS floating-point specification",
+				"when": "false && resourceScheme == file && resourceExtname == .pvs"
+			},
+			{
+				"command": "vscode-precisa.generate-stable-c",
+				"title": "PRECiSA: Generate stable C floating-point program",
+				"when": "false && resourceScheme == file && resourceExtname == .pvs"
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "vscode-precisa.compute-error-bounds",
+					"when": "false && resourceScheme == file && resourceExtname == .pvs",
+					"group": "PRECiSA"
+				},
+				{
+					"command": "vscode-precisa.display-regions",
+					"when": "false && resourceScheme == file && resourceExtname == .pvs",
+					"group": "PRECiSA"
+				},
+				{
+					"command": "vscode-precisa.generate-stable-pvs",
+					"when": "false && resourceScheme == file && resourceExtname == .pvs",
+					"group": "PRECiSA"
+				},
+				{
+					"command": "vscode-precisa.generate-stable-c",
+					"when": "false && resourceScheme == file && resourceExtname == .pvs",
+					"group": "PRECiSA"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"test:server": "node_modules/jasmine-ts/lib/index.js --config=server/test/specs/jasmine-test-all.json"
+	},
+	"dependencies": {
+		"typescript": "^4.5.5",
+		"vsce": "^2.6.3"
+	},
+	"devDependencies": {
+		"@types/node": "^14.14.22",
+		"@types/vscode": "^1.48.0"
+	}
+}
