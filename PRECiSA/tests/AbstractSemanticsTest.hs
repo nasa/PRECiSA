@@ -595,7 +595,7 @@ stmSem__Mul = testCase "Mul" $
 
 stmSem__MulPow2 = testCase "Mul power of 2" $
     stmSem (BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds  = Cond [(Rel Lt (Int 1) (BinaryOp SubOp Prec (FExp (FCnst FPDouble (1 % 10)))), FBTrue)],
+    [ACeb { conds  = Cond [(Rel Lt (Int 1) (BinaryOp SubOp (Prec FPDouble) (FExp (FCnst FPDouble (1 % 10)))), FBTrue)],
             rExprs  = [BinaryOp MulOp (Rat 0.1) (Rat 2)],
             fpExprs = [BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
             eExpr   = ErrMulPow2R FPDouble 1 (ErrRat (1 % 180143985094819840)),

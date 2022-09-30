@@ -46,7 +46,69 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,isListArithExprs__tests
    ,listLetElems__tests
    ,removeLetInFAExpr__tests
+   ,hasConditionals__tests
+   ,hasConditionalsBExpr__tests
+   ,predCallListFBExprStmWithCond__tests
    ]
+
+hasConditionals__tests = testGroup "hasConditionals" $ [
+    testGroup "function calls" $ [
+      testCase "with if" $
+                let program = [RDecl Real "f" [] (RIte BTrue (Int 1) (Int 2))] in
+                    hasConditionals program (EFun "f" Real []) @?= True,
+      testCase "without if" $
+                let program = [RDecl Real "f" [] (Int 2)] in
+                    hasConditionals program (EFun "f" Real []) @?= False
+    ],
+      testCase "variable" $
+            hasConditionals [] (Var TInt "x") @?= False
+   ] ++ map (\(i,o) -> testCase (show i) $ hasConditionals [] i @?= o) testcasesHasConditionals
+
+testcasesHasConditionals
+    =[
+    (Int 4, False),
+    (Rat (toRational 0.1), False),
+    (Var  TInt "x",False),
+    (ArrayElem TInt (Just $ ArraySizeInt 3) "a" (Int 2), False),
+    (BinaryOp AddOp (Int 1) (Int 2),False),
+    (UnaryOp NegOp (Int 2), False),
+    (Min [Int 3], False),
+    (Max [Int 3], False),
+    (RLet [(LetElem "x" Real (Rat $ toRational 0.2))] (Var Real "x"), False),
+    (RLet [(LetElem "x" Real (RIte BTrue (Rat $ toRational 0.2) (Rat $ toRational 0.1)))] (Var Real "x"), True),
+    (RLet [(LetElem "x" Real (Rat $ toRational 0.2))] (RIte BTrue (Rat $ toRational 0.2) (Var Real "x")), True),
+    (RIte BTrue (Int 1) (Int 2), True),
+    (RListIte [(BTrue, Int 1)] (Int 2), True),
+    (RForLoop Real (Int 1) (Int 3) (Int 0) "x" "acc" (Int 4), False)
+    ]
+
+hasConditionalsBExpr__tests = testGroup "hasConditionalsBExpr" $ [
+    testCase "function call with if" $
+      let program = [RDecl Real "f" [] (RIte BTrue (Int 1) (Int 2))] in
+        hasConditionalsBExpr program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= True,
+    testCase "function call with no if" $
+      let program = [RDecl Real "f" [] (Int 2)] in
+        hasConditionalsBExpr program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= False,
+    testCase "predicate call with no if" $
+      let program = [RPred "f" [] (RBExpr BTrue)] in
+        hasConditionalsBExpr program (RBExpr $ EPred "f" []) @?= False,
+    testCase "predicate call with if" $
+      let program = [RPred "f" [] (RBIte (Rel Lt (Int 2) (Var TInt "x")) (RBExpr BTrue) (RBExpr BFalse))] in
+        hasConditionalsBExpr program (RBExpr $ EPred "f" []) @?= True,
+    testCase "conditional" $
+        hasConditionalsBExpr [] (RBIte BTrue (RBExpr BTrue) (RBExpr BTrue)) @?= True,
+    testCase "conditional list" $
+        hasConditionalsBExpr [] (RBListIte [(BTrue, RBExpr BTrue)] (RBExpr BTrue)) @?= True,
+    testCase "simple boolean expression" $
+        hasConditionalsBExpr [] (RBExpr BTrue) @?= False,
+    testCase "let in with conditional body" $
+        hasConditionalsBExpr [] (RBLet [LetElem "x" TInt (Int 2)] (RBListIte [(Rel Lt (Int 2) (Var TInt "x"), RBExpr BTrue)] (RBExpr BTrue))) @?= True,
+    testCase "let in with conditional let element" $
+        hasConditionalsBExpr [] (RBLet [LetElem "x" TInt (RIte (Rel Lt (Int 2) (Int 6)) (Int 3) (Int 5))] (RBExpr $ Rel Eq (Int 4) (Var TInt "x"))) @?= True,
+    testCase "let in with non conditional body" $
+        hasConditionalsBExpr [] (RBLet [LetElem "x" TInt (Int 2)] (RBExpr BTrue)) @?= False
+   ]
+
 
 localVars__tests   = testGroup "localVars" []
 forIndexes__tests  = testGroup "forIndexes" []
@@ -878,3 +940,12 @@ removeLetInFAExpr__test3  = testCase "removeLetInFAExpr2" $
   Ite FBTrue (FInt 1) (FInt 6)
 
 
+predCallListFBExprStmWithCond__tests = testGroup "predCallListFBExprStmWithCond tests"
+  [predCallListFBExprStmWithCond__test1
+  ]
+
+predCallListFBExprStmWithCond__test1  = testCase "" $
+  predCallListFBExprStmWithCond [RDecl Real "f" [Arg "X" Real] (BinaryOp AddOp (Var Real "X") (BinaryOp MulOp (Var Real "X") (Int 2)))
+  ,RPred "g" [Arg "X" Real] (RBLet [LetElem {letVar = "y", letType = Real, letExpr = EFun "f" Real [Var Real "X"]}] (RBIte (Rel Gt (Var Real "y") (Int 0)) (RBExpr BTrue) (RBExpr BFalse)))] (BExpr $ FEPred False Original "g" [])
+  @?=
+  [(FEPred False Original "g" [])]

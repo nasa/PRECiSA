@@ -23,6 +23,8 @@ import TransformationTest
 import Translation.Real2FloatTest
 import MapRealPVSLangASTTest
 import FramaC.PVS2CTest
+import qualified FramaC.PrettyPrint.CLangTest as PrettyPrintCLang
+import qualified FramaC.GenerateACSLTest as GenerateACSL
 
 main :: IO ()
 main = defaultMain tests
@@ -45,5 +47,7 @@ unitTests = testGroup "Unit tests"
     ,testReal2Float
     ,testMapRealPVSLangAST
     ,testPCS2C
+    ,PrettyPrintCLang.test
+    ,GenerateACSL.test
     ]
 

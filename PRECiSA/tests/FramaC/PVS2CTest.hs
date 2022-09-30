@@ -27,10 +27,10 @@ replaceCallsInBExpr__tests = testGroup "replaceCallsInBExpr"
   ]
 
 replaceCallsInBExpr__test1 = testCase "replaceCallsInBExpr__test1" $
-  replaceCallsInBExpr [] FBTrue @?= FBTrue
+  replaceCallsInBExpr (\_ -> True) [] [] FBTrue @?= FBTrue
 
 replaceCallsInBExpr__test2 = testCase "replaceCallsInBExpr__test1" $
-  replaceCallsInBExpr [(Left $ FEFun False "f" FPDouble [],1)] (FRel Gt (FEFun False "f" FPDouble []) (FInt 1))
+  replaceCallsInBExpr (\_ -> True) [(FEFun False "f" FPDouble [],1)] [] (FRel Gt (FEFun False "f" FPDouble []) (FInt 1))
   @?=
   FRel Gt (Value $ StructVar FPDouble "aux_1") (FInt 1)
 

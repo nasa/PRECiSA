@@ -243,7 +243,7 @@ makeUnstable
   }
   where
     ee' = maxErr [BinaryOp AddOp fpE (UnaryOp AbsOp (BinaryOp SubOp fpR rR)) | fpR <- fpRs, rR <- rRs]
-    cs' = [(rCond, fCond) | rCond <- map realCond rCs, fCond <- map fpCond fpCs]
+    cs' = [(And rCond rfCond, fCond) | rCond <- map realCond rCs, (rfCond,fCond) <- fpCs]
 
 
 unTestSem :: ACebS -> ACebS -> ACebS
@@ -631,9 +631,9 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env config dp dps =
     semMulPow2 left [ceb1,ceb2] =
         ACeb {
             conds  = if left
-                     then Cond [(simplBExprFix $ And c2 (Rel Lt (Int n) (BinaryOp SubOp Prec (FExp a2))), g2) |
+                     then Cond [(simplBExprFix $ And c2 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a2))), g2) |
                                 (c2, g2) <- uncond (conds ceb2)]
-                     else Cond [(simplBExprFix $ And c1 (Rel Lt (Int n) (BinaryOp SubOp Prec (FExp a1))), g1) |
+                     else Cond [(simplBExprFix $ And c1 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a1))), g1) |
                                 (c1, g1) <- uncond (conds ceb1)],
             rExprs  = [BinaryOp   MulOp    r1 r2 | r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
             fpExprs = [BinaryFPOp MulOp fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
@@ -659,6 +659,9 @@ stmSem (UnaryFPOp FloorOp fp a) interp env config dp dps =
 
 stmSem (UnaryFPOp AtanOp fp a) interp env config dp dps =
   semUnOp AtanOp fp False (stmSem a interp env config dp dps)
+
+stmSem (UnaryFPOp TanOp fp a) interp env config dp dps =
+  semBinOp DivOp fp (stmSem (UnaryFPOp SinOp fp a) interp env config dp dps) (stmSem (UnaryFPOp CosOp fp a) interp env config dp dps)
 
 stmSem (UnaryFPOp op fp a) interp env config dp dps = semUnOp op fp False (stmSem a interp env config dp dps)
 
@@ -826,7 +829,7 @@ varBindAExprReal fa aa _ (Var Real x) = bindRealVar fa aa
 varBindAExprReal _ _ _ i@(Int _)         = i
 varBindAExprReal _ _ _ r@(Rat _)         = r
 varBindAExprReal fa aa sem (EFun f fp args) = EFun f fp (map (varBindAExprReal fa aa sem) args)
-varBindAExprReal _  _  _   Prec          = Prec
+varBindAExprReal _  _  _   (Prec fp)     = (Prec fp)
 varBindAExprReal _  _  _   (Var fp x)    = Var fp x
 varBindAExprReal fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExprReal  fa aa sem a)
 varBindAExprReal fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExprReal  fa aa sem a1) (varBindAExprReal fa aa sem a2)
@@ -916,10 +919,10 @@ varBindAExpr _ _ _ i@(Int _)         = i
 varBindAExpr _ _ _ r@(Rat _)         = r
 varBindAExpr fa aa sem (EFun f fp args) = EFun f fp (map (varBindAExpr fa aa sem) args)
 varBindAExpr fa aa sem (ArrayElem t size v idx) = ArrayElem t size v (varBindAExpr fa aa sem idx)
-varBindAExpr _  _  _ Prec          = Prec
-varBindAExpr _  _  _ (ErrRat n)    = ErrRat n
-varBindAExpr _  _  _ (Var fp x)    = Var fp x
-varBindAExpr fa aa _   (FExp a)  = FExp (varBindFAExpr fa aa a)
+varBindAExpr _  _  _ (Prec fp)  = (Prec fp)
+varBindAExpr _  _  _ (ErrRat n) = ErrRat n
+varBindAExpr _  _  _ (Var fp x) = Var fp x
+varBindAExpr fa aa _   (FExp a) = FExp (varBindFAExpr fa aa a)
 varBindAExpr fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExpr  fa aa sem a)
 varBindAExpr fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExpr  fa aa sem a1) (varBindAExpr fa aa sem a2)
 varBindAExpr fa aa _   (FromFloat fp a)      = FromFloat fp   (varBindFAExpr fa aa a)

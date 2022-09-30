@@ -29,11 +29,8 @@ parseProgram src_filename str =
     rawParsedProg <- rawparserPVS str
     let thName = namePVSTheory rawParsedProg
     let fileName = takeBaseName src_filename
-    if  fileName /= thName
-      then error $ "The PVS theory name " ++ show fileName ++" does not match the file name " ++ show thName ++ "."
-      else do
-        let parsedProg = raw2Prog rawParsedProg
-        return parsedProg
+    let parsedProg = raw2Prog rawParsedProg
+    return parsedProg
 
 parseFileToTargetDPs :: FilePath -> IO (Err TargetDPs)
 parseFileToTargetDPs src_filename = fmap (parseTargetDPs) (readFile src_filename)
@@ -43,7 +40,6 @@ parseTargetDPs str =
   do
     parsedTargetDPs <- rawparserTargetDPs str
     return parsedTargetDPs
-
 
 parseFileToSpec :: [Decl] ->  FilePath -> IO (Err Spec)
 parseFileToSpec decls src_filename = fmap (parseSpec decls) (readFile src_filename)

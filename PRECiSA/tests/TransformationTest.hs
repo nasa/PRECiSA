@@ -17,6 +17,7 @@ import AbsPVSLang
 import PVSTypes
 import Control.Monad.State
 import Operators
+import Common.TypesUtils
 
 returnsValueEqualTo :: (Eq a, Show a) => IO a -> a -> IO ()
 returnsValueEqualTo lhs rhs = lhs >>= (@?= rhs)
@@ -34,10 +35,42 @@ checkOutputIs actual expected =
           (out == expected)
               @? ("Output: " ++ show out ++ " is different than expected: " ++ show expected)
 
+initState :: [Decl] -> TranStateInterp
+initState = concatMap initStateDecl
+initStateDecl decl =
+  [(declName decl,
+    TransState { freshErrVar = FreshErrVar { env = [], count = 0, localEnv = [] }, forExprMap = [] })]
+
 testTransformation = testGroup "Transformation"
   [transformStmSymb__tests
   ,origDeclName__tests
   ,localVarsInExpr__tests
+  ,generateVarName__tests
+  ,testGroup "betaBExprStm" $
+    [ testCase "basic" $
+      let
+        rdecls = [
+          RPred "f"
+            [Arg "X" Real,Arg "Y" Real]
+            (RBIte
+              (Rel Gt
+                (BinaryOp MulOp (Var Real "X") (Var Real "Y"))
+                (Int 0))
+              (RBExpr BTrue)
+              (RBExpr BFalse))]
+        decls = [
+          Pred True Original "f"
+            [Arg "X" FPDouble,Arg "Y" FPDouble]
+            (BIte
+              (FRel Gt
+                (BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y"))
+                (TypeCast TInt FPDouble (FInt 0)))
+              (BExpr FBTrue)
+              (BExpr FBFalse))]
+        stm = BIte (FRel Gt (BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y")) (TypeCast TInt FPDouble (FInt 0))) (BExpr FBTrue) (BExpr FBFalse)
+        ret = BIte (FRel Gt (BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y")) (FVar FPDouble "E_0")) (BExpr FBTrue) (BIte (FRel LtE (BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y")) (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_0"))) (BExpr FBFalse) BUnstWarning)
+      in (fst $ runState (betaBExprStm rdecls True decls "f" FBTrue True stm) (initState decls)) @?= ret
+        ]
   ]
 
 localVarsInExpr__tests = testGroup "localVarsInExpr tests"
@@ -190,35 +223,35 @@ transformStmSymb__tests = testGroup "transformStm tests"
   ]
 
 transformStmSymbUnstWarning__tests = testCase "the symbolic transformation is correct for UnstWarning" $
-  transformStmSymb [] "f" FBTrue True UnstWarning
+  transformStmSymb [] [] "f" FBTrue True UnstWarning
   `returnsValueEqualTo'`
   UnstWarning
 
 transformStmSymbAexpr__tests = testCase "the transformation is correct for AExpr" $
-  transformStmSymb [] "f" FBTrue True (FVar FPDouble "x")
+  transformStmSymb [] [] "f" FBTrue True (FVar FPDouble "x")
   `returnsValueEqualTo'`
    FVar FPDouble "x"
 
 transformStmSymbLet1__tests = testCase "the transformation is correct for Let 1" $
-  transformStmSymb [] "f" FBTrue True (Let [("x", FPDouble, (FInt 4))] (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))
+  transformStmSymb [] [] "f" FBTrue True (Let [("x", FPDouble, (FInt 4))] (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))
   `returnsValueEqualTo'`
   Let [("x", FPDouble, (FInt 4))] (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y"))
 
 transformStmSymbIte__tests = testCase "the transformation is correct for Ite with no rounding error" $
-  transformStmSymb [] "f" FBTrue True
+  transformStmSymb [] [] "f" FBTrue True
     (Ite (FRel LtE (FVar TInt "x") (FInt 0)) (FVar TInt "x") (FInt 4))
     `returnsValueEqualTo'`
      Ite (FRel LtE (FVar TInt "x") (FInt 0)) (FVar TInt "x") (FInt 4)
 
 transformStmSymbIte2__tests = testCase "the transformation is correct for Ite with no rounding error" $
-  transformStmSymb [] "f" FBTrue True
+  transformStmSymb [] [] "f" FBTrue True
     (Ite (FRel LtE (BinaryFPOp AddOp FPDouble (FVar TInt "x") (FVar FPDouble "y")) (FInt 0)) (FVar TInt "x") (FInt 4))
     `returnsValueEqualTo'`
     Ite (FRel LtE (BinaryFPOp AddOp FPDouble (FVar TInt "x") (FVar FPDouble "y")) (UnaryFPOp NegOp FPDouble (FVar FPDouble "E_0"))) (FVar TInt "x")
     (Ite (FRel Gt (BinaryFPOp AddOp FPDouble (FVar TInt "x") (FVar FPDouble "y")) (FVar FPDouble "E_0")) (FInt 4) UnstWarning)
 
 transformStmSymbNestedIte__tests = testCase "the transformation is correct for Ite 1" $
-  transformStmSymb [] "f" FBTrue True
+  transformStmSymb [] [] "f" FBTrue True
     (Ite (FRel LtE (FVar TInt "x") (FInt 0)) (FInt 1)
     (Ite (FRel LtE (FVar TInt "y") (FInt 0)) (FInt 2) (FInt 3)))
     `returnsValueEqualTo'`
@@ -226,7 +259,7 @@ transformStmSymbNestedIte__tests = testCase "the transformation is correct for I
     (Ite (FRel LtE (FVar TInt "y") (FInt 0)) (FInt 2) (FInt 3)))
 
 transformStmSymbNestedIte2__tests = testCase "the transformation is correct for Ite 2" $
-  transformStmSymb [] "f" FBTrue True
+  transformStmSymb [] [] "f" FBTrue True
     (Ite (FRel LtE (FVar FPDouble "x") (FInt 0)) (FInt 1)
     (Ite (FRel LtE (FVar FPDouble "y") (FInt 0)) (FInt 2) (FInt 3)))
     `returnsValueEqualTo'`
@@ -236,7 +269,7 @@ transformStmSymbNestedIte2__tests = testCase "the transformation is correct for 
     (Ite (FRel Gt  (FVar FPDouble "y") (FVar FPDouble "E_0")) (FInt 3) UnstWarning)) UnstWarning)
 
 transformStmSymbListIte1__tests = testCase "the transformation is correct for ListIte 1" $
-  transformStmSymb [] "f" FBTrue True
+  transformStmSymb [] [] "f" FBTrue True
   (ListIte [(FRel LtE (FVar TInt "x") (FInt 0), (FInt 4)),(FRel LtE (FVar TInt "y") (FInt 0), (FInt 1))] (FInt 8))
   `returnsValueEqualTo'`
   (ListIte [(FRel LtE (FVar TInt "x") (FInt 0), (FInt 4))
@@ -244,7 +277,7 @@ transformStmSymbListIte1__tests = testCase "the transformation is correct for Li
            (FInt 8))
 
 transformStmSymbListIte2__tests = testCase "the transformation is correct for ListIte 2" $
-  transformStmSymb [] "f" FBTrue True
+  transformStmSymb [] [] "f" FBTrue True
   (ListIte [(FRel LtE (FVar FPDouble "x") (FInt 0), (FInt 4)),
                              (FRel LtE (FVar FPDouble "y") (FInt 0), (FInt 1))] (FInt 8))
   `returnsValueEqualTo'`
@@ -255,7 +288,7 @@ transformStmSymbListIte2__tests = testCase "the transformation is correct for Li
                   (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (FInt 8))] UnstWarning)
 
 transformStmSymbListIte3__tests = testCase "the transformation is correct for ListIte 2" $
-  transformStmSymb [] "f" FBTrue True
+  transformStmSymb [] [] "f" FBTrue True
   (ListIte [(FRel LtE (FVar FPDouble "x") (FInt 0), (FInt 4)),
                              (FRel LtE (FVar TInt "y") (FInt 0), (FInt 1)),
                              (FRel LtE (FVar FPDouble "z") (FInt 0), (FInt 2))] (FInt 8))
@@ -268,3 +301,23 @@ transformStmSymbListIte3__tests = testCase "the transformation is correct for Li
            ,(FAnd (FRel Gt  (FVar FPDouble "z") (FVar FPDouble "E_1"))
                   (FRel Gt  (FVar FPDouble "x") (FVar FPDouble "E_0")), (FInt 8))] UnstWarning)
 
+generateVarName__tests = testGroup "generateVarName tests"
+  [generateVarName1__test
+  ,generateVarName2__test
+  ,generateVarName3__test
+  ]
+
+generateVarName1__test = testCase "Empty error vars environment" $
+  generateVarName (BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "X")) [] 0 FBTrue
+  @?=
+   ("E_0",[("E_0",BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "X"),FBTrue)],1)
+
+generateVarName2__test = testCase "Expression in environment" $
+  generateVarName (BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "X")) [("E_0",BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "X"),FBTrue)] 0 FBTrue
+  @?=
+   ("E_0",[("E_0",BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "X"),FBTrue)],0)
+
+generateVarName3__test = testCase "Expression in environment" $
+  generateVarName (FVar FPDouble "X") [("E_0",BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "X"),FBTrue)] 1 FBTrue
+  @?=
+   ("E_1",[("E_0",BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FVar FPDouble "X"),FBTrue), ("E_1", FVar FPDouble "X",FBTrue)],2)

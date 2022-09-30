@@ -13,6 +13,8 @@ module FramaC.Types where
 import Common.TypesUtils
 import PPExt
 
+type HasConditionals = (String -> Bool)
+
 data Type = Real | Int | Array Type (Maybe ArraySize) | Float FPFormat | MaybeStruct Type | Boolean
   deriving (Eq, Ord, Show, Read) 
 

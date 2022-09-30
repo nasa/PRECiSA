@@ -50,7 +50,15 @@ genCertFile inputFileName certFileName realFileName prog sem =
   $$
   text "BEGIN"
   $$
-  text ("IMPORTING PRECiSA@strategies, float@extended_float_converter, " ++ inputFileName ++ "," ++ realFileName  ++ "\n")
+  text ("IMPORTING PRECiSA@strategies")
+  $$
+  text ("IMPORTING float@aerr754dp")
+  $$
+  text ("IMPORTING float@aerr754sp")
+  $$
+  text ("IMPORTING " ++ inputFileName)
+  $$
+  text ("IMPORTING " ++ realFileName  ++ "\n")
   $$
   text "%|- *_TCC* : PROOF"
   $$
@@ -86,7 +94,13 @@ genNumCertFile certFileName numCertFileName kodiakResult decls (Spec specBinds) 
   $$
   text "BEGIN"
   $$
-  text ("IMPORTING " ++ certFileName ++ ", PRECiSA@bbiasp, PRECiSA@bbiadp, PRECiSA@strategies \n")
+  text ("IMPORTING " ++ certFileName)
+  $$
+  text ("IMPORTING  PRECiSA@bbiasp")
+  $$
+  text ("IMPORTING PRECiSA@bbiadp")
+  $$
+  text ("IMPORTING PRECiSA@strategies \n")
   $$
   text "%|- *_TCC* : PROOF"
   $$
@@ -102,7 +116,7 @@ printCerts :: Interpretation -> Program -> Doc
 printCerts [] _ = emptyDoc
 printCerts ((f,(isTrans,fp, args, cset)):interp) decls
   = (case fp of
-        Boolean -> emptyDoc--printPredLemmasAndProofs fFP fReal args bstm (filter isStable cset) 0
+        Boolean -> emptyDoc
         _       -> printLemmasAndProofs fFP fReal args stm cset fp 0)
     $$
     printCerts interp decls
@@ -150,8 +164,8 @@ prPvsLemma f fReal args aceb fp n fpGuards =
                     <>  text ": real" <> comma
                     <+> hsep (punctuate comma $ map prettyDoc args)
                     <> text ")" <> text ":"
-  $$ prPvsArgs' args <+> text "AND"
-  $$ prIsFiniteHp f fp (map arg2var args) (map arg2var (filter isArgFP args) ++ fpGuards)
+  $$ prPvsArgs' args
+  -- $$ prIsFiniteHp f fp (map arg2var args) (map arg2var (filter isArgFP args) ++ fpGuards)
   $$ text "AND" <+> parens (prettyDoc c)
   $$ text "IMPLIES"
   $$ text "abs(" <> f2r fp (text f <> text "(" <>
@@ -160,7 +174,7 @@ prPvsLemma f fReal args aceb fp n fpGuards =
      <+> text fReal <> text "("
      <> hsep (punctuate comma $ map (prettyDoc . realVar . arg2var) args) <> text ")"
      <> text ")"
-     <> text "<=" <> prettyDoc err
+     <> text "<=" <> prettyError err
   $$ text "\n"
   where
     prPvsArgs' arguments = hsep $ punctuate (text " AND") $ map prPVSVarId' arguments
@@ -256,8 +270,8 @@ prPvsNumLemma nameLemma f fReal args cond roundOffError ranges fp symbError fpGu
   $$ prPvsArgs args
   $$ text "AND" <+> parens (prettyDoc cond)
   $$ text "AND" <+> hsep (punctuate (text " AND ") $ map printVarRange ranges)
-  <+> text "AND"
-  $$ prIsFiniteHp f fp (map arg2var args) (map arg2var (filter isArgFP args) ++ fpGuards)
+  -- <+> text "AND"
+  -- $$ prIsFiniteHp f fp (map arg2var args) (map arg2var (filter isArgFP args) ++ fpGuards)
   $$ text "IMPLIES"
   $$ lhs
   <> text "<="
@@ -293,12 +307,12 @@ prettyNumError roundOffError = text $ showFFloat Nothing roundOffError "" -- (ne
 
 f2r :: PVSType -> Doc -> Doc
 f2r fp doc = case fp of
-  FPSingle -> text "safe_prjct_single" <> parens doc
-  FPDouble -> text "safe_prjct_double" <> parens doc
+  FPSingle -> text "StoR" <> parens doc
+  FPDouble -> text "DtoR" <> parens doc
   TInt -> doc
   Boolean -> doc
-  Array FPSingle _ -> text "safe_prjct_single" <> parens doc
-  Array FPDouble _ -> text "safe_prjct_double" <> parens doc
+  Array FPSingle _ -> text "StoR" <> parens doc
+  Array FPDouble _ -> text "DtoR" <> parens doc
   t -> error $ "f2r: something went wrong, f2r not defined for " ++ show t
 
 genExprCertFile :: String -> String -> String -> Doc -> Doc
@@ -344,13 +358,13 @@ printSymbExprCert fp f faeVarList errVarList realVarList fae ae be symbErr n =
                     <> text ")" <> text ":"
   $$ hsep (punctuate (text " AND") (map (printVarErrBound fp) faeVarList))
   $$ text "AND" <+> parens (prettyDoc be)
-  $$ prIsFiniteHpExpr (fae:faeVarList)
+  -- $$ prIsFiniteHpExpr (fae:faeVarList)
   $$ text "IMPLIES"
   $$ text "abs(" <> f2r fp (prettyDoc fae)
      <+> text "-"
      <+> prettyDoc ae <> text ")"
      <+> text "<="
-     <+> prettyDoc symbErr
+     <+> prettyError symbErr
   $$ text "\n%|- " <> text f <> text "_" <> int n <> text ": PROOF"
   $$ text "%|- (precisa)"
   $$ text "%|- QED"
@@ -368,7 +382,6 @@ printNumExprCert fp f faeVarList realVarList fae ae be roundOffError ranges n pr
   $$ text "AND"
   <+> parens (prettyDoc be)
   $$ text "AND" <+> hsep (punctuate (text " AND ") $ map printVarRange ranges)
-  $$ prIsFiniteHpExpr (fae:faeVarList)
   $$ text "IMPLIES"
   $$ text "abs(" <> f2r fp (prettyDoc fae)
      <+> text "-"

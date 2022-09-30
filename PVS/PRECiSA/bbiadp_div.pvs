@@ -18,8 +18,7 @@ BEGIN
           Div(
 	   Add(Mult(Abs(R2),E1),Mult(Abs(R1),E2)),
 	   Sub(Mult(R2,R2),Mult(E2,Abs(R2)))),
-          Div(Ulp_dp(Div(Add(Abs(R1),E1),Sub(Abs(R2),E2))),[|2|]))
-         
+          Div(Ulp_dp(Div(Add(Abs(R1),E1),Sub(Abs(R2),E2))),[|2|]))       
     ELSE EmptyInterval
     ENDIF
  
@@ -27,25 +26,38 @@ BEGIN
 
   r1,e1,r2,e2: VAR real
 
-  aebounddp_div_safe(r1,e1,r2,e2): real =
-    IF e1 >= 0 AND e2 >= 0 AND (0<r2-e2 OR r2+e2<0)
-    THEN aebounddp_div(r1,e1,r2,e2)
-    ELSE 42 ENDIF
-
+% [20220426] TODO the new definition of aebounddp_div is already safe
+  % aebounddp_div_safe(r1,e1,r2,e2): real =
+  %   IF e1 >= 0 AND e2 >= 0 AND (0<r2-e2 OR r2+e2<0)
+  %   THEN aebounddp_div(r1,e1,r2,e2)
+  %   ELSE 42 ENDIF
+  %
+  % AEB_DIV_inclusion_j: JUDGEMENT
+  %   aebounddp_div_ia
+  %   HAS_TYPE (Inclusion4?( Any?,
+  %   	     		   Any2?,
+  % 			   Any3?,
+  % 			   aeb_div_pre4,
+  % 			   aebounddp_div_safe ))
   AEB_DIV_inclusion_j: JUDGEMENT
     aebounddp_div_ia
     HAS_TYPE (Inclusion4?( Any?,
-    	     		   Any2?,
+    	     		   pre1to2b(NonNeg?),
 			   Any3?,
-			   aeb_div_pre4,
-			   aebounddp_div_safe ))
+			   pre1to4d(NonNeg?),
+			   aebounddp_div ))
                
   AEB_DIV_fundmental_j: JUDGEMENT
     aebounddp_div_ia
-    HAS_TYPE (Fundamental4?(Any?,Any2?, Any3?,aeb_div_pre4))
+    HAS_TYPE (Fundamental4?(Any?, pre1to2b(NonNeg?), Any3?, pre1to4d(NonNeg?)))
 
+
+% [20220426] TODO the new definition of aebounddp_div is already safe
+  % AEB_DIV(re1,re2,re3,re4):  RealExpr =
+  %   FUN4(Any?,Any2?,Any3?,aeb_div_pre4,
+  % 	 aebounddp_div_safe,aebounddp_div_ia,re1,re2,re3,re4)
   AEB_DIV(re1,re2,re3,re4):  RealExpr =
     FUN4(Any?,Any2?,Any3?,aeb_div_pre4,
-	 aebounddp_div_safe,aebounddp_div_ia,re1,re2,re3,re4)
+	 aebounddp_div,aebounddp_div_ia,re1,re2,re3,re4)
 
 END bbiadp_div

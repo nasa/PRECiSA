@@ -22,7 +22,6 @@ import qualified Operators as Op
 import Parser.ParRawPVSLang
 import Parser.LexRawPVSLang
 import Utils (fst3,snd3)
--- import Debug.Trace
 
 type VarTypeEnv = [(String, PVSTypes.PVSType)]
 type FunTypeEnv = [(String, PVSTypes.PVSType)]

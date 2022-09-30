@@ -8,7 +8,7 @@
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
   
 
-module FramaC.Clang where
+module FramaC.CLang where
 
 import Common.TypesUtils
 import qualified Common.ShowRational as Rat
@@ -30,7 +30,7 @@ data Decl = Decl Type FunName [Arg] [Stm]
 
 data Stm = VarDecl           Type VarName
          | VarDeclAssign     Type VarName AExpr 
-         | VarAssign              VarName AExpr
+         | VarAssign         Type VarName AExpr
          | VarDeclAssignBool Type VarName BExpr 
          | VarAssignBool          VarName BExpr
          | Ite BExpr [Stm] [Stm]
@@ -137,14 +137,10 @@ instance PPExt AExpr where
   prettyDoc (IntCnst  i) = integer i 
   prettyDoc (FPCnst _ rat) = text $ Rat.showFloatC rat
   prettyDoc (ErrorCnst err) = prettyErrorHex err
-  prettyDoc (EFun f fp args) = text f <> text "_" <> prettyDoc fp <+> parens (docListComma $ map prettyDoc args)
-  prettyDoc (Value (EFun f fp args)) = text f <> text "_" <> prettyDoc fp <+> parens (docListComma $ map prettyDoc args) <> text ".value"
+  prettyDoc (EFun f fp args) = text f <> text "_fp" <+> parens (docListComma $ map prettyDoc args)
+  prettyDoc (Value (EFun f fp args)) = text f <> text "_fp" <+> parens (docListComma $ map prettyDoc args) <> text ".value"
   prettyDoc (Value ae) = prettyDoc ae <> text ".value"
-  -- prettyDoc (Value ae) = error $ "prettyDoc: function Value applied to " ++ show ae ++ "."
-  prettyDoc (Var  (Float fp) x) = text x <> text "_" <> prettyDoc fp
-  -- prettyDoc (Var (MaybeStruct (Float fp)) x) = prettyDoc fp <> text "_" <> text x
-  prettyDoc (Var (MaybeStruct _) x) = text x
-  prettyDoc (Var  _ x) = text x
+  prettyDoc (Var t x) = printVarName t x
   prettyDoc (ArrayElem _ v idxExpr) = text v <> text "[" <> prettyDoc idxExpr <> text "]"
   prettyDoc (Some Int (Left expr)) = text "some" <> parens (prettyDoc expr)
   prettyDoc (Some (Float SinglePrec) (Left expr)) = text "someFloat" <> parens (prettyDoc expr)
@@ -211,6 +207,7 @@ prettyInstrList list = vcat (map (\stm -> prettyDoc stm <> semi) list)
 
 printVarName :: Type -> VarName -> Doc
 printVarName t@(Float _) x = text x <> text "_" <> prettyDoc t
+printVarName (MaybeStruct t@(Float _)) x = printVarName t x
 printVarName _           x = text x
 
 instance PPExt Stm where
@@ -218,7 +215,7 @@ instance PPExt Stm where
   prettyDoc (VarDeclAssign t x expr) = prettyDoc t <+> printVarName t x
                                            <+> equals <+> prettyDoc expr <> semi
   prettyDoc (VarDeclAssignBool t x expr) = prettyDoc t <+> text x <+> equals <+> prettyDoc expr <> semi
-  prettyDoc (VarAssign           x expr) = text x <+> equals <+> prettyDoc expr <> semi
+  prettyDoc (VarAssign         t x expr) = printVarName t x <+> equals <+> prettyDoc expr <> semi
   prettyDoc (VarAssignBool       x expr) = text x <+> equals <+> prettyDoc expr <> semi
   prettyDoc (Ite bexpr stmThen stmElse) =
     text "if"

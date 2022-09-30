@@ -15,10 +15,13 @@ import AbsSpecLang
 import AbstractDomain (Condition)
 import AbstractSemantics (Interpretation,LocalEnv)
 import Common.TypesUtils
+import Common.TypeConversions (fprec2acsl)
 import Data.Maybe (fromMaybe)
 import FramaC.ACSLlang (prettyACSL)
+import qualified FramaC.ACSLTypes as ACSL
 import FramaC.GenerateACSL
 import FramaC.PVS2C (decl2C,pred2C,generateNumericFunction)
+import FramaC.Types (HasConditionals)
 import Prelude hiding ((<>))
 import PPExt
 import PVSTypes
@@ -54,12 +57,13 @@ genFramaCFile fp (Spec specBinds) realDecls decls tauDecls symbErrs errs funErrE
     $$
     text (vspace 1)
     $$
-    vcat (map (printDeclWithACSL fp semStable . buildTauDeclInfo) tauDecls)
+    vcat (map (printDeclWithACSL fp hasCondsFun semStable . buildTauDeclInfo) tauDecls)
     $$
     text (vspace 1)
     $$
     printMain
   where
+    hasCondsFun = funHasConds realDecls
     buildTauDeclInfo (declTau, errVarEnv, _, forExprs) = TauDeclInfo {
       fpDecl   = fromMaybe (errMsg f) (findOrigFunInProg     f decls),
       realDecl = fromMaybe (errMsg f) (findOrigFunInRealProg f realDecls),
@@ -82,11 +86,12 @@ genFramaCFile fp (Spec specBinds) realDecls decls tauDecls symbErrs errs funErrE
 
 
 printDeclWithACSL :: PVSType
+                  -> (FunName -> Bool)
                   -> Interpretation
                   -> TauDeclInfo
                   -> Doc
-printDeclWithACSL fp semStable tauDeclInfo =
-  printSymbDeclWithACSL fp semStable (realDecl tauDeclInfo)
+printDeclWithACSL fp hasCondsFun semStable tauDeclInfo =
+  printSymbDeclWithACSL hasCondsFun fp semStable (realDecl tauDeclInfo)
                                      (fpDecl tauDeclInfo)
                                      (tauDecl tauDeclInfo)
                                      (forMap tauDeclInfo)
@@ -95,7 +100,7 @@ printDeclWithACSL fp semStable tauDeclInfo =
   $$
   text (vspace 1)
   $$
-  printNumDeclWithACSL (predAbstraction $ tauDecl tauDeclInfo)
+  printNumDeclWithACSL hasCondsFun (predAbstraction $ tauDecl tauDeclInfo)
                        fp
                        (declName $ fpDecl tauDeclInfo)
                        (realDeclArgs $ realDecl tauDeclInfo)
@@ -114,7 +119,8 @@ printDeclWithACSL fp semStable tauDeclInfo =
                     | otherwise = []
 
 
-printNumDeclWithACSL :: Maybe PredAbs
+printNumDeclWithACSL :: HasConditionals
+                     -> Maybe PredAbs
                      -> PVSType
                      -> String
                      -> [Arg]
@@ -126,16 +132,23 @@ printNumDeclWithACSL :: Maybe PredAbs
                      -> [(VarName,Double)]
                      -> [FAExpr]
                      -> Doc
-printNumDeclWithACSL predAbs fp f realArgs initArgs forIdx decl varBinds roErr numErrExprs isFiniteExprList =
-  prettyACSL (generateNumericProp predAbs fp f forIdx realArgs roErr varBinds isFiniteExprList)
+printNumDeclWithACSL hasConds predAbs fp f realArgs initArgs forIdx decl varBinds roErr numErrExprs isFiniteExprList =
+  text "/*@"
   $$
-  prettyDoc (generateNumericFunction predAbs fpFun f initArgs  errArgs numErrExprs)
+  prettyDoc assignsNothing
+  $$
+  prettyDoc (generateNumericProp hasConds predAbs fp f forIdx realArgs roErr varBinds isFiniteExprList)
+  $$
+  text "*/"
+  $$
+  prettyDoc (generateNumericFunction hasConds predAbs fpFun f initArgs  errArgs numErrExprs)
     where
       (_, errArgs) =  splitAt (length initArgs) args
       fpFun = declType decl
       args  = declArgs decl
 
-printSymbDeclWithACSL :: PVSType
+printSymbDeclWithACSL :: HasConditionals
+                      -> PVSType
                       -> Interpretation
                       -> RDecl
                       -> Decl
@@ -144,12 +157,12 @@ printSymbDeclWithACSL :: PVSType
                       -> [(VarName, FAExpr, FBExpr)]
                       -> [Condition]
                       -> Doc
-printSymbDeclWithACSL fp interp rDecl@(RDecl _ f realArgs _)
-                                fDecl@(Decl _ _ _ fpargs stm)
-                                taudecl@(Decl _ _ _ tauargs taustm)
-                                forVarsMap
-                                errVars
-                                listStableCond =
+printSymbDeclWithACSL hasConds fp interp rDecl@(RDecl _ f realArgs _)
+                                         fDecl@(Decl _ _ _ fpargs stm)
+                                         taudecl@(Decl _ _ _ tauargs taustm)
+                                         forVarsMap
+                                         errVars
+                                         listStableCond =
   text (vspace 1)
   $$
   realDeclForDoc
@@ -164,13 +177,15 @@ printSymbDeclWithACSL fp interp rDecl@(RDecl _ f realArgs _)
   $$
   text (vspace 1)
   $$
-  printAxiomaticTranPreds Nothing fp f realArgs listStableCond forIdxs
+  (if (hasConds f)
+    then printAxiomaticTranPreds Nothing fp targetFPType f realArgs listStableCond forIdxs
+         $$
+         text (vspace 1)
+    else empty)
   $$
-  text (vspace 1)
+  printFPSymbPrecond hasConds targetFPType f realArgs fpargs errVars localVariables forIdxs isFiniteExprList
   $$
-  printFPSymbPrecond fp f realArgs fpargs errVars localVariables forIdxs isFiniteExprList
-  $$
-  prettyDoc (decl2C forListExpr forVarsMap interp taudecl)
+  prettyDoc (decl2C forListExpr forVarsMap interp taudecl hasConds)
     where
       isFiniteExprList = buildListIsFiniteCheck tauargs (Left stm)
       localVariables = localVars taustm
@@ -183,8 +198,9 @@ printSymbDeclWithACSL fp interp rDecl@(RDecl _ f realArgs _)
       fpDeclForDoc = if null fpDeclFor
                        then emptyDoc
                        else vcat (map (prettyACSL . genAxiomaticFPFun True) fpDeclFor)
+      targetFPType = fprec2acsl fp
 
-printSymbDeclWithACSL fp interp rDecl@(RPred f realArgs _ )
+printSymbDeclWithACSL hasConds fp interp rDecl@(RPred f realArgs _ )
                                 fdecl@(Pred _ _ _ fpargs stm)
                                 taudecl@(Pred _ predAbs _ tauargs _)
                                 _ errVars listStableCond =
@@ -201,56 +217,91 @@ printSymbDeclWithACSL fp interp rDecl@(RPred f realArgs _ )
   $$
   text (vspace 1)
   $$
-  printAxiomaticTranPreds (Just predAbs) fp f realArgs listStableCond []
+  axiomaticTransformationPredicatesDoc
   $$
-  text (vspace 1)
+  printFPSymbPrecondPred hasConds targetFPType predAbs f realArgs fpargs errVars [] isFiniteExprList
   $$
-  printFPSymbPrecondPred predAbs fp f realArgs fpargs errVars [] isFiniteExprList
-  $$
-  prettyDoc (pred2C interp taudecl)
+  prettyDoc (pred2C hasConds interp taudecl)
     where
+      targetFPType = fprec2acsl fp
+      axiomaticTransformationPredicatesDoc =
+        if (hasConds f)
+          then printAxiomaticTranPreds (Just predAbs) fp targetFPType f realArgs listStableCond [] $$ text (vspace 1)
+          else empty
       isFiniteExprList = buildListIsFiniteCheck tauargs (Right stm)
 
-printSymbDeclWithACSL _ _ _ _ _ _ _ _ = error "printSymbDeclWithACSL: mismatch type in declarations."
+printSymbDeclWithACSL _ _ _ _ _ _ _ _ _ = error "printSymbDeclWithACSL: mismatch type in declarations."
 
 printAxiomaticTranPreds :: Maybe PredAbs
                         -> PVSType
+                        -> ACSL.Type
                         -> String
                         -> [Arg]
                         -> [Condition]
                         -> [(VarName, FAExpr, FAExpr)]
                         -> Doc
-printAxiomaticTranPreds predAbs fp f realArgs listStableCond forIdxs =
+printAxiomaticTranPreds predAbs pvsType targetFPType f realArgs listStableCond forIdxs =
   text "/*@ axiomatic " <> text (f ++ suffixPredAbs predAbs ++"_trans") <+> text "{"
   $$ prettyDoc stablePathPred
   $$ text "}"
   $$ text "*/"
   where
-    stablePathPred = generateStablePathPred predAbs fp f realArgs listStableCond forIdxs
+    stablePathPred = generateStablePathPred predAbs pvsType f realArgs listStableCond forIdxs
     suffixPredAbs (Just TauPlus)  = "_tauplus"
     suffixPredAbs (Just TauMinus) = "_tauminus"
     suffixPredAbs        _ = ""
 
-printFPSymbPrecond :: PVSType -> FunName -> [Arg] -> [Arg] -> [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] 
-                    -> [(VarName, FAExpr, FAExpr)] -> [FAExpr] -> Doc
-printFPSymbPrecond fp f realArgs fpArgs errVars locVars forIdxs isFiniteExprList =
+printFPSymbPrecond ::
+  HasConditionals ->
+  ACSL.Type ->
+  FunName ->
+  [Arg] ->
+  [Arg] ->
+  [(VarName, FAExpr, FBExpr)] ->
+  [(VarName, FAExpr)] ->
+  [(VarName, FAExpr, FAExpr)] ->
+  [FAExpr] ->
+  Doc
+printFPSymbPrecond hasConds targetFPType f realArgs fpArgs errVars locVars forIdxs isFiniteExprList =
   text "/*@"
-  $$ vcat (map prettyDoc (errorVarPrecond (listFst3 errVars)))
-  $$ text "\nbehavior structure:"
-  $$ prettyDoc (behaviorStructure f fpArgs isFiniteExprList)
-  $$ text "\nbehavior stable_paths:"
-  $$ prettyDoc (behaviorStablePaths f Nothing fp realArgs errVars locVars forIdxs isFiniteExprList)
-  $$ text "*/"
+    $$ vcat (map prettyDoc (errorVarPrecond (listFst3 errVars)))
+    $$ text "\nbehavior structure:"
+    $$ prettyDoc (behaviorStructure hasConds targetFPType f fpArgs isFiniteExprList)
+    $$ (if (hasConds f)
+      then
+        text "\nbehavior stable_paths:"
+          $$ prettyDoc (behaviorStablePaths hasConds f Nothing targetFPType realArgs errVars locVars forIdxs isFiniteExprList)
+      else
+        empty)
+    $$ text "*/"
 
-printFPSymbPrecondPred :: PredAbs -> PVSType -> FunName -> [Arg] -> [Arg] -> [(VarName,FAExpr,FBExpr)] -> [(VarName,FAExpr)] -> [FAExpr] -> Doc
-printFPSymbPrecondPred predAbs fp f realArgs fpArgs errVars locVars isFiniteExprList =
+printFPSymbPrecondPred ::
+  HasConditionals ->
+  ACSL.Type ->
+  PredAbs ->
+  FunName ->
+  [Arg] ->
+  [Arg] ->
+  [(VarName, FAExpr, FBExpr)] ->
+  [(VarName, FAExpr)] ->
+  [FAExpr] ->
+  Doc
+printFPSymbPrecondPred hasConds targetFPType predAbs f realArgs fpArgs errVars locVars isFiniteExprList =
   text "/*@"
-  $$ vcat (map prettyDoc (errorVarPrecond (listFst3 errVars)))
-  $$ text "\nbehavior structure:"
-  $$ prettyDoc (behaviorStructurePred predAbs f realArgs fpArgs errVars locVars isFiniteExprList)
-  $$ text "\nbehavior stable_paths:"
-  $$ prettyDoc (behaviorStablePaths f (Just predAbs) fp realArgs errVars locVars [] isFiniteExprList)
-  $$ text "*/"
+    $$ vcat (map prettyDoc (errorVarPrecond (listFst3 errVars)))
+    $$ ensureBehaviorDoc
+    $$ ensureStabilityDoc
+    $$ text "*/"
+  where
+    ensureBehaviorDoc =
+      text "\nbehavior structure:"
+        $$ prettyDoc (behaviorStructurePred hasConds targetFPType predAbs f realArgs fpArgs errVars locVars isFiniteExprList)
+    ensureStabilityDoc =
+      if (hasConds f)
+        then
+          text "\nbehavior stable_paths:"
+            $$ prettyDoc (behaviorStablePaths hasConds f (Just predAbs) targetFPType realArgs errVars locVars [] isFiniteExprList)
+        else empty
 
 printHeader :: Doc
 printHeader = text "// This file is automatically generated by PRECiSA \n"
@@ -263,7 +314,6 @@ printHeader = text "// This file is automatically generated by PRECiSA \n"
 
 printMain :: Doc
 printMain = text "int main () { return 0; }"
-
 
 
 

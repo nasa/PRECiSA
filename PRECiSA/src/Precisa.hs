@@ -25,7 +25,7 @@ import Data.Maybe (fromMaybe)
 import ErrM
 import PVSTypes
 import FramaC.PrettyPrint
--- import FramaC.PrecisaPrelude
+import FramaC.PrecisaPrelude
 import Options
 import PPExt
 import Kodiak.Runner
@@ -83,7 +83,7 @@ real2FPC fileprog filespec fp = do
   let dpsNone = map initDpsToNone decls
 
   -- transfromed program --
-  let tranProgTuples = transformProgramSymb decls
+  let tranProgTuples = transformProgramSymb realProg decls
 
   -- program semantics
   let progSemStable = fixpointSemantics decls (botInterp decls) 3 semConf dpsNone
@@ -108,6 +108,8 @@ real2FPC fileprog filespec fp = do
                                         funErrEnv progSemStable
   writeFile framaCfile (render framaCfileContent)
 
+  writeFile precisaPreludeFile (render precisaPreludeContent)
+
   writeFile pvsProgFile (render $ genFpProgFile fp fpFileName decls)
 
   let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName decls progSemStable
@@ -122,6 +124,7 @@ real2FPC fileprog filespec fp = do
 
   return ()
     where
+      precisaPreludeFile = filePath ++ "precisa_prelude.c"
       inputFileName = takeBaseName fileprog
       fpFileName = inputFileName ++ "_fp"
       filePath = dropFileName fileprog

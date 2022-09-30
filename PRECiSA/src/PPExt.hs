@@ -56,14 +56,7 @@ prettyDocUnaryOp op a = text op <> parens (prettyDoc a)
 prettyDocBinaryOp :: (PPExt a1, PPExt a2) => String -> a1 -> a2 -> Doc
 prettyDocBinaryOp op a1 a2 = text op <> parens (prettyDoc a1 <> comma <+> prettyDoc a2)
 
-printBinOpError :: (PPExt a, PPExt a1, PPExt a2, PPExt a3) => String -> a -> a1 -> a2 -> a3 -> Doc
-printBinOpError nameErrFun r1 e1 r2 e2 =
-    text nameErrFun <> (text "(" <>  prettyDoc r1 <> comma <+> prettyDoc e1 <> comma
-                                 <+> prettyDoc r2 <> comma <+> prettyDoc e2 <> text ")")
 
-printUnaryOpError :: (PPExt a, PPExt a1) => String -> a -> a1 -> Doc
-printUnaryOpError nameErrFun r e = text nameErrFun <> (text "(" <>  prettyDoc r <> comma
-                                            <+> prettyDoc e <> text ")")
 
 prettyErrorHex :: Double -> Doc
 prettyErrorHex roErr = text (showHFloat (roErr :: Double) "")

@@ -17,7 +17,7 @@ import FramaC.ACSLTypes
 import Common.TypesUtils
 import Common.ShowRational(showFloatC)
 import Data.Maybe (fromMaybe)
-import Data.List (stripPrefix)
+import Data.List.Extra (stripSuffix)
 
 type FunName  = String
 type PredName = String
@@ -206,6 +206,7 @@ instance PPExt FAExpr where
     prettyDoc  FResult = text "\\result"
     prettyDoc (FValue (FVar _ x)) = text x <> text ".value"
     prettyDoc (FValue FResult)    = text "\\result.value"
+    prettyDoc (FValue e) = parens (prettyDoc e) <> text ".value"
     prettyDoc (FArrayElem _ _ v idx) = text v <> text "[" <> prettyDoc idx <> text "]"
     prettyDoc (FEFun f _ []) = text f
     prettyDoc (FEFun f _ args) = text f <> parens (hsep $ punctuate comma $ map prettyDoc args)
@@ -538,7 +539,7 @@ instance PPExt Decl where
 
 instance PPExt FPDecl where
   prettyDoc (FPDecl isRec t f args body) =
-       text "axiomatic fp_function_" <> text (fromMaybe f (stripPrefix "fp_" f)) <+> text "{"
+       text "axiomatic fp_function_" <> text (fromMaybe f (stripSuffix "_fp" f)) <+> text "{"
     $$ text "logic"
     <+> prettyDoc t
     <+> text f <> isRecDoc 
@@ -549,7 +550,7 @@ instance PPExt FPDecl where
     where
       isRecDoc = if isRec then text "{L}" else emptyDoc
   prettyDoc (FPPred f args body) =
-       text "axiomatic fp_pred_" <> text (fromMaybe f (stripPrefix "fp_" f)) <+> text "{"
+       text "axiomatic fp_pred_" <> text (fromMaybe f (stripSuffix "_fp" f)) <+> text "{"
     $$ text "logic boolean"
     <+> text f 
     <+> parens (docListComma $ map prettyDoc  args)
