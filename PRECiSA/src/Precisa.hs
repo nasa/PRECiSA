@@ -96,7 +96,7 @@ real2FPC fileprog filespec fp = do
                            , minimumPrecision = fromInteger . toInteger $ prec }
   results <- computeAllErrorsInKodiak progSemStable spec searchParams
   -- numerical round-off errors declarations
-  let numROErrorsDecl = summarizeAllErrors (getKodiakResults results)
+  let numROErrorsDecl =  summarizeAllStableErrors (getKodiakResults results)
 
   -- symbolic round-off errors error vars
   let roErrorsDecl = zip (map fst progSemStable) (zip progSymbRoundOffErrs progStableConds)
@@ -118,9 +118,9 @@ real2FPC fileprog filespec fp = do
   let numCertificate = render $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec True
   writeFile numCertFile numCertificate
 
-  let guardExpressionsCert = render $ genExprCertFile inputFileName fpFileName exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv))
+  let guardExpressionsCert = render $ genExprCertFile fp inputFileName fpFileName exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv))
   writeFile exprCertFile guardExpressionsCert
-  putStrLn $ "PRECiSA: intrumented C code and PVS certificate generated in " ++ filePath ++ "."
+  putStrLn $ "PRECiSA: instrumented C code and PVS certificate generated in " ++ filePath ++ "."
 
   return ()
     where
@@ -136,7 +136,7 @@ real2FPC fileprog filespec fp = do
       exprCertFile = filePath ++ exprCertFileName ++ ".pvs"
       certFile =  filePath ++ certFileName ++ ".pvs"
       numCertFile =  filePath ++ numCertFileName ++ ".pvs"
-      semConf = SemConf { assumeTestStability = True, mergeUnstables = True}
+      semConf = SemConf {improveError = False, assumeTestStability = True, mergeUnstables = True}
 
 initDpsToNone :: Decl -> (FunName, [LDecisionPath])
 initDpsToNone (Decl _ _ f _ _) = (f,[])
@@ -152,10 +152,12 @@ parseAndAnalyze
           { optProgramFile          = fileprog
           , optInputRangeFile       = filespec
           , optPathFile             = filedps
+          , optImproveError         = impErr
           , optWithPaving           = withPaving
           , optMaxDepth             = maxBBDepth
           , optPrecision            = prec
           , optMaxNumLemma          = maxel
+          , optNoCollapsedStables   = noCollapsedStables
           , optAssumeStability      = sta
           , optNoCollapsedUnstables = notMu
           , optSMTOptimization      = useSMT } = do
@@ -163,13 +165,13 @@ parseAndAnalyze
   decls <- errify error errparseProg
   errparseSpec <- parseFileToSpec decls filespec
   spec <- errify fail errparseSpec
-  dps <- if null filedps
-    then
-      return $ map initDpsToNone decls
-    else
-      do
-        errparseTargetDPs <- parseFileToTargetDPs filedps
-        errify fail errparseTargetDPs
+  dps <- if noCollapsedStables
+         then return $ map initDpsToAll decls
+         else if null filedps
+         then return $ map initDpsToNone decls
+         else do
+           errparseTargetDPs <- parseFileToTargetDPs filedps
+           errify fail errparseTargetDPs
   -------------
   let progSem = fixpointSemantics decls (botInterp decls) 3 semConf dps
   checkProgSize progSem 0 maxel
@@ -181,7 +183,8 @@ parseAndAnalyze
   putStrLn "********************************************************************"
   putStrLn "****************************** PRECiSA *****************************"
   putStrLn ""
-  let searchParams = KP.SP { maximumDepth = fromInteger . toInteger $ maxBBDepth, minimumPrecision = fromInteger . toInteger $ prec }
+  let searchParams = KP.SP { maximumDepth = fromInteger . toInteger $ maxBBDepth
+                           , minimumPrecision = fromInteger . toInteger $ prec }
   let rawPgmSemUlp = initErrVars progSem
   let pgmSemUlp = removeInfiniteCebS rawPgmSemUlp
 
@@ -192,7 +195,8 @@ parseAndAnalyze
 
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
   results <- computeAllErrorsInKodiak unfoldedPgmSem spec searchParams
-  printAllErrors results
+  let resultSummary = summarizeAllErrors (getKodiakResults results)
+  printAllErrors resultSummary
   let numCertificate = render $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
   writeFile numCertFile numCertificate
   putStrLn ""
@@ -209,11 +213,10 @@ parseAndAnalyze
   else return []
   when withPaving $
       mapM_ (\(fun,file) -> putStrLn $ "Paving for function " ++ fun ++ " generated in: " ++ file) pavingFiles
-  -------------
-  -- return ()
     where
       mu = not notMu
-      semConf = SemConf { assumeTestStability = sta, mergeUnstables = mu}
+      collapseStables = not noCollapsedStables
+      semConf = SemConf {improveError = impErr, assumeTestStability = sta, mergeUnstables = mu}
       inputFileName = takeBaseName fileprog
       filePath = dropFileName fileprog
       filePathSMT = filePath ++ inputFileName ++ "_SMT/"
@@ -225,37 +228,44 @@ parseAndAnalyze
       realProgFileName = inputFileName ++ "_real"
       generatePavingFilename pvsFilename functionName = pvsFilename ++ "." ++ functionName ++ ".paving"
 
-getKodiakResults :: [(String,PVSType,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])] -> [(String, [KodiakResult])]
+getKodiakResults :: [(String,PVSType,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])] -> [(String, [(ControlFlow,KodiakResult)])]
 getKodiakResults = map getKodiakResult
   where
      getKodiakResult (f,_,_,errors) = (f, map getKodiakError errors)
-     getKodiakError (_, _,_,err,_,_,_) = err
+     getKodiakError (_,_,cf,err,_,_,_) = (cf,err)
 
-summarizeAllErrors :: [(String, [KodiakResult])] -> [(String, Double)]
-summarizeAllErrors errorMap = [ (f,maximum $ map maximumUpperBound results) | (f, results) <- errorMap]
+summarizeAllErrors :: [(String, [(ControlFlow, KodiakResult)])] -> [(String, [(ControlFlow, Double)])]
+summarizeAllErrors errorMap = map aux errorMap
+  where
+    aux (f, results) =
+      let stableCases = filter ((== Stable) . fst) results in
+      let unstableCases = filter ((== Unstable) . fst) results in
+      (f,[(Stable,maximum $ map (maximumUpperBound . snd) stableCases)]
+         ++
+         if null unstableCases then []
+         else [(Unstable, maximum $ map (maximumUpperBound . snd) unstableCases)])
 
-printAllErrors :: [(String,PVSType,[Arg],[(Conditions,LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])] -> IO ()
+summarizeAllStableErrors :: [(String, [(ControlFlow, KodiakResult)])] -> [(String, Double)]
+summarizeAllStableErrors errorMap = map aux errorMap
+  where
+    aux (f, results) = (f,maximum $ map (maximumUpperBound . snd) (filter ((== Stable) . fst) results))
+
+printAllErrors :: [(String,[(ControlFlow,Double)])] -> IO ()
 printAllErrors = mapM_ printFunction
   where
-    stabilityOrder (_,p1,Stable,_,_,_,_)  (_,p2,Stable,_,_,_,_) = compare p1 p2
-    stabilityOrder (_,_,Stable,_,_,_,_)   (_,_,_,_,_,_,_) = LT
-    stabilityOrder (_,_,Unstable,_,_,_,_) (_,_,_,_,_,_,_) = GT
-
-    printFunction (f,_,_,results) = do
+    printFunction (f,results) = do
       putStrLn $ "Function " ++ f
-      mapM_ printResult $ zip ([0,1..] :: [Integer]) $ List.sortBy stabilityOrder results
-        where
-          printResult (i,(_,path,flow,result,_,_,_)) =
-            if flow == Stable
-            then putStrLn $ show i ++ "- path " ++ show path ++ ": " ++ render (prettyNumError $ maximumUpperBound result)
-            else putStrLn $ show i ++ "- unstable paths ++ " ++ show path ++ ": " ++ render (prettyNumError $ maximumUpperBound result)
-
+      mapM_ printRes results
+    printRes (flow, err) = do
+      if flow == Stable
+        then putStrLn $ "  stable paths: " ++ render (prettyNumError $ err)
+        else putStrLn $ "  unstable paths: " ++ render (prettyNumError $ err)
 
 computeAllErrorsInKodiak :: Interpretation
                          -> Spec
                          -> KP.SearchParameters
                          -> IO [(String,PVSType,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])]
-computeAllErrorsInKodiak  interp (Spec specBinds) searchParams = mapM runFunction functionNames
+computeAllErrorsInKodiak interp (Spec specBinds) searchParams = mapM runFunction functionNames
   where
     functionNames = map fst functionBindingsMap
     functionBindingsMap = map (\(SpecBind f b) -> (f,b)) specBinds

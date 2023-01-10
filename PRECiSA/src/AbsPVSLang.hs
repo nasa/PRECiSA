@@ -64,10 +64,12 @@ data AExpr
     | RUnstWarning
     | ErrFma   PVSType AExpr EExpr AExpr EExpr AExpr EExpr
     | ErrBinOp BinOp PVSType AExpr EExpr AExpr EExpr
-    | ErrUnOp  UnOp  TightErr PVSType AExpr EExpr
+    | ErrUnOp  UnOp PVSType AExpr EExpr
     | ErrCast  PVSType PVSType AExpr EExpr
     | ErrMulPow2R PVSType Integer EExpr
     | ErrMulPow2L PVSType Integer EExpr
+    | ErrSubSternenz PVSType AExpr EExpr AExpr EExpr
+    | ErrFloorNoRound PVSType AExpr EExpr
     | HalfUlp AExpr PVSType
     | ErrRat Rational
     | MaxErr [EExpr]
@@ -223,12 +225,12 @@ realDeclArgs (RDecl _ _ args _) = args
 realDeclArgs (RPred _   args _) = args
 
 applyFunToDeclBody :: (FAExpr -> a) -> (FBExprStm -> a) -> Decl -> a
-applyFunToDeclBody fa fb d@(Decl _ _ _ _ aexpr) = fa aexpr
-applyFunToDeclBody fa fb d@(Pred _ _ _ _ bexpr) = fb bexpr
+applyFunToDeclBody fa _ (Decl _ _ _ _ aexpr) = fa aexpr
+applyFunToDeclBody _ fb (Pred _ _ _ _ bexpr) = fb bexpr
 
 applyFunToRDeclBody :: (AExpr -> a) -> (BExprStm -> a) -> RDecl -> a
-applyFunToRDeclBody fa fb d@(RDecl _ _ _ aexpr) = fa aexpr
-applyFunToRDeclBody fa fb d@(RPred _ _ bexpr) = fb bexpr
+applyFunToRDeclBody fa _ (RDecl _ _ _ aexpr) = fa aexpr
+applyFunToRDeclBody _ fb (RPred _ _   bexpr) = fb bexpr
 
 var2Arg :: VarName -> PVSType -> Arg
 var2Arg = Arg
@@ -272,7 +274,18 @@ isIntAExpr :: AExpr -> Bool
 isIntAExpr (Int _)      = True
 isIntAExpr (Var TInt _) = True
 isIntAExpr (Rat n)      = toRational (floor (fromRational n :: Double) :: Integer) == n
-isIntAExpr (UnaryOp  _      ae) = isIntAExpr ae
+isIntAExpr (UnaryOp FloorOp _) = True
+isIntAExpr (UnaryOp SqrtOp  _) = False
+isIntAExpr (UnaryOp SinOp   _) = False
+isIntAExpr (UnaryOp CosOp   _) = False
+isIntAExpr (UnaryOp TanOp   _) = False
+isIntAExpr (UnaryOp AcosOp  _) = False
+isIntAExpr (UnaryOp AsinOp  _) = False
+isIntAExpr (UnaryOp AtanOp  _) = False
+isIntAExpr (UnaryOp LnOp    _) = False
+isIntAExpr (UnaryOp ExpoOp   _) = False
+isIntAExpr (UnaryOp _      ae) = isIntAExpr ae
+isIntAExpr (BinaryOp DivOp _ _) = False
 isIntAExpr (BinaryOp _ ae1 ae2) = isIntAExpr ae1 && isIntAExpr ae2
 isIntAExpr (EFun _ TInt _) = True
 isIntAExpr (Min aes) = foldl (\acc expr -> acc && isIntAExpr expr) True aes
@@ -563,9 +576,9 @@ rewriteEquivEExpr = replaceInAExpr rewriteEquivEExpr' (const Nothing)
   where
     rewriteEquivEExpr' (ErrMulPow2L _ _ ee) = Just $ rewriteEquivEExpr ee
     rewriteEquivEExpr' (ErrMulPow2R _ _ ee) = Just $ rewriteEquivEExpr ee
-    rewriteEquivEExpr' (ErrUnOp AbsOp _ _ _ ee) = Just $ rewriteEquivEExpr ee
-    rewriteEquivEExpr' (ErrUnOp NegOp _ _ _ ee) = Just $ rewriteEquivEExpr ee
-    rewriteEquivEExpr' (ErrUnOp  tight op fp ae ee)      = Just $ ErrUnOp tight op fp ae (rewriteEquivEExpr ee)
+    rewriteEquivEExpr' (ErrUnOp AbsOp _ _ ee) = Just $ rewriteEquivEExpr ee
+    rewriteEquivEExpr' (ErrUnOp NegOp _ _ ee) = Just $ rewriteEquivEExpr ee
+    rewriteEquivEExpr' (ErrUnOp op fp ae ee)      = Just $ ErrUnOp op fp ae (rewriteEquivEExpr ee)
     rewriteEquivEExpr' (ErrBinOp op fp ae1 ee1 ae2 ee2)  = Just $ ErrBinOp op fp ae1 (rewriteEquivEExpr ee1) ae2 (rewriteEquivEExpr ee2)
     rewriteEquivEExpr' (MaxErr       ees)
       | and $ zipWith (==) ees' $ tail ees' = Just $ head ees'
@@ -818,6 +831,12 @@ simplAExprAux' (BinaryOp MulOp (Int n) (Int m)) = Just $ Int (n*m)
 simplAExprAux' (BinaryOp MulOp (Int n) (Rat m)) = Just $ Rat (fromIntegral n * m)
 simplAExprAux' (BinaryOp MulOp (Rat n) (Int m)) = Just $ Rat (n * fromIntegral m)
 simplAExprAux' (BinaryOp MulOp (Rat n) (Rat m)) = Just $ Rat (n*m)
+simplAExprAux' (BinaryOp DivOp      _  (Int 0)) = error $ "Division by 0."
+simplAExprAux' (BinaryOp DivOp      _  (Rat 0)) = error $ "Division by 0."
+simplAExprAux' (BinaryOp DivOp (Int n) (Int m)) = Just $ Rat (fromIntegral n/ fromIntegral m)
+simplAExprAux' (BinaryOp DivOp (Int n) (Rat m)) = Just $ Rat (fromIntegral n/m)
+simplAExprAux' (BinaryOp DivOp (Rat n) (Int m)) = Just $ Rat (n / fromIntegral m)
+simplAExprAux' (BinaryOp DivOp (Rat n) (Rat m)) = Just $ Rat (n/m)
 simplAExprAux' (UnaryOp  NegOp (Int n))         = Just $ Int (-n)
 simplAExprAux' (MaxErr aes) = if null res then Just $ Int 0 else Just $ MaxErr res
   where
@@ -919,11 +938,37 @@ localVars :: FAExpr -> [(VarName, FAExpr)]
 localVars fae = elimDuplicates (foldFAExpr const varList' varListAExpr' fae [])
   where
     varList' :: [(VarName, FAExpr)] -> FAExpr -> [(VarName, FAExpr)]
-    varList' acc (Let letElems _) = map (\(x,_,ae) -> (x,ae)) letElems ++ acc
+    varList' acc (Let letElems _) = acc ++ map (\(x,_,ae) -> (x,ae)) letElems
     varList' acc _                = acc
 
     varListAExpr' :: [(VarName, FAExpr)] -> AExpr -> [(VarName, FAExpr)]
     varListAExpr' acc _ = acc
+
+localVarsBExpr :: FBExpr -> [(VarName, FAExpr)]
+localVarsBExpr fbe = elimDuplicates (foldFBExpr const varList' varListAExpr' fbe [])
+  where
+    varList' :: [(VarName, FAExpr)] -> FAExpr -> [(VarName, FAExpr)]
+    varList' acc expr = acc ++ localVars expr
+
+    varListAExpr' :: [(VarName, FAExpr)] -> AExpr -> [(VarName, FAExpr)]
+    varListAExpr' acc _ = acc
+
+localVarsBExprStm :: FBExprStm -> [(VarName, FAExpr)]
+localVarsBExprStm = elimDuplicates . localVarsBExprStm'
+  where
+    localVarsBExprStm' :: FBExprStm -> [(VarName, FAExpr)]
+    localVarsBExprStm' (BLet letElems stm) = concatMap (localVars . trd3) letElems
+                                             ++ map (\(x,_,ae) -> (x,ae)) letElems
+                                             ++ localVarsBExprStm' stm
+    localVarsBExprStm' (BIte be thenExpr elseExpr) = localVarsBExpr be
+                                          ++ localVarsBExprStm' thenExpr
+                                          ++ localVarsBExprStm' elseExpr
+    localVarsBExprStm' (BListIte thenExprs elseExpr) = concatMap localVarsBExprStm' (elseExpr:(map snd thenExprs))
+    localVarsBExprStm' (BExpr be) = localVarsBExpr be
+    localVarsBExprStm' BUnstWarning = []
+
+localVarsDecl (Decl _ _ _ _ expr) = localVars expr
+localVarsDecl (Pred _ _ _ _ expr) = localVarsBExprStm expr
 
 forIndexes :: FAExpr -> [(VarName, FAExpr, FAExpr)]
 forIndexes fae = elimDuplicates (foldFAExpr const varList' varListAExpr' fae [])
@@ -1001,8 +1046,9 @@ predCallListFBExprStmWithCond rprog expr = filter hasConds list
    where
       hasConds (FEPred _ _ name _) = hasConditionalsBExpr rprog (fromRight (notFound name)
             $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog))
+      hasConds bexpr = error $ "Predicate expected instead of " ++ show bexpr ++ "."
       list = predCallListFBExprStm expr
-      notFound     name = error $ "Function " ++ show name ++ " not found in program."
+      notFound name = error $ "Function " ++ show name ++ " not found in program."
 
 predCallListFBExpr :: FBExpr -> [FBExpr]
 predCallListFBExpr be = elimDuplicates $ foldFBExpr predFCallListAcc const const be []
@@ -1013,7 +1059,9 @@ predCallListFAExpr ae = elimDuplicates $ foldFAExpr predFCallListAcc const const
 predCallListFAExprWithConds :: RProgram -> FAExpr -> [FBExpr]
 predCallListFAExprWithConds rprog expr = filter hasConds list
    where
-      hasConds (FEPred _ _ name _) = hasConditionalsBExpr rprog (fromRight (notFound name) $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog))
+      hasConds (FEPred _ _ name _) = hasConditionalsBExpr rprog (fromRight (notFound name)
+        $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog))
+      hasConds bexpr = error $ "Predicate expected instead of " ++ show bexpr ++ "."
       list = predCallListFAExpr expr
       notFound     name = error $ "Function " ++ show name ++ " not found in program."
 
@@ -1025,7 +1073,7 @@ funHasConds :: RProgram -> FunName -> Bool
 funHasConds rprog name = either (hasConditionals rprog) (hasConditionalsBExpr rprog)
     $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog)
       where
-        notFound name = error $ "Function " ++ show name ++ " not found in program."
+        notFound funName = error $ "Function " ++ show funName ++ " not found in program."
 
 noRoundOffErrorIn :: FBExpr -> Bool
 noRoundOffErrorIn FEPred{} = False
@@ -1196,8 +1244,7 @@ foldBExpr faExprF aExprF (Not be1)      a = foldBExpr faExprF aExprF be1 a
 foldBExpr faExprF aExprF (Rel _ ae1 ae2) a = foldAExpr faExprF aExprF ae2
                                            $ foldAExpr faExprF aExprF ae1 a
 foldBExpr faExprF aExprF (EPred _ args) a = foldListAExpr faExprF aExprF args a
-foldBExpr _ _ BTrue          a = a
-foldBExpr _ _ BFalse         a = a
+foldBExpr _ _ _          a = a
 
 foldAExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> AExpr -> a -> a
 foldAExpr _       aExprF ae@(Int _)         a = aExprF a ae
@@ -1217,8 +1264,10 @@ foldAExpr faExprF aExprF ae@(ErrMulPow2R _ _ ee)  a = foldUnaryAExpr  faExprF aE
 foldAExpr faExprF aExprF ae@(ErrMulPow2L _ _ ee)  a = foldUnaryAExpr  faExprF aExprF ae ee      a
 foldAExpr faExprF aExprF ae@(ArrayElem _ _ _ ae1) a = foldUnaryAExpr  faExprF aExprF ae ae1     a
 foldAExpr faExprF aExprF ae@(HalfUlp ae1 _)       a = foldUnaryAExpr  faExprF aExprF ae ae1     a
-foldAExpr faExprF aExprF ae@(ErrUnOp  _ _ _ ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(ErrUnOp  _ _ ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
+foldAExpr faExprF aExprF ae@(ErrFloorNoRound _ ae1 ae2) a = foldBinaryAExpr faExprF aExprF ae ae1 ae2 a
 foldAExpr faExprF aExprF ae@(ErrBinOp _ _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
+foldAExpr faExprF aExprF ae@(ErrSubSternenz _ ae1 ee1 ae2 ee2) a = foldQuadAExpr faExprF aExprF ae ae1 ee1 ae2 ee2 a
 foldAExpr faExprF aExprF ae@(ErrCast  _ _ ae1 ee1) a = foldBinaryAExpr faExprF aExprF ae ae1 ee1 a
 foldAExpr faExprF aExprF ae@(EFun _ _ aes) a = foldListAExpr faExprF aExprF aes $ aExprF a ae
 foldAExpr faExprF aExprF (Min      aes) a = foldListAExpr faExprF aExprF aes a
@@ -1319,15 +1368,15 @@ replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
     replaceInAExpr' (Min    aes) = Min    (map (replaceInAExpr rf ff) aes)
     replaceInAExpr' (Max    aes) = Max    (map (replaceInAExpr rf ff) aes)
     replaceInAExpr' (MaxErr aes) = MaxErr (map (replaceInAExpr rf ff) aes)
-    -- replaceInAExpr' (Fma   ae1 ae2 ae3) = Fma (replaceInAExpr rf ff ae1)
-    --                                           (replaceInAExpr rf ff ae2)
-    --                                           (replaceInAExpr rf ff ae3)
     replaceInAExpr' (ErrFma fp ae1 ee1 ae2 ee2 ae3 ee3) = ErrFma fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
                                                                     (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
                                                                     (replaceInAExpr rf ff ae3) (replaceInAExpr rf ff ee3)
     replaceInAExpr' (ErrBinOp op fp ae1 ee1 ae2 ee2) = ErrBinOp op fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
                                                               (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
-    replaceInAExpr' (ErrUnOp tight op fp ae1 ee1) = ErrUnOp tight op fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+    replaceInAExpr' (ErrSubSternenz fp ae1 ee1 ae2 ee2) = ErrSubSternenz fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)    
+    replaceInAExpr' (ErrUnOp op fp ae1 ee1) = ErrUnOp op fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
+    replaceInAExpr' (ErrFloorNoRound fp ae1 ee1) = ErrFloorNoRound fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
     replaceInAExpr' (ErrMulPow2R fp i ee) = ErrMulPow2R fp i (replaceInAExpr rf ff ee)
     replaceInAExpr' (ErrMulPow2L fp i ee) = ErrMulPow2R fp i (replaceInAExpr rf ff ee)
     replaceInAExpr' (HalfUlp ae fp) = HalfUlp (replaceInAExpr rf ff ae) fp
@@ -1461,23 +1510,9 @@ listFPGuards fae = foldFAExpr const fpGuardList' fpGuardListAExpr' fae []
     fpGuardListAExpr' :: [FAExpr] -> AExpr -> [FAExpr]
     fpGuardListAExpr' acc _ = acc
 
-listFPGuardsFBExprStm :: FBExprStm -> [FAExpr]
-listFPGuardsFBExprStm BUnstWarning = []
-listFPGuardsFBExprStm (BLet _ expr) = listFPGuardsFBExprStm expr
-listFPGuardsFBExprStm (BIte be thenExpr elseExpr) = fpExprsInGuard be
-                                                 ++ listFPGuardsFBExprStm thenExpr
-                                                 ++ listFPGuardsFBExprStm elseExpr
-listFPGuardsFBExprStm (BListIte listThen elseExpr) = concatMap (fpExprsInGuard . fst) listThen
-                                                  ++ concatMap (listFPGuardsFBExprStm . snd) listThen
-                                                  ++ listFPGuardsFBExprStm elseExpr
-listFPGuardsFBExprStm (BExpr be) = fpExprsInGuard be
 
 buildListIsFiniteCheck :: [Arg] -> Either FAExpr FBExprStm -> [FAExpr]
-buildListIsFiniteCheck args expr = elimDuplicates $ map arg2var (filter isArgFP args) ++ listIfGuards
-  where
-    listIfGuards = case expr of
-      Left  ae -> listFPGuards ae
-      Right be -> listFPGuardsFBExprStm be
+buildListIsFiniteCheck args expr = elimDuplicates $ map arg2var (filter isArgFP args)
 
 
 hasConditionals :: RProgram -> AExpr -> Bool
@@ -1491,41 +1526,40 @@ hasConditionals prog (Min es) = foldl1 (||) (map (hasConditionals prog) es)
 hasConditionals prog (Max es) = foldl1 (||) (map (hasConditionals prog) es)
 hasConditionals prog (RLet letElems expr) = hasConditionals prog expr
                                             || foldl1 (||) (map ((hasConditionals prog) . letExpr) letElems)
-hasConditionals prog (RIte _ _ _) = True
-hasConditionals prog (RListIte _ _) = True
+hasConditionals _ (RIte _ _ _) = True
+hasConditionals _ (RListIte _ _) = True
 hasConditionals prog (RForLoop _ _ _ _ _ _ forBody) = hasConditionals prog forBody
 hasConditionals prog (EFun f _ _) = applyFunToRDeclBody (hasConditionals prog)
                                                         (hasConditionalsBExpr prog)
-                                                        declBody
+                                                        body
    where
-      declBody = fromMaybe (error $ "Function " ++ show f ++ " not found.")
+      body = fromMaybe (error $ "Function " ++ show f ++ " not found.")
                  $ findInRealProg f prog
 hasConditionals _ expr = error $ "hasConditionals not defined for expression " ++ show expr ++ "."
 
 
 hasConditionalsBExpr :: RProgram -> BExprStm -> Bool
-hasConditionalsBExpr prog (RBIte _ _ _) = True
-hasConditionalsBExpr prog (RBListIte _ _) = True
+hasConditionalsBExpr _ (RBIte _ _ _) = True
+hasConditionalsBExpr _ (RBListIte _ _) = True
 hasConditionalsBExpr prog (RBLet letElems body) = hasConditionalsBExpr prog body
                                                   || foldl1 (||) (map ((hasConditionals prog) . letExpr) letElems)
-hasConditionalsBExpr prog (RBExpr be) = hasConditionalsBExpr' prog be
+hasConditionalsBExpr prog (RBExpr be) = hasConditionalsBExpr' be
   where
-    hasConditionalsBExpr' _ BTrue  = False
-    hasConditionalsBExpr' _ BFalse = False
-    hasConditionalsBExpr' prog (Or  be1 be2) = hasConditionalsBExpr' prog be1 ||
-                                                hasConditionalsBExpr' prog be2
-    hasConditionalsBExpr' prog (And be1 be2) = hasConditionalsBExpr' prog be1 ||
-                                                hasConditionalsBExpr' prog be2
-    hasConditionalsBExpr' prog (Not be) = hasConditionalsBExpr' prog be
-    hasConditionalsBExpr' prog (Rel _ ae1 ae2) = hasConditionals prog ae1 ||
-                                                  hasConditionals prog ae2
-    hasConditionalsBExpr' prog (EPred f _) = applyFunToRDeclBody (hasConditionals prog)
-                                                                      (hasConditionalsBExpr prog)
-                                                                       declBody
+    hasConditionalsBExpr' BTrue  = False
+    hasConditionalsBExpr' BFalse = False
+    hasConditionalsBExpr' (Or  be1 be2) = hasConditionalsBExpr' be1 ||
+                                          hasConditionalsBExpr' be2
+    hasConditionalsBExpr' (And be1 be2) = hasConditionalsBExpr' be1 ||
+                                          hasConditionalsBExpr' be2
+    hasConditionalsBExpr' (Not be1) = hasConditionalsBExpr' be1
+    hasConditionalsBExpr' (Rel _ ae1 ae2) = hasConditionals prog ae1 ||
+                                            hasConditionals prog ae2
+    hasConditionalsBExpr' (EPred f _) = applyFunToRDeclBody (hasConditionals prog)
+                                          (hasConditionalsBExpr prog) body
       where
-        declBody = fromMaybe (error $ "Function " ++ show f ++ " not found.")
+        body = fromMaybe (error $ "Function " ++ show f ++ " not found.")
                  $ findInRealProg f prog
-    hasConditionalsBExpr' _ expr = error $ "hasConditionalsBExpr not defined for expression " ++ show expr ++ "."
+
 -----------------------
 -- PPExt instances --
 -----------------------
@@ -1580,21 +1614,21 @@ instance PPExt AExpr where
   prettyDoc = fix prettyAExpr
 
 prettyAExpr :: (AExpr -> Doc) -> AExpr -> Doc
-prettyAExpr f Infinity = text "infinity"
-prettyAExpr f (Int i) = integer i
-prettyAExpr f (Rat d) = parens $ text $ showRational d
-prettyAExpr f (FExp fa) = text "Fexp" <> parens (prettyDoc fa)
-prettyAExpr f (RealMark x) = text "r_" <> text x
-prettyAExpr f (ErrorMark x _)  = text "e_" <> text x
-prettyAExpr f (ErrRat r) = parens $ text $ showRational r
-prettyAExpr f (Var _ x) = text x
-prettyAExpr f (ArrayElem _ _ v idx) = text v <> text "[" <> prettyDoc idx <> text "]"
-prettyAExpr f (EFun g _ []) = text g
+prettyAExpr _ Infinity = text "infinity"
+prettyAExpr _ (Int i) = integer i
+prettyAExpr _ (Rat d) = parens $ text $ showRational d
+prettyAExpr _ (FExp fa) = text "Fexp" <> parens (prettyDoc fa)
+prettyAExpr _ (RealMark x) = text "r_" <> text x
+prettyAExpr _ (ErrorMark x _)  = text "e_" <> text x
+prettyAExpr _ (ErrRat r) = parens $ text $ showRational r
+prettyAExpr _ (Var _ x) = text x
+prettyAExpr _ (ArrayElem _ _ v idx) = text v <> text "[" <> prettyDoc idx <> text "]"
+prettyAExpr _ (EFun g _ []) = text g
 prettyAExpr f (EFun g _ args) = text g <> parens (hsep $ punctuate comma $ map (prettyAExpr f) args)
-prettyAExpr f (UnaryOp  NegOp (Int i)) = text "-" <> integer i
-prettyAExpr f (UnaryOp  NegOp (Rat d)) = text "-" <> parens (text $ showRational d)
-prettyAExpr f (FromFloat FPSingle a) = text "StoR"   <> lparen <> prettyDoc a <> rparen
-prettyAExpr f (FromFloat FPDouble a) = text "StoD"   <> lparen <> prettyDoc a <> rparen
+prettyAExpr _ (UnaryOp  NegOp (Int i)) = text "-" <> integer i
+prettyAExpr _ (UnaryOp  NegOp (Rat d)) = text "-" <> parens (text $ showRational d)
+prettyAExpr _ (FromFloat FPSingle a) = text "StoR"   <> lparen <> prettyDoc a <> rparen
+prettyAExpr _ (FromFloat FPDouble a) = text "StoD"   <> lparen <> prettyDoc a <> rparen
 
 prettyAExpr f (BinaryOp AddOp   a1 a2) = parens $ f a1 <+> text "+" <+> f a2
 prettyAExpr f (BinaryOp SubOp   a1 a2) = parens $ f a1 <+> text "-" <+> f a2
@@ -1619,72 +1653,74 @@ prettyAExpr f (UnaryOp AtanOp  a) = text "atan"  <> lparen <> f a <> rparen
 prettyAExpr f (UnaryOp LnOp    a) = text "ln"  <> lparen <> f a <> rparen
 prettyAExpr f (UnaryOp ExpoOp  a) = text "exp"  <> lparen <> f a <> rparen
 
-prettyAExpr f (MaxErr []) = error "Something went wrong: MaxErr applied to empty list"
+prettyAExpr _ (MaxErr []) = error "Something went wrong: MaxErr applied to empty list"
 prettyAExpr f (MaxErr [es]) = f es
 prettyAExpr f (MaxErr ees@(_:(_:_))) =
     text "max" <> parens (hsep $ punctuate comma (map f ees))
 
-prettyAExpr f (ErrBinOp AddOp FPSingle r1 e1 r2 e2) = printBinOpError f "aeboundsp_add" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp AddOp FPDouble r1 e1 r2 e2) = printBinOpError f "aebounddp_add" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp AddOp TInt     r1 e1 r2 e2) = printBinOpError f  "aeboundi_add" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp SubOp FPSingle r1 e1 r2 e2) = printBinOpError f "aeboundsp_sub" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp SubOp FPDouble r1 e1 r2 e2) = printBinOpError f "aebounddp_sub" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp SubOp TInt     r1 e1 r2 e2) = printBinOpError f  "aeboundi_sub" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp MulOp FPSingle r1 e1 r2 e2) = printBinOpError f "aeboundsp_mul" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp MulOp FPDouble r1 e1 r2 e2) = printBinOpError f "aebounddp_mul" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp MulOp TInt     r1 e1 r2 e2) = printBinOpError f  "aeboundi_mul" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp DivOp FPSingle r1 e1 r2 e2) = printBinOpError f "aeboundsp_div" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp DivOp FPDouble r1 e1 r2 e2) = printBinOpError f "aebounddp_div" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp DivOp TInt     r1 e1 r2 e2) = printBinOpError f  "aeboundi_div" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp ModOp TInt     r1 e1 r2 e2) = printBinOpError f "aeboundi_mod" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp PowOp FPSingle r1 e1 r2 e2) = printBinOpError f "aeboundsp_pow" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp PowOp FPDouble r1 e1 r2 e2) = printBinOpError f "aebounddp_pow" r1 e1 r2 e2
-prettyAExpr f (ErrBinOp PowOp TInt     r1 e1 r2 e2) = printBinOpError f  "aeboundi_pow" r1 e1 r2 e2
-
+prettyAExpr f (ErrBinOp AddOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_add" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp AddOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_add" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp SubOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_sub" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp SubOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_sub" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp MulOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_mul" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp MulOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_mul" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp DivOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_div" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp DivOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_div" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp PowOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_pow" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp PowOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_pow" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp AddOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_int_add" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp SubOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_int_sub" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp MulOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_int_mul" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp DivOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_int_div" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp ModOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_int_mod" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp PowOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_int_pow" r1 e1 r2 e2
+prettyAExpr f (ErrSubSternenz FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_subt" r1 e1 r2 e2
+prettyAExpr f (ErrSubSternenz FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_subt" r1 e1 r2 e2
 prettyAExpr f (ErrMulPow2L fp n e) = text nameErrFun <> (text "(" <> integer n <> comma
                                                  <+> prettyAExpr f e <> text ")")
     where
         nameErrFun = case fp of
-                        FPSingle -> "aebounddp_mul_p2l"
-                        FPDouble -> "aeboundsp_mul_p2l"
+                        FPSingle -> "aerr_ulp_sp_mul_p2l"
+                        FPDouble -> "aerr_ulp_dp_mul_p2l"
                         _ -> error $ "prettyAExpr f ErrMulPow2L: unexpected type " ++ show fp ++ " value."
 
 prettyAExpr f (ErrMulPow2R fp n e) = text nameErrFun <> (text "(" <> integer n <> comma
                                                <+> prettyAExpr f e <> text ")")
   where
       nameErrFun = case fp of
-                      FPSingle -> "aebounddp_mul_p2r"
-                      FPDouble -> "aeboundsp_mul_p2r"
+                      FPSingle -> "aerr_ulp_sp_mul_p2r"
+                      FPDouble -> "aerr_ulp_dp_mul_p2r"
                       _ -> error $ "prettyAExpr f ErrMulPow2R: unexpected type " ++ show fp ++ " value."
 
-prettyAExpr f (ErrUnOp FloorOp False FPSingle r e) = printUnaryOpError f "aeboundsp_flr"   r e
-prettyAExpr f (ErrUnOp FloorOp False FPDouble r e) = printUnaryOpError f "aebounddp_flr"   r e
-prettyAExpr f (ErrUnOp FloorOp True  FPSingle r e) = printUnaryOpError f "aeboundsp_flr_t" r e
-prettyAExpr f (ErrUnOp FloorOp True  FPDouble r e) = printUnaryOpError f "aebounddp_flr_t" r e
-prettyAExpr f (ErrUnOp SqrtOp  False FPSingle r e) = printUnaryOpError f "aeboundsp_sqt" r e
-prettyAExpr f (ErrUnOp SqrtOp  False FPDouble r e) = printUnaryOpError f "aebounddp_sqt" r e
-prettyAExpr f (ErrUnOp SinOp   False FPSingle r e) = printUnaryOpError f "aeboundsp_sin" r e
-prettyAExpr f (ErrUnOp SinOp   False FPDouble r e) = printUnaryOpError f "aebounddp_sin" r e
-prettyAExpr f (ErrUnOp CosOp   False FPSingle r e) = printUnaryOpError f "aeboundsp_cos" r e
-prettyAExpr f (ErrUnOp CosOp   False FPDouble r e) = printUnaryOpError f "aebounddp_cos" r e
-prettyAExpr f (ErrUnOp TanOp   False FPSingle r e) = printUnaryOpError f "aeboundsp_tan" r e
-prettyAExpr f (ErrUnOp TanOp   False FPDouble r e) = printUnaryOpError f "aebounddp_tan" r e
-prettyAExpr f (ErrUnOp AcosOp  False FPSingle r e) = printUnaryOpError f "aeboundsp_acs" r e
-prettyAExpr f (ErrUnOp AcosOp  False FPDouble r e) = printUnaryOpError f "aebounddp_acs" r e
-prettyAExpr f (ErrUnOp AsinOp  False FPSingle r e) = printUnaryOpError f "aeboundsp_asn" r e
-prettyAExpr f (ErrUnOp AsinOp  False FPDouble r e) = printUnaryOpError f "aebounddp_asn" r e
-prettyAExpr f (ErrUnOp AtanOp  False FPSingle r e) = printUnaryOpError f "aeboundsp_atn" r e
-prettyAExpr f (ErrUnOp AtanOp  False FPDouble r e) = printUnaryOpError f "aebounddp_atn" r e
-prettyAExpr f (ErrUnOp NegOp   False FPSingle r e) = printUnaryOpError f "aeboundsp_neg" r e
-prettyAExpr f (ErrUnOp NegOp   False FPDouble r e) = printUnaryOpError f "aebounddp_neg" r e
-prettyAExpr f (ErrUnOp NegOp   False TInt     r e) = printUnaryOpError f  "aeboundi_neg" r e
-prettyAExpr f (ErrUnOp AbsOp   False FPSingle r e) = printUnaryOpError f  "aeboundsp_abs" r e
-prettyAExpr f (ErrUnOp AbsOp   False FPDouble r e) = printUnaryOpError f  "aebounddp_abs" r e
-prettyAExpr f (ErrUnOp AbsOp   False TInt     r e) = printUnaryOpError f   "aeboundi_abs" r e
-prettyAExpr f (ErrUnOp ExpoOp  False FPSingle r e) = printUnaryOpError f  "aeboundsp_exp" r e
-prettyAExpr f (ErrUnOp ExpoOp  False FPDouble r e) = printUnaryOpError f  "aebounddp_exp" r e
-prettyAExpr f (ErrUnOp LnOp    False FPSingle r e) = printUnaryOpError f  "aeboundsp_ln"  r e
-prettyAExpr f (ErrUnOp LnOp    False FPDouble r e) = printUnaryOpError f  "aebounddp_ln"  r e
+prettyAExpr f (ErrUnOp FloorOp FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_flr"   r e
+prettyAExpr f (ErrUnOp FloorOp FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_flr"   r e
+prettyAExpr f (ErrUnOp FloorOp TInt     r e) = printUnaryOpError f "aerr_int_flr"   r e
+prettyAExpr f (ErrFloorNoRound FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_flr_t" r e
+prettyAExpr f (ErrFloorNoRound FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_flr_t" r e
+prettyAExpr f (ErrUnOp SqrtOp  FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_sqt" r e
+prettyAExpr f (ErrUnOp SqrtOp  FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_sqt" r e
+prettyAExpr f (ErrUnOp SinOp   FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_sin" r e
+prettyAExpr f (ErrUnOp SinOp   FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_sin" r e
+prettyAExpr f (ErrUnOp CosOp   FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_cos" r e
+prettyAExpr f (ErrUnOp CosOp   FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_cos" r e
+prettyAExpr f (ErrUnOp TanOp   FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_tan" r e
+prettyAExpr f (ErrUnOp TanOp   FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_tan" r e
+prettyAExpr f (ErrUnOp AcosOp  FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_acs" r e
+prettyAExpr f (ErrUnOp AcosOp  FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_acs" r e
+prettyAExpr f (ErrUnOp AsinOp  FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_asn" r e
+prettyAExpr f (ErrUnOp AsinOp  FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_asn" r e
+prettyAExpr f (ErrUnOp AtanOp  FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_atn" r e
+prettyAExpr f (ErrUnOp AtanOp  FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_atn" r e
+prettyAExpr f (ErrUnOp NegOp   FPSingle r e) = printUnaryOpError f "aerr_ulp_sp_neg" r e
+prettyAExpr f (ErrUnOp NegOp   FPDouble r e) = printUnaryOpError f "aerr_ulp_dp_neg" r e
+prettyAExpr f (ErrUnOp NegOp   TInt     r e) = printUnaryOpError f  "aerr_int_neg" r e
+prettyAExpr f (ErrUnOp AbsOp   FPSingle r e) = printUnaryOpError f  "aerr_ulp_sp_abs" r e
+prettyAExpr f (ErrUnOp AbsOp   FPDouble r e) = printUnaryOpError f  "aerr_ulp_dp_abs" r e
+prettyAExpr f (ErrUnOp AbsOp   TInt     r e) = printUnaryOpError f  "aerr_int_abs" r e
+prettyAExpr f (ErrUnOp ExpoOp  FPSingle r e) = printUnaryOpError f  "aerr_ulp_sp_exp" r e
+prettyAExpr f (ErrUnOp ExpoOp  FPDouble r e) = printUnaryOpError f  "aerr_ulp_dp_exp" r e
+prettyAExpr f (ErrUnOp LnOp    FPSingle r e) = printUnaryOpError f  "aerr_ulp_sp_ln"  r e
+prettyAExpr f (ErrUnOp LnOp    FPDouble r e) = printUnaryOpError f  "aerr_ulp_dp_ln"  r e
 prettyAExpr f (HalfUlp r FPSingle)
     = text "ulp_sp" <> (text "(" <> prettyAExpr f r <> text ")/2")
 prettyAExpr f (HalfUlp r FPDouble)
@@ -1695,12 +1731,12 @@ prettyAExpr f (HalfUlp r (Array FPSingle _))
 prettyAExpr f (HalfUlp r (Array FPDouble _))
     = text "ulp_dp" <> (text "(" <> prettyAExpr f r <> text ")/2")
 
-prettyAExpr f (ErrCast FPSingle FPDouble r e) = printUnaryOpError f "aebound_StoD"  r e
-prettyAExpr f (ErrCast FPDouble FPSingle r e) = printUnaryOpError f "aebound_DtoS"  r e
-prettyAExpr f (ErrCast TInt     FPSingle r e) = printUnaryOpError f "aebound_ItoS"  r e
-prettyAExpr f (ErrCast TInt     FPDouble r e) = printUnaryOpError f "aebound_ItoD"  r e
+prettyAExpr f (ErrCast FPSingle FPDouble r e) = printUnaryOpError f "aerr_sp_dp"  r e
+prettyAExpr f (ErrCast FPDouble FPSingle r e) = printUnaryOpError f "aerr_dp_sp"  r e
+prettyAExpr f (ErrCast TInt     FPSingle r e) = printUnaryOpError f "aerr_int_sp"  r e
+prettyAExpr f (ErrCast TInt     FPDouble r e) = printUnaryOpError f "aerr_int_dp"  r e
 
-prettyAExpr f RUnstWarning = error "Warning should not occur in a real-valued program."-- text "warning"
+prettyAExpr _ RUnstWarning = error "Warning should not occur in a real-valued program."-- text "warning"
 prettyAExpr f (RLet listElem stm)
   = text "LET" <+> vcat (punctuate comma (map (\letElem -> text (letVar letElem)
         <> text ":" <> prettyDoc (letType letElem) <> text "=" <> prettyAExpr f (letExpr letElem)) listElem))
@@ -1710,7 +1746,7 @@ prettyAExpr f (RIte be stm1 stm2)
         $$ text "THEN" <+> prettyAExpr f stm1
         $$ text "ELSE" <+> prettyDoc stm2
         $$ text "ENDIF"
-prettyAExpr f (RListIte [] _) = error "prettyDoc RListIte: empty stmThen list"
+prettyAExpr _ (RListIte [] _) = error "prettyDoc RListIte: empty stmThen list"
 prettyAExpr f (RListIte ((beThen,stmThen):thenList) stmElse)
     = text "IF" <+> prettyDoc beThen $$ text "THEN" <+> prettyAExpr f stmThen
         $$ vcat (map (\(be,stm) -> text "ELSIF" <+> prettyDoc be
@@ -1726,10 +1762,10 @@ prettyAExpr f (RForLoop fp idxStart idxEnd initAcc idx acc forBody)
         <> comma <> text acc <> colon <> prettyDoc fp) <> colon
         <+> parens (prettyAExpr f forBody)
         )
-prettyAExpr f (Prec FPSingle) = text "ieee754sp_prec"
-prettyAExpr f (Prec FPDouble) = text "ieee754dp_prec"
-prettyAExpr f (Prec fp)        = error $ "prettyAExpr not defined for Prec " ++ show fp
-prettyAExpr f ee = error $ "prettyAExpr f for " ++ show ee ++ "not implemented yet."
+prettyAExpr _ (Prec FPSingle) = text "ieee754sp_prec"
+prettyAExpr _ (Prec FPDouble) = text "ieee754dp_prec"
+prettyAExpr _ (Prec fp)        = error $ "prettyAExpr not defined for Prec " ++ show fp
+prettyAExpr _ ee = error $ "prettyAExpr f for " ++ show ee ++ "not implemented yet."
 
 prettyError :: AExpr -> Doc
 prettyError = fix prettyError'

@@ -166,6 +166,8 @@ instance KodiakRunnable AExpr VariableMap PReal where
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_addition
         run' (ErrBinOp SubOp FPDouble r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_subtraction
+        run' (ErrSubSternenz FPDouble r1 e1 r2 e2) vmap = 
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_subtraction --_Sternenz
         run' (ErrBinOp MulOp FPDouble r1 e1 r2 e2) vmap
           | (Int 2) <- r1 = run' e2 vmap
           | (Int 2) <- r2 = run' e1 vmap
@@ -179,25 +181,26 @@ instance KodiakRunnable AExpr VariableMap PReal where
                                                   real_create_error_power_of_two_multiplication (fromInteger i) pe
         run' (ErrMulPow2R FPDouble i e) vmap = do pe <- run' e vmap
                                                   real_create_error_power_of_two_multiplication (fromInteger i) pe
-        run' (ErrUnOp NegOp   _     FPDouble _ e) vmap = run' e vmap
-        run' (ErrUnOp AbsOp   _     FPDouble _ e) vmap = run' e vmap
-        run' (ErrUnOp ExpoOp  False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_eexponent
-        run' (ErrUnOp LnOp    False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_elogarithm
-        run' (ErrUnOp SinOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_sine
-        run' (ErrUnOp AsinOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arcsine
-        run' (ErrUnOp CosOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_cosine
-        run' (ErrUnOp AcosOp   False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arccosine
-        run' (ErrUnOp TanOp  False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_tangent
-        run' (ErrUnOp AtanOp  False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arctangent
-        run' (ErrUnOp AtanOp  True  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arctangent_tight
-        run' (ErrUnOp FloorOp False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_floor
-        run' (ErrUnOp FloorOp True  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_floor_tight
-        run' (ErrUnOp SqrtOp  False FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_sqrt
+        run' (ErrUnOp NegOp  FPDouble _ e) vmap = run' e vmap
+        run' (ErrUnOp AbsOp  FPDouble _ e) vmap = run' e vmap
+        run' (ErrUnOp ExpoOp FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_eexponent
+        run' (ErrUnOp LnOp   FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_elogarithm
+        run' (ErrUnOp SinOp  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_sine
+        run' (ErrUnOp AsinOp FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arcsine
+        run' (ErrUnOp CosOp  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_cosine
+        run' (ErrUnOp AcosOp FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arccosine
+        run' (ErrUnOp TanOp  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_tangent
+        run' (ErrUnOp AtanOp FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_arctangent
+        run' (ErrUnOp FloorOp FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_floor
+        run' (ErrFloorNoRound  FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_floor_tight
+        run' (ErrUnOp SqrtOp FPDouble r e) vmap = runUnaryErrorOperator r e vmap real_create_error_sqrt
         --
         run' (ErrBinOp AddOp FPSingle r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_addition
         run' (ErrBinOp SubOp FPSingle r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_subtraction
+        run' (ErrSubSternenz FPSingle r1 e1 r2 e2) vmap = 
+          runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_subtraction --_Sternenz
         run' (ErrBinOp MulOp FPSingle r1 e1 r2 e2) vmap
           | (Int 2) <- r1 = run' e2 vmap
           | (Int 2) <- r2 = run' e1 vmap
@@ -211,18 +214,17 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (ErrMulPow2R FPSingle i e) vmap = do
           pe <- run' e vmap
           real_create_single_error_power_of_two_multiplication (fromInteger i) pe
-        run' (ErrUnOp NegOp   _     FPSingle _ e) vmap = run' e vmap
-        run' (ErrUnOp AbsOp   _     FPSingle _ e) vmap = run' e vmap
-        run' (ErrUnOp ExpoOp  False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_eexponent
-        run' (ErrUnOp LnOp    False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_elogarithm
-        run' (ErrUnOp SinOp   False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_sine
-        run' (ErrUnOp CosOp   False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_cosine
-        run' (ErrUnOp AtanOp  False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_arctangent
-        run' (ErrUnOp AtanOp  True  FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_arctangent_tight
-        run' (ErrUnOp FloorOp False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_floor
-        run' (ErrUnOp FloorOp True  FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_floor_tight
-        run' (ErrUnOp SqrtOp  False FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_sqrt
-        run' (ErrUnOp  _ _ TInt _ _)     vmap = run' (Rat 0) vmap
+        run' (ErrUnOp NegOp  FPSingle _ e) vmap = run' e vmap
+        run' (ErrUnOp AbsOp  FPSingle _ e) vmap = run' e vmap
+        run' (ErrUnOp ExpoOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_eexponent
+        run' (ErrUnOp LnOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_elogarithm
+        run' (ErrUnOp SinOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_sine
+        run' (ErrUnOp CosOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_cosine
+        run' (ErrUnOp AtanOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_arctangent
+        run' (ErrUnOp FloorOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_floor
+        run' (ErrFloorNoRound FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_floor_tight
+        run' (ErrUnOp SqrtOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_sqrt
+        run' (ErrUnOp  _ TInt _ _)     vmap = run' (Rat 0) vmap
         --
         run' (MaxErr es) vmap = let
           buildVector = do pVector <- real_vector_create

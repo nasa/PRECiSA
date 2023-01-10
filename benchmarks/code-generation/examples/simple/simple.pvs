@@ -5,6 +5,6 @@ simple: THEORY BEGIN
   = X * 2
 
   g(X,Y: real) : real
-  = 1 + (X + Y)
+  = 1 + f (X + Y)
 
 END simple

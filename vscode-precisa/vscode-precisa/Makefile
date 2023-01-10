@@ -36,10 +36,18 @@
  
  all:
 	npm install
+	make release
+
+release:
 	node_modules/vsce/vsce package
 
 install:
 	npm install
+
+audit:
+	npm audit fix
+	cd server && npm audit fix
+	cd client && npm audit fix
 
 clean:
 	cd client && make clean && cd .. && cd server && make clean && cd ..

@@ -208,6 +208,9 @@ foreign import ccall unsafe ""
   real_create_error_subtraction :: PReal -> PReal -> PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""
+  real_create_error_subtraction_Sternenz :: PReal -> PReal -> PReal -> PReal -> IO PReal
+
+foreign import ccall unsafe ""
   real_create_error_multiplication :: PReal -> PReal -> PReal -> PReal -> IO PReal
 
 foreign import ccall unsafe ""

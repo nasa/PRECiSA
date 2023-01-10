@@ -88,12 +88,17 @@ generateErrorConstraint' rVar fVar fp ev = Rel GtE (Var Real ev) (UnaryOp AbsOp 
 
 computeErrorAExpr :: FAExpr -> [VarBind] -> IO Double
 computeErrorAExpr ae varBind = maximumUpperBound <$> run kodiakInput ()
-    where
-        sem = map initErrAceb $ stmSem ae emptyInterpretation emptyEnv SemConf { assumeTestStability = False, mergeUnstables = True } root []
-        errorExpr = MaxErr (map eExpr sem)
-        kodiakInput = KI { kiName = "", kiExpression = errorExpr, kiBindings = varBind, kiMaxDepth = maxDepth', kiPrecision = precision'}
-        maxDepth' = 7
-        precision' = 14
+  where
+    semConf = SemConf {improveError = False, assumeTestStability = False, mergeUnstables = True }
+    sem = map initErrAceb $ stmSem ae emptyInterpretation emptyEnv semConf root []
+    errorExpr = MaxErr (map eExpr sem)
+    kodiakInput = KI { kiName = ""
+                     , kiExpression = errorExpr
+                     , kiBindings = varBind
+                     , kiMaxDepth = maxDepth'
+                     , kiPrecision = precision'}
+    maxDepth' = 7
+    precision' = 14
 
 genFreshVar :: AExpr -> ReplaceRState AExpr
 genFreshVar ae = do

@@ -28,7 +28,7 @@ roError varBinds interp env ae =  maximumUpperBound <$> run kodiakInput ()
                            kiMaxDepth = 7,
                            kiPrecision = 14
                            }
-        acebAExpr = initErrAceb $ mergeACebFold $ stmSem ae interp (Env env) SemConf{ assumeTestStability = False, mergeUnstables = True } (LDP []) []
+        acebAExpr = initErrAceb $ mergeACebFold $ stmSem ae interp (Env env) SemConf{improveError = False, assumeTestStability = False, mergeUnstables = True } (LDP []) []
 
 computeNumRoundOffError :: [VarBind] -> EExpr -> IO Double
 computeNumRoundOffError varBinds ee =  maximumUpperBound <$> run kodiakInput ()

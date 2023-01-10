@@ -90,7 +90,8 @@ data AExpr = IntCnst Integer
            | HalfUlp FPFormat AExpr
            | ErrRat Rational
            | ErrorMark VarName FPFormat
-           | ErrUnOp  UnOp Bool Type AExpr AExpr
+           | ErrUnOp  UnOp Type AExpr AExpr
+           | ErrFloorNoRound Type AExpr AExpr
            | ErrBinOp BinOp Type AExpr AExpr AExpr AExpr
            | ErrCast Type Type AExpr AExpr
            | ErrMulPow2R FPFormat Integer AExpr
@@ -372,35 +373,33 @@ instance PPExt AExpr where
   prettyDoc (ErrBinOp ItDivOp (Float DoublePrec) ae1 ee1 ae2 ee2) = printBinOpErrorACSL "errItDiv_dp" ae1 ee1 ae2 ee2
   prettyDoc (ErrBinOp ItModOp (Float SinglePrec) ae1 ee1 ae2 ee2) = printBinOpErrorACSL "errItMod_sp" ae1 ee1 ae2 ee2
   prettyDoc (ErrBinOp ItModOp (Float DoublePrec) ae1 ee1 ae2 ee2) = printBinOpErrorACSL "errItMod_dp" ae1 ee1 ae2 ee2
-  prettyDoc (ErrUnOp FloorOp False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errFloor_sp"  ae ee
-  prettyDoc (ErrUnOp FloorOp False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errFloor_dp"  ae ee
-  prettyDoc (ErrUnOp FloorOp True  (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errFloor0_sp" ae ee
-  prettyDoc (ErrUnOp FloorOp True  (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errFloor0_dp" ae ee
-  prettyDoc (ErrUnOp SqrtOp  False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errSqrt_sp"   ae ee
-  prettyDoc (ErrUnOp SqrtOp  False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errSqrt_dp"   ae ee
-  prettyDoc (ErrUnOp NegOp   False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errNeg_sp"    ae ee
-  prettyDoc (ErrUnOp NegOp   False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errNeg_dp"    ae ee
-  prettyDoc (ErrUnOp NegOp   False Int                ae ee) = printUnaryOpErrorACSL "errNeg_i"    ae ee
-  prettyDoc (ErrUnOp AbsOp   False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAbs_sp"    ae ee
-  prettyDoc (ErrUnOp AbsOp   False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAbs_dp"    ae ee
-  prettyDoc (ErrUnOp SinOp   False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errSin_sp"    ae ee
-  prettyDoc (ErrUnOp SinOp   False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errSin_dp"    ae ee
-  prettyDoc (ErrUnOp CosOp   False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errCos_sp"    ae ee
-  prettyDoc (ErrUnOp CosOp   False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errCos_dp"    ae ee
-  prettyDoc (ErrUnOp TanOp   False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errTan_sp"    ae ee
-  prettyDoc (ErrUnOp TanOp   False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errTan_dp"    ae ee
-  prettyDoc (ErrUnOp AsinOp  False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAsin_sp"   ae ee
-  prettyDoc (ErrUnOp AsinOp  False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAsin_dp"   ae ee
-  prettyDoc (ErrUnOp AcosOp  False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAcos_sp"   ae ee
-  prettyDoc (ErrUnOp AcosOp  False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAcos_dp"   ae ee
-  prettyDoc (ErrUnOp AtanOp  False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAtan_sp"   ae ee
-  prettyDoc (ErrUnOp AtanOp  False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAtan_dp"   ae ee
-  prettyDoc (ErrUnOp AtanOp  True  (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAtanT_sp"  ae ee
-  prettyDoc (ErrUnOp AtanOp  True  (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAtanT_dp"  ae ee
-  prettyDoc (ErrUnOp LnOp    False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errLn_sp"     ae ee
-  prettyDoc (ErrUnOp LnOp    False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errLn_sp"     ae ee
-  prettyDoc (ErrUnOp ExpoOp  False (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errExpo_sp"   ae ee
-  prettyDoc (ErrUnOp ExpoOp  False (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errExpo_dp"   ae ee
+  prettyDoc (ErrUnOp FloorOp (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errFloor_sp"  ae ee
+  prettyDoc (ErrUnOp FloorOp (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errFloor_dp"  ae ee
+  prettyDoc (ErrFloorNoRound (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errFloor0_sp" ae ee
+  prettyDoc (ErrFloorNoRound (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errFloor0_dp" ae ee
+  prettyDoc (ErrUnOp SqrtOp  (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errSqrt_sp"   ae ee
+  prettyDoc (ErrUnOp SqrtOp  (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errSqrt_dp"   ae ee
+  prettyDoc (ErrUnOp NegOp   (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errNeg_sp"    ae ee
+  prettyDoc (ErrUnOp NegOp   (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errNeg_dp"    ae ee
+  prettyDoc (ErrUnOp NegOp   Int                ae ee) = printUnaryOpErrorACSL "errNeg_i"    ae ee
+  prettyDoc (ErrUnOp AbsOp   (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAbs_sp"    ae ee
+  prettyDoc (ErrUnOp AbsOp   (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAbs_dp"    ae ee
+  prettyDoc (ErrUnOp SinOp   (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errSin_sp"    ae ee
+  prettyDoc (ErrUnOp SinOp   (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errSin_dp"    ae ee
+  prettyDoc (ErrUnOp CosOp   (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errCos_sp"    ae ee
+  prettyDoc (ErrUnOp CosOp   (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errCos_dp"    ae ee
+  prettyDoc (ErrUnOp TanOp   (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errTan_sp"    ae ee
+  prettyDoc (ErrUnOp TanOp   (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errTan_dp"    ae ee
+  prettyDoc (ErrUnOp AsinOp  (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAsin_sp"   ae ee
+  prettyDoc (ErrUnOp AsinOp  (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAsin_dp"   ae ee
+  prettyDoc (ErrUnOp AcosOp  (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAcos_sp"   ae ee
+  prettyDoc (ErrUnOp AcosOp  (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAcos_dp"   ae ee
+  prettyDoc (ErrUnOp AtanOp  (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errAtan_sp"   ae ee
+  prettyDoc (ErrUnOp AtanOp  (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errAtan_dp"   ae ee
+  prettyDoc (ErrUnOp LnOp    (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errLn_sp"     ae ee
+  prettyDoc (ErrUnOp LnOp    (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errLn_sp"     ae ee
+  prettyDoc (ErrUnOp ExpoOp  (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errExpo_sp"   ae ee
+  prettyDoc (ErrUnOp ExpoOp  (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errExpo_dp"   ae ee
   prettyDoc (ErrCast (Float SinglePrec) (Float DoublePrec) ae ee) = printUnaryOpErrorACSL "errStoD" ae ee
   prettyDoc (ErrCast (Float DoublePrec) (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errDtoS" ae ee
   prettyDoc (ErrCast Int (Float SinglePrec) ae ee) = printUnaryOpErrorACSL "errItoS" ae ee

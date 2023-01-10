@@ -59,7 +59,7 @@ export enum Mode {
     sensitivity = "sensitivity",
     intervals = "intervals",
     comparative = "comparative",
-    poaving = "paving" // TODO
+    paving = "paving"
 };
 
 /**
@@ -262,7 +262,7 @@ export function makeBarPlot (
     // const color: string = cssColors[colorID];
     // colorID = (colorID + 1) % cssColors.length;
     return desc?.input?.length ? {
-        x: [ ` ${xLabel} ` ],
+        x: [ `           ${xLabel}           ` ],
         y: [ +desc.errorBound ], 
         type: "bar",
         // marker: {
@@ -295,7 +295,7 @@ export function makeDiffPlot (
     const xLabel: string = "diff";
     const diff: number = Math.abs(+desc1.errorBound - +desc2.errorBound);
     return desc1?.input?.length && desc2?.input?.length && desc1?.input?.length === desc2?.input?.length ? {
-        x: [ ` ${xLabel} ` ],
+        x: [ `           ${xLabel}           ` ],
         y: [ diff ], 
         type: "bar",
         // marker: {
@@ -664,7 +664,7 @@ export class ToolkitView extends Backbone.Model {
                                     // sanity check
                                     if (message.mode === Mode.comparative || message.mode === Mode.errorBounds 
                                             || message.mode === Mode.intervals || message.mode === Mode.options 
-                                            || message.mode === Mode.sensitivity) {
+                                            || message.mode === Mode.sensitivity || message.mode === Mode.paving) {
                                         this.mode = message.mode;
                                     } else {
                                         console.warn(`[precisa-analysis-view] Warning: unknown mode`, message);
@@ -793,7 +793,7 @@ export class ToolkitView extends Backbone.Model {
                             const plot2: BarPlotData = this.comparativePlot[keys[i]]?.length > 1 ? this.comparativePlot[keys[i]][1] : null;
                             const plot3: BarPlotData = this.comparativePlot[keys[i]]?.length > 2 ? this.comparativePlot[keys[i]][2] : null;
                             const x1Label: string = plot1.x?.length ? plot1.x[0] : `${i}`;
-                            const x2Label: string = plot2.x?.length ? plot1.x[0] : `${i}`;
+                            const x2Label: string = plot2.x?.length ? plot2.x[0] : `${i}`;
                             const xLabel: string = x1Label.split(":")[0] + " vs. " + x2Label;
                             col1[xLabel] = plot1;
                             col2[xLabel] = plot2;

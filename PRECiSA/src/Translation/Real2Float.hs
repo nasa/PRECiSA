@@ -70,12 +70,14 @@ real2fpBexpr isCast fp prog (EPred f args) = FEPred True Original f (real2fpActA
 
 real2fpRel :: PVSType -> RProgram -> RelOp -> AExpr -> AExpr -> FBExpr
 real2fpRel fp prog rel ae1 ae2
-  | isIntAExpr ae1 && isIntAExpr ae2 = FRel rel (real2fpAexpr True fp prog ae1) (real2fpAexpr True fp prog ae2)
+  | isIntAExpr ae1 && isIntAExpr ae2 = FRel rel (real2fpAexpr True fp prog ae1)
+                                                (real2fpAexpr True fp prog ae2)
   | isIntAExpr ae1 && not (isIntAExpr ae2) = FRel rel (TypeCast TInt fp (real2fpAexpr True fp prog ae1))
                                                       (real2fpAexpr False fp prog ae2)
   | isIntAExpr ae2 && not (isIntAExpr ae1) = FRel rel (real2fpAexpr False fp prog ae1)
                                                       (TypeCast TInt fp (real2fpAexpr True fp prog ae2))
-  | otherwise = FRel rel (real2fpAexpr False fp prog ae1) (real2fpAexpr False fp prog ae2)
+  | otherwise = FRel rel (real2fpAexpr False fp prog ae1)
+                         (real2fpAexpr False fp prog ae2)
 
 real2fpAexpr :: Bool -> PVSType -> RProgram -> AExpr -> FAExpr
 real2fpAexpr False fp prog ae | fp/=TInt && isIntAExpr ae = TypeCast TInt fp $ real2fpAexpr True fp prog ae

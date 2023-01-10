@@ -1,7 +1,7 @@
 {
 	"name": "vscode-precisa",
 	"description": "Integrates PRECiSA into Visual Studio Code",
-	"version": "0.0.32",
+	"version": "1.0.3",
 	"author": "Paolo Masci",
 	"displayName": "PRECiSA",
 	"license": "NASA-1.3",
@@ -14,7 +14,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/nasa/xxx"
+		"url": "https://github.com/nasa/PRECiSA/tree/master/vscode-precisa"
 	},
 	"publisher": "paolomasci",
 	"icon": "icons/precisa-file-icon-large.png",
@@ -151,11 +151,11 @@
 		"test:server": "node_modules/jasmine-ts/lib/index.js --config=server/test/specs/jasmine-test-all.json"
 	},
 	"dependencies": {
-		"typescript": "^4.5.5",
-		"vsce": "^2.6.3"
+		"typescript": "^4.5.5"
 	},
 	"devDependencies": {
 		"@types/node": "^14.14.22",
-		"@types/vscode": "^1.48.0"
+		"@types/vscode": "^1.48.0",
+		"vsce": "^2.6.5"
 	}
 }

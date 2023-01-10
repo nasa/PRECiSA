@@ -36,6 +36,8 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,varList__tests
    ,equivModuloIndex__tests
    ,localVars__tests
+   ,localVarsBExpr__tests
+   ,localVarsBExprStm__tests
    ,forIndexes__tests
    ,funCallList__tests
    ,unfoldForLoop__tests
@@ -49,6 +51,9 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,hasConditionals__tests
    ,hasConditionalsBExpr__tests
    ,predCallListFBExprStmWithCond__tests
+   ,simplFRel__tests
+   ,simplBExprFix__tests
+   ,isIntAExpr__tests
    ]
 
 hasConditionals__tests = testGroup "hasConditionals" $ [
@@ -82,7 +87,7 @@ testcasesHasConditionals
     (RForLoop Real (Int 1) (Int 3) (Int 0) "x" "acc" (Int 4), False)
     ]
 
-hasConditionalsBExpr__tests = testGroup "hasConditionalsBExpr" $ [
+hasConditionalsBExpr__tests = testGroup "hasConditionalsBExpr" [
     testCase "function call with if" $
       let program = [RDecl Real "f" [] (RIte BTrue (Int 1) (Int 2))] in
         hasConditionalsBExpr program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= True,
@@ -110,7 +115,49 @@ hasConditionalsBExpr__tests = testGroup "hasConditionalsBExpr" $ [
    ]
 
 
-localVars__tests   = testGroup "localVars" []
+localVars__tests   = testGroup "localVars" [
+    testCase "int" $
+      localVars (FInt 1) @?= [],
+    testCase "var" $
+      localVars (FVar TInt "x") @?= [],
+    testCase "let 1" $
+      localVars (Let [("y", TInt , FInt 3)] (FVar TInt "x")) @?= [("y", FInt 3)],
+    testCase "let 2" $
+      localVars (Let [("y", TInt , FInt 3),("z", TInt , FInt 1)] (FVar TInt "x")) @?= [("y", FInt 3),("z", FInt 1)],
+    testCase "nested let" $
+      localVars (Let [("y", TInt , FInt 3)] (Let [("z", TInt , FInt 1)] (FVar TInt "x"))) @?= [("y", FInt 3),("z", FInt 1)]
+  ]
+
+localVarsBExpr__tests   = testGroup "localVarsBExpr" [
+    testCase "true" $
+      localVarsBExpr FBTrue @?= [],
+    testCase "false" $
+      localVarsBExpr FBFalse @?= [],
+    testCase "rel" $
+      localVarsBExpr (FRel LtE (FVar TInt "x") (FVar TInt "y")) @?= [],
+    testCase "let rel" $
+      localVarsBExpr (FRel LtE (Let [("y", TInt , FInt 3)] (FVar TInt "x")) (FVar TInt "z")) @?= [("y",FInt 3)],
+    testCase "let or" $
+      localVarsBExpr (FOr FBTrue (FRel LtE (Let [("y", TInt , FInt 3)] (FVar TInt "x")) (FVar TInt "z"))) @?= [("y",FInt 3)],
+    testCase "let and" $
+      localVarsBExpr (FAnd (FRel LtE (Let [("a", TInt , FInt 1)] (FVar TInt "x")) (FVar TInt "z")) (FRel LtE (Let [("y", TInt , FInt 3)] (FVar TInt "x")) (FVar TInt "z"))) @?= [("a", FInt 1),("y",FInt 3)]
+  ]
+
+localVarsBExprStm__tests   = testGroup "localVarsBExprStm" [
+    testCase "true" $
+      localVarsBExprStm (BExpr FBTrue) @?= [],
+    testCase "rel" $
+      localVarsBExprStm (BExpr (FRel LtE (Let [("y", TInt , FInt 3)] (FVar TInt "x")) (FVar TInt "z"))) @?= [("y",FInt 3)],
+    testCase "let 2" $
+      localVarsBExprStm (BLet [("y", TInt , FInt 3),("z", TInt , FInt 1)] (BExpr FBTrue)) @?= [("y", FInt 3),("z", FInt 1)],
+    testCase "nested let" $
+      localVarsBExprStm (BLet [("y", TInt , FInt 3)] (BLet [("z", TInt , FInt 1)] (BExpr FBTrue))) @?= [("y", FInt 3),("z", FInt 1)],
+    testCase "nested let 2" $
+      localVarsBExprStm (BLet [("y", TInt , Let [("a", TInt , FInt 3)] (FVar TInt "x"))] (BLet [("z", TInt , FInt 1)] (BExpr FBTrue))) @?= [("a", FInt 3),("y", Let [("a", TInt , FInt 3)] (FVar TInt "x")),("z", FInt 1)],
+    testCase "nested let 3" $
+      localVarsBExprStm (BLet [("y", TInt , Let [("a", TInt , FInt 3)] (FVar TInt "x")),("c", TInt, FInt 5) ] (BLet [("z", TInt , FInt 1)] (BExpr FBTrue))) @?= [("a", FInt 3),("y", Let [("a", TInt , FInt 3)] (FVar TInt "x")),("c", FInt 5),("z", FInt 1)]
+  ]
+
 forIndexes__tests  = testGroup "forIndexes" []
 funCallList__tests = testGroup "funCallList" []
 
@@ -195,11 +242,11 @@ rewriteEquivEExpr_testsIOs =
                 ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
             )
             ,("ErrAbs"
-                ,ErrUnOp AbsOp False FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp AbsOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
                 ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
             )
             ,("ErrAbs"
-                ,ErrUnOp NegOp False FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp NegOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
                 ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
             )
             ,("MaxErr"
@@ -208,7 +255,7 @@ rewriteEquivEExpr_testsIOs =
                 ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
             )
             ,("MaxErr_ErrNeg"
-                ,MaxErr [ErrUnOp NegOp False FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)),
+                ,MaxErr [ErrUnOp NegOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)),
                          ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)]
                 ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
             )
@@ -237,51 +284,51 @@ rewriteEquivEExpr_testsIOs =
                 ,ErrBinOp DivOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) (RealMark "K") (ErrorMark "K" FPDouble)
             )
             ,("ErrFloor_ErrMulPow2L"
-                ,ErrUnOp FloorOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp FloorOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp FloorOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp FloorOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrFloor0_ErrMulPow2L"
-                ,ErrUnOp FloorOp True FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp FloorOp True FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrFloorNoRound FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrFloorNoRound FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrSqrt_ErrMulPow2L"
-                ,ErrUnOp SqrtOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp SqrtOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp SqrtOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp SqrtOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrSin_ErrMulPow2L"
-                ,ErrUnOp SinOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp SinOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp SinOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp SinOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrCos_ErrMulPow2L"
-                ,ErrUnOp CosOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp CosOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp CosOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp CosOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrTan_ErrMulPow2L"
-                ,ErrUnOp TanOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp TanOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp TanOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp TanOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrAsin_ErrMulPow2L"
-                ,ErrUnOp AsinOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AsinOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp AsinOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp AsinOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrAcos_ErrMulPow2L"
-                ,ErrUnOp AcosOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AcosOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp AcosOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp AcosOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrAtan_ErrMulPow2L"
-                ,ErrUnOp AtanOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AtanOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
             ,("ErrAtanT_ErrMulPow2L"
-                ,ErrUnOp AtanOp True FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AtanOp True FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrLn_ErrMulPow2L"
-                ,ErrUnOp LnOp False FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp LnOp False FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp LnOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp LnOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
             )
             ,("ErrExpo_ErrMulPow2L"
-                ,ErrUnOp ExpoOp False FPSingle (RealMark "Z") (ErrMulPow2L FPSingle 2 (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)))
-                ,ErrUnOp ExpoOp False FPSingle (RealMark "Z") (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle))
+                ,ErrUnOp ExpoOp FPSingle (RealMark "Z") (ErrMulPow2L FPSingle 2 (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)))
+                ,ErrUnOp ExpoOp FPSingle (RealMark "Z") (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle))
             )
             ]
 
@@ -949,3 +996,135 @@ predCallListFBExprStmWithCond__test1  = testCase "" $
   ,RPred "g" [Arg "X" Real] (RBLet [LetElem {letVar = "y", letType = Real, letExpr = EFun "f" Real [Var Real "X"]}] (RBIte (Rel Gt (Var Real "y") (Int 0)) (RBExpr BTrue) (RBExpr BFalse)))] (BExpr $ FEPred False Original "g" [])
   @?=
   [(FEPred False Original "g" [])]
+
+
+
+simplFRel__tests = testGroup "simplFRel tests"
+  [simplFRel__test1
+  ,simplFRel__test2
+  ]
+
+simplFRel__test1 = testCase "simplFRel 2 <= 0.1 is false" $
+  simplRel (Rel LtE (Int 2) (Rat 0.1))
+  @?=
+  BFalse
+
+simplFRel__test2 = testCase "simplFRel 2 <= 0.1 is false" $
+  simplRel (Rel LtE (Int 2) (Rat 4.1))
+  @?=
+  BTrue
+
+simplBExprFix__tests = testGroup "simplBExprFix tests"
+  [simplBExprFix__test1
+  ,simplBExprFix__test2
+  ,simplBExprFix__test3
+  ,simplBExprFix__test4
+  ,simplBExprFix__test5
+  ,simplBExprFix__test6
+  ]
+
+simplBExprFix__test1 = testCase "simplBExprFix 1" $
+  simplBExprFix (And (Rel LtE (BinaryOp DivOp (Rat 2) (Int 2)) (Rat 0.1)) (Rel LtE (Rat 0.1) (BinaryOp MulOp (Rat 2) (Int 2))))
+  @?=
+  BFalse
+
+simplBExprFix__test2 = testCase "simplBExprFix 2" $
+  simplBExprFix (And (And (Rel LtE (BinaryOp DivOp (Rat 2) (Int 2)) (Rat 0.1)) (Rel LtE (Rat 0.1) (BinaryOp MulOp (Rat 2) (Int 2)))) (And BTrue BTrue))
+  @?=
+  BFalse
+
+
+simplBExprFix__test3 = testCase "true AND false = false" $
+  simplBExprFix (And BTrue BFalse)
+  @?=
+  BFalse
+
+simplBExprFix__test4 = testCase "true AND true = true" $
+  simplBExprFix (And BTrue BTrue)
+  @?=
+  BTrue
+
+simplBExprFix__test5 = testCase "2/2 <= 0.1" $
+  simplBExprFix (Rel LtE (BinaryOp DivOp (Rat 2) (Int 2)) (Rat 0.1))
+  @?=
+  BFalse
+
+simplBExprFix__test6 = testCase "simplBExprFix 1" $
+  simplBExprFix (Rel LtE (Rat 0.1) (BinaryOp MulOp (Rat 2) (Int 2)))
+  @?=
+  BTrue
+
+isIntAExpr__tests = testGroup "isIntAExpr tests"
+  [isIntAExpr__test1
+  ,isIntAExpr__test2
+  ,isIntAExpr__test3
+  ,isIntAExpr__test4
+  ,isIntAExpr__test5
+  ,isIntAExpr__test6
+  ,isIntAExpr__test7
+  ,isIntAExpr__test8
+  ,isIntAExpr__test9
+  ,isIntAExpr__test10
+  ,isIntAExpr__test11
+  ,isIntAExpr__test12
+  ]
+
+isIntAExpr__test1 = testCase "isIntAExpr int" $
+  isIntAExpr (Int 2)
+  @?=
+  True
+
+isIntAExpr__test2 = testCase "isIntAExpr rat omt" $
+  isIntAExpr (Rat 2)
+  @?=
+  True
+
+isIntAExpr__test3 = testCase "isIntAExpr div" $
+  isIntAExpr (BinaryOp DivOp (Int 1) (Int 2))
+  @?=
+  False
+
+isIntAExpr__test4 = testCase "isIntAExpr mul int" $
+  isIntAExpr (BinaryOp MulOp (Rat 2) (Int 2))
+  @?=
+  True
+
+isIntAExpr__test5 = testCase "isIntAExpr add int" $
+  isIntAExpr (BinaryOp AddOp (Rat 2) (Int 2))
+  @?=
+  True
+
+isIntAExpr__test6 = testCase "isIntAExpr add" $
+  isIntAExpr (BinaryOp AddOp (Rat 2.1) (Int 2))
+  @?=
+  False
+
+isIntAExpr__test7 = testCase "isIntAExpr rat" $
+  isIntAExpr (Rat 2.9)
+  @?=
+  False
+
+isIntAExpr__test8 = testCase "isIntAExpr floor" $
+  isIntAExpr (UnaryOp FloorOp (Rat 2.9))
+  @?=
+  True
+
+isIntAExpr__test9 = testCase "isIntAExpr neg" $
+  isIntAExpr (UnaryOp NegOp (Rat 2.9))
+  @?=
+  False
+
+isIntAExpr__test10 = testCase "isIntAExpr abs" $
+  isIntAExpr (UnaryOp AbsOp (Rat 2.9))
+  @?=
+  False
+
+isIntAExpr__test11 = testCase "isIntAExpr neg int" $
+  isIntAExpr (UnaryOp NegOp (Rat 2))
+  @?=
+  True
+
+isIntAExpr__test12 = testCase "isIntAExpr abs int" $
+  isIntAExpr (UnaryOp AbsOp (Rat 2))
+  @?=
+  True

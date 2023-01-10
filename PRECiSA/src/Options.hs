@@ -24,11 +24,13 @@ data AnalyzeOptions = AnalyzeOptions
    { optProgramFile          :: FilePath
    , optInputRangeFile       :: FilePath
    , optPathFile             :: FilePath
+   , optImproveError         :: Bool
    , optWithPaving           :: Bool
    , optMaxDepth             :: Int
    , optPrecision            :: Int
    , optMaxNumLemma          :: Int
    , optAssumeStability      :: Bool
+   , optNoCollapsedStables   :: Bool
    , optNoCollapsedUnstables :: Bool
    , optSMTOptimization      :: Bool
    } deriving Show
@@ -85,6 +87,10 @@ analyzeOptions =
          <> metavar "PATHS"
          )
         <*> switch
+          (  long "improve-accuracy"
+          <> help "Use an optimized version of the round-off error expressions that models special cases such as the Sterbenz exact subtraction and the exact floor operation. This option may increase the analysis time."
+          )
+        <*> switch
           (  long "paving"
           <> help "Generate a paving of the regions of unstability"
           )
@@ -118,6 +124,9 @@ analyzeOptions =
           (  long "no-collapsed-unstables"
           <> short 'u'
           <> help "Do not collapse unstable cases" )
+        <*> switch
+          (  long "no-collapsed-stables"
+          <> help "Do not collapse stable paths. It may lead to a more accurate analysis since each path is analyzed separately." )
         <*> switch
           (  long "smt-optimization"
           <> help "Use SMT solvers to elimiate unfeasible cases" )

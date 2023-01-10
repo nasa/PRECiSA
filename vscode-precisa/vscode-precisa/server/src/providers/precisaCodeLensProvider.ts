@@ -41,8 +41,7 @@ import { CancellationToken, CodeLens, CodeLensRequest, Range, CodeLensParams } f
 import * as fsUtils from '../common/fsUtils';
 import { VSCodePrecisaServer } from '../vscodePrecisaServer';
 import * as utils from '../common/precisaUtils';
-import { FormulaDesc } from '../common/precisa';
-import { fpRangeRegex, rangeInfoRegex } from '../common/precisaUtils';
+import { FormulaDesc, PrecisaCodeLens } from '../common/precisa';
 
 export class PrecisaCodeLensProvider {
     protected precisaServer: VSCodePrecisaServer;
@@ -92,7 +91,7 @@ export class PrecisaCodeLensProvider {
                             range,
                             command: {
                                 title: "estimate-error-bounds",
-                                command: "vscode-precisa.show-analysis-view",
+                                command: PrecisaCodeLens.EstimateErrorBounds,
                                 arguments: [ args ]
                             }
                         });
@@ -100,7 +99,15 @@ export class PrecisaCodeLensProvider {
                             range,
                             command: {
                                 title: "compare-error-bounds",
-                                command: "vscode-precisa.show-split-view",
+                                command: PrecisaCodeLens.CompareErrorBounds,
+                                arguments: [ args ]
+                            }
+                        });
+                        codeLens.push({
+                            range,
+                            command: {
+                                title: "paving",
+                                command: PrecisaCodeLens.Paving,
                                 arguments: [ args ]
                             }
                         });

@@ -36,9 +36,10 @@
  * TERMINATION OF THIS AGREEMENT.
  **/
 
-import { commands, ExtensionContext, window } from "vscode";
+import { commands, ExtensionContext, TextEditor, window } from "vscode";
 import { LanguageClient } from "vscode-languageclient";
-import { FormulaDesc } from "../common/precisa";
+import { FormulaDesc, PrecisaCodeLens } from "../common/precisa";
+import { getActiveEditor } from "../utils/vscode-utils";
 import { 
     DidChangeViewStateEvent, DidDisposeEvent, Mode, ToolkitView, PlotViewEvents
 } from "./toolkit/toolkitView";
@@ -68,30 +69,44 @@ export class ViewsManager {
     activate (context: ExtensionContext) {
         this.context = context;
         // codelens handlers
-        context.subscriptions.push(commands.registerCommand("vscode-precisa.show-analysis-view", async (desc: FormulaDesc) => {
+        context.subscriptions.push(commands.registerCommand(PrecisaCodeLens.EstimateErrorBounds, async (desc: FormulaDesc) => {
             if (desc) {
+                const activeEditor: TextEditor = getActiveEditor();
                 // save file currently open in the editor
-                if (window?.activeTextEditor?.document) {
-                    await window.activeTextEditor.document.save();
+                if (activeEditor?.document) {
+                    await activeEditor.document.save();
                 }
                 // create a new analysis view
-                this.createView(desc);
+                await this.createView(desc);
             }
         }));
-        context.subscriptions.push(commands.registerCommand("vscode-precisa.show-split-view", async (desc: FormulaDesc) => {
+        context.subscriptions.push(commands.registerCommand(PrecisaCodeLens.CompareErrorBounds, async (desc: FormulaDesc) => {
             if (desc) {
+                const activeEditor: TextEditor = getActiveEditor();
                 // save file currently open in the editor
-                if (window?.activeTextEditor?.document) {
-                    await window.activeTextEditor.document.save();
+                if (activeEditor?.document) {
+                    await activeEditor.document.save();
                 }
                 // compare with the given function (create a new analysis view if no view is active)
                 if (this.activeView) {
                     await this.activeView.compareWith(desc);
                 } else {
-                    this.createView(desc);
+                    await this.createView(desc);
                     this.activeView.switchTo(Mode.comparative);
                     this.activeView.focus();
                 }
+            }
+        }));
+        context.subscriptions.push(commands.registerCommand(PrecisaCodeLens.Paving, async (desc: FormulaDesc) => {
+            if (desc) {
+                const activeEditor: TextEditor = getActiveEditor();
+                // save file currently open in the editor
+                if (activeEditor?.document) {
+                    await activeEditor.document.save();
+                }
+                await this.createView(desc);
+                this.activeView.switchTo(Mode.paving);
+                this.activeView.focus();
             }
         }));
     }

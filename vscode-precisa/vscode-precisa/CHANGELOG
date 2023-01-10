@@ -1,4 +1,8 @@
 ## ChangeLog
+### 1.0.1 (2022.07.01)
+- Improved layout of the analysis views   
+- Minor bug fixes   
+
 ### 1.0.0 (2022.01.05)
 Initial distribution of VSCode-PRECiSA.
 The following analysis views are provided:

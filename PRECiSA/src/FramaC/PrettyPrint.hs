@@ -132,12 +132,13 @@ printNumDeclWithACSL :: HasConditionals
                      -> [(VarName,Double)]
                      -> [FAExpr]
                      -> Doc
-printNumDeclWithACSL hasConds predAbs fp f realArgs initArgs forIdx decl varBinds roErr numErrExprs isFiniteExprList =
+printNumDeclWithACSL hasConds predAbs fp f realArgs initArgs forIdx 
+                                         decl varBinds roErr numErrExprs isFiniteExprList =
   text "/*@"
   $$
   prettyDoc assignsNothing
   $$
-  prettyDoc (generateNumericProp hasConds predAbs fp f forIdx realArgs roErr varBinds isFiniteExprList)
+  prettyDoc (generateNumericProp hasConds predAbs fp f forIdx realArgs roErr localVariables varBinds isFiniteExprList)
   $$
   text "*/"
   $$
@@ -146,6 +147,7 @@ printNumDeclWithACSL hasConds predAbs fp f realArgs initArgs forIdx decl varBind
       (_, errArgs) =  splitAt (length initArgs) args
       fpFun = declType decl
       args  = declArgs decl
+      localVariables = localVarsDecl decl
 
 printSymbDeclWithACSL :: HasConditionals
                       -> PVSType
@@ -188,7 +190,7 @@ printSymbDeclWithACSL hasConds fp interp rDecl@(RDecl _ f realArgs _)
   prettyDoc (decl2C forListExpr forVarsMap interp taudecl hasConds)
     where
       isFiniteExprList = buildListIsFiniteCheck tauargs (Left stm)
-      localVariables = localVars taustm
+      localVariables = localVarsDecl taudecl
       forIdxs = forIndexes taustm
       (realDeclMain,(realDeclFor, forListExpr)) = makeRealDeclRecursive rDecl
       (fpDeclMain,fpDeclFor) = makeFPDeclRecursive fDecl
@@ -219,7 +221,7 @@ printSymbDeclWithACSL hasConds fp interp rDecl@(RPred f realArgs _ )
   $$
   axiomaticTransformationPredicatesDoc
   $$
-  printFPSymbPrecondPred hasConds targetFPType predAbs f realArgs fpargs errVars [] isFiniteExprList
+  printFPSymbPrecondPred hasConds targetFPType predAbs f realArgs fpargs errVars localVariables isFiniteExprList
   $$
   prettyDoc (pred2C hasConds interp taudecl)
     where
@@ -229,6 +231,7 @@ printSymbDeclWithACSL hasConds fp interp rDecl@(RPred f realArgs _ )
           then printAxiomaticTranPreds (Just predAbs) fp targetFPType f realArgs listStableCond [] $$ text (vspace 1)
           else empty
       isFiniteExprList = buildListIsFiniteCheck tauargs (Right stm)
+      localVariables = localVarsDecl taudecl
 
 printSymbDeclWithACSL _ _ _ _ _ _ _ _ _ = error "printSymbDeclWithACSL: mismatch type in declarations."
 

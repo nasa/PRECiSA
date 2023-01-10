@@ -22,7 +22,9 @@ precisaPreludeContent =
   $$
   text "logic double Dabs(double X) = round(X);\n"
   $$
-  text "logic double Ddiv(double X, double Y) = (Y != 0.0 ? round(X/Y) : 0.0);\n"
+  text "logic double Ddiv(double X, double Y) = (Y != round(0.0) ? round(X/Y) : round(0.0));\n"
+  $$
+  text "logic double Dsqrt(double X) = sqrt(X);\n"
 --   X;
 -- //  (Y != 0.0 ? round(X/Y) : 0.0) ;
 
@@ -61,11 +63,11 @@ precisaPreludeContent =
   $$
   text "logic real errNeg_dp(real X, real E_X) = E_X;\n"
   $$
+  text "logic real errAbs_dp(real X, real E_X) = E_X;\n"
+  $$
   text "logic real errAdd_i(integer X, real E_X, integer Y, real E_Y) = E_X + E_Y;\n"
   $$
   text "logic real errSub_i(integer X, real E_X, integer Y, real E_Y) = E_X + E_Y;"
-  $$
-  text "}"
   $$
   text "*/\n"
   $$

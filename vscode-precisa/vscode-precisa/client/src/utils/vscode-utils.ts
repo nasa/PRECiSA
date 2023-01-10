@@ -48,6 +48,35 @@ export function getEditorContextFolder () : string {
 }
 
 /**
+ * Utility function, returns the list of pvs editors visible in vscode
+ * ATTN: vscode classifies the Log window as a document.
+ * To find out which pvs file is open in the editor, we need to use visibleTextEditors and filter by languageId
+ */
+export function getVisibleEditors (languageId?: string): vscode.TextEditor[] {
+    let visibleEditors: vscode.TextEditor[] = vscode.window.visibleTextEditors;
+    if (visibleEditors && languageId) {
+        visibleEditors = visibleEditors.filter(editor => {
+            return editor?.document?.languageId === languageId;
+        });
+    }
+    return visibleEditors || [];
+}
+
+/**
+ * Utility function, returns the active file editor
+ */
+export function getActiveEditor (languageId?: string): vscode.TextEditor {
+    const activeEditor: vscode.TextEditor = vscode.window?.activeTextEditor;
+    if (languageId && activeEditor?.document?.languageId === languageId) {
+        return activeEditor;
+    }
+    // else, return the first visible editor
+    const visibleEditors: vscode.TextEditor[] = getVisibleEditors(languageId);
+    const visible: vscode.TextEditor = visibleEditors?.length ? visibleEditors[0] : null;
+    return !languageId || visible?.document?.languageId === languageId ? visible : null;
+}
+
+/**
  * Returns the value of a vscode configuration key
  */
 export function getConfiguration (key: string): string {

@@ -28,7 +28,7 @@ class Eq p => DecisionPath p where
   isPrefixInList d = any (isPrefix d)
 
   existsPrefixInList :: p -> [p] -> Bool
-  existsPrefixInList d = any (`isPrefix` d) -- (flip isPrefix d)
+  existsPrefixInList d = any (`isPrefix` d)
 
 
 newtype LDecisionPath = LDP [Integer] deriving (Eq,Ord)

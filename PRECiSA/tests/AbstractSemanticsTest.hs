@@ -34,7 +34,120 @@ testAbstractSemantics = testGroup "AbstractSemantics"
     -- ,unfoldFunCallInFBExpr__tests
     -- ,unfoldFunCallInBExpr__tests
     ,unfoldFunCallsInCond__tests
+    ,stableCasesIteSem__tests
+    ,bexprStmSem__tests
     ]
+
+stableCasesIteSem__tests = testGroup "stableCasesIteSem"
+  [stableCasesIteSem__test1
+  ,stableCasesIteSem__test2
+  ,stableCasesIteSem__test3
+  ]
+
+stableCasesIteSem__test1 = testCase "stableCasesIteSem__test1" $
+  stableCasesIteSem [] [acebThen] [acebElse] (FRel Lt (FInt 3) (FVar FPDouble "x"))
+  `semEquiv`
+  [ ACeb { conds   = Cond [(Not (Rel Lt (Int 3) (RealMark "x"))
+                           ,FNot (FRel Lt (FInt 3) (FVar FPDouble "x")))
+                          ,(Rel Lt (Int 3) (RealMark "x")
+                           ,FAnd (FRel Gt (FVar FPDouble "x") (FInt 0))
+                                 (FRel Lt (FInt 3) (FVar FPDouble "x")))],
+          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)
+                    ,BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)
+                    ,BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  MaxErr [ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0), ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0)],
+          decisionPath = root,
+          cFlow  = Stable
+      }]
+  where
+    acebThen = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
+          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }
+    acebElse = ACeb { conds   = Cond [(BTrue, FBTrue)],
+          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }
+
+stableCasesIteSem__test2 = testCase "stableCasesIteSem__test2" $
+  stableCasesIteSem [LDP [1]] [acebThen] [acebElse] (FRel Lt (FInt 3) (FVar FPDouble "x"))
+  `semEquiv`
+  [ ACeb { conds   = Cond [(Rel Lt (Int 3) (RealMark "x")
+                           ,FAnd (FRel Gt (FVar FPDouble "x") (FInt 0))
+                                 (FRel Lt (FInt 3) (FVar FPDouble "x")))],
+          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [1,0]),
+          cFlow  = Stable
+      }
+    ,ACeb { conds   = Cond [(Not $ Rel Lt (Int 3) (RealMark "x")
+                           ,FNot $ FRel Lt (FInt 3) (FVar FPDouble "x"))],
+          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [1,1]),
+          cFlow  = Stable
+      }]
+  where
+    acebThen = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
+          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [1,0]),
+          cFlow  = Stable
+      }
+    acebElse = ACeb { conds   = Cond [(BTrue, FBTrue)],
+          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [1,1]),
+          cFlow  = Stable
+      }
+
+
+stableCasesIteSem__test3 = testCase "stableCasesIteSem__test2" $
+  stableCasesIteSem [LDP [0,1]] [acebThen] [acebElse] (FRel Lt (FInt 3) (FVar FPDouble "x"))
+  `semEquiv`
+  [ ACeb { conds   = Cond [(Rel Lt (Int 3) (RealMark "x")
+                           ,FAnd (FRel Gt (FVar FPDouble "x") (FInt 0))
+                                 (FRel Lt (FInt 3) (FVar FPDouble "x")))],
+          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [0,1]),
+          cFlow  = Stable
+      }
+    ,ACeb { conds   = Cond [(Not $ Rel Lt (Int 3) (RealMark "x")
+                           ,FNot $ FRel Lt (FInt 3) (FVar FPDouble "x"))],
+          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [1,1]),
+          cFlow  = Stable
+      }]
+  where
+    acebThen = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
+          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [0,1]),
+          cFlow  = Stable
+      }
+    acebElse = ACeb { conds   = Cond [(BTrue, FBTrue)],
+          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = (LDP [1,1]),
+          cFlow  = Stable
+      }
 
 unfoldFunCallsInCond__tests = testGroup "unfoldFunCallsInCond"
   [ testCase "true condition returns true" $
@@ -487,7 +600,91 @@ unfoldFunCallsInCond__test18 = testCase "unfoldFunCallsInCond__test18" $
           cFlow  = Stable
       }
 
-stmSem__tests = testGroup "equivInterp tests"
+bexprStmSem__tests = testGroup "BExpr stmSem tests"
+  [bexprStmSem__True
+  ,bexprStmSem__False
+  ,bexprStmSem__Lt
+  ,bexprStmSem__Gt
+  ,bexprStmSem__Ite
+  ]
+
+bexprStmSem__True = testCase "True Semantics" $
+  bexprStmSem (BExpr FBTrue) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = Cond [(BTrue, FBTrue)],
+         rExprs = [] ,
+         fpExprs = [],
+         eExpr  = Int 0,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__False = testCase "False Semantics" $
+  bexprStmSem (BExpr FBFalse) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = Cond [(BFalse, FBFalse)],
+         rExprs = [] ,
+         fpExprs = [],
+         eExpr  = Int 0,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__Lt = testCase "Lt Semantics" $
+  bexprStmSem (BExpr (FRel Lt (FVar FPDouble "X") (FInt 3))) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = Cond [(Rel Lt (RealMark "X") (Int 3), FRel Lt (FVar FPDouble "X") (FInt 3))],
+         rExprs = [] ,
+         fpExprs = [],
+         eExpr  = Int 0,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+
+bexprStmSem__Gt = testCase "Gt Semantics" $
+  bexprStmSem (BExpr $ FRel Gt (FVar FPDouble "Y") (FInt 2)) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = Cond [(Rel Gt (RealMark "Y") (Int 2), FRel Gt (FVar FPDouble "Y") (FInt 2))],
+         rExprs = [] ,
+         fpExprs = [],
+         eExpr  = Int 0,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__Ite = testCase "BIte Semantics" $
+    bexprStmSem (BIte (FRel Lt (FVar FPDouble "X") (FInt 3))
+                      (BExpr $ FRel Gt (FVar FPDouble "Y") (FInt 2))
+                      (BExpr $ FRel Gt (FVar FPDouble "Z") (FInt 1))) [] (Env []) semConf root [LDP []]
+    `semEquiv`
+    [ACeb {conds = Cond [(And (Rel Gt (RealMark "Y") (Int 2)) (Rel Lt (RealMark "X") (Int 3)) 
+                         ,FAnd (FRel Gt (FVar FPDouble "Y") (FInt 2)) (FRel Lt (FVar FPDouble "X") (FInt 3)) )]
+          ,rExprs = []
+          ,fpExprs = []
+          ,eExpr = Int 0
+          ,decisionPath = LDP [0]
+          ,cFlow = Stable}
+    ,ACeb {conds = Cond [(And (Rel Gt (RealMark "Z") (Int 1)) (Not (Rel Lt (RealMark "X") (Int 3))) 
+                         ,FAnd (FRel Gt (FVar FPDouble "Z") (FInt 1)) (FNot (FRel Lt (FVar FPDouble "X") (FInt 3))) )]
+          ,rExprs = []
+          ,fpExprs = []
+          ,eExpr = Int 0
+          ,decisionPath = LDP [1]
+          ,cFlow = Stable}
+    ,ACeb {conds = Cond [(And (And (Rel Gt (RealMark "Y") (Int 2)) (Rel Gt (RealMark "Z") (Int 1)))
+                         (Rel Lt (RealMark "X") (Int 3))
+                         ,FAnd (FRel Gt (FVar FPDouble "Z") (FInt 1)) (FNot (FRel Lt (FVar FPDouble "X") (FInt 3))) )
+                        ,(And (And (Rel Gt (RealMark "Z") (Int 1)) (Rel Gt (RealMark "Y") (Int 2))) (Not (Rel Lt (RealMark "X") (Int 3)))
+                         ,FAnd (FRel Gt (FVar FPDouble "Y") (FInt 2)) (FRel Lt (FVar FPDouble "X") (FInt 3)) )]
+          ,rExprs = []
+          ,fpExprs = []
+          ,eExpr = MaxErr [Int 0,Int 0]
+          ,decisionPath = LDP []
+          ,cFlow = Unstable}
+    ]
+
+stmSem__tests = testGroup "stmSem tests"
     [stmSem__IntAdd
     ,stmSem__Add
     ,stmSem__IntSub
@@ -506,6 +703,7 @@ stmSem__tests = testGroup "equivInterp tests"
     ,stmSem__Ln
     ,stmSem__Expo
     ,stmSem__Floor
+    ,stmSem__Floor__Improved
     ,stmSem__Sqrt
     ,stmSem__Sin
     ,stmSem__Cos
@@ -528,7 +726,13 @@ stmSem__tests = testGroup "equivInterp tests"
     -- ,stmSem__LetInMul
     ]
 
-semConf = SemConf { assumeTestStability = False, mergeUnstables = True}
+semConf = SemConf { improveError = False
+                  , assumeTestStability = False
+                  , mergeUnstables = True}
+
+semConfImproveError = SemConf { improveError = True
+                              , assumeTestStability = False
+                              , mergeUnstables = True}
 
 stmSem__IntAdd = testCase "IntAdd" $
     stmSem (BinaryFPOp AddOp TInt (FInt 1) (FInt 2)) [] (Env []) semConf (LDP []) [] @?=
@@ -563,7 +767,8 @@ stmSem__IntSub = testCase "IntSub" $
 
 stmSem__Sub = testCase "Sub" $
     stmSem (BinaryFPOp SubOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
+    [
+     ACeb { conds   = Cond [(BTrue,FBTrue)],
             rExprs  = [BinaryOp SubOp(Rat 0.1) (Rat 2)],
             fpExprs = [BinaryFPOp SubOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
             eExpr   =  ErrBinOp SubOp FPDouble (Rat 0.1) (ErrRat (1 % 180143985094819840))
@@ -675,7 +880,7 @@ stmSem__Neg = testCase "Neg" $
     [ACeb { conds   = Cond [(BTrue, FBTrue)],
             rExprs  = [UnaryOp NegOp (Rat 0.1)],
             fpExprs = [UnaryFPOp NegOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp NegOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp NegOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -685,7 +890,7 @@ stmSem__Abs = testCase "Abs" $
     [ACeb { conds   = Cond [(BTrue, FBTrue)],
             rExprs  = [UnaryOp   AbsOp (Rat 0.1)],
             fpExprs = [UnaryFPOp AbsOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp AbsOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp AbsOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -696,7 +901,7 @@ stmSem__Ln = testCase "Ln" $
                                  (Rel Gt (FromFloat FPDouble (FCnst FPDouble (1 % 10))) (Int 0)),FBTrue)],
             rExprs  = [UnaryOp   LnOp (Rat 0.1)],
             fpExprs = [UnaryFPOp LnOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp LnOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp LnOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -706,13 +911,22 @@ stmSem__Expo = testCase "Expo" $
     [ACeb { conds   = Cond [(BTrue,FBTrue)],
             rExprs  = [UnaryOp   ExpoOp (Rat 0.1)],
             fpExprs = [UnaryFPOp ExpoOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp ExpoOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp ExpoOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Floor = testCase "Floor" $
     stmSem (UnaryFPOp FloorOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
+     [ACeb {conds = Cond [(BTrue ,FBTrue)],
+            rExprs = [UnaryOp FloorOp (Rat (1 % 10))],
+            fpExprs = [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
+            eExpr = ErrUnOp FloorOp FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
+            decisionPath = root,
+            cFlow = Stable}]
+
+stmSem__Floor__Improved = testCase "Floor" $
+    stmSem (UnaryFPOp FloorOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConfImproveError (LDP []) [] @?=
      [ACeb {conds = Cond [((Or (Rel Neq (UnaryOp FloorOp (Rat (1 % 10)))
                                               (UnaryOp FloorOp (BinaryOp SubOp (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)))))
                                (Rel Neq (UnaryOp FloorOp (Rat (1 % 10)))
@@ -720,7 +934,7 @@ stmSem__Floor = testCase "Floor" $
                          ,FBTrue)],
             rExprs = [UnaryOp FloorOp (Rat (1 % 10))],
             fpExprs = [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
-            eExpr = ErrUnOp FloorOp False FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
+            eExpr = ErrUnOp FloorOp FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
             decisionPath = root,
             cFlow = Stable},
       ACeb {conds = Cond [(And (Rel Eq (UnaryOp FloorOp (Rat (1 % 10)))
@@ -730,7 +944,7 @@ stmSem__Floor = testCase "Floor" $
                          ,FBTrue)],
             rExprs = [UnaryOp FloorOp (Rat (1 % 10))],
             fpExprs = [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
-            eExpr = ErrUnOp FloorOp True FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
+            eExpr = ErrFloorNoRound FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
             decisionPath = root,
             cFlow = Stable}]
 
@@ -739,7 +953,7 @@ stmSem__Sqrt = testCase "Sqrt" $
     [ACeb { conds   = Cond [((Rel GtE (BinaryOp SubOp(Rat 0.1) (ErrRat $ 1 % 180143985094819840)) (Int 0)),FBTrue)],
             rExprs  = [UnaryOp   SqrtOp (Rat 0.1)],
             fpExprs = [UnaryFPOp SqrtOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp SqrtOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp SqrtOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -749,7 +963,7 @@ stmSem__Sin = testCase "Sin" $
     [ACeb { conds   = Cond [(BTrue,FBTrue)],
             rExprs  = [UnaryOp   SinOp (Rat 0.1)],
             fpExprs = [UnaryFPOp SinOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp SinOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp SinOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -759,7 +973,7 @@ stmSem__Cos = testCase "Cos" $
     [ACeb { conds   = Cond [(BTrue,FBTrue)],
             rExprs  = [UnaryOp   CosOp (Rat 0.1)],
             fpExprs = [UnaryFPOp CosOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp CosOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp CosOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -769,7 +983,7 @@ stmSem__Atan = testCase "ATan" $
     [ACeb { conds   = Cond [(BTrue,FBTrue)],
             rExprs  = [UnaryOp   AtanOp (Rat 0.1)],
             fpExprs = [UnaryFPOp AtanOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp AtanOp False FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+            eExpr   =  ErrUnOp AtanOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }
@@ -830,7 +1044,8 @@ stmSem__Ite = testCase "Ite" $
           ,eExpr = ErrRat 0
           ,decisionPath = LDP [1]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(Not (Rel Lt (RealMark "X") (Int 3)),FRel Lt (FVar FPDouble "X") (FInt 3)),(Rel Lt (RealMark "X") (Int 3),FNot (FRel Lt (FVar FPDouble "X") (FInt 3)))]
+    ,ACeb {conds = Cond [(Not (Rel Lt (RealMark "X") (Int 3)),FRel Lt (FVar FPDouble "X") (FInt 3))
+                        ,(Rel Lt (RealMark "X") (Int 3),FNot (FRel Lt (FVar FPDouble "X") (FInt 3)))]
           ,rExprs = [Int 0,Int 1]
           ,fpExprs = [FInt 0,FInt 1]
           ,eExpr = MaxErr [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 0)))
@@ -926,8 +1141,10 @@ stmSem__LetIn3 = testCase "LetIn3" $
                          ,FNot (FRel LtE (FVar FPDouble "Z") (FInt 0)))
                          ,(Rel LtE (RealMark "Z") (Int 0)
                          ,FRel LtE (FVar FPDouble "Z") (FInt 0))]
-            ,rExprs = [BinaryOp AddOp (Int 1) (Int 3),BinaryOp AddOp (Int 2) (Int 3)]
-            ,fpExprs = [BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3),BinaryFPOp AddOp FPDouble (FInt 2) (FInt 3)]
+            ,rExprs = [BinaryOp AddOp (Int 1) (Int 3)
+                      ,BinaryOp AddOp (Int 2) (Int 3)]
+            ,fpExprs = [BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3)
+                       ,BinaryFPOp AddOp FPDouble (FInt 2) (FInt 3)]
             ,eExpr = MaxErr [ErrBinOp AddOp FPDouble (Int 1) (ErrRat 0) (Int 3) (ErrRat 0)
                             ,ErrBinOp AddOp FPDouble (Int 2) (ErrRat 0) (Int 3) (ErrRat 0)]
             ,decisionPath = LDP []
@@ -1081,8 +1298,10 @@ stmSem__IteIntAdd = testCase "IteIntAdd" $
                                       (FInt 3))
       [] (Env []) semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds = Cond [(Not (Rel Gt (RealMark "X") (Int 0)),FNot (FRel Gt (FVar FPDouble "X") (FInt 0))),(Rel Gt (RealMark "X") (Int 0),FRel Gt (FVar FPDouble "X") (FInt 0))]
-          ,rExprs = [BinaryOp AddOp (Int 0) (Int 3),BinaryOp AddOp (Int 1) (Int 3)]
+    [ACeb {conds = Cond [(Not (Rel Gt (RealMark "X") (Int 0)),FNot (FRel Gt (FVar FPDouble "X") (FInt 0)))
+                        ,(Rel Gt (RealMark "X") (Int 0),FRel Gt (FVar FPDouble "X") (FInt 0))]
+          ,rExprs = [BinaryOp AddOp (Int 0) (Int 3)
+                    ,BinaryOp AddOp (Int 1) (Int 3)]
           ,fpExprs = [BinaryFPOp AddOp FPDouble (FInt 0) (FInt 3)
                      ,BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3)]
           ,eExpr = MaxErr [ErrBinOp AddOp FPDouble (Int 0) (ErrRat 0) (Int 3) (ErrRat 0)
@@ -1100,18 +1319,6 @@ stmSem__IteIntAdd = testCase "IteIntAdd" $
           ,decisionPath = LDP []
           ,cFlow = Unstable}]
 
-
--- stmSem__LetInMul = testCase "LetInMul" $
---     stmSem (BinaryFPOp MulOp FPDouble (Let [("X", FPDouble, (FInt 5))] (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 3)))
---                                       (FInt 5))
---       [] (Env [])  semConf (LDP []) [LDP []]
---     `semEquiv`
---     [ACeb {conds = Cond [(BTrue,FBTrue)]
---           ,rExprs = [BinaryOp MulOp (BinaryOp AddOp (Int 5) (Int 3)) (Int 5)]
---           ,fpExprs = [BinaryFPOp MulOp FPDouble (BinaryFPOp AddOp FPDouble (FInt 5) (FInt 3)) (FInt 5)]
---           ,eExpr = ErrBinOp MulOp FPDouble (BinaryOp AddOp (Int 5) (Int 3)) (ErrBinOp AddOp FPDouble (Int 5) (ErrRat 0) (Int 3) (ErrRat 0)) (Int 5) (ErrRat 0)
---           ,decisionPath = LDP []
---           ,cFlow = Stable}]
 
 equivInterp__tests = testGroup "equivInterp tests"
     [equivInterp__test1
@@ -1848,4 +2055,3 @@ unfoldLocalVars__tests = testGroup "unfoldLocalVars"
                         ,("y", FPDouble, FCnst FPDouble 2)] (FVar FPDouble "x")
         @?= BinaryFPOp AddOp FPDouble (FCnst FPDouble 2) (FCnst FPDouble 2)
     ]
-

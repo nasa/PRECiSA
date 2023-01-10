@@ -77,6 +77,7 @@ export declare interface HtmlTemplate {
 export const rangeIn: string = "axis range is";
 export const plotHeight: number = 300; //px
 export const tickHeight: number = 12; //px
+export const MIN_VIEW_WIDTH: number = 600; //px
 /**
  * Plot function and event handlers executed inside the webview
  * TODO: check if this function can be defined in a separate file and then imported as a module
@@ -97,6 +98,9 @@ export const plotFunction: string = `
 }
 .nav-link.active {
     font-weight:bold;
+}
+.card {
+    min-width: ${MIN_VIEW_WIDTH}px;
 }
 .checkmark__circle {
     stroke-dasharray: 166;
@@ -628,18 +632,39 @@ export const MIN_WIDTH: number = 160;
 
 // body template, includes: input table, analyze button, and plot
 export const bodyTemplate: string = `
+<!-- style -->
+<style>
+.ytitle {
+    font-size: x-small !important;
+}
+.btn {
+    font-size: small;
+}
+.tab-pane {
+    transform: scale(0.96);
+    transform-origin: top left;
+}
+.tab-content {
+    padding-bottom: 0!important;
+}
+#analysis-pane {
+    transform:scale(0.9);
+    transform-origin:top left;
+    width:107%;
+}
+</style>
 <!-- tabs -->
 <nav>
   <div class="nav nav-tabs" id="nav-tab" role="tablist">
     <button class="nav-link fa fa-cogs" id="pane0-tab" data-bs-toggle="tab" data-bs-target="#pane0" type="button" role="tab" aria-controls="pane0" aria-selected="false"></button>
     <button class="nav-link active" id="pane1-tab" data-bs-toggle="tab" data-bs-target="#pane1" type="button" role="tab" aria-controls="pane1" aria-selected="true">Round-Off Error</button>
-    <button class="nav-link" id="pane2-tab" data-bs-toggle="tab" data-bs-target="#pane2" type="button" role="tab" aria-controls="pane2" aria-selected="false">Sensitivity</button>
     <button class="nav-link" id="pane3-tab" data-bs-toggle="tab" data-bs-target="#pane3" type="button" role="tab" aria-controls="pane3" aria-selected="false">Intervals</button>
+    <button class="nav-link" id="pane2-tab" data-bs-toggle="tab" data-bs-target="#pane2" type="button" role="tab" aria-controls="pane2" aria-selected="false">Sensitivity</button>
     <button class="nav-link" id="pane4-tab" data-bs-toggle="tab" data-bs-target="#pane4" type="button" role="tab" aria-controls="pane4" aria-selected="false">Comparison</button>
     <button class="nav-link" id="pane5-tab" data-bs-toggle="tab" data-bs-target="#pane5" type="button" role="tab" aria-controls="pane5" aria-selected="false">Paving</button>
   </div>
 </nav>
-
+<!-- panels -->
 <div class="shadow" style="border-left:1px solid lightgray; border-right:1px solid lightgray;">
     <div class="tab-content p-3" id="nav-tabContent">
         <div class="tab-pane" id="pane0" role="tabpanel" aria-labelledby="pane0-tab">
@@ -659,6 +684,7 @@ export const bodyTemplate: string = `
         </div>
         <div class="tab-pane show active" id="pane1" role="tabpanel" aria-labelledby="pane1-tab">
             <b>Round-Off Error Estimation</b>: Computes a sound estimation of the accumulated floating-point round-off error that can occur in function {{functionName}} for given ranges of input variables. In addition, it soundly estimates the error associated to unstable guards in the function.
+            <br><br>
         </div>
         <div class="tab-pane" id="pane2" role="tabpanel" aria-labelledby="pane2-tab">
             <b>Sensitivity Analysis</b>: Evaluates the sensitivity of the floating-point round-off error when the range of input values is affected by a given uncertainty level.
@@ -680,7 +706,7 @@ export const bodyTemplate: string = `
         </div>
         <div class="tab-pane" id="pane4" role="tabpanel" aria-labelledby="pane4-tab">
             <b>Comparative Analysis</b>: Compares the floating-point round-off error of two functions evaluated on the same input variables.
-            <div class="input-group input-group-sm mb-3 py-3">
+            <div class="input-group input-group-sm mb-3 py-3" style="padding-bottom:0!important;">
                 <input disabled type="text" style="background:white;" class="form-control" value="{{functionName}}">
                 <span class="input-group-text">vs.</span>
                 <input disabled id="compare-with" type="text" style="background:white;" class="form-control" placeholder="Use 'compare-error-bounds' to select function">
@@ -688,7 +714,7 @@ export const bodyTemplate: string = `
         </div>
         <div class="tab-pane" id="pane5" role="tabpanel" aria-labelledby="pane5-tab">
             <b>Paving</b>: Plots a mesh diagram highlighting the range of input variables that can trigger unstable guards.
-            <div class="input-group input-group-sm mb-3 py-3">
+            <div class="input-group input-group-sm mb-3 py-3" style="padding-bottom:0!important;">
                 <!-- selection buttons for plot3d/mesh3d-->
                 <div class="input-group">
                     <div class="input-group-prepend">

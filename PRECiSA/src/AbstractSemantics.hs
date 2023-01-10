@@ -19,7 +19,6 @@ import Common.DecisionPath
 import Common.TypesUtils
 import qualified Data.List as List
 import qualified Data.Set as Set
--- import Data.Bifunctor (bimap)
 import Numeric
 import Operators
 import Utils
@@ -31,7 +30,8 @@ import Translation.Real2Float
 
 data SemanticConfiguration = SemConf {
     assumeTestStability :: Bool,
-    mergeUnstables :: Bool
+    mergeUnstables :: Bool,
+    improveError :: Bool
 }
 
 newtype Iteration = Iter Int deriving (Eq,Show,Num)
@@ -57,11 +57,15 @@ symbolicErrorStable interp env fae =
 
 exprSemanticsStable :: Interpretation -> Env ACebS -> FAExpr -> [ACeb]
 exprSemanticsStable interp env fae =
-  stmSem fae interp env SemConf{ assumeTestStability = True, mergeUnstables = True } root []
+  stmSem fae interp env SemConf{ improveError = False
+                               , assumeTestStability = True
+                               , mergeUnstables = True } root []
 
 exprSemantics :: Interpretation -> Env ACebS -> FAExpr -> [ACeb]
 exprSemantics interp env fae =
-  stmSem fae interp env SemConf{ assumeTestStability = False, mergeUnstables = True } root []
+  stmSem fae interp env SemConf{ improveError = False
+                               , assumeTestStability = False
+                               , mergeUnstables = True } root []
 
 maxRoundOffError :: ACebS -> EExpr
 maxRoundOffError [] = error "maxRoundOffError: empty list."
@@ -242,7 +246,8 @@ makeUnstable
       cFlow  = Unstable
   }
   where
-    ee' = maxErr [BinaryOp AddOp fpE (UnaryOp AbsOp (BinaryOp SubOp fpR rR)) | fpR <- fpRs, rR <- rRs]
+    list = [BinaryOp AddOp fpE (UnaryOp AbsOp (BinaryOp SubOp fpR rR)) | fpR <- fpRs, rR <- rRs]
+    ee' = if null list then Int 0 else  maxErr list
     cs' = [(And rCond rfCond, fCond) | rCond <- map realCond rCs, (rfCond,fCond) <- fpCs]
 
 
@@ -296,19 +301,14 @@ condDenomitorNotZero fp ceb1 ceb2 =  Cond [(simplBExprFix  $  And (And  c1 c2) (
                                          r2       <- rExprs ceb2,
                                          a2       <- fpExprs ceb2]
 
-conditionUnOp :: Operators.UnOp -> PVSType -> Bool -> ACeb -> Conditions
-conditionUnOp SqrtOp _ _ ceb = Cond [(simplBExprFix $ And rc (Rel GtE (BinaryOp SubOp r (eExpr ceb)) (Int 0)), fc)
-                                    | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
-conditionUnOp LnOp fp _ ceb =  Cond [(simplBExprFix $ And (And rc (Rel Lt (Int 0)(BinaryOp SubOp r (eExpr ceb))))
-                                                          (Rel Gt (FromFloat fp a) (Int 0)), fc)
-                                    | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb, a <- fpExprs ceb]
-conditionUnOp FloorOp _ False ceb = Cond [(simplBExprFix $ And rc (Or (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (eExpr ceb))))
-                                                                   (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (eExpr ceb))))), fc)
-                                          | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
-conditionUnOp FloorOp _ True ceb = Cond [(simplBExprFix $ And rc (And (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (eExpr ceb))))
-                                                                  (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (eExpr ceb))))),fc)
-                                         | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
-conditionUnOp _ _ _ ceb = conds ceb
+conditionUnOp :: Operators.UnOp -> PVSType -> ACeb -> Conditions
+conditionUnOp SqrtOp _ ceb = Cond [(simplBExprFix $
+  And rc (Rel GtE (BinaryOp SubOp r (eExpr ceb)) (Int 0)), fc)
+    | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
+conditionUnOp LnOp fp ceb =  Cond [(simplBExprFix $
+  And (And rc (Rel Lt (Int 0)(BinaryOp SubOp r (eExpr ceb))))(Rel Gt (FromFloat fp a) (Int 0)), fc)
+    | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb, a <- fpExprs ceb]
+conditionUnOp _ _ ceb = conds ceb
 
 conditionBinOp :: Operators.BinOp -> PVSType -> ACeb -> ACeb -> Conditions
 conditionBinOp DivOp   fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
@@ -316,47 +316,59 @@ conditionBinOp IDivOp  fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
 conditionBinOp ItDivOp fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
 conditionBinOp ModOp   fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
 conditionBinOp ItModOp fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
-conditionBinOp       _  _ ceb1 ceb2 = Cond [(simplBExprFix $ And c1 c2, simplFBExprFix $ FAnd g1 g2) |
-                                         (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)]
+conditionBinOp       _  _ ceb1 ceb2 = Cond [(simplBExprFix $ And c1 c2, simplFBExprFix $ FAnd g1 g2)
+                                           | (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)]
 
-semUnOp :: Operators.UnOp -> PVSType -> Bool -> [ACeb] -> [ACeb]
-semUnOp op fp tight semOp1 = collapseSem $ filterCondFalse $ map makeCeb semOp1
+semUnOp :: SemanticConfiguration -> Operators.UnOp -> PVSType -> [ACeb] -> LDecisionPath -> [ACeb]
+semUnOp config op fp semOp1 dp =
+  (if (improveError config) then id else collapseSem) $
+    filterCondFalse $ map makeCeb semOp1
   where
     makeCeb ceb1 = ACeb {
-        conds  = conditionUnOp op fp tight ceb1,
+        conds  = conditionUnOp op fp ceb1,
         rExprs  = [UnaryOp   op    r1 | r1 <- rExprs ceb1],
         fpExprs = [UnaryFPOp op fp f1 | f1 <- fpExprs ceb1],
-        eExpr   = maxErr [ErrUnOp op tight fp r1 (eExpr ceb1) | r1 <- rExprs ceb1],
-        decisionPath = root,
+        eExpr   = maxErr [ErrUnOp op fp r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        decisionPath = dp,
         cFlow  = cFlow ceb1
     }
 
-semBinOp :: Operators.BinOp -> PVSType -> [ACeb] -> [ACeb] -> [ACeb]
-semBinOp op fp semOp1 semOp2 = collapseSem $ filterCondFalse $ map makeCeb (combos [semOp1,semOp2])
+semBinOp :: SemanticConfiguration -> Operators.BinOp -> PVSType -> [ACeb] -> [ACeb] -> LDecisionPath -> [ACeb]
+semBinOp config op fp semOp1 semOp2 dp =
+  (if (improveError config) then id else collapseSem) $
+    filterCondFalse $ map makeCeb (combos [semOp1,semOp2])
   where
     makeCeb [ceb1, ceb2] = ACeb {
         conds  = conditionBinOp op fp ceb1 ceb2,
         rExprs  = [BinaryOp   op r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
         fpExprs = [BinaryFPOp op fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
         eExpr   = maxErr [ErrBinOp op fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
-        decisionPath = root,
+        decisionPath = dp,
         cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
     }
     makeCeb _ = error "makeCeb: somethinh went wrong"
 
-isDecPathOfInterest :: [LDecisionPath] -> ACeb -> Bool
-isDecPathOfInterest dps ACeb{ decisionPath = dp' } = existsPrefixInList dp' dps
+isDecPathOfInterest :: [LDecisionPath] -> LDecisionPath -> Bool
+isDecPathOfInterest dps dp = existsPrefixInList dp dps
+
+isDecPathOfInterestACeb :: [LDecisionPath] -> ACeb -> Bool
+isDecPathOfInterestACeb dps ACeb{ decisionPath = dp } = isDecPathOfInterest dps dp
+
+notSubDecPathOfInterest :: [LDecisionPath] -> LDecisionPath -> Bool
+notSubDecPathOfInterest dps dp = (not $ isDecPathOfInterest dps (dp ~> 0)) &&
+                                 (not $ isDecPathOfInterest dps (dp ~> 1))
 
 stableCasesIteSem :: [LDecisionPath]
                   -> ACebS
                   -> ACebS
                   -> FBExpr
                   -> ACebS
+
 stableCasesIteSem dps semThen semElse fbe | null stableNotOfInterest = stableOfInterest
                                           | otherwise = mergeACebFold stableNotOfInterest:stableOfInterest
   where
     be = fbe2be fbe
-    (stableOfInterest, stableNotOfInterest) = List.partition (isDecPathOfInterest dps)
+    (stableOfInterest, stableNotOfInterest) = List.partition (isDecPathOfInterestACeb dps)
                                                              (filter isStable sem)
     sem = addCondS (be, fbe) semThen ++
           addCondS (Not be, FNot fbe) semElse
@@ -380,23 +392,24 @@ unstableCasesIteSem semThen semElse fbe = filter isUnstable (stableCases ++ unst
     stableCases = addCondS (be, fbe) semThen ++
                   addCondS (Not be, FNot fbe) semElse
 
-semIte :: Bool -> Bool -> [LDecisionPath] -> ACebS -> ACebS -> FBExpr -> ACebS
-semIte sta mu dps semThen semElse fbe | sta = stableCases
-                                      | mu = case mergedUnstableCase of
+semIte :: Bool -> Bool -> LDecisionPath -> [LDecisionPath] -> ACebS -> ACebS -> FBExpr -> ACebS
+semIte sta mu dp dps semThen semElse fbe | sta = stableCases
+                                         | mu = case mergedUnstableCase of
                                                 Nothing -> stableCases
                                                 Just uc -> uc : stableCases
-                                      | otherwise = unstableCases ++ stableCases
+                                         | otherwise = unstableCases ++ stableCases
   where
-    stableCases   = stableCasesIteSem  dps semThen semElse fbe
+    stableCases   = stableCasesIteSem dps semThen semElse fbe
     unstableCases = unstableCasesIteSem semThen semElse fbe
     mergedUnstableCase  = if null unstableCases then Nothing else Just $ mergeACebFold unstableCases
+
 
 stableCasesListIte :: [LDecisionPath] -> ACebS -> ACebS
 stableCasesListIte dps stableCases = if null stableNotOfInterest
                                              then stableOfInterest
                                              else mergeACebFold stableNotOfInterest:stableOfInterest
   where
-    (stableOfInterest, stableNotOfInterest) = List.partition (isDecPathOfInterest dps)
+    (stableOfInterest, stableNotOfInterest) = List.partition (isDecPathOfInterestACeb dps)
                                                              (filter isStable stableCases)
 
 unstableCasesListIte :: ACebS -> [(FBExpr,ACebS)] -> ACebS -> ACebS
@@ -489,8 +502,9 @@ bexprStmSem (BLet (letElem:rest) stm) interp env config dp dps
                                ,letExpr = eExpr ceb}
     newStm = if null rest then stm else (BLet rest stm)
 
-bexprStmSem (BIte fbe stmThen stmElse) interp env config@SemConf{ assumeTestStability = sta, mergeUnstables = mu } dp dps =
-  semIte sta mu dps semThen semElse fbe
+bexprStmSem (BIte fbe stmThen stmElse) interp env config@SemConf{ assumeTestStability = sta
+                                                                , mergeUnstables = mu } dp dps =
+  semIte sta mu dp dps semThen semElse fbe
   where
     semThen = bexprStmSem stmThen interp env config (dp ~> 0) dps
     semElse = bexprStmSem stmElse interp env config (dp ~> 1) dps
@@ -504,7 +518,15 @@ bexprStmSem (BListIte listThen stmElse) interp env config@SemConf{ assumeTestSta
     buildThenCasesSem ((be_i,stm_i):listStm) i = (be_i,bexprStmSem stm_i interp env config (dp ~> i) dps) :
                                                   buildThenCasesSem listStm (i+1)
 
-bexprStmSem (BExpr _)    _ _ _ _ _ = [zeroErrAceb]
+bexprStmSem (BExpr fbe) _ _ _ dp _ = [ACeb {
+  conds  = Cond [(fbe2be fbe, fbe)],
+  rExprs = [] ,
+  fpExprs = [],
+  eExpr  = Int 0,
+  decisionPath = dp,
+  cFlow  = Stable
+  }]
+
 bexprStmSem  BUnstWarning _ _ _ _ _ = [zeroErrAceb]
 
 stmSem :: FAExpr
@@ -575,7 +597,8 @@ stmSem (TypeCast _ toType (FCnst fromType n)) _ _ _ dp _ =
               _ -> error "fpSem: unexpected type."
 
 stmSem (TypeCast fp1 fp2 a) interp env config dp dps =
-  collapseSem $ filterCondFalse $ map makeCebCast (stmSem a interp env config dp dps)
+  (if (improveError config) then id else collapseSem) $
+  filterCondFalse $ map makeCebCast (stmSem a interp env config dp dps)
     where
       makeCebCast :: ACeb -> ACeb
       makeCebCast ceb = ceb {
@@ -611,14 +634,17 @@ stmSem (FEFun _ f _ actArgs) interp env config dp dps =
     argSem = map (\arg -> stmSem arg interp env config dp dps) actArgs
 
 stmSem (BinaryFPOp MulOp TInt a1 a2) interp env config dp dps =
-  collapseSem $ filterCondFalse $ semBinOp MulOp TInt (stmSem a1 interp env config dp dps)
-                                                      (stmSem a2 interp env config dp dps)
+  (if (improveError config) then id else collapseSem) $
+  filterCondFalse $ semBinOp config MulOp TInt (stmSem a1 interp env config dp dps)
+                                               (stmSem a2 interp env config dp dps) dp
 
 stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env config dp dps =
+  (if (improveError config) then id else collapseSem) $
   case pow2Mul ae of
-      Just (Left  (pow2, a)) -> collapseSem $ filterCondFalse $ map (semMulPow2  True) (combos [stmSem pow2 interp env config dp dps, stmSem a    interp env config dp dps])
-      Just (Right (pow2, a)) -> collapseSem $ filterCondFalse $ map (semMulPow2 False) (combos [stmSem a    interp env config dp dps, stmSem pow2 interp env config dp dps])
-      Nothing                -> collapseSem $ filterCondFalse $ semBinOp MulOp fp (stmSem a1 interp env config dp dps) (stmSem a2 interp env config dp dps)
+      Just (Left  (pow2, a)) -> filterCondFalse $ map (semMulPow2  True) (combos [stmSem pow2 interp env config dp dps, stmSem a    interp env config dp dps])
+      Just (Right (pow2, a)) -> filterCondFalse $ map (semMulPow2 False) (combos [stmSem a interp env config dp dps, stmSem pow2 interp env config dp dps])
+      Nothing -> filterCondFalse $ semBinOp config MulOp fp (stmSem a1 interp env config dp dps)
+                                                            (stmSem a2 interp env config dp dps) dp
   where
     pow2Mul :: FAExpr -> Maybe (Either (FAExpr,FAExpr) (FAExpr,FAExpr))
     pow2Mul (BinaryFPOp MulOp _ pow2@(FInt n)         a) | isPow2 (fromInteger  n :: Double) = Just $ Left  (pow2, a)
@@ -631,10 +657,8 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env config dp dps =
     semMulPow2 left [ceb1,ceb2] =
         ACeb {
             conds  = if left
-                     then Cond [(simplBExprFix $ And c2 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a2))), g2) |
-                                (c2, g2) <- uncond (conds ceb2)]
-                     else Cond [(simplBExprFix $ And c1 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a1))), g1) |
-                                (c1, g1) <- uncond (conds ceb1)],
+                     then Cond [(simplBExprFix $ And c2 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a2))), g2) | (c2, g2) <- uncond (conds ceb2)]
+                     else Cond [(simplBExprFix $ And c1 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a1))), g1) | (c1, g1) <- uncond (conds ceb1)],
             rExprs  = [BinaryOp   MulOp    r1 r2 | r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
             fpExprs = [BinaryFPOp MulOp fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
             eExpr   = if left then ErrMulPow2L fp n (eExpr ceb2) else ErrMulPow2R fp n (eExpr ceb1),
@@ -649,23 +673,109 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env config dp dps =
 
     semMulPow2 _ cebs = error $ "semMulPow2: something went wrong\n ceb1 = " ++ show cebs ++ "\n"
 
+stmSem (BinaryFPOp SubOp TInt a1 a2) interp env config dp dps =
+  (if (improveError config) then id else collapseSem) $
+  filterCondFalse $ semBinOp config SubOp TInt (stmSem a1 interp env config dp dps)
+                                               (stmSem a2 interp env config dp dps) dp
+
+stmSem (BinaryFPOp SubOp fp a1 a2) interp env config dp dps =
+  if (improveError config)
+  then
+    filterCondFalse $ concatMap semSubImproved (combos [stmSem a1 interp env config dp dps
+                                                       ,stmSem a2 interp env config dp dps])
+  else
+    filterCondFalse $ semBinOp config SubOp fp (stmSem a1 interp env config dp dps)
+                                               (stmSem a2 interp env config dp dps) dp
+  where
+    semSubImproved [ceb1,ceb2] =
+      [ACeb {
+            conds  = Cond [(
+            simplBExprFix $
+            And (And (Rel LtE (BinaryOp DivOp r2 (Int 2)) r1)
+                     (Rel LtE r1 (BinaryOp MulOp r2 (Int 2)))) (And c1 c2)
+                           ,simplFBExprFix $ FAnd g1 g2) |
+                                         (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2),
+                                         r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
+            rExprs  = [BinaryOp   SubOp    r1 r2 | r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
+            fpExprs = [BinaryFPOp SubOp fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
+            eExpr   = maxErr [ErrSubSternenz fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            decisionPath = dp,
+            cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
+        }
+      ,ACeb {
+            conds  = Cond [(
+              simplBExprFix $
+              And (Or (Rel Gt (BinaryOp DivOp r2 (Int 2)) r1)
+                      (Rel Gt r1 (BinaryOp MulOp r2 (Int 2)))) (And c1 c2)
+                           ,simplFBExprFix $ FAnd g1 g2) |
+                                         (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2),
+                                         r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
+            rExprs  = [BinaryOp   SubOp    r1 r2 | r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
+            fpExprs = [BinaryFPOp SubOp fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
+            eExpr   = maxErr [ErrBinOp SubOp fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            decisionPath = dp,
+            cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
+        }]
+    semSubImproved _ = error $ "stmSem SubOp: something went wrong, perhaps the semantics of the operands is empty."
+
 stmSem (BinaryFPOp op fp a1 a2) interp env config dp dps =
-  semBinOp op fp (stmSem a1 interp env config dp dps) (stmSem a2 interp env config dp dps)
+  (if (improveError config) then id else collapseSem) $
+  semBinOp config op fp (stmSem a1 interp env config dp dps) (stmSem a2 interp env config dp dps) dp
+
+stmSem (UnaryFPOp FloorOp TInt a) interp env config dp dps =
+  (if (improveError config) then id else collapseSem) $
+  filterCondFalse $ map makeCeb (stmSem a interp env config dp dps)
+  where
+    makeCeb ceb1 =
+      ACeb {
+        conds  = conds ceb1,
+        rExprs  = [UnaryOp   FloorOp    r1 | r1 <- rExprs ceb1],
+        fpExprs = [UnaryFPOp FloorOp TInt f1 | f1 <- fpExprs ceb1],
+        eExpr   = maxErr [ErrUnOp FloorOp TInt r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        decisionPath = dp,
+        cFlow  = cFlow ceb1}
 
 stmSem (UnaryFPOp FloorOp fp a) interp env config dp dps =
-  semUnOp FloorOp fp False (stmSem a interp env config dp dps)
-  ++
-  semUnOp FloorOp fp True (stmSem a interp env config dp dps)
+  if (improveError config)
+  then filterCondFalse $ concatMap makeCeb semOperand
+  else semUnOp config FloorOp fp semOperand dp
+  where
+    semOperand = stmSem a interp env config dp dps
+    makeCeb ceb1 =
+      [ACeb {
+        conds  = Cond [(simplBExprFix $
+            And rc (Or (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (eExpr ceb1))))
+            (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (eExpr ceb1))))), fc)
+            | (rc,fc) <- uncond (conds ceb1), r <- rExprs ceb1],
+        rExprs  = [UnaryOp   FloorOp    r1 | r1 <- rExprs ceb1],
+        fpExprs = [UnaryFPOp FloorOp fp f1 | f1 <- fpExprs ceb1],
+        eExpr   = maxErr [ErrUnOp FloorOp fp r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        decisionPath = dp,
+        cFlow  = cFlow ceb1}
+      ,ACeb {
+        conds  = Cond [(simplBExprFix $
+            And rc (And (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (eExpr ceb1))))
+            (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (eExpr ceb1))))),fc)
+            | (rc,fc) <- uncond (conds ceb1), r <- rExprs ceb1],
+        rExprs  = [UnaryOp   FloorOp    r1 | r1 <- rExprs ceb1],
+        fpExprs = [UnaryFPOp FloorOp fp f1 | f1 <- fpExprs ceb1],
+        eExpr   = maxErr [ErrFloorNoRound fp r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        decisionPath = dp,
+        cFlow  = cFlow ceb1}
+      ]
 
 stmSem (UnaryFPOp AtanOp fp a) interp env config dp dps =
-  semUnOp AtanOp fp False (stmSem a interp env config dp dps)
+  semUnOp config AtanOp fp (stmSem a interp env config dp dps) dp
 
 stmSem (UnaryFPOp TanOp fp a) interp env config dp dps =
-  semBinOp DivOp fp (stmSem (UnaryFPOp SinOp fp a) interp env config dp dps) (stmSem (UnaryFPOp CosOp fp a) interp env config dp dps)
+  semBinOp config DivOp fp (stmSem (UnaryFPOp SinOp fp a) interp env config dp dps)
+                           (stmSem (UnaryFPOp CosOp fp a) interp env config dp dps) dp
 
-stmSem (UnaryFPOp op fp a) interp env config dp dps = semUnOp op fp False (stmSem a interp env config dp dps)
+stmSem (UnaryFPOp op fp a) interp env config dp dps =
+  semUnOp config op fp (stmSem a interp env config dp dps) dp
 
 stmSem (FFma fp a1 a2 a3) interp env config dp dps =
+  (if (improveError config) then id else collapseSem) $
   filterCondFalse $ map semFma (combos [stmSem a1 interp env config dp dps
                                        ,stmSem a2 interp env config dp dps
                                        ,stmSem a3 interp env config dp dps])
@@ -680,7 +790,7 @@ stmSem (FFma fp a1 a2 a3) interp env config dp dps =
             rExprs  = [BinaryOp AddOp r1 (BinaryOp MulOp r2 r3) | r1 <- rExprs  ceb1, r2 <- rExprs  ceb2, r3 <- rExprs  ceb3],
             fpExprs = [FFma fp f1 f2 f3 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2, f3 <- fpExprs ceb3],
             eExpr  = maxErr [ErrFma fp r1 (eExpr ceb1) r2 (eExpr ceb2) r3 (eExpr ceb3) | r1 <- rExprs ceb1, r2 <- rExprs ceb2, r3 <- rExprs ceb3],
-            decisionPath = root,
+            decisionPath = dp,
             cFlow  = mergeControlFlow (cFlow ceb1) (mergeControlFlow (cFlow ceb2) (cFlow ceb3))
         }
     semFma _ = error "stmSem semISub: something went wrong"
@@ -730,7 +840,7 @@ stmSem (Let (letElem:rest) stm) interp env config dp dps = stmSem newStm interp 
     newEnv = addLetElem2Env interp config dp dps env letElem
 
 stmSem (Ite fbe stm1 stm2) interp env config@SemConf{ assumeTestStability = sta, mergeUnstables = mu } dp dps =
-  semIte sta mu dps semThen semElse fbe
+  semIte sta mu dp dps semThen semElse fbe
   where
     semThen = stmSem stm1 interp env config (dp ~> 0) dps
     semElse = stmSem stm2 interp env config (dp ~> 1) dps
@@ -818,7 +928,6 @@ varBindAExprReal fa aa _ (RealMark x) = bindRealMark fa aa
     bindRealMark (y:ys) (a:as) | y == x    = a
                                | otherwise = bindRealMark ys as
     bindRealMark _ _ = error "bindErrorMark: something went wrong"
-
 varBindAExprReal fa aa _ (Var Real x) = bindRealVar fa aa
   where
     bindRealVar :: [VarName] -> [AExpr] -> AExpr
@@ -831,8 +940,10 @@ varBindAExprReal _ _ _ r@(Rat _)         = r
 varBindAExprReal fa aa sem (EFun f fp args) = EFun f fp (map (varBindAExprReal fa aa sem) args)
 varBindAExprReal _  _  _   (Prec fp)     = (Prec fp)
 varBindAExprReal _  _  _   (Var fp x)    = Var fp x
-varBindAExprReal fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExprReal  fa aa sem a)
-varBindAExprReal fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExprReal  fa aa sem a1) (varBindAExprReal fa aa sem a2)
+varBindAExprReal fa aa sem (ArrayElem fp size v a) = ArrayElem fp size v (varBindAExprReal fa aa sem a)
+varBindAExprReal fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExprReal fa aa sem a)
+varBindAExprReal fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExprReal fa aa sem a1)
+                                                             (varBindAExprReal fa aa sem a2)
 varBindAExprReal fa aa _   (FromFloat fp a)    = FromFloat fp   (varBindFAExpr fa (map (real2fpAexpr False fp []) aa) a)
 varBindAExprReal _ _ _ (ErrRat n)    = ErrRat n
 varBindAExprReal fa _ sem (ErrorMark x fp) = bindErrorMark fa sem
@@ -842,9 +953,22 @@ varBindAExprReal fa _ sem (ErrorMark x fp) = bindErrorMark fa sem
         bindErrorMark (y:ys) (ceb:cebs) | x == y    = eExpr ceb
                                         | otherwise = bindErrorMark ys cebs
         bindErrorMark _ _ = error "bindErrorMark: something went wrong"
-varBindAExprReal fa aa sem (ErrBinOp op fp r1 e1 r2 e2) = ErrBinOp op fp (varBindAExprReal fa aa sem r1) (varBindAExprReal fa aa sem e1)
-                                                            (varBindAExprReal fa aa sem r2) (varBindAExprReal fa aa sem e2)
-varBindAExprReal fa aa sem (ErrUnOp op tight fp r e)    = ErrUnOp op tight  fp (varBindAExprReal fa aa sem r)  (varBindAExprReal fa aa sem e)
+varBindAExprReal fa aa sem (ErrBinOp op fp r1 e1 r2 e2) = ErrBinOp op fp (varBindAExprReal fa aa sem r1)
+                                                                         (varBindAExprReal fa aa sem e1)
+                                                                         (varBindAExprReal fa aa sem r2)
+                                                                         (varBindAExprReal fa aa sem e2)
+varBindAExprReal fa aa sem (ErrSubSternenz fp r1 e1 r2 e2) = ErrSubSternenz fp (varBindAExprReal fa aa sem r1)
+                                                                         (varBindAExprReal fa aa sem e1)
+                                                                         (varBindAExprReal fa aa sem r2)
+                                                                         (varBindAExprReal fa aa sem e2)
+varBindAExprReal fa aa sem (ErrFma fp r1 e1 r2 e2 r3 e3) = ErrFma fp (varBindAExprReal fa aa sem r1)
+                                                                         (varBindAExprReal fa aa sem e1)
+                                                                         (varBindAExprReal fa aa sem r2)
+                                                                         (varBindAExprReal fa aa sem e2)
+                                                                         (varBindAExprReal fa aa sem r3)
+                                                                         (varBindAExprReal fa aa sem e3)
+varBindAExprReal fa aa sem (ErrUnOp op fp r e) = ErrUnOp op  fp (varBindAExprReal fa aa sem r)  (varBindAExprReal fa aa sem e)
+varBindAExprReal fa aa sem (ErrFloorNoRound fp r e) = ErrFloorNoRound fp (varBindAExprReal fa aa sem r)  (varBindAExprReal fa aa sem e)
 varBindAExprReal fa aa sem (ErrCast fp1 fp2 r e)   = ErrCast fp1 fp2  (varBindAExprReal fa aa sem r)  (varBindAExprReal fa aa sem e)
 varBindAExprReal fa aa sem (ErrMulPow2L fp n e)    = ErrMulPow2L fp n (varBindAExprReal fa aa sem e)
 varBindAExprReal fa aa sem (ErrMulPow2R fp n e)    = ErrMulPow2R fp n (varBindAExprReal fa aa sem e)
@@ -938,8 +1062,14 @@ varBindAExpr fa aa sem (ErrBinOp op fp r1 e1 r2 e2) = ErrBinOp op fp (varBindAEx
                                                                      (varBindAExpr fa aa sem e1)
                                                                      (varBindAExpr fa aa sem r2)
                                                                      (varBindAExpr fa aa sem e2)
-varBindAExpr fa aa sem (ErrUnOp op tight fp r e) = ErrUnOp op tight fp (varBindAExpr fa aa sem r)
-                                                                       (varBindAExpr fa aa sem e)
+varBindAExpr fa aa sem (ErrSubSternenz fp r1 e1 r2 e2) = ErrSubSternenz fp (varBindAExpr fa aa sem r1)
+                                                                     (varBindAExpr fa aa sem e1)
+                                                                     (varBindAExpr fa aa sem r2)
+                                                                     (varBindAExpr fa aa sem e2)
+varBindAExpr fa aa sem (ErrUnOp op fp r e) = ErrUnOp op fp (varBindAExpr fa aa sem r)
+                                                           (varBindAExpr fa aa sem e)
+varBindAExpr fa aa sem (ErrFloorNoRound fp r e) = ErrFloorNoRound fp (varBindAExpr fa aa sem r)
+                                                                     (varBindAExpr fa aa sem e)
 varBindAExpr fa aa sem (ErrFma fp r1 e1 r2 e2 r3 e3) = ErrFma fp (varBindAExpr fa aa sem r1)
                                                                  (varBindAExpr fa aa sem e1)
                                                                  (varBindAExpr fa aa sem r2)

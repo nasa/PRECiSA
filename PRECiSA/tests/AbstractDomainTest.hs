@@ -20,16 +20,55 @@ import PVSTypes
 import Operators
 
 testAbstractDomain = testGroup "AbstractDomain"
-  [mergeACeb__tests
+  [mergeConds__tests
+  ,mergeACeb__tests
   ,mergeACebFold__tests
   ,unionACebS__tests
   ,initErrAceb__tests
+  ,isTrueCondition__tests
   ]
+
+mergeConds__tests = testGroup "mergeConds tests"
+  [mergeConds__test1
+  ,mergeConds__test2
+  ,mergeConds__test3
+  ,mergeConds__test4
+  ]
+
+mergeConds__test1 = testCase "the conditions are correctly merged 1" $
+    mergeConds cond1 cond2 @?= expected
+    where
+      cond1 = Cond [(BTrue,FBTrue)]
+      cond2 = Cond [(BTrue,FBTrue)]
+      expected = Cond [(BTrue,FBTrue)] 
+
+mergeConds__test2 = testCase "the conditions are correctly merged 1" $
+    mergeConds cond1 cond2 @?= expected
+    where
+      cond1 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
+      cond2 = Cond [(BTrue,FBTrue)]
+      expected = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))] 
+
+mergeConds__test3 = testCase "the conditions are correctly merged 1" $
+    mergeConds cond1 cond2 @?= expected
+    where
+      cond1 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
+      cond2 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
+      expected = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
+
+mergeConds__test4 = testCase "the conditions are correctly merged 1" $
+    mergeConds cond1 cond2 @?= expected
+    where
+      cond1 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
+      cond2 = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))]
+      expected = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1)),(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))]
 
 mergeACeb__tests = testGroup "mergeACeb tests"
   [mergeACeb__test1
   ,mergeACeb__test2
   ,mergeACeb__test3
+  ,mergeACeb__test4
+  ,mergeACeb__test5
   ]
 
 mergeACeb__test1 = testCase "the semantics fields are correctly merged 1" $
@@ -116,6 +155,63 @@ mergeACeb__test3 = testCase "the semantics fields are correctly merged 3" $
         decisionPath = root ~> 1,
         cFlow  = Unstable
       }
+
+mergeACeb__test4 = testCase "the semantics fields are correctly merged 4" $
+    mergeACeb aceb1 aceb2 @?= expected
+    where
+      aceb1 = ACeb {
+        conds  = Cond [(BTrue, FBTrue)],
+        rExprs = [Int 2],
+        fpExprs = [FInt 2],
+        eExpr  = ErrRat (1 :: Rational),
+        decisionPath = root ~> 1 ~> 0 ~> 0,
+        cFlow  = Unstable
+        }
+      aceb2 = ACeb {
+        conds  = Cond [(BTrue,FRel Lt (FInt 1) (FInt 2))],
+        rExprs = [Int 4],
+        fpExprs = [FInt 2],
+        eExpr  = ErrRat 2,
+        decisionPath = root ~> 1 ~> 1,
+        cFlow  = Unstable
+        }
+      expected = ACeb {
+        conds  = Cond [(BTrue,FRel Lt (FInt 1) (FInt 2))],
+        rExprs = [Int 2,Int 4],
+        fpExprs = [FInt 2],
+        eExpr  = MaxErr [ErrRat 1, ErrRat 2],
+        decisionPath = root ~> 1,
+        cFlow  = Unstable
+      }
+
+mergeACeb__test5 = testCase "the semantics fields are correctly merged 4" $
+    mergeACeb aceb1 aceb2 @?= expected
+    where
+      aceb1 = ACeb {
+        conds  = Cond [(BTrue, FBTrue)],
+        rExprs = [Int 2],
+        fpExprs = [FInt 2],
+        eExpr  = ErrRat (1 :: Rational),
+        decisionPath = root ~> 1 ~> 0 ~> 0,
+        cFlow  = Unstable
+        }
+      aceb2 = ACeb {
+        conds  = Cond [(BTrue,FBTrue)],
+        rExprs = [Int 4],
+        fpExprs = [FInt 2],
+        eExpr  = ErrRat 2,
+        decisionPath = root ~> 1 ~> 1,
+        cFlow  = Unstable
+        }
+      expected = ACeb {
+        conds  = Cond [(BTrue,FBTrue)],
+        rExprs = [Int 2,Int 4],
+        fpExprs = [FInt 2],
+        eExpr  = MaxErr [ErrRat 1, ErrRat 2],
+        decisionPath = root ~> 1,
+        cFlow  = Unstable
+      }
+
 
 mergeACebFold__tests = testGroup "mergeACebFold tests"
   [mergeACebFold__test1
@@ -306,3 +402,25 @@ initErrAceb__test3 = testCase "init an integer error mark is (Int 0)" $
 
         expected = aceb {eExpr = Int 0}
 
+isTrueCondition__tests = testGroup "isTrueCondition tests"
+  [isTrueCondition__test1
+  ,isTrueCondition__test2
+  ,isTrueCondition__test3
+  ,isTrueCondition__test4
+  ,isTrueCondition__test5
+  ]
+
+isTrueCondition__test1 = testCase "(true,true) is a true condition" $
+    isTrueCondition (Cond [(BTrue, FBTrue)]) @?= True
+
+isTrueCondition__test2 = testCase "(true,false) is not a true condition" $
+    isTrueCondition (Cond [(BTrue, FBFalse)]) @?= False
+
+isTrueCondition__test3 = testCase "(false,true) is not a true condition" $
+    isTrueCondition (Cond [(BFalse, FBTrue)]) @?= False
+
+isTrueCondition__test4 = testCase "(true,true) is a true condition" $
+    isTrueCondition (Cond [(Or BTrue BTrue, FBTrue)]) @?= True
+
+isTrueCondition__test5 = testCase "(true,true) is a true condition" $
+    isTrueCondition (Cond [(Or BTrue BTrue, FAnd FBTrue FBTrue)]) @?= True

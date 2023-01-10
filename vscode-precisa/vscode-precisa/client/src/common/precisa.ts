@@ -162,3 +162,12 @@ export declare interface IntervalAnalysisResponse extends PrecisaAnalysisRespons
 export declare interface PavingAnalysisResponse extends PrecisaAnalysisResponse {
     paving: PavingData
 }
+
+/**
+ * Codelens commands
+ */
+export enum PrecisaCodeLens {
+    EstimateErrorBounds = "vscode-precisa.estimate-error-bounds",
+    CompareErrorBounds = "vscode-precisa.compare-error-bounds",
+    Paving = "vscode-precisa.paving"
+}

@@ -18,8 +18,6 @@ import Common.TypesUtils
 import Common.TypeConversions
 import Control.Monad.State
 import Data.Maybe (fromMaybe)
-import Data.Either (isLeft, fromLeft, isRight, fromRight)
-import Data.Bifunctor (bimap)
 import qualified FramaC.Types as C
 import qualified FramaC.CLang as C
 import qualified FramaC.ACSLTypes as ACSL
@@ -59,12 +57,14 @@ declareVar hasConds expr@(FEFun _ f _ _) n
                  (removeValue $ aexpr2inlineC hasConds expr)
   | otherwise = C.VarDeclAssign (fprec2type $ getPVSType expr) (auxVarName n)
                  (aexpr2inlineC hasConds expr)
+declareVar _ expr _ = error $ "declareBoolVar should be applied to a function call, but the expression " ++ show expr ++ " is given."
 
 declareBoolVar ::  HasConditionals ->  FBExpr -> Int -> C.Stm
 declareBoolVar hasConds expr@(FEPred _ _ f _) n
   | hasConds f = C.VarDeclAssignBool (C.MaybeStruct C.Boolean) (auxVarName n)
                  (removeValueBExpr $ bexpr2C hasConds expr)
   | otherwise =  C.VarDeclAssignBool C.Boolean (auxVarName n) (bexpr2C hasConds expr)
+declareBoolVar _ expr _ = error $ "declareBoolVar should be applied to a predicate call, but the expression " ++ show expr ++ " is given."
 
 predAbsSuffix :: PredAbs -> String
 predAbsSuffix Original = ""
@@ -84,8 +84,6 @@ decl2C forListExpr forMap interp (Decl _ fp f args expr) hasConds =
     returnType = if (hasConds f) then fprec2MaybeType fp else fprec2type fp
     resDecl   = C.VarDecl returnType resultVar
     returnRes = C.Return (C.Var returnType resultVar)
-    printReturnType TInt     = "_int"
-    printReturnType t        = error $ "decl2C: unexpected return type " ++ show t
 
 decl2C _ _ _ Pred{} _ = error "decl2C: Expected numerical function declaration but a predicate."
 
@@ -254,7 +252,7 @@ bexpr2C hasConds (BValue ae)     = C.BValue (bexpr2C hasConds ae)
 bexpr2C hasConds (FEPred _ Original f args) = C.FEPred (f++"_fp") (map (aexpr2inlineC hasConds) args)
 bexpr2C hasConds (FEPred _ TauPlus  f args) = C.FEPred (f++"_tauplus_bool")  (map (aexpr2inlineC hasConds) args)
 bexpr2C hasConds (FEPred _ TauMinus f args) = C.FEPred (f++"_tauminus_bool") (map (aexpr2inlineC hasConds) args)
-bexpr2C hasConds (BStructVar x) = C.BVar  (C.MaybeStruct  C.Boolean) x
+bexpr2C _ (BStructVar x) = C.BVar  (C.MaybeStruct  C.Boolean) x
 
 generateForLoopACSL :: [(FAExpr, AExpr)]
                     -> VarName
@@ -317,17 +315,17 @@ generateAuxVarList callList = do
 
 
 replaceCallsInAExpr :: (FunName -> Bool) -> [(FAExpr,Int)] -> [(FBExpr,Int)] -> FAExpr -> FAExpr
-replaceCallsInAExpr hasConds [] [] expr = expr
-replaceCallsInAExpr hasConds callList predList funCall@(FEFun _ f fp _) =
+replaceCallsInAExpr _ [] [] expr = expr
+replaceCallsInAExpr hasConds callList _ funCall@(FEFun _ f fp _) =
   case lookup funCall callList of
     Just n  -> if hasConds f then (Value $ StructVar fp $ auxVarName n) else (FVar fp $ auxVarName n)
     Nothing -> funCall
-replaceCallsInAExpr hasConds _ _ ae@(FInt  _)           = ae
-replaceCallsInAExpr hasConds _ _ ae@(FCnst _ _)         = ae
-replaceCallsInAExpr hasConds _ _ ae@(FVar  _ _)         = ae
-replaceCallsInAExpr hasConds _ _ ae@(StructVar  _ _)    = ae
-replaceCallsInAExpr hasConds _ _ ae@(ToFloat _ (Int _)) = ae
-replaceCallsInAExpr hasConds _ _ ae@(ToFloat _ (Rat _)) = ae
+replaceCallsInAExpr _ _ _ ae@(FInt  _)           = ae
+replaceCallsInAExpr _ _ _ ae@(FCnst _ _)         = ae
+replaceCallsInAExpr _ _ _ ae@(FVar  _ _)         = ae
+replaceCallsInAExpr _ _ _ ae@(StructVar  _ _)    = ae
+replaceCallsInAExpr _ _ _ ae@(ToFloat _ (Int _)) = ae
+replaceCallsInAExpr _ _ _ ae@(ToFloat _ (Rat _)) = ae
 replaceCallsInAExpr hasConds callList predList (Value ae) = Value (replaceCallsInAExpr hasConds callList predList ae)
 replaceCallsInAExpr hasConds callList predList (FMin aes) = FMin (map (replaceCallsInAExpr hasConds callList predList) aes)
 replaceCallsInAExpr hasConds callList predList (FMax aes) = FMax (map (replaceCallsInAExpr hasConds callList predList) aes)
@@ -374,11 +372,11 @@ replaceCallsInBExpr _ [] [] bexpr = bexpr
 replaceCallsInBExpr _ _ _ FBTrue  = FBTrue
 replaceCallsInBExpr _ _ _ FBFalse = FBFalse
 replaceCallsInBExpr _ _ _ v@(BStructVar _) = v
-replaceCallsInBExpr hasConds callList predList call@FEPred{} =
+replaceCallsInBExpr _ _ predList call@FEPred{} =
   case lookup call predList of
     Just n  -> BValue $ BStructVar $ auxVarName n
     Nothing -> call
-replaceCallsInBExpr hasConds callList predList (BIsValid (call@FEPred{})) =
+replaceCallsInBExpr _ _ predList (BIsValid (call@FEPred{})) =
   case lookup call predList of
     Just n  -> BIsValid $ BStructVar $ auxVarName n
     Nothing -> call

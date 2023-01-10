@@ -320,13 +320,13 @@ export class VSCodePrecisaServer {
             const msg: string = await execPrecisa(req, { precisaPath: this.precisaPath, kodiakPath: this.kodiakPath }, { connection: this.connection });
             if (msg) {
 				// process results
-				let match: RegExpMatchArray = /\bpath\s*\[\]:\s*(.*)/g.exec(msg);
+				let match: RegExpMatchArray = /\bstable\s+paths\s*:\s*(.*)/g.exec(msg);
 				const errorBound: string = (match && match.length > 1) ?  Number.parseFloat(match[1]).toExponential() : msg;
 				const errorBoundInfo: MarkupContent = {
 					kind: "markdown",
 					value: errorBound
 				};
-				match = /\bunstable\s*paths\s*\+\+\s*\[\]:\s*(.*)/g.exec(msg);
+				match = /\bunstable\s*paths\s*:\s*(.*)/g.exec(msg);
 				const unstableErrorBound: string = (match && match.length > 1) ? Number.parseFloat(match[1]).toExponential() : null;
 
 				match = /Numeric lemmas and proofs in: (.*)/g.exec(msg);
