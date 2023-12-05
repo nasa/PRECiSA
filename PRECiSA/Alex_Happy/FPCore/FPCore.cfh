@@ -1,0 +1,164 @@
+-- Comments
+comment ";" ;
+
+-- Tokens
+token Rational ["+-"]?digit+'/'digit*["123456789"]digit*;
+token DecNum ["-+"]?(digit+('.'digit+)?|'.'digit+)('e'["-+"]?digit+)?;
+token HexNum ["+-"]?'0''x'((digit | ["abcdef"])+('.'(digit | ["abcdef"])+)?|'.'(digit | ["abcdef"])+)('p'["-+"]?digit+)?;
+token Symbol (letter | ["~!@$%^&*_\\-+=<>.?/"])(letter | digit | ["~!@$%^&*_\\-+=<>.?/:"])*;
+
+-- Core Grammar
+FProgram. FPCore         ::= "(" "FPCore" Symbol "(" [Argument] ")" [Property] Expr ")";
+FProgramSymbless. FPCore ::= "(" "FPCore" "(" [Argument] ")" [Property] Expr ")";
+
+Prop. Property  ::= ":" Symbol Data;
+[]. [Property]  ::= ;
+(:). [Property] ::= Property [Property];
+
+ASym. Argument    ::= Symbol;
+ASymDim. Argument ::= "(" Symbol [Dimension] ")";
+AProp. Argument   ::= "(" "!" [Property] Symbol [Dimension] ")";
+
+[]. [Argument] ::= ;
+(:). [Argument] ::= Argument [Argument];
+
+DimSym. Dimension ::= Symbol;
+DimNum. Dimension ::= Number;
+
+[]. [Dimension]  ::= ;
+(:). [Dimension] ::= Dimension [Dimension];
+
+ExNum. Expr        ::= Number;
+ExConst. Expr      ::= Constant;
+ExSym. Expr        ::= Symbol;
+ExOp. Expr         ::= "(" Operation Expr [Expr] ")";
+ExIf. Expr         ::= "(" "if" Expr Expr Expr ")";
+ExLet. Expr        ::= "(" "let" "(" [SymEx] ")" Expr ")";
+ExLetStar. Expr    ::= "(" "let*" "(" [SymEx] ")" Expr ")";
+ExWhile. Expr      ::= "(" "while" Expr "(" [SymExEx] ")" Expr ")";
+ExWhileStar. Expr  ::= "(" "while*" Expr "(" [SymExEx] ")" Expr ")";
+ExFor. Expr        ::= "(" "for" "(" [SymEx] ")" "(" [SymExEx] ")" Expr ")";
+ExForStar. Expr    ::= "(" "for*" "(" [SymEx] ")" "(" [SymExEx] ")" Expr ")";
+ExTensor. Expr     ::= "(" "tensor" "(" [SymEx] ")" Expr ")";
+ExTensorStar. Expr ::= "(" "tensor*" "(" [SymEx] ")" "(" [SymExEx] ")" Expr ")";
+ExCast. Expr       ::= "(" "cast" Expr ")";
+ExArray. Expr      ::= "(" "array" [Expr] ")";
+ExProp. Expr       ::= "(" "!" [Property] Expr ")";
+
+[]. [Expr] ::= ;
+(:). [Expr]   ::= Expr [Expr];
+
+OpElem. OperationElem
+
+NRat. Number    ::= Rational;
+NDecNum. Number ::= DecNum;
+NHexNum. Number ::= HexNum;
+NDigits. Number ::= "(" "digits" DecNum DecNum DecNum ")";
+
+DStr. Data  ::= String;
+DExpr. Data  ::= Expr;
+DArr. Data  ::= "(" [Data] ")";
+DBind. Data ::= "(" SymEx [SymEx] ")";
+[]. [Data]  ::= ;
+(:). [Data] ::= Data [Data];
+
+
+[]. [SymEx]  ::= ;
+(:). [SymEx] ::= SymEx [SymEx];
+SymExPair . SymEx     ::= "[" Symbol Expr "]";
+SymExPair. SymEx    ::= "(" Symbol Expr ")";
+
+[]. [SymExEx]  ::= ;
+(:). [SymExEx] ::= SymExEx [SymExEx];
+SymExExTriple. SymExEx  ::= "[" Symbol Expr Expr "]";
+SymExExTriple . SymExEx  ::= "(" Symbol Expr Expr ")";
+
+-- Operations
+
+-- Mathematical Operations
+PlusOp. Operation ::= "+";
+MinusOp. Operation ::= "-";
+MulOp. Operation ::= "*";
+DivOp. Operation ::= "/";
+FabsOp. Operation ::= "fabs";
+FmaOp. Operation ::= "fma";
+ExpOp. Operation ::= "exp";
+Exp2Op. Operation ::= "exp2";
+Expm1Op. Operation ::= "expm1";
+LogOp. Operation ::= "log";
+Log10Op. Operation ::= "log10";
+Log2Op. Operation ::= "log2";
+Log1pOp. Operation ::= "log1p";
+PowOp. Operation ::= "pow";
+SqrtOp. Operation ::= "sqrt";
+CbrtOp. Operation ::= "cbrt";
+HypotOp. Operation ::= "hypot";
+SinOp. Operation ::= "sin";
+CosOp. Operation ::= "cos";
+TanOp. Operation ::= "tan";
+AsinOp. Operation ::= "asin";
+AcosOp. Operation ::= "acos";
+AtanOp. Operation ::= "atan";
+Atan2Op. Operation ::= "atan2";
+SinhOp. Operation ::= "sinh";
+CoshOp. Operation ::= "cosh";
+TanhOp. Operation ::= "tanh";
+AsinhOp. Operation ::= "asinh";
+AcoshOp. Operation ::= "acosh";
+AtanhOp. Operation ::= "atanh";
+ErfOp. Operation ::= "erf";
+ErfcOp. Operation ::= "erfc";
+TgammaOp. Operation ::= "tgamma";
+LgammaOp. Operation ::= "lgamma";
+CeilOp. Operation ::= "ceil";
+FloorOp. Operation ::= "floor";
+FmodOp. Operation ::= "fmod";
+RemainderOp. Operation ::= "remainder";
+FmaxOp. Operation ::= "fmax";
+FminOp. Operation ::= "fmin";
+FdimOp. Operation ::= "fdim";
+CopysignOp. Operation ::= "copysign";
+TruncOp. Operation ::= "trunc";
+RoundOp. Operation ::= "round";
+NearbyintOp. Operation ::= "nearbyint";
+
+-- Testing Operations
+LTOp. Operation ::= "<";
+GTOp. Operation ::= ">";
+LTEOp. Operation ::= "<=";
+GTEOp. Operation ::= ">=";
+EqualOp. Operation ::= "==";
+NEqualOp. Operation ::= "!=";
+AndOp. Operation ::= "and";
+OrOp. Operation ::= "or";
+NotOp. Operation ::= "not";
+IsfiniteOp. Operation ::= "isfinite";
+IsinfOp. Operation ::= "isinf";
+IsnanOp. Operation ::= "isnan";
+IsnormalOp. Operation ::= "isnormal";
+SignbitOp. Operation ::= "signbit";
+
+-- Tensor Operations
+DimOp. Operation ::= "dim";
+SizeOp. Operation ::= "size";
+RefOp. Operation ::= "ref";
+
+
+-- Constants
+EConst. Constant ::= "E";
+LOG2EConst. Constant ::= "LOG2E";
+LOG10EConst. Constant ::= "LOG10E";
+LN2Const. Constant ::= "LN2";
+LN10Const. Constant ::= "LN10";
+PIConst. Constant ::= "PI";
+PI_2Const. Constant ::= "PI_2";
+PI_4Const. Constant ::= "PI_4";
+M_1_PIConst. Constant ::= "M_1_PI";
+M_2_PIConst. Constant ::= "M_2_PI";
+M_2_SQRTPIConst. Constant ::= "M_2_SQRTPI";
+SQRT2Const. Constant ::= "SQRT2";
+SQRT1_2Const. Constant ::= "SQRT1_2";
+INFINITYConst. Constant ::= "INFINITY";
+NANConst. Constant ::= "NAN";
+TRUEConst. Constant ::= "TRUE";
+FALSEConst. Constant ::= "FALSE";

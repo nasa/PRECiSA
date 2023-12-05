@@ -36,7 +36,71 @@ testAbstractSemantics = testGroup "AbstractSemantics"
     ,unfoldFunCallsInCond__tests
     ,stableCasesIteSem__tests
     ,bexprStmSem__tests
+    ,replaceLetVarsFresh__tests
     ]
+
+replaceLetVarsFresh__tests = testGroup "replaceLetVarsFresh"
+  [replaceLetVarsFresh__test1
+  ,replaceLetVarsFresh__test2
+  ,replaceLetVarsFresh__test3
+  ]
+
+replaceLetVarsFresh__test1 = testCase "stableCasesIteSem__test1" $
+  replaceLetVarsFresh (Env []) [] [ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }]
+  @?=
+  [ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }]
+
+replaceLetVarsFresh__test2 = testCase "stableCasesIteSem__test2" $
+  replaceLetVarsFresh (Env []) [Arg "x" TInt] [ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }]
+  @?=
+  [ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }]
+
+replaceLetVarsFresh__test3 = testCase "stableCasesIteSem__test2" $
+  replaceLetVarsFresh (Env []) [Arg "x" TInt] [ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [Let [("x", TInt, FVar TInt "t")] (BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2))],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }]
+  @?=
+  [ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x__0") (Int 2)],
+          fpExprs = FDeclRes [Let [("x__0", TInt, FVar TInt "t")] (BinaryFPOp MulOp FPDouble (FVar FPDouble "x__0") (FInt 2))],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x__0") (ErrorMark "x__0" FPDouble) (Int 2) (ErrRat 0),
+          decisionPath = root,
+          cFlow  = Stable
+      }]
 
 stableCasesIteSem__tests = testGroup "stableCasesIteSem"
   [stableCasesIteSem__test1
@@ -47,31 +111,41 @@ stableCasesIteSem__tests = testGroup "stableCasesIteSem"
 stableCasesIteSem__test1 = testCase "stableCasesIteSem__test1" $
   stableCasesIteSem [] [acebThen] [acebElse] (FRel Lt (FInt 3) (FVar FPDouble "x"))
   `semEquiv`
-  [ ACeb { conds   = Cond [(Not (Rel Lt (Int 3) (RealMark "x"))
-                           ,FNot (FRel Lt (FInt 3) (FVar FPDouble "x")))
-                          ,(Rel Lt (Int 3) (RealMark "x")
-                           ,FAnd (FRel Gt (FVar FPDouble "x") (FInt 0))
-                                 (FRel Lt (FInt 3) (FVar FPDouble "x")))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)
-                    ,BinaryOp MulOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)
-                    ,BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  MaxErr [ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0), ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0)],
+  [ ACeb { conds  = Conds [Cond {realPathCond = Not (Rel Lt (Int 3) (RealMark "x"))
+                              ,fpPathCond = FNot (FRel Lt (FInt 3) (FVar FPDouble "x"))
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}
+                          ,Cond {realPathCond = (Rel Lt (Int 3) (RealMark "x"))
+                                ,fpPathCond = FAnd (FRel Lt (FInt 3) (FVar FPDouble "x"))
+                                                   (FRel Gt (FVar FPDouble "x") (FInt 0))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)
+                             ,BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)
+                             ,BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ MaxErr [ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0)
+                                  ,ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0)],
           decisionPath = root,
           cFlow  = Stable
       }]
   where
-    acebThen = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebThen = ACeb {
+          conds = Conds [Cond {realPathCond = BTrue
+                              ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    acebElse = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebElse = ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
@@ -79,85 +153,108 @@ stableCasesIteSem__test1 = testCase "stableCasesIteSem__test1" $
 stableCasesIteSem__test2 = testCase "stableCasesIteSem__test2" $
   stableCasesIteSem [LDP [1]] [acebThen] [acebElse] (FRel Lt (FInt 3) (FVar FPDouble "x"))
   `semEquiv`
-  [ ACeb { conds   = Cond [(Rel Lt (Int 3) (RealMark "x")
-                           ,FAnd (FRel Gt (FVar FPDouble "x") (FInt 0))
-                                 (FRel Lt (FInt 3) (FVar FPDouble "x")))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+  [ ACeb { conds = Conds [Cond {realPathCond = Rel Lt (Int 3) (RealMark "x")
+                               ,fpPathCond = FAnd (FRel Lt (FInt 3) (FVar FPDouble "x"))
+                                                  (FRel Gt (FVar FPDouble "x") (FInt 0))
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [1,0]),
           cFlow  = Stable
       }
-    ,ACeb { conds   = Cond [(Not $ Rel Lt (Int 3) (RealMark "x")
-                           ,FNot $ FRel Lt (FInt 3) (FVar FPDouble "x"))],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    ,ACeb { conds   = Conds [Cond {realPathCond = Not $ Rel Lt (Int 3) (RealMark "x")
+                                  ,fpPathCond = FNot $ FRel Lt (FInt 3) (FVar FPDouble "x")
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [1,1]),
           cFlow  = Stable
       }]
   where
-    acebThen = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebThen = ACeb {
+          conds   = Conds [Cond {realPathCond = BTrue
+                               ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [1,0]),
           cFlow  = Stable
       }
-    acebElse = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebElse = ACeb { conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [1,1]),
           cFlow  = Stable
       }
 
 
-stableCasesIteSem__test3 = testCase "stableCasesIteSem__test2" $
+stableCasesIteSem__test3 = testCase "stableCasesIteSem__test3" $
   stableCasesIteSem [LDP [0,1]] [acebThen] [acebElse] (FRel Lt (FInt 3) (FVar FPDouble "x"))
   `semEquiv`
-  [ ACeb { conds   = Cond [(Rel Lt (Int 3) (RealMark "x")
-                           ,FAnd (FRel Gt (FVar FPDouble "x") (FInt 0))
-                                 (FRel Lt (FInt 3) (FVar FPDouble "x")))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+  [ ACeb { conds   = Conds [Cond {realPathCond = Rel Lt (Int 3) (RealMark "x")
+                                ,fpPathCond = FAnd (FRel Lt (FInt 3) (FVar FPDouble "x"))
+                                                   (FRel Gt (FVar FPDouble "x") (FInt 0))
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [0,1]),
           cFlow  = Stable
       }
-    ,ACeb { conds   = Cond [(Not $ Rel Lt (Int 3) (RealMark "x")
-                           ,FNot $ FRel Lt (FInt 3) (FVar FPDouble "x"))],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    ,ACeb { conds = Conds [Cond {realPathCond = Not $ Rel Lt (Int 3) (RealMark "x")
+                                ,fpPathCond = FNot $ FRel Lt (FInt 3) (FVar FPDouble "x")
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [1,1]),
           cFlow  = Stable
       }]
   where
-    acebThen = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebThen = ACeb {
+          conds   = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [0,1]),
           cFlow  = Stable
       }
-    acebElse = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebElse = ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = (LDP [1,1]),
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__tests = testGroup "unfoldFunCallsInCond"
   [ testCase "true condition returns true" $
-      unfoldFunCallsInCond undefined (BTrue, FBTrue)
+      unfoldFunCallsInCond undefined trueCond
       @?=
-      [(BTrue, FBTrue)]
+      [trueCond]
   , testCase "condition with no function calls returns itself" $
-      unfoldFunCallsInCond undefined (Rel Lt (Int 3) (Var Real "x"), FRel Lt (FInt 3) (FVar FPDouble "x"))
+      unfoldFunCallsInCond undefined Cond {realPathCond = Rel Lt (Int 3) (Var Real "x")
+                                          ,fpPathCond = FRel Lt (FInt 3) (FVar FPDouble "x")
+                                          ,realCond = BTrue
+                                          ,fpCond = FBTrue}
       @?=
-      [(Rel Lt (Int 3) (Var Real "x"), FRel Lt (FInt 3) (FVar FPDouble "x"))]
+      [Cond {realPathCond = Rel Lt (Int 3) (Var Real "x")
+           ,fpPathCond = FRel Lt (FInt 3) (FVar FPDouble "x")
+           ,realCond = BTrue
+           ,fpCond = FBTrue}]
   , unfoldFunCallsInCond__test1
   , unfoldFunCallsInCond__test2
   , unfoldFunCallsInCond__test3
@@ -179,425 +276,584 @@ unfoldFunCallsInCond__tests = testGroup "unfoldFunCallsInCond"
   ]
 
 unfoldFunCallsInCond__test1 = testCase "unfoldFunCallsInCond__test1" $
-  unfoldFunCallsInCond interp (Rel Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel Lt (Var Real "y") (Int 3),
-    FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3))]
+  [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3)
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb { conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test2 = testCase "unfoldFunCallsInCond__test2" $
-  unfoldFunCallsInCond interp (Rel  Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel Lt (Var Real "y") (Int 3),
-    FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
-         (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3)))]
+  [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
+                           (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb {
+          conds   = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test3 = testCase "unfoldFunCallsInCond__test3" $
-  unfoldFunCallsInCond interp (Rel Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel Lt (Var Real "y") (Int 3),
-    FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
-         (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3)))
-  , (Rel Lt (Var Real "y") (Int 3),
-        (FRel Lt (BinaryFPOp MulOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3)))
-  ]
+  [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
+         (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}
+  ,Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FRel Lt (BinaryFPOp MulOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3)
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb1,aceb2]))]
-    aceb1 = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb1 = ACeb {
+          conds  = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    aceb2 = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb2 = ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test4 = testCase "unfoldFunCallsInCond__test4" $
-  unfoldFunCallsInCond interp (Rel Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
-                                   (FEFun False "g" FPDouble [FVar FPDouble "h"]))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
+                                                         (FEFun False "g" FPDouble [FVar FPDouble "h"])
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel Lt (Var Real "y") (Int 3),
-    FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
-         (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2))
-              (BinaryFPOp MulOp TInt (FVar FPDouble "h") (FInt 2))))]
+  [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
+                           (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2))
+                                    (BinaryFPOp MulOp TInt (FVar FPDouble "h") (FInt 2)))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [acebf])),
               ("g",(False, FPDouble, [Arg "x" FPDouble], [acebg]))]
-    acebf = ACeb { conds = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebf = ACeb {
+          conds = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    acebg = ACeb { conds = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebg = ACeb { conds = trueConds,
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test5 = testCase "unfoldFunCallsInCond__test5" $
-  unfoldFunCallsInCond interp (Rel  Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
-                                       (FEFun False "g" FPDouble [FVar FPDouble "h"]))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
+                                                         (FEFun False "g" FPDouble [FVar FPDouble "h"])
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-   [(Rel Lt (Var Real "y") (Int 3)
-   ,FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
+   [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+         ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
          (FAnd (FRel Lt (FVar FPDouble "h") (FInt 10))
                (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2))
-                        (BinaryFPOp MulOp TInt (FVar FPDouble "h") (FInt 2)))))]
+                        (BinaryFPOp MulOp TInt (FVar FPDouble "h") (FInt 2))))
+         ,realCond = BTrue
+         ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [acebf])),
               ("g",(False, FPDouble, [Arg "x" FPDouble], [acebg]))]
-    acebf = ACeb { conds = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebf = ACeb {
+          conds =  Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    acebg = ACeb { conds = Cond [(BTrue, FRel Lt (FVar FPDouble "x") (FInt 10))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebg = ACeb { conds = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FRel Lt (FVar FPDouble "x") (FInt 10)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test6 = testCase "unfoldFunCallsInCond__test6" $
-  unfoldFunCallsInCond interp (Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 1))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 1)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel  Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)
-   ,FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2)) (FInt 1))]
+  [Cond {realPathCond = Rel  Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)
+        ,fpPathCond = FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2)) (FInt 1)
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb {
+          conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test7 = testCase "unfoldFunCallsInCond__test7" $
-  unfoldFunCallsInCond interp (Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 1))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 1)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(And (Rel Lt (Var Real "z") (Int 5))
-        (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3))
-  , FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
-         (FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2)) (FInt 1)))]
+  [Cond {realPathCond = And (Rel Lt (Var Real "z") (Int 5))
+                            (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3))
+        ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
+                           (FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2)) (FInt 1))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(Rel Lt (Var Real "x") (Int 5), FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb {
+          conds   = Conds [Cond {realPathCond = Rel Lt (Var Real "x") (Int 5)
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test8 = testCase "unfoldFunCallsInCond__test8" $
-  unfoldFunCallsInCond interp (Rel Lt (EFun "f" Real [Var Real "z"])
-                                  (EFun "g" Real [Var Real "h"])
-                              ,FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
-                                   (FEFun False "g" FPDouble [FVar FPDouble "h"]))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (EFun "f" Real [Var Real "z"])
+                                                          (EFun "g" Real [Var Real "h"])
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
+                                                         (FEFun False "g" FPDouble [FVar FPDouble "h"])
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-   [(And (Rel Lt (Var Real "z") (Int 5))
-         (And (Rel Gt (Var Real "h") (Int 0))
-              (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2))
-                      (BinaryOp MulOp (Var Real "h") (Int 2))))
-   ,FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
-         (FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
-               (FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2))
-                        (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 2)))))]
+  [Cond {realPathCond = And (Rel Lt (Var Real "z") (Int 5))
+                            (And (Rel Gt (Var Real "h") (Int 0))
+                                 (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2))
+                                 (BinaryOp MulOp (Var Real "h") (Int 2))))
+        ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
+                           (FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
+                                 (FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2))
+                                 (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 2))))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [acebf]))
              ,("g",(False, FPDouble, [Arg "x" FPDouble], [acebg]))]
-    acebf = ACeb { conds   = Cond [(Rel Lt (Var Real "x") (Int 5), FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebf = ACeb {
+          conds   = Conds [Cond {realPathCond = Rel Lt (Var Real "x") (Int 5)
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    acebg = ACeb { conds = Cond [(Rel Gt (Var Real "x") (Int 0), FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebg = ACeb {
+          conds = Conds [Cond {realPathCond = Rel Gt (Var Real "x") (Int 0)
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test9 = testCase "unfoldFunCallsInCond__test9" $
-  unfoldFunCallsInCond interp (Rel Lt (EFun "f" Real [Var Real "z"])
-                                  (EFun "g" Real [Var Real "h"])
-                              ,FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
-                                   (FEFun False "g" FPDouble [FVar FPDouble "h"]))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (EFun "f" Real [Var Real "z"])
+                                                           (EFun "g" Real [Var Real "h"])
+                                    ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"])
+                                                          (FEFun False "g" FPDouble [FVar FPDouble "h"])
+                                    ,realCond = BTrue
+                                    ,fpCond = FBTrue}
   @?=
   [cond1,cond2]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [acebf1,acebf2]))
              ,("g",(False, FPDouble, [Arg "x" FPDouble], [acebg]))]
-    acebf1 = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebf1 = ACeb {
+          conds   = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    acebf2 = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp SubOp (Var Real "x") (Int 3)],
-          fpExprs = [BinaryFPOp SubOp FPDouble (FVar FPDouble "x") (FInt 3)],
-          eExpr   =  ErrBinOp SubOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 3) (ErrRat 0),
+    acebf2 = ACeb { conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp SubOp (Var Real "x") (Int 3)],
+          fpExprs = FDeclRes [BinaryFPOp SubOp FPDouble (FVar FPDouble "x") (FInt 3)],
+          eExpr   = Just $ ErrBinOp SubOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 3) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    acebg = ACeb { conds = Cond [(Rel Gt (Var Real "x") (Int 0), FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 4)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 4)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 4) (ErrRat 0),
+    acebg = ACeb { conds = Conds [Cond {realPathCond = Rel Gt (Var Real "x") (Int 0)
+                                ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 4)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 4)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 4) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    cond1 = (And (Rel Gt (Var Real "h") (Int 0))
-                 (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (BinaryOp MulOp (Var Real "h") (Int 4)))
-            ,FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
-                  (FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
-                        (FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2))
-                                 (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 4)))))
-    cond2 = (And (Rel Gt (Var Real "h") (Int 0))
-                 (Rel Lt (BinaryOp SubOp (Var Real "z") (Int 3))
-                         (BinaryOp MulOp (Var Real "h") (Int 4)))
-            ,FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
-                  (FRel Lt (BinaryFPOp SubOp FPDouble (FVar FPDouble "z") (FInt 3))
-                           (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 4))))
+    cond1 = Cond {realPathCond = And (Rel Gt (Var Real "h") (Int 0))
+                                     (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2))
+                                             (BinaryOp MulOp (Var Real "h") (Int 4)))
+                 ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "z") (FInt 0))
+                                    (FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
+                                    (FRel Lt (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (FInt 2))
+                                             (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 4))))
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
+    cond2 = Cond {realPathCond = And (Rel Gt (Var Real "h") (Int 0))
+                                     (Rel Lt (BinaryOp SubOp (Var Real "z") (Int 3))
+                                     (BinaryOp MulOp (Var Real "h") (Int 4)))
+                 ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
+                                    (FRel Lt (BinaryFPOp SubOp FPDouble (FVar FPDouble "z") (FInt 3))
+                                             (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 4)))
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
 
 unfoldFunCallsInCond__test10 = testCase "unfoldFunCallsInCond__test10" $
-  unfoldFunCallsInCond interp (Rel Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel Lt (Var Real "y") (Int 3),
-    FOr (FRel Lt (FVar FPDouble "z") (FInt 3)) (FRel Lt (FVar FPDouble "y") (FInt 3)))]
+  [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FOr (FRel Lt (FVar FPDouble "z") (FInt 3)) (FRel Lt (FVar FPDouble "y") (FInt 3))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [FVar FPDouble "x", FVar FPDouble "y"],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb {
+          conds   = trueConds,
+          rExprs = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [FVar FPDouble "x", FVar FPDouble "y"],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test11 = testCase "unfoldFunCallsInCond__test11" $
-  unfoldFunCallsInCond interp (Rel Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel Lt (Var Real "y") (Int 3),
-    FOr (FRel Lt (FVar FPDouble "z") (FInt 3)) (FRel Lt (FVar FPDouble "i") (FInt 3)))]
+  [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FOr (FRel Lt (FVar FPDouble "z") (FInt 3)) (FRel Lt (FVar FPDouble "i") (FInt 3))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "x")],
-          fpExprs = [FVar FPDouble "x", FVar FPDouble "i"],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb { conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "x")],
+          fpExprs = FDeclRes [FVar FPDouble "x", FVar FPDouble "i"],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test12 = testCase "unfoldFunCallsInCond__test12" $
-  unfoldFunCallsInCond interp (Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3)
-                              ,FRel Lt (FVar FPDouble "y") (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3)
+                                   ,fpPathCond = FRel Lt (FVar FPDouble "y") (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel  Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)
-   ,FRel Lt (FVar FPDouble "y") (FInt 3))]
+  [Cond {realPathCond = Rel  Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)
+        ,fpPathCond = FRel Lt (FVar FPDouble "y") (FInt 3)
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb { conds   = trueConds,
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test13 = testCase "unfoldFunCallsInCond__test13" $
-  unfoldFunCallsInCond interp (Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3)
-                              ,FRel Lt (FVar FPDouble "y") (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3)
+                                   ,fpPathCond = FRel Lt (FVar FPDouble "y") (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Or (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)) (Rel Lt (Var Real "i") (Int 3))
-  ,FRel Lt (FVar FPDouble "y") (FInt 3))]
+  [Cond {realPathCond = Or (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)) (Rel Lt (Var Real "i") (Int 3))
+        ,fpPathCond = FRel Lt (FVar FPDouble "y") (FInt 3)
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "i")],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb { conds   = trueConds,
+          rExprs = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "i")],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test14 = testCase "unfoldFunCallsInCond__test14" $
-  unfoldFunCallsInCond interp (Rel Lt (EFun "f" Real [Var Real "z"]) (Int 3)
-                              ,FRel Lt (FVar FPDouble "y") (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel  Lt (EFun "f" Real [Var Real "z"]) (Int 3)
+                                   ,fpPathCond = FRel Lt (FVar FPDouble "y") (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(And (Rel Lt (Var Real "z") (Int 9))
-        (Or (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)) (Rel Lt (Var Real "i") (Int 3)))
-  ,FRel Lt (FVar FPDouble "y") (FInt 3))]
+  [Cond {realPathCond = And (Rel Lt (Var Real "z") (Int 9))
+                            (Or (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3))
+                                (Rel Lt (Var Real "i") (Int 3)))
+        ,fpPathCond = FRel Lt (FVar FPDouble "y") (FInt 3)
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(Rel Lt (Var Real "x") (Int 9), FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "i")],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb {
+          conds   = Conds [Cond {realPathCond = Rel Lt (Var Real "x") (Int 9)
+                                ,fpPathCond = FBTrue
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "i")],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test15 = testCase "unfoldFunCallsInCond__test15" $
-  unfoldFunCallsInCond interp (Rel Lt  (EFun  "f" Real     [Var  Real     "z"]) (Int 3)
-                              ,FRel Lt (FEFun False "g" FPDouble [FVar FPDouble "h"]) (FInt 5))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt  (EFun  "f" Real     [Var  Real     "z"]) (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "g" FPDouble [FVar FPDouble "h"]) (FInt 5)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(And (Rel Lt (Var Real "z") (Int 9))
-        (Or (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3)) (Rel Lt (Var Real "i") (Int 3)))
-  ,FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
-        (FRel Lt (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 4)) (FInt 5)))]
+  [Cond {realPathCond = And (Rel Lt (Var Real "z") (Int 9))
+                            (Or (Rel Lt (BinaryOp AddOp (Var Real "z") (Int 2)) (Int 3))
+                                (Rel Lt (Var Real "i") (Int 3)))
+        ,fpPathCond = FAnd (FRel Gt (FVar FPDouble "h") (FInt 0))
+        (FRel Lt (BinaryFPOp MulOp FPDouble (FVar FPDouble "h") (FInt 4)) (FInt 5))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [acebf]))
              ,("g",(False, FPDouble, [Arg "x" FPDouble], [acebg]))]
-    acebf = ACeb { conds   = Cond [(Rel Lt (Var Real "x") (Int 9), FBTrue)],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "i")],
-          fpExprs = [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    acebf = ACeb {
+          conds = Conds [Cond {realPathCond = Rel Lt (Var Real "x") (Int 9)
+                              ,fpPathCond = FBTrue
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2), (Var Real "i")],
+          fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
-    acebg = ACeb { conds = Cond [(Rel Gt (Var Real "x") (Int 0), FRel Gt (FVar FPDouble "x") (FInt 0))],
-          rExprs  = [BinaryOp MulOp (Var Real "x") (Int 4)],
-          fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 4)],
-          eExpr   =  ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 4) (ErrRat 0),
+    acebg = ACeb {
+          conds = Conds [Cond {realPathCond = Rel Gt (Var Real "x") (Int 0)
+                              ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [BinaryOp MulOp (Var Real "x") (Int 4)],
+          fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "x") (FInt 4)],
+          eExpr   = Just $ ErrBinOp MulOp FPDouble (Var Real "x") (ErrorMark "x" FPDouble) (Int 4) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test16 = testCase "unfoldFunCallsInCond__test16" $
-  unfoldFunCallsInCond interp (Rel Lt  (EFun "quadrant" Real [Var  Real "px",Var  Real "py"]) (Int 2)
-                              ,FNot $ FRel Lt (FEFun False "quadrant" FPDouble [FVar FPDouble "px",FVar FPDouble "py"]) (FInt 2))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (EFun "quadrant" Real [Var  Real "px",Var  Real "py"]) (Int 2)
+                                   ,fpPathCond = FNot $ FRel Lt (FEFun False "quadrant" FPDouble [FVar FPDouble "px",FVar FPDouble "py"]) (FInt 2)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(And (Rel GtE (Var Real "px") (Int 0))
-        (Rel GtE (Var Real "py") (Int 0))
-   ,FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
-         (FRel GtE (FVar FPDouble "py") (FInt 0)))
-  ,(Not $ And (Rel GtE (Var Real "px") (Int 0))
+  [Cond {realPathCond = And (Rel GtE (Var Real "px") (Int 0))
+                            (Rel GtE (Var Real "py") (Int 0))
+        ,fpPathCond = FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
+         (FRel GtE (FVar FPDouble "py") (FInt 0))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}
+  ,Cond {realPathCond = Not $ And (Rel GtE (Var Real "px") (Int 0))
               (Rel GtE (Var Real "py") (Int 0))
-   ,FNot $ FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
-                (FRel GtE (FVar FPDouble "py") (FInt 0)))
-  ,(And (Rel GtE (Var Real "px") (Int 0))
-        (Rel GtE (Var Real "py") (Int 0))
-   ,FNot $ FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
-         (FRel GtE (FVar FPDouble "py") (FInt 0)))
-  ,(Not $ And (Rel GtE (Var Real "px") (Int 0))
-              (Rel GtE (Var Real "py") (Int 0))
-   ,FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
-                (FRel GtE (FVar FPDouble "py") (FInt 0)))
-  ]
+        ,fpPathCond = FNot $ FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
+                (FRel GtE (FVar FPDouble "py") (FInt 0))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}
+  ,Cond {realPathCond = And (Rel GtE (Var Real "px") (Int 0))
+                            (Rel GtE (Var Real "py") (Int 0))
+        ,fpPathCond = FNot $ FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
+                                  (FRel GtE (FVar FPDouble "py") (FInt 0))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}
+  ,Cond {realPathCond = Not $ And (Rel GtE (Var Real "px") (Int 0))
+                                  (Rel GtE (Var Real "py") (Int 0))
+        ,fpPathCond = FAnd (FRel GtE (FVar FPDouble "px") (FInt 0))
+                (FRel GtE (FVar FPDouble "py") (FInt 0))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("quadrant",(False, FPDouble, [Arg "x" FPDouble, Arg "y" FPDouble], [aceb1,aceb2]))]
-    aceb1 = ACeb { conds   = Cond [(And (Rel GtE (Var Real "x") (Int 0))
-                                        (Rel GtE (Var Real "y") (Int 0))
-                                   ,FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
-                                         (FRel GtE (FVar FPDouble "y") (FInt 0)))
-                                  ,(Not $ And (Rel GtE (Var Real "x") (Int 0))
-                                              (Rel GtE (Var Real "y") (Int 0))
-                                   ,FNot $ FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
-                                                (FRel GtE (FVar FPDouble "y") (FInt 0)))],
-          rExprs  = [Int  1, Int  4],
-          fpExprs = [FInt 1, FInt 4],
-          eExpr   = ErrRat 0,
+    aceb1 = ACeb { conds = Conds [Cond {realPathCond = And (Rel GtE (Var Real "x") (Int 0))
+                                                           (Rel GtE (Var Real "y") (Int 0))
+                                       ,fpPathCond = FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
+                                                          (FRel GtE (FVar FPDouble "y") (FInt 0))
+                                       ,realCond = BTrue
+                                       ,fpCond = FBTrue}
+                                 ,Cond {realPathCond = Not $ And (Rel GtE (Var Real "x") (Int 0))
+                                                                 (Rel GtE (Var Real "y") (Int 0))
+                                       ,fpPathCond = FNot $ FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
+                                                                 (FRel GtE (FVar FPDouble "y") (FInt 0))
+                                       ,realCond = BTrue
+                                       ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [Int  1, Int  4],
+          fpExprs = FDeclRes [FInt 1, FInt 4],
+          eExpr   = Just $ ErrRat 0,
           decisionPath = root,
           cFlow  = Stable
       }
-    aceb2 = ACeb { conds   = Cond [(And (Rel GtE (Var Real "x") (Int 0))
-                                        (Rel GtE (Var Real "y") (Int 0))
-                                   ,FNot $ FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
-                                                (FRel GtE (FVar FPDouble "y") (FInt 0)))
-                                  ,(Not $ And (Rel GtE (Var Real "x") (Int 0))
+    aceb2 = ACeb { conds = Conds [Cond {realPathCond = And (Rel GtE (Var Real "x") (Int 0))
+                                                           (Rel GtE (Var Real "y") (Int 0))
+                                       ,fpPathCond = FNot $ FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
+                                                    (FRel GtE (FVar FPDouble "y") (FInt 0))
+                                       ,realCond = BTrue
+                                       ,fpCond = FBTrue}
+                                 ,Cond {realPathCond = Not $ And (Rel GtE (Var Real "x") (Int 0))
                                               (Rel GtE (Var Real "y") (Int 0))
-                                   ,FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
-                                                (FRel GtE (FVar FPDouble "y") (FInt 0)))],
-          rExprs  = [Int  1, Int  4],
-          fpExprs = [FInt 1, FInt 4],
-          eExpr   = ErrRat 0,
+                                       ,fpPathCond = FAnd (FRel GtE (FVar FPDouble "x") (FInt 0))
+                                                (FRel GtE (FVar FPDouble "y") (FInt 0))
+                                       ,realCond = BTrue
+                                       ,fpCond = FBTrue}],
+          rExprs  = RDeclRes [Int  1, Int  4],
+          fpExprs = FDeclRes [FInt 1, FInt 4],
+          eExpr   = Just $ ErrRat 0,
           decisionPath = root,
           cFlow  = Unstable
       }
 
 unfoldFunCallsInCond__test17 = testCase "unfoldFunCallsInCond__test17" $
-  unfoldFunCallsInCond interp (Rel Lt (Var Real "y") (Int 3),
-                               FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+                                   ,fpPathCond = FRel Lt (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 3)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(Rel Lt (Var Real "y") (Int 3),
-    FAnd (FOr (FRel Gt (FVar FPDouble "z") (FInt 0))
-              (FRel Lt (FVar FPDouble "z") (FInt 10)))
-         (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3)))]
+  [Cond {realPathCond = Rel Lt (Var Real "y") (Int 3)
+        ,fpPathCond = FAnd (FOr (FRel Gt (FVar FPDouble "z") (FInt 0))
+                           (FRel Lt (FVar FPDouble "z") (FInt 10)))
+                           (FRel Lt (BinaryFPOp AddOp TInt (FVar FPDouble "z") (FInt 2)) (FInt 3))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(BTrue, FRel Gt (FVar FPDouble "x") (FInt 0))
-                                 ,(BTrue, FRel Lt (FVar FPDouble "x") (FInt 10))],
-          rExprs  = [BinaryOp AddOp (Var Real "x") (Int 2)],
-          fpExprs = [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+    aceb = ACeb { conds = Conds [Cond {realPathCond = BTrue
+                                   ,fpPathCond = FRel Gt (FVar FPDouble "x") (FInt 0)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
+                                ,Cond {realPathCond = BTrue
+                                   ,fpPathCond = FRel Lt (FVar FPDouble "x") (FInt 10)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}],
+          rExprs = RDeclRes [BinaryOp AddOp (Var Real "x") (Int 2)],
+          fpExprs = FDeclRes [BinaryFPOp AddOp TInt (FVar FPDouble "x") (FInt 2)],
+          eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
           decisionPath = root,
           cFlow  = Stable
       }
 
 unfoldFunCallsInCond__test18 = testCase "unfoldFunCallsInCond__test18" $
-  unfoldFunCallsInCond interp (Rel  Gt  (EFun "f" Real [Var Real "z"]) (Int 0),
-                               FRel LtE (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 0))
+  unfoldFunCallsInCond interp Cond {realPathCond = Rel Gt (EFun "f" Real [Var Real "z"]) (Int 0)
+                                   ,fpPathCond = FRel LtE (FEFun False "f" FPDouble [FVar FPDouble "z"]) (FInt 0)
+                                   ,realCond = BTrue
+                                   ,fpCond = FBTrue}
   @?=
-  [(And  (Rel GtE (Var  Real     "z") (Int  1)) (Rel  Gt   (Var  Real     "z") (Int  0))
-   ,FAnd (FRel Lt (FVar FPDouble "z") (FInt 1)) (FRel LtE (FVar FPDouble "z") (FInt 0)))
-  ,(And  (Rel GtE (Var  Real     "z") (Int  3)) (Rel  Gt   (Var  Real     "z") (Int  0))
-   ,FAnd (FRel Lt (FVar FPDouble "z") (FInt 3)) (FRel LtE (FVar FPDouble "z") (FInt 0)))]
+  [Cond {realPathCond = And (Rel GtE (Var Real "z") (Int  1)) (Rel Gt (Var Real "z") (Int 0))
+        ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "z") (FInt 1)) (FRel LtE (FVar FPDouble "z") (FInt 0))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}
+  ,Cond {realPathCond = And  (Rel GtE (Var Real "z") (Int  3)) (Rel Gt (Var Real "z") (Int  0))
+        ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "z") (FInt 3)) (FRel LtE (FVar FPDouble "z") (FInt 0))
+        ,realCond = BTrue
+        ,fpCond = FBTrue}]
   where
     interp = [("f",(False, FPDouble, [Arg "x" FPDouble], [aceb]))]
-    aceb = ACeb { conds   = Cond [(Rel GtE (Var Real "x") (Int 1), FRel Lt (FVar FPDouble "x") (FInt 1))
-                                 ,(Rel GtE (Var Real "x") (Int 3), FRel Lt (FVar FPDouble "x") (FInt 3))],
-          rExprs  = [Var Real "x"],
-          fpExprs = [FVar FPDouble "x"],
-          eExpr   =  ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
-          decisionPath = root,
-          cFlow  = Stable
+    aceb = ACeb {
+      conds = Conds [Cond {realPathCond = Rel GtE (Var Real "x") (Int 1)
+                          ,fpPathCond = FRel Lt (FVar FPDouble "x") (FInt 1)
+                          ,realCond = BTrue
+                          ,fpCond = FBTrue}
+                    ,Cond {realPathCond = Rel GtE (Var Real "x") (Int 3)
+                          ,fpPathCond = FRel Lt (FVar FPDouble "x") (FInt 3)
+                          ,realCond = BTrue
+                          ,fpCond = FBTrue}],
+      rExprs  = RDeclRes [Var Real "x"],
+      fpExprs = FDeclRes [FVar FPDouble "x"],
+      eExpr   = Just $ ErrBinOp AddOp TInt (Var Real "x") (ErrorMark "x" FPDouble) (Int 2) (ErrRat 0),
+      decisionPath = root,
+      cFlow  = Stable
       }
 
 bexprStmSem__tests = testGroup "BExpr stmSem tests"
@@ -605,16 +861,21 @@ bexprStmSem__tests = testGroup "BExpr stmSem tests"
   ,bexprStmSem__False
   ,bexprStmSem__Lt
   ,bexprStmSem__Gt
+  ,bexprStmSem__And
+  ,bexprStmSem__And_div
+  ,bexprStmSem__Or
+  ,bexprStmSem__Not
+  ,bexprStmSem__Gt_div
   ,bexprStmSem__Ite
   ]
 
 bexprStmSem__True = testCase "True Semantics" $
   bexprStmSem (BExpr FBTrue) [] (Env []) semConf (LDP []) [LDP []]
   `semEquiv`
-  [ACeb {conds  = Cond [(BTrue, FBTrue)],
-         rExprs = [] ,
-         fpExprs = [],
-         eExpr  = Int 0,
+  [ACeb {conds  = trueConds,
+         rExprs = RPredRes [RBExpr BTrue] ,
+         fpExprs = FPredRes [BExpr FBTrue],
+         eExpr = Nothing,
          decisionPath = root,
          cFlow  = Stable
         }]
@@ -622,10 +883,10 @@ bexprStmSem__True = testCase "True Semantics" $
 bexprStmSem__False = testCase "False Semantics" $
   bexprStmSem (BExpr FBFalse) [] (Env []) semConf (LDP []) [LDP []]
   `semEquiv`
-  [ACeb {conds  = Cond [(BFalse, FBFalse)],
-         rExprs = [] ,
-         fpExprs = [],
-         eExpr  = Int 0,
+  [ACeb {conds  = trueConds,
+         rExprs = RPredRes [RBExpr BFalse] ,
+         fpExprs = FPredRes [BExpr FBFalse],
+         eExpr = Nothing,
          decisionPath = root,
          cFlow  = Stable
         }]
@@ -633,22 +894,87 @@ bexprStmSem__False = testCase "False Semantics" $
 bexprStmSem__Lt = testCase "Lt Semantics" $
   bexprStmSem (BExpr (FRel Lt (FVar FPDouble "X") (FInt 3))) [] (Env []) semConf (LDP []) [LDP []]
   `semEquiv`
-  [ACeb {conds  = Cond [(Rel Lt (RealMark "X") (Int 3), FRel Lt (FVar FPDouble "X") (FInt 3))],
-         rExprs = [] ,
-         fpExprs = [],
-         eExpr  = Int 0,
+  [ACeb {conds = trueConds,
+         rExprs = RPredRes [RBExpr $ Rel Lt (RealMark "X") (Int 3)] ,
+         fpExprs = FPredRes [BExpr $ FRel Lt (FVar FPDouble "X") (FInt 3)],
+         eExpr = Nothing,
          decisionPath = root,
-         cFlow  = Stable
-        }]
+         cFlow  = Stable}]
 
 
 bexprStmSem__Gt = testCase "Gt Semantics" $
   bexprStmSem (BExpr $ FRel Gt (FVar FPDouble "Y") (FInt 2)) [] (Env []) semConf (LDP []) [LDP []]
   `semEquiv`
-  [ACeb {conds  = Cond [(Rel Gt (RealMark "Y") (Int 2), FRel Gt (FVar FPDouble "Y") (FInt 2))],
-         rExprs = [] ,
-         fpExprs = [],
-         eExpr  = Int 0,
+  [ACeb {conds  = trueConds,
+         rExprs = RPredRes [RBExpr $ Rel Gt (RealMark "Y") (Int 2)] ,
+         fpExprs = FPredRes [BExpr $ FRel Gt (FVar FPDouble "Y") (FInt 2)],
+         eExpr = Nothing,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__Gt_div = testCase "Gt Semantics with division" $
+  bexprStmSem (BExpr $ FRel Gt (FVar FPDouble "Y")
+                       (BinaryFPOp DivOp FPDouble (FInt 6) (FVar FPDouble "X")))
+              [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = Conds [Cond {realPathCond = BTrue
+                              ,fpPathCond = FBTrue
+                              ,realCond = Rel Neq (RealMark "X") (Int 0)
+                              ,fpCond = FRel Neq (FVar FPDouble "X") (TypeCast TInt FPDouble (FInt 0))}],
+         rExprs = RPredRes [RBExpr $ Rel Gt (RealMark "Y") (BinaryOp DivOp (Int 6) (RealMark "X"))] ,
+         fpExprs = FPredRes [BExpr $ FRel Gt (FVar FPDouble "Y") (BinaryFPOp DivOp FPDouble (FInt 6) (FVar FPDouble "X"))],
+         eExpr = Nothing,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__And = testCase "And Semantics" $
+  bexprStmSem (BExpr $ FAnd (FRel Gt (FVar FPDouble "Y") (FInt 2))(FRel Lt (FVar FPDouble "X") (FInt 3))) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = trueConds,
+         rExprs = RPredRes [RBExpr $ And (Rel Gt (RealMark "Y") (Int 2))(Rel Lt (RealMark "X") (Int 3))],
+         fpExprs = FPredRes [BExpr $ FAnd (FRel Gt (FVar FPDouble "Y") (FInt 2))(FRel Lt (FVar FPDouble "X") (FInt 3))],
+         eExpr = Nothing,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__And_div = testCase "And Semantics with division" $
+  bexprStmSem (BExpr $ FAnd (FRel Gt (FVar FPDouble "Y")
+                       (BinaryFPOp DivOp FPDouble (FInt 6) (FVar FPDouble "X")))
+                       (FRel Lt (FVar FPDouble "X") (FInt 3))) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = Conds [Cond {realPathCond = BTrue
+                              ,fpPathCond = FBTrue
+                              ,realCond = Rel Neq (RealMark "X") (Int 0)
+                              ,fpCond = FRel Neq (FVar FPDouble "X") (TypeCast TInt FPDouble (FInt 0))}],
+         rExprs = RPredRes [RBExpr $ And (Rel Gt (RealMark "Y") (BinaryOp DivOp (Int 6) (RealMark "X")))(Rel Lt (RealMark "X") (Int 3))],
+         fpExprs = FPredRes [BExpr $ FAnd (FRel Gt (FVar FPDouble "Y")
+                       (BinaryFPOp DivOp FPDouble (FInt 6) (FVar FPDouble "X")))(FRel Lt (FVar FPDouble "X") (FInt 3))],
+         eExpr = Nothing,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__Or = testCase "Or Semantics" $
+  bexprStmSem (BExpr $ FOr (FRel Gt (FVar FPDouble "Y") (FInt 2))(FRel Lt (FVar FPDouble "X") (FInt 3))) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = trueConds,
+         rExprs = RPredRes [RBExpr $ Or (Rel Gt (RealMark "Y") (Int 2))(Rel Lt (RealMark "X") (Int 3))],
+         fpExprs = FPredRes [BExpr $ FOr (FRel Gt (FVar FPDouble "Y") (FInt 2))(FRel Lt (FVar FPDouble "X") (FInt 3))],
+         eExpr = Nothing,
+         decisionPath = root,
+         cFlow  = Stable
+        }]
+
+bexprStmSem__Not = testCase "Not Semantics" $
+  bexprStmSem (BExpr $ FNot (FRel Gt (FVar FPDouble "Y") (FInt 2))) [] (Env []) semConf (LDP []) [LDP []]
+  `semEquiv`
+  [ACeb {conds  = trueConds,
+         rExprs = RPredRes [RBExpr $ Not $ Rel Gt (RealMark "Y") (Int 2)],
+         fpExprs = FPredRes [BExpr $ FNot $ FRel Gt (FVar FPDouble "Y") (FInt 2)],
+         eExpr = Nothing,
          decisionPath = root,
          cFlow  = Stable
         }]
@@ -656,30 +982,40 @@ bexprStmSem__Gt = testCase "Gt Semantics" $
 bexprStmSem__Ite = testCase "BIte Semantics" $
     bexprStmSem (BIte (FRel Lt (FVar FPDouble "X") (FInt 3))
                       (BExpr $ FRel Gt (FVar FPDouble "Y") (FInt 2))
-                      (BExpr $ FRel Gt (FVar FPDouble "Z") (FInt 1))) [] (Env []) semConf root [LDP []]
+                      (BExpr $ FRel Gt (FVar FPDouble "Z") (FInt 1)))
+                [] (Env []) semConf root [LDP []]
     `semEquiv`
-    [ACeb {conds = Cond [(And (Rel Gt (RealMark "Y") (Int 2)) (Rel Lt (RealMark "X") (Int 3)) 
-                         ,FAnd (FRel Gt (FVar FPDouble "Y") (FInt 2)) (FRel Lt (FVar FPDouble "X") (FInt 3)) )]
-          ,rExprs = []
-          ,fpExprs = []
-          ,eExpr = Int 0
+    [ACeb {conds = Conds [Cond {realPathCond = Rel Lt (RealMark "X") (Int 3)
+                              ,fpPathCond = FRel Lt (FVar FPDouble "X") (FInt 3)
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}]
+          ,rExprs  = RPredRes [RBExpr $ Rel Gt (RealMark "Y") (Int 2)]
+          ,fpExprs = FPredRes [BExpr $ FRel Gt (FVar FPDouble "Y") (FInt 2)]
+          ,eExpr = Nothing
           ,decisionPath = LDP [0]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(And (Rel Gt (RealMark "Z") (Int 1)) (Not (Rel Lt (RealMark "X") (Int 3))) 
-                         ,FAnd (FRel Gt (FVar FPDouble "Z") (FInt 1)) (FNot (FRel Lt (FVar FPDouble "X") (FInt 3))) )]
-          ,rExprs = []
-          ,fpExprs = []
-          ,eExpr = Int 0
+    ,ACeb {conds = Conds [Cond {realPathCond = Not (Rel Lt (RealMark "X") (Int 3))
+                              ,fpPathCond = FNot (FRel Lt (FVar FPDouble "X") (FInt 3))
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}]
+          ,rExprs = RPredRes [RBExpr $ Rel Gt (RealMark "Z") (Int 1)]
+          ,fpExprs = FPredRes [BExpr $ FRel Gt (FVar FPDouble "Z") (FInt 1)]
+          ,eExpr = Nothing
           ,decisionPath = LDP [1]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(And (And (Rel Gt (RealMark "Y") (Int 2)) (Rel Gt (RealMark "Z") (Int 1)))
-                         (Rel Lt (RealMark "X") (Int 3))
-                         ,FAnd (FRel Gt (FVar FPDouble "Z") (FInt 1)) (FNot (FRel Lt (FVar FPDouble "X") (FInt 3))) )
-                        ,(And (And (Rel Gt (RealMark "Z") (Int 1)) (Rel Gt (RealMark "Y") (Int 2))) (Not (Rel Lt (RealMark "X") (Int 3)))
-                         ,FAnd (FRel Gt (FVar FPDouble "Y") (FInt 2)) (FRel Lt (FVar FPDouble "X") (FInt 3)) )]
-          ,rExprs = []
-          ,fpExprs = []
-          ,eExpr = MaxErr [Int 0,Int 0]
+    ,ACeb {conds = Conds [Cond {realPathCond = Not (Rel Lt (RealMark "X") (Int 3))
+                              ,fpPathCond = FRel Lt (FVar FPDouble "X") (FInt 3)
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue},
+                          Cond {realPathCond = Rel Lt (RealMark "X") (Int 3)
+                              ,fpPathCond = FNot (FRel Lt (FVar FPDouble "X") (FInt 3))
+                              ,realCond = BTrue
+                              ,fpCond = FBTrue}]
+          ,rExprs = RPredRes [RBExpr $ Rel Gt (RealMark "Y") (Int 2)
+                             ,RBExpr $ Rel Gt (RealMark "Z") (Int 1)]
+          ,fpExprs = FPredRes [BExpr $ FRel Gt (FVar FPDouble "Y") (FInt 2)
+                              ,BExpr $ FRel Gt (FVar FPDouble "Z") (FInt 1)]
+          ,eExpr = Nothing
           ,decisionPath = LDP []
           ,cFlow = Unstable}
     ]
@@ -736,20 +1072,20 @@ semConfImproveError = SemConf { improveError = True
 
 stmSem__IntAdd = testCase "IntAdd" $
     stmSem (BinaryFPOp AddOp TInt (FInt 1) (FInt 2)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [BinaryOp AddOp(Int 1) (Int 2)],
-            fpExprs = [BinaryFPOp AddOp TInt (FInt 1) (FInt 2)],
-            eExpr   =  ErrBinOp AddOp TInt (Int 1) (ErrRat 0) (Int 2) (ErrRat 0),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp AddOp(Int 1) (Int 2)],
+            fpExprs = FDeclRes [BinaryFPOp AddOp TInt (FInt 1) (FInt 2)],
+            eExpr   = Just $ ErrBinOp AddOp TInt (Int 1) (ErrRat 0) (Int 2) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Add = testCase "Add" $
     stmSem (BinaryFPOp AddOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [BinaryOp AddOp(Rat 0.1) (Rat 2)],
-            fpExprs = [BinaryFPOp AddOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
-            eExpr   =  ErrBinOp AddOp FPDouble (Rat 0.1) (ErrRat (1 % 180143985094819840))
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp AddOp(Rat 0.1) (Rat 2)],
+            fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
+            eExpr   = Just $ ErrBinOp AddOp FPDouble (Rat 0.1) (ErrRat (1 % 180143985094819840))
                                        (Rat 2) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -757,10 +1093,10 @@ stmSem__Add = testCase "Add" $
 
 stmSem__IntSub = testCase "IntSub" $
     stmSem (BinaryFPOp SubOp TInt (FInt 1) (FInt 2)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [BinaryOp SubOp(Int 1) (Int 2)],
-            fpExprs = [BinaryFPOp SubOp TInt (FInt 1) (FInt 2)],
-            eExpr   =  ErrBinOp SubOp TInt (Int 1) (ErrRat 0) (Int 2) (ErrRat 0),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp SubOp(Int 1) (Int 2)],
+            fpExprs = FDeclRes [BinaryFPOp SubOp TInt (FInt 1) (FInt 2)],
+            eExpr   = Just $ ErrBinOp SubOp TInt (Int 1) (ErrRat 0) (Int 2) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -768,10 +1104,10 @@ stmSem__IntSub = testCase "IntSub" $
 stmSem__Sub = testCase "Sub" $
     stmSem (BinaryFPOp SubOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)) [] (Env []) semConf (LDP []) [] @?=
     [
-     ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [BinaryOp SubOp(Rat 0.1) (Rat 2)],
-            fpExprs = [BinaryFPOp SubOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
-            eExpr   =  ErrBinOp SubOp FPDouble (Rat 0.1) (ErrRat (1 % 180143985094819840))
+     ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp SubOp(Rat 0.1) (Rat 2)],
+            fpExprs = FDeclRes [BinaryFPOp SubOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
+            eExpr   = Just $ ErrBinOp SubOp FPDouble (Rat 0.1) (ErrRat (1 % 180143985094819840))
                                        (Rat 2) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -779,20 +1115,20 @@ stmSem__Sub = testCase "Sub" $
 
 stmSem__IntMul = testCase "IntMul" $
     stmSem (BinaryFPOp MulOp TInt (FInt 1) (FInt 3)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [BinaryOp MulOp (Int 1) (Int 3)],
-            fpExprs = [BinaryFPOp MulOp TInt (FInt 1) (FInt 3)],
-            eExpr   =  ErrBinOp MulOp TInt (Int 1) (ErrRat 0) (Int 3) (ErrRat 0),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp MulOp (Int 1) (Int 3)],
+            fpExprs = FDeclRes [BinaryFPOp MulOp TInt (FInt 1) (FInt 3)],
+            eExpr   = Just $ ErrBinOp MulOp TInt (Int 1) (ErrRat 0) (Int 3) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Mul = testCase "Mul" $
     stmSem (BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 3)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [BinaryOp MulOp (Rat 0.1) (Rat 3)],
-            fpExprs = [BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 3)],
-            eExpr   =  ErrBinOp MulOp FPDouble (Rat 0.1) (ErrRat (1 % 180143985094819840))
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp MulOp (Rat 0.1) (Rat 3)],
+            fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 3)],
+            eExpr   = Just $ ErrBinOp MulOp FPDouble (Rat 0.1) (ErrRat (1 % 180143985094819840))
                                        (Rat 3) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -800,20 +1136,23 @@ stmSem__Mul = testCase "Mul" $
 
 stmSem__MulPow2 = testCase "Mul power of 2" $
     stmSem (BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds  = Cond [(Rel Lt (Int 1) (BinaryOp SubOp (Prec FPDouble) (FExp (FCnst FPDouble (1 % 10)))), FBTrue)],
-            rExprs  = [BinaryOp MulOp (Rat 0.1) (Rat 2)],
-            fpExprs = [BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
-            eExpr   = ErrMulPow2R FPDouble 1 (ErrRat (1 % 180143985094819840)),
+    [ACeb { conds  = Conds [Cond {realPathCond = BTrue
+                                 ,fpPathCond = FBTrue
+                                 ,realCond = Rel Lt (Int 1) (BinaryOp SubOp (Prec FPDouble) (FExp (FCnst FPDouble (1 % 10))))
+                                 ,fpCond = FBTrue}],
+            rExprs  = RDeclRes [BinaryOp MulOp (Rat 0.1) (Rat 2)],
+            fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FCnst FPDouble 0.1) (FCnst FPDouble 2)],
+            eExpr   = Just $ ErrMulPow2R FPDouble 1 (ErrRat (1 % 180143985094819840)),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Div1 = testCase "Div" $
     stmSem (BinaryFPOp DivOp FPDouble (FCnst FPDouble 6) (FCnst FPDouble 3)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [BinaryOp DivOp (Rat 6) (Rat 3)],
-            fpExprs = [BinaryFPOp DivOp FPDouble (FCnst FPDouble 6) (FCnst FPDouble 3)],
-            eExpr   =  ErrBinOp DivOp FPDouble (Rat 6) (ErrRat 0)
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp DivOp (Rat 6) (Rat 3)],
+            fpExprs = FDeclRes [BinaryFPOp DivOp FPDouble (FCnst FPDouble 6) (FCnst FPDouble 3)],
+            eExpr   = Just $ ErrBinOp DivOp FPDouble (Rat 6) (ErrRat 0)
                                        (Rat 3) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -821,11 +1160,13 @@ stmSem__Div1 = testCase "Div" $
 
 stmSem__Div2 = testCase "Div" $
     stmSem (BinaryFPOp DivOp FPDouble (FCnst FPDouble 6) (FVar FPDouble "X")) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(Rel Neq (RealMark "X") (Int 0)
-                           ,FRel Neq (FVar FPDouble "X") (TypeCast TInt FPDouble (FInt 0)))],
-            rExprs  = [BinaryOp DivOp (Rat 6) (RealMark "X")],
-            fpExprs = [BinaryFPOp DivOp FPDouble (FCnst FPDouble 6) (FVar FPDouble "X")],
-            eExpr   =  ErrBinOp DivOp FPDouble (Rat 6) (ErrRat 0)
+    [ACeb { conds   = Conds [Cond {realPathCond = BTrue
+                                 ,fpPathCond = FBTrue
+                                 ,realCond = Rel Neq (RealMark "X") (Int 0)
+                                 ,fpCond = FRel Neq (FVar FPDouble "X") (TypeCast TInt FPDouble (FInt 0))}],
+            rExprs  = RDeclRes [BinaryOp DivOp (Rat 6) (RealMark "X")],
+            fpExprs = FDeclRes [BinaryFPOp DivOp FPDouble (FCnst FPDouble 6) (FVar FPDouble "X")],
+            eExpr   = Just $ ErrBinOp DivOp FPDouble (Rat 6) (ErrRat 0)
                                        (RealMark "X") (ErrorMark "X" FPDouble),
             decisionPath = root,
             cFlow  = Stable
@@ -833,10 +1174,10 @@ stmSem__Div2 = testCase "Div" $
 
 stmSem__IDiv = testCase "IDiv" $
     stmSem (BinaryFPOp IDivOp TInt (FInt 6) (FInt 3)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [BinaryOp IDivOp (Int 6) (Int 3)],
-            fpExprs = [BinaryFPOp IDivOp TInt (FInt 6) (FInt 3)],
-            eExpr   =  ErrBinOp IDivOp TInt (Int 6) (ErrRat 0)
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp IDivOp (Int 6) (Int 3)],
+            fpExprs = FDeclRes [BinaryFPOp IDivOp TInt (FInt 6) (FInt 3)],
+            eExpr   = Just $ ErrBinOp IDivOp TInt (Int 6) (ErrRat 0)
                                        (Int 3) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -844,10 +1185,10 @@ stmSem__IDiv = testCase "IDiv" $
 
 stmSem__ItDiv = testCase "ItDiv" $
     stmSem (BinaryFPOp ItDivOp TInt (FInt 6) (FInt 3)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [BinaryOp ItDivOp (Int 6) (Int 3)],
-            fpExprs = [BinaryFPOp ItDivOp TInt (FInt 6) (FInt 3)],
-            eExpr   =  ErrBinOp ItDivOp TInt (Int 6) (ErrRat 0)
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp ItDivOp (Int 6) (Int 3)],
+            fpExprs = FDeclRes [BinaryFPOp ItDivOp TInt (FInt 6) (FInt 3)],
+            eExpr   = Just $ ErrBinOp ItDivOp TInt (Int 6) (ErrRat 0)
                                        (Int 3) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -855,10 +1196,10 @@ stmSem__ItDiv = testCase "ItDiv" $
 
 stmSem__IMod = testCase "IMod" $
     stmSem (BinaryFPOp ModOp TInt (FInt 6) (FInt 3)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [BinaryOp ModOp (Int 6) (Int 3)],
-            fpExprs = [BinaryFPOp ModOp TInt (FInt 6) (FInt 3)],
-            eExpr   = ErrBinOp ModOp TInt (Int 6) (ErrRat 0)
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp ModOp (Int 6) (Int 3)],
+            fpExprs = FDeclRes [BinaryFPOp ModOp TInt (FInt 6) (FInt 3)],
+            eExpr   = Just $ ErrBinOp ModOp TInt (Int 6) (ErrRat 0)
                                        (Int 3) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -866,10 +1207,10 @@ stmSem__IMod = testCase "IMod" $
 
 stmSem__ItMod = testCase "ItMod" $
     stmSem (BinaryFPOp ItModOp TInt (FInt 6) (FInt 3)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond  [(BTrue,FBTrue)],
-            rExprs  = [BinaryOp ItModOp (Int 6) (Int 3)],
-            fpExprs = [BinaryFPOp ItModOp TInt (FInt 6) (FInt 3)],
-            eExpr   =  ErrBinOp ItModOp TInt (Int 6) (ErrRat 0)
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [BinaryOp ItModOp (Int 6) (Int 3)],
+            fpExprs = FDeclRes [BinaryFPOp ItModOp TInt (FInt 6) (FInt 3)],
+            eExpr   = Just $ ErrBinOp ItModOp TInt (Int 6) (ErrRat 0)
                                        (Int 3) (ErrRat 0),
             decisionPath = root,
             cFlow  = Stable
@@ -877,113 +1218,120 @@ stmSem__ItMod = testCase "ItMod" $
 
 stmSem__Neg = testCase "Neg" $
     stmSem (UnaryFPOp NegOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [UnaryOp NegOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp NegOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp NegOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [UnaryOp NegOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp NegOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp NegOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Abs = testCase "Abs" $
     stmSem (UnaryFPOp AbsOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue, FBTrue)],
-            rExprs  = [UnaryOp   AbsOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp AbsOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp AbsOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [UnaryOp   AbsOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp AbsOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp AbsOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Ln = testCase "Ln" $
     stmSem (UnaryFPOp LnOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(And (Rel Lt (Int 0) (BinaryOp SubOp(Rat (1 % 10)) (ErrRat (1 % 180143985094819840))))
-                                 (Rel Gt (FromFloat FPDouble (FCnst FPDouble (1 % 10))) (Int 0)),FBTrue)],
-            rExprs  = [UnaryOp   LnOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp LnOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp LnOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = Conds [Cond {realPathCond = BTrue
+                              ,fpPathCond = FBTrue
+                              ,realCond = And (Rel Lt (Int 0) (BinaryOp SubOp(Rat (1 % 10)) (ErrRat (1 % 180143985094819840))))
+                                 (Rel Gt (FromFloat FPDouble (FCnst FPDouble (1 % 10))) (Int 0))
+                              ,fpCond = FBTrue}],
+            rExprs  = RDeclRes [UnaryOp   LnOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp LnOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp LnOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Expo = testCase "Expo" $
     stmSem (UnaryFPOp ExpoOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [UnaryOp   ExpoOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp ExpoOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp ExpoOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [UnaryOp   ExpoOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp ExpoOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp ExpoOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Floor = testCase "Floor" $
     stmSem (UnaryFPOp FloorOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-     [ACeb {conds = Cond [(BTrue ,FBTrue)],
-            rExprs = [UnaryOp FloorOp (Rat (1 % 10))],
-            fpExprs = [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
-            eExpr = ErrUnOp FloorOp FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
+     [ACeb {conds = trueConds,
+            rExprs = RDeclRes [UnaryOp FloorOp (Rat (1 % 10))],
+            fpExprs = FDeclRes [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
+            eExpr = Just $ ErrUnOp FloorOp FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
             decisionPath = root,
             cFlow = Stable}]
 
-stmSem__Floor__Improved = testCase "Floor" $
+stmSem__Floor__Improved = testCase "Floor_improved" $
     stmSem (UnaryFPOp FloorOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConfImproveError (LDP []) [] @?=
-     [ACeb {conds = Cond [((Or (Rel Neq (UnaryOp FloorOp (Rat (1 % 10)))
-                                              (UnaryOp FloorOp (BinaryOp SubOp (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)))))
-                               (Rel Neq (UnaryOp FloorOp (Rat (1 % 10)))
-                                        (UnaryOp FloorOp (BinaryOp AddOp (Rat (1 % 10)) (ErrRat (1 % 180143985094819840))))))
-                         ,FBTrue)],
-            rExprs = [UnaryOp FloorOp (Rat (1 % 10))],
-            fpExprs = [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
-            eExpr = ErrUnOp FloorOp FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
+     [ACeb {conds = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FBTrue
+                                ,realCond = Or (Rel Neq (UnaryOp FloorOp (Rat (1 % 10))) (UnaryOp FloorOp (BinaryOp SubOp (Rat (1 % 10)) (ErrRat (1 % 180143985094819840))))) (Rel Neq (UnaryOp FloorOp (Rat (1 % 10))) (UnaryOp FloorOp (BinaryOp AddOp (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)))))
+                              ,fpCond = FBTrue}],
+            rExprs = RDeclRes [UnaryOp FloorOp (Rat (1 % 10))],
+            fpExprs = FDeclRes [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
+            eExpr = Just $ ErrUnOp FloorOp FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
             decisionPath = root,
             cFlow = Stable},
-      ACeb {conds = Cond [(And (Rel Eq (UnaryOp FloorOp (Rat (1 % 10)))
+      ACeb {conds = Conds [Cond {realPathCond = BTrue
+                                ,fpPathCond = FBTrue
+                                ,realCond = And (Rel Eq (UnaryOp FloorOp (Rat (1 % 10)))
                                    (UnaryOp FloorOp (BinaryOp SubOp(Rat (1 % 10)) (ErrRat (1 % 180143985094819840)))))
                                (Rel Eq (UnaryOp FloorOp (Rat (1 % 10)))
                                    (UnaryOp FloorOp (BinaryOp AddOp(Rat (1 % 10)) (ErrRat (1 % 180143985094819840)))))
-                         ,FBTrue)],
-            rExprs = [UnaryOp FloorOp (Rat (1 % 10))],
-            fpExprs = [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
-            eExpr = ErrFloorNoRound FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
+                                ,fpCond = FBTrue}],
+            rExprs = RDeclRes [UnaryOp FloorOp (Rat (1 % 10))],
+            fpExprs = FDeclRes [UnaryFPOp FloorOp FPDouble (FCnst FPDouble (1 % 10))],
+            eExpr = Just $ ErrFloorNoRound FPDouble (Rat (1 % 10)) (ErrRat (1 % 180143985094819840)),
             decisionPath = root,
             cFlow = Stable}]
 
 stmSem__Sqrt = testCase "Sqrt" $
     stmSem (UnaryFPOp SqrtOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [((Rel GtE (BinaryOp SubOp(Rat 0.1) (ErrRat $ 1 % 180143985094819840)) (Int 0)),FBTrue)],
-            rExprs  = [UnaryOp   SqrtOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp SqrtOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp SqrtOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = Conds [Cond {realPathCond = BTrue
+                                 ,fpPathCond = FBTrue
+                                 ,realCond =Rel GtE (BinaryOp SubOp(Rat 0.1) (ErrRat $ 1 % 180143985094819840)) (Int 0)
+                                 ,fpCond = FBTrue}],
+            rExprs  = RDeclRes [UnaryOp   SqrtOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp SqrtOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp SqrtOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Sin = testCase "Sin" $
     stmSem (UnaryFPOp SinOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [UnaryOp   SinOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp SinOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp SinOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [UnaryOp   SinOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp SinOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp SinOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Cos = testCase "Cos" $
     stmSem (UnaryFPOp CosOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [UnaryOp   CosOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp CosOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp CosOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [UnaryOp   CosOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp CosOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp CosOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__Atan = testCase "ATan" $
     stmSem (UnaryFPOp AtanOp FPDouble (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [UnaryOp   AtanOp (Rat 0.1)],
-            fpExprs = [UnaryFPOp AtanOp FPDouble (FCnst FPDouble 0.1)],
-            eExpr   =  ErrUnOp AtanOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [UnaryOp   AtanOp (Rat 0.1)],
+            fpExprs = FDeclRes [UnaryFPOp AtanOp FPDouble (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrUnOp AtanOp FPDouble (Rat 0.1) (ErrRat $ 1 % 180143985094819840),
             decisionPath = root,
             cFlow  = Stable
         }
@@ -991,40 +1339,40 @@ stmSem__Atan = testCase "ATan" $
 
 stmSem__StoD = testCase "StoD" $
     stmSem (TypeCast FPSingle FPDouble (FCnst FPSingle 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [Rat 0.1],
-            fpExprs = [TypeCast FPSingle FPDouble (FCnst FPSingle 0.1)],
-            eExpr   = ErrRat (1 % 671088640),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [Rat 0.1],
+            fpExprs = FDeclRes [TypeCast FPSingle FPDouble (FCnst FPSingle 0.1)],
+            eExpr   = Just $ ErrRat (1 % 671088640),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__DtoS = testCase "DtoS" $
     stmSem (TypeCast FPDouble FPSingle (FCnst FPDouble 0.1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [Rat 0.1],
-            fpExprs = [TypeCast FPDouble FPSingle (FCnst FPDouble 0.1)],
-            eExpr   = ErrRat (1 % 671088640),
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [Rat 0.1],
+            fpExprs = FDeclRes [TypeCast FPDouble FPSingle (FCnst FPDouble 0.1)],
+            eExpr   = Just $ ErrRat (1 % 671088640),
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__ItoS = testCase "ItoS" $
     stmSem (TypeCast TInt FPSingle (FInt 1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [Int 1],
-            fpExprs = [FInt 1],
-            eExpr   = ErrRat 0,
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [Int 1],
+            fpExprs = FDeclRes [FInt 1],
+            eExpr   = Just $ ErrRat 0,
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem__ItoD = testCase "ItoD" $
     stmSem (TypeCast TInt FPDouble (FInt 1)) [] (Env []) semConf (LDP []) [] @?=
-    [ACeb { conds   = Cond [(BTrue,FBTrue)],
-            rExprs  = [Int 1],
-            fpExprs = [FInt 1],
-            eExpr   = ErrRat 0,
+    [ACeb { conds   = trueConds,
+            rExprs  = RDeclRes [Int 1],
+            fpExprs = FDeclRes [FInt 1],
+            eExpr   = Just $ ErrRat 0,
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -1032,23 +1380,35 @@ stmSem__ItoD = testCase "ItoD" $
 stmSem__Ite = testCase "Ite" $
     stmSem (Ite (FRel Lt (FVar FPDouble "X") (FInt 3)) (FInt 0) (FInt 1)) [] (Env []) semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds = Cond [(Rel Lt (RealMark "X") (Int 3),FRel Lt (FVar FPDouble "X") (FInt 3))]
-          ,rExprs = [Int 0]
-          ,fpExprs = [FInt 0]
-          ,eExpr = ErrRat 0
+    [ACeb {conds = Conds [Cond {realPathCond = Rel Lt (RealMark "X") (Int 3)
+                                 ,fpPathCond = FRel Lt (FVar FPDouble "X") (FInt 3)
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}]
+          ,rExprs = RDeclRes [Int 0]
+          ,fpExprs = FDeclRes [FInt 0]
+          ,eExpr = Just $ ErrRat 0
           ,decisionPath = LDP [0]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(Not (Rel Lt (RealMark "X") (Int 3)),FNot (FRel Lt (FVar FPDouble "X") (FInt 3)))]
-          ,rExprs = [Int 1]
-          ,fpExprs = [FInt 1]
-          ,eExpr = ErrRat 0
+    ,ACeb {conds = Conds [Cond {realPathCond = Not $ Rel Lt (RealMark "X") (Int 3)
+                                 ,fpPathCond = FNot $ FRel Lt (FVar FPDouble "X") (FInt 3)
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}]
+          ,rExprs = RDeclRes [Int 1]
+          ,fpExprs = FDeclRes [FInt 1]
+          ,eExpr = Just $ ErrRat 0
           ,decisionPath = LDP [1]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(Not (Rel Lt (RealMark "X") (Int 3)),FRel Lt (FVar FPDouble "X") (FInt 3))
-                        ,(Rel Lt (RealMark "X") (Int 3),FNot (FRel Lt (FVar FPDouble "X") (FInt 3)))]
-          ,rExprs = [Int 0,Int 1]
-          ,fpExprs = [FInt 0,FInt 1]
-          ,eExpr = MaxErr [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 0)))
+    ,ACeb {conds = Conds [Cond {realPathCond = Not $ Rel Lt (RealMark "X") (Int 3)
+                                 ,fpPathCond = FRel Lt (FVar FPDouble "X") (FInt 3)
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}
+                         ,Cond {realPathCond = Rel Lt (RealMark "X") (Int 3)
+                                 ,fpPathCond = FNot $ FRel Lt (FVar FPDouble "X") (FInt 3)
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}]
+          ,rExprs = RDeclRes [Int 0,Int 1]
+          ,fpExprs = FDeclRes [FInt 0,FInt 1]
+          ,eExpr = Just $ MaxErr [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 0)))
                           ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 0) (Int 1)))]
           ,decisionPath = LDP []
           ,cFlow = Unstable}
@@ -1057,56 +1417,83 @@ stmSem__Ite = testCase "Ite" $
 stmSem__ListIte = testCase "ListIte" $
     stmSem (ListIte [(FRel Gt (FVar FPDouble "X") (FInt 3), (FInt 0)), (FRel Lt (FVar FPDouble "X") (FInt (-2)), (FInt 2))] (FInt 1)) [] (Env []) semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds = Cond [(Rel Gt (RealMark "X") (Int 3),FRel Gt (FVar FPDouble "X") (FInt 3))]
-          ,rExprs  = [Int 0]
-          ,fpExprs = [FInt 0]
-          ,eExpr   = ErrRat 0
+    [ACeb {conds = Conds [Cond {realPathCond = Rel Gt (RealMark "X") (Int 3)
+                                 ,fpPathCond = FRel Gt (FVar FPDouble "X") (FInt 3)
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}]
+          ,rExprs  = RDeclRes [Int 0]
+          ,fpExprs = FDeclRes [FInt 0]
+          ,eExpr   = Just $ ErrRat 0
           ,decisionPath = LDP [0]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(And  (Rel Lt  (RealMark "X")      (Int  (-2))) (Not  (Rel Gt  (RealMark "X")      (Int 3)))
-                         ,FAnd (FRel Lt (FVar FPDouble "X") (FInt (-2))) (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))))]
-          ,rExprs  = [Int 2]
-          ,fpExprs = [FInt 2]
-          ,eExpr = ErrRat 0
+    ,ACeb {conds = Conds [Cond {realPathCond = And (Rel Lt (RealMark "X") (Int  (-2)))
+                                                   (Not (Rel Gt  (RealMark "X") (Int 3)))
+                               ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "X") (FInt (-2))) (FNot (FRel Gt (FVar FPDouble "X") (FInt 3)))
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}]
+          ,rExprs  = RDeclRes [Int 2]
+          ,fpExprs = FDeclRes [FInt 2]
+          ,eExpr = Just $ ErrRat 0
           ,decisionPath = LDP [1]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(And  (Not  (Rel Lt  (RealMark "X")       (Int (-2)))) (Not  (Rel Gt  (RealMark "X")      (Int 3)))
-                         ,FAnd (FNot (FRel Lt (FVar FPDouble "X") (FInt (-2)))) (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))))]
-          ,rExprs = [Int 1]
-          ,fpExprs = [FInt 1]
-          ,eExpr = ErrRat 0
+    ,ACeb {conds = Conds [Cond {realPathCond = And (Not $ Rel Lt (RealMark "X") (Int  (-2)))
+                                                   (Not $ Rel Gt  (RealMark "X") (Int 3))
+                                 ,fpPathCond = FAnd (FNot $ FRel Lt (FVar FPDouble "X") (FInt (-2)))
+                                                    (FNot $ FRel Gt (FVar FPDouble "X") (FInt 3))
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}]
+          ,rExprs = RDeclRes [Int 1]
+          ,fpExprs = FDeclRes [FInt 1]
+          ,eExpr = Just $ ErrRat 0
           ,decisionPath = LDP [2]
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(And (Not (Rel Gt (RealMark "X") (Int 3))) (Not (Rel Lt (RealMark "X") (Int (-2))))
-                         ,FAnd (FRel Lt (FVar FPDouble "X") (FInt (-2))) (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))))
-                        ,(And (Not (Rel Gt (RealMark "X") (Int 3))) (Not (Rel Lt (RealMark "X") (Int (-2))))
-                         ,FRel Gt (FVar FPDouble "X") (FInt 3))
-                        ,(And (Rel Lt (RealMark "X") (Int (-2))) (Not (Rel Gt (RealMark "X") (Int 3)))
-                         ,FAnd (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))) (FNot (FRel Lt (FVar FPDouble "X") (FInt (-2)))))
-                        ,(And (Rel Lt (RealMark "X") (Int (-2))) (Not (Rel Gt (RealMark "X") (Int 3))),FRel Gt (FVar FPDouble "X") (FInt 3)),(Rel Gt (RealMark "X") (Int 3)
-                         ,FAnd (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))) (FNot (FRel Lt (FVar FPDouble "X") (FInt (-2))))),(Rel Gt (RealMark "X") (Int 3)
-                         ,FAnd (FRel Lt (FVar FPDouble "X") (FInt (-2))) (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))))]
-                         ,rExprs = [Int 0,Int 1,Int 2]
-                         ,fpExprs = [FInt 0,FInt 1,FInt 2]
-                         ,eExpr = MaxErr [MaxErr [MaxErr [MaxErr [MaxErr
-                         [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 2) (Int 0)))
-                         ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 0)))]
-                         ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 0) (Int 2)))]
-                         ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 2)))]
-                         ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 0) (Int 1)))]
-                         ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 2) (Int 1)))]
-                         ,decisionPath = LDP []
-                         ,cFlow = Unstable}
+    ,ACeb {conds = Conds [
+            Cond {realPathCond = And (Not (Rel Gt (RealMark "X") (Int 3))) (Not (Rel Lt (RealMark "X") (Int (-2))))
+                 ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "X") (FInt (-2))) (FNot (FRel Gt (FVar FPDouble "X") (FInt 3)))
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
+           ,Cond {realPathCond = And (Not (Rel Gt (RealMark "X") (Int 3))) (Not (Rel Lt (RealMark "X") (Int (-2))))
+                 ,fpPathCond = FRel Gt (FVar FPDouble "X") (FInt 3)
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
+           ,Cond {realPathCond = And (Rel Lt (RealMark "X") (Int (-2))) (Not (Rel Gt (RealMark "X") (Int 3)))
+                 ,fpPathCond = FAnd (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))) (FNot (FRel Lt (FVar FPDouble "X") (FInt (-2))))
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
+           ,Cond {realPathCond = And (Rel Lt (RealMark "X") (Int (-2))) (Not (Rel Gt (RealMark "X") (Int 3)))
+                 ,fpPathCond = FRel Gt (FVar FPDouble "X") (FInt 3)
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
+           ,Cond {realPathCond = Rel Gt (RealMark "X") (Int 3)
+                 ,fpPathCond = FAnd (FNot (FRel Gt (FVar FPDouble "X") (FInt 3))) (FNot (FRel Lt (FVar FPDouble "X") (FInt (-2))))
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
+           ,Cond {realPathCond = Rel Gt (RealMark "X") (Int 3)
+                 ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "X") (FInt (-2))) (FNot (FRel Gt (FVar FPDouble "X") (FInt 3)))
+                 ,realCond = BTrue
+                 ,fpCond = FBTrue}
+           ]
+          ,rExprs = RDeclRes [Int 0,Int 1,Int 2]
+          ,fpExprs = FDeclRes [FInt 0,FInt 1,FInt 2]
+          ,eExpr = Just $ MaxErr [MaxErr [MaxErr [MaxErr [MaxErr
+          [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 2) (Int 0)))
+          ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 0)))]
+          ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 0) (Int 2)))]
+          ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 2)))]
+          ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 0) (Int 1)))]
+          ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 2) (Int 1)))]
+          ,decisionPath = LDP []
+          ,cFlow = Unstable}
     ]
 
 stmSem__LetIn = testCase "LetIn" $
     stmSem (Let [("X", FPDouble, FInt 5)] (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 3)))  [] (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds   = Cond [(BTrue,FBTrue)]
-          ,rExprs  = [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
+    [ACeb {conds   = trueConds
+          ,rExprs  = RDeclRes [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
                      (BinaryOp AddOp (RealMark "X") (Int 3))]
-          ,fpExprs = [Let [("X", FPDouble, FInt 5)] (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 3))]
-          ,eExpr   = RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
+          ,fpExprs = FDeclRes [Let [("X", FPDouble, FInt 5)] (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 3))]
+          ,eExpr   = Just $ RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
                             LetElem{letVar = "Err_X", letType = Real, letExpr = ErrRat 0}]
                      $ ErrBinOp AddOp FPDouble (RealMark "X") (Var Real "Err_X") (Int 3) (ErrRat 0)
           ,decisionPath = LDP []
@@ -1117,14 +1504,14 @@ stmSem__LetIn2 = testCase "LetIn2" $
            (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y")))
            [] (Env []) semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds   = Cond [(BTrue,FBTrue)]
-          ,rExprs  = [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
+    [ACeb {conds   = trueConds
+          ,rExprs  = RDeclRes [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
                       (RLet [LetElem{letVar = "Y", letType = Real, letExpr = Int 1}]
                      (BinaryOp AddOp (RealMark "X") (RealMark "Y")))]
-          ,fpExprs = [Let [("X", FPDouble, FInt 5)] (
+          ,fpExprs = FDeclRes [Let [("X", FPDouble, FInt 5)] (
                       Let [("Y", FPDouble, FInt 1)]
                       (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y")))]
-          ,eExpr   = RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}
+          ,eExpr   = Just $ RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}
                           ,LetElem{letVar = "Err_X", letType = Real, letExpr = ErrRat 0}] (
                      RLet [LetElem{letVar = "Y", letType = Real, letExpr = Int 1}
                           ,LetElem{letVar = "Err_Y", letType = Real, letExpr = ErrRat 0}]
@@ -1137,25 +1524,33 @@ stmSem__LetIn3 = testCase "LetIn3" $
     stmSem (Let [("X", FPDouble, Ite (FRel LtE (FVar FPDouble "Z") (FInt 0)) (FInt 1) (FInt 2))]
                 (BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 3)))  [] (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
-     [ACeb {conds = Cond [(Not (Rel LtE (RealMark "Z") (Int 0))
-                         ,FNot (FRel LtE (FVar FPDouble "Z") (FInt 0)))
-                         ,(Rel LtE (RealMark "Z") (Int 0)
-                         ,FRel LtE (FVar FPDouble "Z") (FInt 0))]
-            ,rExprs = [BinaryOp AddOp (Int 1) (Int 3)
+     [ACeb {conds = Conds [Cond {realPathCond = Not (Rel LtE (RealMark "Z") (Int 0))
+                               ,fpPathCond = FNot (FRel LtE (FVar FPDouble "Z") (FInt 0))
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}
+                          ,Cond {realPathCond = Rel LtE (RealMark "Z") (Int 0)
+                               ,fpPathCond = FRel LtE (FVar FPDouble "Z") (FInt 0)
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}]
+            ,rExprs = RDeclRes [BinaryOp AddOp (Int 1) (Int 3)
                       ,BinaryOp AddOp (Int 2) (Int 3)]
-            ,fpExprs = [BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3)
+            ,fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3)
                        ,BinaryFPOp AddOp FPDouble (FInt 2) (FInt 3)]
-            ,eExpr = MaxErr [ErrBinOp AddOp FPDouble (Int 1) (ErrRat 0) (Int 3) (ErrRat 0)
+            ,eExpr = Just $ MaxErr [ErrBinOp AddOp FPDouble (Int 1) (ErrRat 0) (Int 3) (ErrRat 0)
                             ,ErrBinOp AddOp FPDouble (Int 2) (ErrRat 0) (Int 3) (ErrRat 0)]
             ,decisionPath = LDP []
             ,cFlow = Stable}
-     ,ACeb {conds = Cond [(Not (Rel LtE (RealMark "Z") (Int 0))
-                          ,FRel LtE (FVar FPDouble "Z") (FInt 0))
-                          ,(Rel LtE (RealMark "Z") (Int 0)
-                          ,FNot (FRel LtE (FVar FPDouble "Z") (FInt 0)))]
-           ,rExprs = [BinaryOp AddOp (Int 1) (Int 3),BinaryOp AddOp (Int 2) (Int 3)]
-           ,fpExprs = [BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3),BinaryFPOp AddOp FPDouble (FInt 2) (FInt 3)]
-           ,eExpr = MaxErr [ErrBinOp AddOp FPDouble (Int 1)
+     ,ACeb {conds = Conds [Cond {realPathCond = Not (Rel LtE (RealMark "Z") (Int 0))
+                               ,fpPathCond = FRel LtE (FVar FPDouble "Z") (FInt 0)
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}
+                          ,Cond {realPathCond = Rel LtE (RealMark "Z") (Int 0)
+                               ,fpPathCond = FNot (FRel LtE (FVar FPDouble "Z") (FInt 0))
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}]
+           ,rExprs = RDeclRes [BinaryOp AddOp (Int 1) (Int 3),BinaryOp AddOp (Int 2) (Int 3)]
+           ,fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3),BinaryFPOp AddOp FPDouble (FInt 2) (FInt 3)]
+           ,eExpr = Just $ MaxErr [ErrBinOp AddOp FPDouble (Int 1)
                            (MaxErr [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 2) (Int 1)))
                            ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 2)))]) (Int 3) (ErrRat 0)
                            ,ErrBinOp AddOp FPDouble (Int 2) (MaxErr [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 2) (Int 1)))
@@ -1168,14 +1563,14 @@ stmSem__LetIn4 = testCase "LetIn4" $
                 ,("Y", FPDouble, BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 2))]
     (BinaryFPOp AddOp FPDouble (FVar FPDouble "Y") (FInt 3)))  [] (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds   = Cond [(BTrue,FBTrue)]
-          ,rExprs  = [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
+    [ACeb {conds   = trueConds
+          ,rExprs  = RDeclRes [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
                      (RLet [LetElem{letVar = "Y", letType = Real, letExpr = BinaryOp AddOp (RealMark "X") (Int 2)}]
                      (BinaryOp AddOp (RealMark "Y") (Int 3)))]
-          ,fpExprs = [Let [("X", FPDouble, FInt 5)]
+          ,fpExprs = FDeclRes [Let [("X", FPDouble, FInt 5)]
                      (Let [("Y", FPDouble, BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 2))]
                       (BinaryFPOp AddOp FPDouble (FVar FPDouble "Y") (FInt 3)))]
-          ,eExpr   = RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
+          ,eExpr   = Just $ RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
                             LetElem{letVar = "Err_X", letType = Real, letExpr = ErrRat 0}] (
                      RLet [LetElem{letVar = "Y", letType = Real, letExpr = BinaryOp AddOp (RealMark "X") (Int 2)},
                             LetElem{letVar = "Err_Y", letType = Real
@@ -1190,16 +1585,16 @@ stmSem__LetIn5 = testCase "LetIn5" $
                 ,("Z", FPDouble, BinaryFPOp MulOp FPDouble (FVar FPDouble "Y") (FInt 7))]
     (BinaryFPOp AddOp FPDouble (FVar FPDouble "Z") (FInt 3)))  [] (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds   = Cond [(BTrue,FBTrue)]
-          ,rExprs  = [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
+    [ACeb {conds   = trueConds
+          ,rExprs  = RDeclRes [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
                      (RLet [LetElem{letVar = "Y", letType = Real, letExpr = BinaryOp AddOp (RealMark "X") (Int 2)}]
                      (RLet [LetElem{letVar = "Z", letType = Real, letExpr = BinaryOp MulOp (RealMark "Y") (Int 7)}]
                      (BinaryOp AddOp (RealMark "Z") (Int 3))))]
-          ,fpExprs = [Let [("X", FPDouble, FInt 5)]
+          ,fpExprs = FDeclRes [Let [("X", FPDouble, FInt 5)]
                      (Let [("Y", FPDouble, BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FInt 2))]
                      (Let [("Z", FPDouble, BinaryFPOp MulOp FPDouble (FVar FPDouble "Y") (FInt 7))]
                       (BinaryFPOp AddOp FPDouble (FVar FPDouble "Z") (FInt 3))))]
-          ,eExpr   = RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
+          ,eExpr   = Just $ RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
                             LetElem{letVar = "Err_X", letType = Real, letExpr = ErrRat 0}] (
                      RLet [LetElem{letVar = "Y", letType = Real, letExpr = BinaryOp AddOp (RealMark "X") (Int 2)},
                             LetElem{letVar = "Err_Y", letType = Real
@@ -1219,14 +1614,14 @@ stmSem__LetIn6 = testCase "LetIn6" $
     [("f", (False, FPSingle, [Arg "x" FPDouble],fSemantics))]
     (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds   = Cond [(BTrue,FBTrue)]
-          ,rExprs  = [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
+    [ACeb {conds   = trueConds
+          ,rExprs  = RDeclRes [RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5}]
                      (RLet [LetElem{letVar = "Y", letType = Real, letExpr = (RealMark "X")}]
                      (BinaryOp AddOp (RealMark "Y") (Int 3)))]
-          ,fpExprs = [Let [("X", FPDouble, FInt 5)]
+          ,fpExprs = FDeclRes [Let [("X", FPDouble, FInt 5)]
                      (Let [("Y", FPDouble, FEFun False "f" FPDouble [FVar FPDouble "X"])]
                       (BinaryFPOp AddOp FPDouble (FVar FPDouble "Y") (FInt 3)))]
-          ,eExpr   = RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
+          ,eExpr   = Just $ RLet [LetElem{letVar = "X", letType = Real, letExpr = Int 5},
                             LetElem{letVar = "Err_X", letType = Real, letExpr = ErrRat 0}] (
                      RLet [LetElem{letVar = "Y", letType = Real, letExpr = (RealMark "X") },
                             LetElem{letVar = "Err_Y", letType = Real
@@ -1236,10 +1631,10 @@ stmSem__LetIn6 = testCase "LetIn6" $
           ,cFlow = Stable}]
       where
         fSemantics = [ACeb {
-                conds  = Cond [(BTrue,FBTrue)],
-                rExprs = [Var Real "x"],
-                fpExprs = [FVar FPDouble "x"],
-                eExpr  = ErrRat 5,
+                conds  = trueConds,
+                rExprs = RDeclRes [Var Real "x"],
+                fpExprs = FDeclRes [FVar FPDouble "x"],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1251,16 +1646,16 @@ stmSem__LetIn7 = testCase "LetIn7" $
     [("f", (False, FPDouble, [Arg "X" FPDouble],fSemantics))]
     (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds   = Cond [(BTrue,FBTrue)]
-          ,rExprs  = [RLet [LetElem{letVar = "A", letType = Real,
+    [ACeb {conds   = trueConds
+          ,rExprs  = RDeclRes [RLet [LetElem{letVar = "A", letType = Real,
                             letExpr = BinaryOp AddOp (RealMark "X") (RealMark "Y")}]
                      (RLet [LetElem{letVar = "B", letType = Real,
                             letExpr = BinaryOp MulOp (RealMark "A") (Int 2)}]
                      (RealMark "B"))]
-          ,fpExprs = [Let [("A", FPDouble, BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y"))]
+          ,fpExprs = FDeclRes [Let [("A", FPDouble, BinaryFPOp AddOp FPDouble (FVar FPDouble "X") (FVar FPDouble "Y"))]
                      (Let [("B", FPDouble, FEFun False "f" FPDouble [(FVar FPDouble "A")])]
                       (FVar FPDouble "B"))]
-          ,eExpr   = RLet [LetElem{letVar = "A", letType = Real,
+          ,eExpr   = Just $ RLet [LetElem{letVar = "A", letType = Real,
                            letExpr = BinaryOp AddOp (RealMark "X") (RealMark "Y")},
                            LetElem{letVar = "Err_A", letType = Real,
                            letExpr = ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble)
@@ -1274,10 +1669,10 @@ stmSem__LetIn7 = testCase "LetIn7" $
           ,cFlow = Stable}]
       where
         fSemantics = [ACeb {
-                conds  = Cond [(BTrue,FBTrue)],
-                rExprs = [BinaryOp MulOp (RealMark "X") (Int 2)],
-                fpExprs = [BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FInt 2)],
-                eExpr  = ErrBinOp MulOp FPDouble (RealMark "X") (Var Real "Err_X") (Int 2) (ErrRat 0),
+                conds  = trueConds,
+                rExprs = RDeclRes [BinaryOp MulOp (RealMark "X") (Int 2)],
+                fpExprs = FDeclRes [BinaryFPOp MulOp FPDouble (FVar FPDouble "X") (FInt 2)],
+                eExpr = Just $ ErrBinOp MulOp FPDouble (RealMark "X") (Var Real "Err_X") (Int 2) (ErrRat 0),
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1285,10 +1680,10 @@ stmSem__LetIn7 = testCase "LetIn7" $
 stmSem__UnstWarning = testCase "UnstWarning" $
     stmSem UnstWarning [] (Env [])  semConf (LDP []) [LDP []]
     `semEquiv`
-    [ ACeb { conds  = Cond [(BTrue,FBTrue)],
-             rExprs = [Int 0],
-             fpExprs = [FInt 0],
-             eExpr  = ErrRat 0,
+    [ ACeb { conds  = trueConds,
+             rExprs = RDeclRes [Int 0],
+             fpExprs = FDeclRes [FInt 0],
+             eExpr = Just $ ErrRat 0,
              decisionPath = LDP [],
              cFlow  = Stable
              } ]
@@ -1298,20 +1693,33 @@ stmSem__IteIntAdd = testCase "IteIntAdd" $
                                       (FInt 3))
       [] (Env []) semConf (LDP []) [LDP []]
     `semEquiv`
-    [ACeb {conds = Cond [(Not (Rel Gt (RealMark "X") (Int 0)),FNot (FRel Gt (FVar FPDouble "X") (FInt 0)))
-                        ,(Rel Gt (RealMark "X") (Int 0),FRel Gt (FVar FPDouble "X") (FInt 0))]
-          ,rExprs = [BinaryOp AddOp (Int 0) (Int 3)
+    [ACeb {conds = Conds [Cond {realPathCond = Not (Rel Gt (RealMark "X") (Int 0))
+                               ,fpPathCond = FNot (FRel Gt (FVar FPDouble "X") (FInt 0))
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}
+                         ,Cond {realPathCond = Rel Gt (RealMark "X") (Int 0)
+                               ,fpPathCond = FRel Gt (FVar FPDouble "X") (FInt 0)
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}]
+          ,rExprs = RDeclRes [BinaryOp AddOp (Int 0) (Int 3)
                     ,BinaryOp AddOp (Int 1) (Int 3)]
-          ,fpExprs = [BinaryFPOp AddOp FPDouble (FInt 0) (FInt 3)
+          ,fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FInt 0) (FInt 3)
                      ,BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3)]
-          ,eExpr = MaxErr [ErrBinOp AddOp FPDouble (Int 0) (ErrRat 0) (Int 3) (ErrRat 0)
+          ,eExpr = Just $ MaxErr [ErrBinOp AddOp FPDouble (Int 0) (ErrRat 0) (Int 3) (ErrRat 0)
                           ,ErrBinOp AddOp FPDouble (Int 1) (ErrRat (0 % 1)) (Int 3) (ErrRat (0 % 1))]
           ,decisionPath = LDP []
           ,cFlow = Stable}
-    ,ACeb {conds = Cond [(Not (Rel Gt (RealMark "X") (Int 0)),FRel Gt (FVar FPDouble "X") (FInt 0)),(Rel Gt (RealMark "X") (Int 0),FNot (FRel Gt (FVar FPDouble "X") (FInt 0)))]
-          ,rExprs = [BinaryOp AddOp (Int 0) (Int 3),BinaryOp AddOp (Int 1) (Int 3)]
-          ,fpExprs = [BinaryFPOp AddOp FPDouble (FInt 0) (FInt 3),BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3)]
-          ,eExpr = MaxErr [ErrBinOp AddOp FPDouble (Int 0)
+    ,ACeb {conds = Conds [Cond {realPathCond = Not $ Rel Gt (RealMark "X") (Int 0)
+                               ,fpPathCond = FRel Gt (FVar FPDouble "X") (FInt 0)
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}
+                         ,Cond {realPathCond = Rel Gt (RealMark "X") (Int 0)
+                               ,fpPathCond = FNot $ FRel Gt (FVar FPDouble "X") (FInt 0)
+                               ,realCond = BTrue
+                               ,fpCond = FBTrue}]
+          ,rExprs = RDeclRes [BinaryOp AddOp (Int 0) (Int 3),BinaryOp AddOp (Int 1) (Int 3)]
+          ,fpExprs = FDeclRes [BinaryFPOp AddOp FPDouble (FInt 0) (FInt 3),BinaryFPOp AddOp FPDouble (FInt 1) (FInt 3)]
+          ,eExpr = Just $ MaxErr [ErrBinOp AddOp FPDouble (Int 0)
                   (MaxErr [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 0)))
                           ,BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 0) (Int 1)))]) (Int 3) (ErrRat 0)
                           ,ErrBinOp AddOp FPDouble (Int 1) (MaxErr [BinaryOp AddOp (ErrRat 0) (UnaryOp AbsOp (BinaryOp SubOp (Int 1) (Int 0))),BinaryOp AddOp (ErrRat 0)
@@ -1333,12 +1741,17 @@ equivInterp__test1 = testCase "Equivalent Interpretation 1" $
       interp1 = [("f", (False, FPDouble, [Arg "x" FPDouble],fSemantics))]
       interp2 = [("f", (False, FPSingle, [Arg "x" FPDouble],fSemantics))]
       fSemantics = [ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
@@ -1351,22 +1764,32 @@ equivInterp__test2 = testCase "Equivalent Interpretation 2" $
       interp2 = [("g", (False, FPDouble, [Arg "x" FPDouble],gSemantics))
                 ,("f", (False, FPSingle, [Arg "x" FPDouble],fSemantics))]
       fSemantics = [ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
       gSemantics = [ACeb {
-                conds  = Cond [(Rel Lt (Int 6) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9],
-                fpExprs = [FInt 9],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 6) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9],
+                fpExprs = FDeclRes [FInt 9],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
@@ -1379,22 +1802,32 @@ equivInterp__test3 = testCase "Equivalent Interpretation 3" $
       interp2 = [("g", (False, FPDouble, [Arg "x" FPDouble],gSemantics))
                 ,("f", (False, FPSingle, [Arg "x" FPDouble],fSemantics))]
       fSemantics = [ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                              ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
       gSemantics = [ACeb {
-                conds  = Cond [(Rel Lt (Int 6) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9],
-                fpExprs = [FInt 9],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 6) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9],
+                fpExprs = FDeclRes [FInt 9],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
@@ -1407,52 +1840,77 @@ equivInterp__test4 = testCase "Equivalent Interpretation 3" $
       interp2 = [("g", (False, FPDouble, [Arg "x" FPDouble],gSemantics))
                 ,("f", (False, FPSingle, [Arg "x" FPDouble],fSemantics2))]
       fSemantics1 = [ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 },
                 ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Var Real "v"],
-                fpExprs = [FVar FPSingle "v"],
-                eExpr  = ErrRat 0,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Var Real "v"],
+                fpExprs = FDeclRes [FVar FPSingle "v"],
+                eExpr = Just $ ErrRat 0,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
       fSemantics2 = [ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Var Real "v"],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 0,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Var Real "v"],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 0,
                 decisionPath = root,
                 cFlow = Unstable
                 },
                 ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }]
       gSemantics = [ACeb {
-                conds  = Cond [(Rel Lt (Int 6) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9],
-                fpExprs = [FInt 9],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 6) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9],
+                fpExprs = FDeclRes [FInt 9],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }]
@@ -1488,42 +1946,62 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
             ]
             where
               xSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))
-                         ,(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))
-                         ],
-                rExprs = [Int 1,Int 2],
-                fpExprs = [FInt 3, FInt 2],
-                eExpr  = ErrRat 1,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 0) (Int 1)
+                                     ,fpPathCond = FRel Lt (FInt 0) (FInt 1)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 1) (Int 2)
+                                     ,fpPathCond = FRel Lt (FInt 1) (FInt 2)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 1,Int 2],
+                fpExprs = FDeclRes [FInt 3, FInt 2],
+                eExpr = Just $ ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
               xSemantics2 = ACeb {
-                conds  = Cond [(Rel Lt (Int 2) (Int 3),FRel Lt (FInt 2) (FInt 3))
-                         ,(Rel Lt (Int 3) (Int 4),FRel Lt (FInt 3) (FInt 4))
-                         ],
-                rExprs = [Int 3,Int 4],
-                fpExprs = [FInt 3,FInt 4],
-                eExpr  = ErrRat 2,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 2) (Int 3)
+                                     ,fpPathCond = FRel Lt (FInt 2) (FInt 3)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 3) (Int 4)
+                                     ,fpPathCond = FRel Lt (FInt 3) (FInt 4)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 3,Int 4],
+                fpExprs = FDeclRes [FInt 3,FInt 4],
+                eExpr = Just $ ErrRat 2,
                 decisionPath = root,
                 cFlow = Stable
                 }
               ySemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Int 4) (Int 5),FRel Lt (FInt 4) (FInt 5))
-                         ,(Rel Lt (Int 5) (Int 6),FRel Lt (FInt 5) (FInt 6))
-                         ],
-                rExprs = [Int 5,Int 6],
-                fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat 3,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 4) (Int 5)
+                                     ,fpPathCond = FRel Lt (FInt 4) (FInt 5)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 5) (Int 6)
+                                     ,fpPathCond = FRel Lt (FInt 5) (FInt 6)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 5,Int 6],
+                fpExprs = FDeclRes [FInt 5,FInt 6],
+                eExpr = Just $ ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
               ySemantics2 = ACeb {
-                conds  = Cond [(Rel Lt (Int 6) (Int 7),FRel Lt (FInt 6) (FInt 7))
-                         ,(Rel Lt (Int 7) (Int 8),FRel Lt (FInt 7) (FInt 8))
-                         ],
-                rExprs = [Int 7,Int 8],
-                fpExprs = [FInt 7,FInt 8],
-                eExpr  = ErrRat 4,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 6) (Int 7)
+                                     ,fpPathCond = FRel Lt (FInt 6) (FInt 7)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 7) (Int 8)
+                                     ,fpPathCond = FRel Lt (FInt 7) (FInt 8)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 7,Int 8],
+                fpExprs = FDeclRes [FInt 7,FInt 8],
+                eExpr = Just $ ErrRat 4,
                 decisionPath = root,
                 cFlow = Stable
                 }
@@ -1532,87 +2010,97 @@ semEFun__test1 = testCase "it correctly combines ACeBS" $
                               ]
             where
               fSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Int 8) (Int 9), FRel Lt (FInt 8) (FInt 9))
-                         ,(Rel Lt (Int 9) (Int 10),FRel Lt (FInt 9) (FInt 10))
-                         ],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 8) (Int 9)
+                                     ,fpPathCond = FRel Lt (FInt 8) (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 9) (Int 10)
+                                     ,fpPathCond = FRel Lt (FInt 9) (FInt 10)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
               fSemantics2 = ACeb {
-                conds  = Cond [(Rel Lt (Int 10) (Int 11),FRel Lt (FInt 10) (FInt 11)),
-                          (Rel Lt (Int 11) (Int 12),FRel Lt (FInt 11) (FInt 12))
-                         ],
-                rExprs = [Int 11,Int 12],
-                fpExprs = [FInt 11,FInt 12],
-                eExpr  = ErrRat 6,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Int 10) (Int 11)
+                                     ,fpPathCond = FRel Lt (FInt 10) (FInt 11)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Int 11) (Int 12)
+                                     ,fpPathCond = FRel Lt (FInt 11) (FInt 12)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 11,Int 12],
+                fpExprs = FDeclRes [FInt 11,FInt 12],
+                eExpr = Just $ ErrRat 6,
                 decisionPath = root,
                 cFlow = Stable
                 }
       expected = [
         ACeb {
-            conds  = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr  = ErrRat (5 % 1),
+            conds  = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow  = Stable
             },
         ACeb {
-            conds = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 11,Int 12],
-            fpExprs = [FInt 11,FInt 12],
-            eExpr = ErrRat (6 % 1),
+            conds = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 11,Int 12],
+            fpExprs = FDeclRes [FInt 11,FInt 12],
+            eExpr = Just $ ErrRat (6 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 11,Int 12],
-            fpExprs = [FInt 11,FInt 12],
-            eExpr = ErrRat (6 % 1),
+            conds = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 11,Int 12],
+            fpExprs = FDeclRes [FInt 11,FInt 12],
+            eExpr = Just $ ErrRat (6 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 11,Int 12],
-            fpExprs = [FInt 11,FInt 12],
-            eExpr = ErrRat (6 % 1),
+            conds = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 11,Int 12],
+            fpExprs = FDeclRes [FInt 11,FInt 12],
+            eExpr = Just $ ErrRat (6 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue),(BTrue,FBTrue)],
-            rExprs = [Int 11,Int 12],
-            fpExprs = [FInt 11,FInt 12],
-            eExpr = ErrRat (6 % 1),
+            conds = Conds [trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond,trueCond],
+            rExprs = RDeclRes [Int 11,Int 12],
+            fpExprs = FDeclRes [FInt 11,FInt 12],
+            eExpr = Just $ ErrRat (6 % 1),
             decisionPath = root,
             cFlow = Stable
             }
@@ -1632,45 +2120,66 @@ semEFun__test2 = testCase "it correctly combines arguments-combinations conditio
           semanticArgumentCombinations = [[xSemantics1,ySemantics1]]
             where
               xSemantics1 = ACeb {
-                conds  = Cond [
-                          (Rel Lt (Var Real "0") (Int 1),FRel Lt (FVar FPDouble "0") (FInt 1))
-                         ,(Rel Lt (Var Real "1") (Int 2),FRel Lt (FVar FPDouble "1") (FInt 2))
-                         ],
-                rExprs = [Int 1,Int 2],
-                fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat 1,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "0") (Int 1)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "0") (FInt 1)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Var Real "1") (Int 2)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "1") (FInt 2)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 1,Int 2],
+                fpExprs = FDeclRes [FInt 1,FInt 2],
+                eExpr = Just $ ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
               ySemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
-                rExprs = [Int 5,Int 6],
-                fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat 3,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "4") (Int 5)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "4") (FInt 5)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 5,Int 6],
+                fpExprs = FDeclRes [FInt 5,FInt 6],
+                eExpr = Just $ ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
           functionSemantics = [fSemantics1]
             where
               fSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "8") (Int 9)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "8") (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
       expected = -- []
         [
           ACeb {
-            conds = Cond [
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5))))],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                    (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}
+                          ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "1") (Int 2))
+                                                    (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                   (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             }
@@ -1690,49 +2199,85 @@ semEFun__test3 = testCase "it correctly combines arguments-combinations conditio
           semanticArgumentCombinations = [[xSemantics1,ySemantics1]]
             where
               xSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "0") (Int 1),FRel Lt (FVar FPDouble "0") (FInt 1))
-                         ,(Rel Lt (Var Real "1") (Int 2),FRel Lt (FVar FPDouble "1") (FInt 2))
-                         ],
-                rExprs = [Int 1,Int 2],
-                fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat 1,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "0") (Int 1)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "0") (FInt 1)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                                ,Cond {realPathCond = Rel Lt (Var Real "1") (Int 2)
+                                      ,fpPathCond = FRel Lt (FVar FPDouble "1") (FInt 2)
+                                      ,realCond = BTrue
+                                      ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 1,Int 2],
+                fpExprs = FDeclRes [FInt 1,FInt 2],
+                eExpr = Just $ ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
               ySemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))
-                         ,(Rel Lt (Var Real "6") (Int 7),FRel Lt (FVar FPDouble "6") (FInt 7))],
-                rExprs = [Int 5,Int 6],
-                fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat 3,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "4") (Int 5)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "4") (FInt 5)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                                ,Cond {realPathCond = Rel Lt (Var Real "6") (Int 7)
+                                      ,fpPathCond = FRel Lt (FVar FPDouble "6") (FInt 7)
+                                      ,realCond = BTrue
+                                      ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 5,Int 6],
+                fpExprs = FDeclRes [FInt 5,FInt 6],
+                eExpr = Just $ ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
           functionSemantics = [fSemantics1]
             where
               fSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "8") (Int 9)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "8") (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
       expected = [
         ACeb {
-            conds = Cond [
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "6") (Int 7)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "6") (FInt 7)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "6") (Int 7)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "6") (FInt 7))))
-                ],
-              rExprs = [Int 9,Int 10],
-              fpExprs = [FInt 9,FInt 10],
-              eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                        (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                              (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}
+                          ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                         (Rel Lt (Var Real "6") (Int 7)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                         (FRel Lt (FVar FPDouble "6") (FInt 7)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}
+                          ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "1") (Int 2))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}
+                          ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "1") (Int 2))
+                                                         (Rel Lt (Var Real "6") (Int 7)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                         (FRel Lt (FVar FPDouble "6") (FInt 7)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+              rExprs = RDeclRes [Int 9,Int 10],
+              fpExprs = FDeclRes [FInt 9,FInt 10],
+              eExpr = Just $ ErrRat (5 % 1),
               decisionPath = root,
               cFlow = Stable
             }
@@ -1757,63 +2302,91 @@ semEFun__test4 = testCase "it correctly combines argument combinations" $
             ]
             where
               xSemantics1 = ACeb {
-                conds  = Cond [
-                    (Rel Lt (Var Real "0") (Int 1),FRel Lt (FVar FPDouble "0") (FInt 1)),
-                    (Rel Lt (Var Real "1") (Int 2),FRel Lt (FVar FPDouble "1") (FInt 2))
-                    ],
-                rExprs = [Int 1,Int 2],
-                fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat 1,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "0") (Int 1)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "0") (FInt 1)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Var Real "1") (Int 2)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "1") (FInt 2)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 1,Int 2],
+                fpExprs = FDeclRes [FInt 1,FInt 2],
+                eExpr = Just $ ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
               xSemantics2 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "2") (Int 3),FRel Lt (FVar FPDouble "2") (FInt 3))],
-                rExprs = [Int 3,Int 4],
-                fpExprs = [FInt 3,FInt 4],
-                eExpr  = ErrRat 2,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "2") (Int 3)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "2") (FInt 3)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 3,Int 4],
+                fpExprs = FDeclRes [FInt 3,FInt 4],
+                eExpr = Just $ ErrRat 2,
                 decisionPath = root,
                 cFlow = Stable
                 }
               ySemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
-                rExprs = [Int 5,Int 6],
-                fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat 3,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "4") (Int 5)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "4") (FInt 5)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 5,Int 6],
+                fpExprs = FDeclRes [FInt 5,FInt 6],
+                eExpr = Just $ ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
           functionSemantics = [fSemantics1]
             where
               fSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "8") (Int 9)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "8") (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
       expected = [
         ACeb {
-            conds = Cond [
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5))))
-                ],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}
+                         ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                   (And (Rel Lt (Var Real "1") (Int 2))
+                                                        (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [
-                  (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "2") (Int 3)) (Rel Lt (Var Real "4") (Int 5)))
-                  ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "2") (FInt 3)) (FRel Lt (FVar FPDouble "4") (FInt 5))))],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "2") (Int 3))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "2") (FInt 3))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             }
@@ -1834,64 +2407,99 @@ semEFun__test5 = testCase "it correctly combines function semantics ACebS" $
           semanticArgumentCombinations = [[xSemantics1,ySemantics1]]
             where
               xSemantics1 = ACeb {
-                conds  = Cond [
-                    (Rel Lt (Var Real "0") (Int 1),FRel Lt (FVar FPDouble "0") (FInt 1)),
-                    (Rel Lt (Var Real "1") (Int 2),FRel Lt (FVar FPDouble "1") (FInt 2))
-                    ],
-                rExprs = [Int 1,Int 2],
-                fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat 1,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "0") (Int 1)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "0") (FInt 1)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Var Real "1") (Int 2)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "1") (FInt 2)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 1,Int 2],
+                fpExprs = FDeclRes [FInt 1,FInt 2],
+                eExpr = Just $ ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
               ySemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
-                rExprs = [Int 5,Int 6],
-                fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat 3,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "4") (Int 5)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "4") (FInt 5)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 5,Int 6],
+                fpExprs = FDeclRes [FInt 5,FInt 6],
+                eExpr = Just $ ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
           functionSemantics = [fSemantics1,fSemantics2]
             where
               fSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "8") (Int 9)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "8") (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
               fSemantics2 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "10") (Int 11), FRel Lt (FVar FPDouble "10") (FInt 11))],
-                rExprs = [Int 11,Int 12],
-                fpExprs = [FInt 11,FInt 12],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "10") (Int 11)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "10") (FInt 11)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 11,Int 12],
+                fpExprs = FDeclRes [FInt 11,FInt 12],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
       expected = [
         ACeb {
-            conds =  Cond [
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5))))
-                ],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds =  Conds [Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                     (And (Rel Lt (Var Real "0") (Int 1))
+                                                          (Rel Lt (Var Real "4") (Int 5)))
+                                 ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                    (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                          (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}
+                           ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                     (And (Rel Lt (Var Real "1") (Int 2))
+                                                          (Rel Lt (Var Real "4") (Int 5)))
+                                  ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                     (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                           (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             },
         ACeb {
-            conds = Cond [
-                (And (Rel Lt (Var Real "10") (Int 11)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5))),FAnd (FRel Lt (FVar FPDouble "10") (FInt 11)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "10") (Int 11)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5))),FAnd (FRel Lt (FVar FPDouble "10") (FInt 11)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5))))
-                ],
-            rExprs = [Int 11,Int 12],
-            fpExprs = [FInt 11,FInt 12],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "10") (Int 11))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                 ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "10") (FInt 11))
+                                                    (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                          (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                 ,realCond = BTrue
+                                 ,fpCond = FBTrue}
+                           ,Cond {realPathCond = And (Rel Lt (Var Real "10") (Int 11))
+                                                     (And (Rel Lt (Var Real "1") (Int 2))
+                                                          (Rel Lt (Var Real "4") (Int 5)))
+                                  ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "10") (FInt 11))
+                                                     (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                           (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 11,Int 12],
+            fpExprs = FDeclRes [FInt 11,FInt 12],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             }
@@ -1911,64 +2519,99 @@ semEFun__test6 = testCase "it correctly combines function semantics ACebS" $
           semanticArgumentCombinations = [[xSemantics1,ySemantics1]]
             where
               xSemantics1 = ACeb {
-                conds  = Cond [
-                    (Rel Lt (Var Real "0") (Int 1),FRel Lt (FVar FPDouble "0") (FInt 1)),
-                    (Rel Lt (Var Real "1") (Int 2),FRel Lt (FVar FPDouble "1") (FInt 2))
-                    ],
-                rExprs = [Int 1,Int 2],
-                fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat 1,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "0") (Int 1)
+                                  ,fpPathCond = FRel Lt (FVar FPDouble "0") (FInt 1)
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}
+                               ,Cond {realPathCond = Rel Lt (Var Real "1") (Int 2)
+                                  ,fpPathCond = FRel Lt (FVar FPDouble "1") (FInt 2)
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 1,Int 2],
+                fpExprs = FDeclRes [FInt 1,FInt 2],
+                eExpr = Just $ ErrRat 1,
                 decisionPath = root,
                 cFlow = Stable
                 }
               ySemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
-                rExprs = [Int 5,Int 6],
-                fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat 3,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "4") (Int 5)
+                                  ,fpPathCond = FRel Lt (FVar FPDouble "4") (FInt 5)
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 5,Int 6],
+                fpExprs = FDeclRes [FInt 5,FInt 6],
+                eExpr = Just $ ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
           functionSemantics = [fSemantics1,fSemantics2]
             where
               fSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "8") (Int 9)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "8") (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Unstable
                 }
               fSemantics2 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "10") (Int 11), FRel Lt (FVar FPDouble "10") (FInt 11))],
-                rExprs = [Int 11,Int 12],
-                fpExprs = [FInt 11,FInt 12],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "10") (Int 11)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "10") (FInt 11)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 11,Int 12],
+                fpExprs = FDeclRes [FInt 11,FInt 12],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
       expected = [
         ACeb {
-            conds =  Cond [
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5))))
-                ],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                  ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                     (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                           (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}
+                               ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                         (And (Rel Lt (Var Real "1") (Int 2))
+                                                              (Rel Lt (Var Real "4") (Int 5)))
+                                  ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                     (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                           (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                  ,realCond = BTrue
+                                  ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Unstable
             },
         ACeb {
-            conds = Cond [
-                (And (Rel Lt (Var Real "10") (Int 11)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5))),FAnd (FRel Lt (FVar FPDouble "10") (FInt 11)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "10") (Int 11)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5))),FAnd (FRel Lt (FVar FPDouble "10") (FInt 11)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5))))
-                ],
-            rExprs = [Int 11,Int 12],
-            fpExprs = [FInt 11,FInt 12],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "10") (Int 11))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "10") (FInt 11))
+                                                   (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}
+                          ,Cond {realPathCond = And (Rel Lt (Var Real "10") (Int 11))
+                                                    (And (Rel Lt (Var Real "1") (Int 2))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "10") (FInt 11))
+                                                   (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 11,Int 12],
+            fpExprs = FDeclRes [FInt 11,FInt 12],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Stable
             }
@@ -1988,45 +2631,65 @@ semEFun__test7 = testCase "it correctly combines function semantics ACebS" $
           semanticArgumentCombinations = [[xSemantics1,ySemantics1]]
             where
               xSemantics1 = ACeb {
-                conds  = Cond [
-                    (Rel Lt (Var Real "0") (Int 1),FRel Lt (FVar FPDouble "0") (FInt 1)),
-                    (Rel Lt (Var Real "1") (Int 2),FRel Lt (FVar FPDouble "1") (FInt 2))
-                    ],
-                rExprs = [Int 1,Int 2],
-                fpExprs = [FInt 1,FInt 2],
-                eExpr  = ErrRat 1,
+                conds = Conds [Cond {realPathCond = Rel Lt (Var Real "0") (Int 1)
+                                    ,fpPathCond = FRel Lt (FVar FPDouble "0") (FInt 1)
+                                    ,realCond = BTrue
+                                    ,fpCond = FBTrue}
+                              ,Cond {realPathCond = Rel Lt (Var Real "1") (Int 2)
+                                    ,fpPathCond = FRel Lt (FVar FPDouble "1") (FInt 2)
+                                    ,realCond = BTrue
+                                    ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 1,Int 2],
+                fpExprs = FDeclRes [FInt 1,FInt 2],
+                eExpr = Just $ ErrRat 1,
                 decisionPath = root,
                 cFlow = Unstable
                 }
               ySemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "4") (Int 5),FRel Lt (FVar FPDouble "4") (FInt 5))],
-                rExprs = [Int 5,Int 6],
-                fpExprs = [FInt 5,FInt 6],
-                eExpr  = ErrRat 3,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "4") (Int 5)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "4") (FInt 5)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 5,Int 6],
+                fpExprs = FDeclRes [FInt 5,FInt 6],
+                eExpr = Just $ ErrRat 3,
                 decisionPath = root,
                 cFlow = Stable
                 }
           functionSemantics = [fSemantics1]
             where
               fSemantics1 = ACeb {
-                conds  = Cond [(Rel Lt (Var Real "8") (Int 9), FRel Lt (FVar FPDouble "8") (FInt 9))],
-                rExprs = [Int 9,Int 10],
-                fpExprs = [FInt 9,FInt 10],
-                eExpr  = ErrRat 5,
+                conds  = Conds [Cond {realPathCond = Rel Lt (Var Real "8") (Int 9)
+                                     ,fpPathCond = FRel Lt (FVar FPDouble "8") (FInt 9)
+                                     ,realCond = BTrue
+                                     ,fpCond = FBTrue}],
+                rExprs = RDeclRes [Int 9,Int 10],
+                fpExprs = FDeclRes [FInt 9,FInt 10],
+                eExpr = Just $ ErrRat 5,
                 decisionPath = root,
                 cFlow = Stable
                 }
       expected = [
         ACeb {
-            conds =  Cond [
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "0") (Int 1)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1)) (FRel Lt (FVar FPDouble "4") (FInt 5)))),
-                (And (Rel Lt (Var Real "8") (Int 9)) (And (Rel Lt (Var Real "1") (Int 2)) (Rel Lt (Var Real "4") (Int 5)))
-                ,FAnd (FRel Lt (FVar FPDouble "8") (FInt 9)) (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2)) (FRel Lt (FVar FPDouble "4") (FInt 5))))
-                ],
-            rExprs = [Int 9,Int 10],
-            fpExprs = [FInt 9,FInt 10],
-            eExpr = ErrRat (5 % 1),
+            conds = Conds [Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "0") (Int 1))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "0") (FInt 1))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}
+                          ,Cond {realPathCond = And (Rel Lt (Var Real "8") (Int 9))
+                                                    (And (Rel Lt (Var Real "1") (Int 2))
+                                                         (Rel Lt (Var Real "4") (Int 5)))
+                                ,fpPathCond = FAnd (FRel Lt (FVar FPDouble "8") (FInt 9))
+                                                   (FAnd (FRel Lt (FVar FPDouble "1") (FInt 2))
+                                                         (FRel Lt (FVar FPDouble "4") (FInt 5)))
+                                ,realCond = BTrue
+                                ,fpCond = FBTrue}],
+            rExprs = RDeclRes [Int 9,Int 10],
+            fpExprs = FDeclRes [FInt 9,FInt 10],
+            eExpr = Just $ ErrRat (5 % 1),
             decisionPath = root,
             cFlow = Unstable
             }

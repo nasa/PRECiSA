@@ -15,7 +15,6 @@
 
 module AbsPVSLang where
 
-import Data.Bits.Floating
 import Data.Maybe(fromMaybe)
 import PVSTypes
 import Utils
@@ -27,10 +26,14 @@ import Data.Bifunctor (bimap,second)
 import Common.TypesUtils
 import Control.Monad.State
 import Data.Either (fromLeft, fromRight)
+import Data.Maybe
+import Numeric.IEEE
+import Debug.Trace
 
 type FunName = String
 type EExpr = AExpr
 type TightErr = Bool
+type VarSubs = [(String,String)]
 
 data LetElem  = LetElem {letVar  :: VarName,
                          letType :: PVSType,
@@ -40,6 +43,8 @@ data LetElem  = LetElem {letVar  :: VarName,
 type FLetElem = (VarName,PVSType,FAExpr)
 
 type IsTrans = Bool
+
+type CheckFunCalls = Bool
 
 data AExpr
  -- real arithmetic expressions
@@ -160,6 +165,50 @@ type RProgram = [RDecl]
 data RDecl = RDecl PVSType FunName [Arg] AExpr
            | RPred         FunName [Arg] BExprStm
     deriving (Eq, Ord, Show, Read)
+
+subExpressions :: FAExpr -> [FAExpr]
+subExpressions expr = toList $ fromList (subExpressions' expr)
+  where
+    subExpressions' expr@(FEFun _ _ _ args) = expr:(concatMap subExpressions' args)
+    subExpressions' expr@(FArrayElem _ _ _ ae) = expr:(subExpressions' ae)
+    subExpressions' expr@(TypeCast _ _ ae) = expr:(subExpressions' ae)
+    subExpressions' expr@(Value ae) = expr:(subExpressions' ae)
+    subExpressions' expr@(BinaryFPOp _ _ ae1 ae2) = expr:(subExpressions' ae1 ++ subExpressions' ae2)
+    subExpressions' expr@(UnaryFPOp _ _ ae) = expr:(subExpressions' ae)
+    subExpressions' expr@(FFma _ ae1 ae2 ae3) = expr:(subExpressions' ae1
+                                                  ++ subExpressions' ae2
+                                                  ++ subExpressions' ae3)
+    subExpressions' expr@(FMin aes) = expr:(concatMap subExpressions' aes)
+    subExpressions' expr@(FMax aes) = expr:(concatMap subExpressions' aes)
+    subExpressions' expr@(Let letElems letBody) = expr:((concatMap subExprLetElem letElems)++(subExpressions' letBody))
+      where
+        subExprLetElem (_,_,ae) = subExpressions' ae
+    subExpressions' expr@(Ite be ae1 ae2) = expr:(subExpressionsFBExpr be
+                                              ++ subExpressions' ae1
+                                              ++ subExpressions' ae2)
+    subExpressions' expr@(ListIte thenList ae) =  expr:((concatMap subExprThenList thenList)++(subExpressions' ae))
+      where
+        subExprThenList (beThen,aeThen) =  subExpressionsFBExpr beThen ++ subExpressions' aeThen
+    subExpressions' expr@(ForLoop _ idxStart idxEnd initAcc _ _ forBody) = expr:(subExpressions' idxStart
+                                                                             ++ subExpressions' idxEnd
+                                                                             ++ subExpressions' initAcc
+                                                                             ++ subExpressions' forBody)
+    subExpressions' expr = [expr]
+
+subExpressionsFBExpr :: FBExpr -> [FAExpr]
+subExpressionsFBExpr expr = toList $ fromList (subExpressionsFBExpr' expr)
+  where
+    subExpressionsFBExpr' FBTrue = []
+    subExpressionsFBExpr' FBFalse = []
+    subExpressionsFBExpr' (BStructVar _) = []
+    subExpressionsFBExpr' (FOr be1 be2) = subExpressionsFBExpr' be1 ++ subExpressionsFBExpr' be2
+    subExpressionsFBExpr' (FAnd be1 be2) = subExpressionsFBExpr' be1 ++ subExpressionsFBExpr' be2
+    subExpressionsFBExpr' (FNot be) = subExpressionsFBExpr' be
+    subExpressionsFBExpr' (FRel _ ae1 ae2) = subExpressions ae1 ++ subExpressions ae2
+    subExpressionsFBExpr' (IsValid ae) = subExpressions ae
+    subExpressionsFBExpr' (BIsValid be) = subExpressionsFBExpr' be
+    subExpressionsFBExpr' (BValue be) = subExpressionsFBExpr' be
+    subExpressionsFBExpr' (FEPred _ _ _ args) = concatMap subExpressions args
 
 varFLetElem :: FLetElem -> VarName
 varFLetElem = fst3
@@ -833,6 +882,7 @@ simplAExprAux' (BinaryOp MulOp (Rat n) (Int m)) = Just $ Rat (n * fromIntegral m
 simplAExprAux' (BinaryOp MulOp (Rat n) (Rat m)) = Just $ Rat (n*m)
 simplAExprAux' (BinaryOp DivOp      _  (Int 0)) = error $ "Division by 0."
 simplAExprAux' (BinaryOp DivOp      _  (Rat 0)) = error $ "Division by 0."
+simplAExprAux' (BinaryOp DivOp      n       _ ) | isZeroAExpr n = Just $ Int 0
 simplAExprAux' (BinaryOp DivOp (Int n) (Int m)) = Just $ Rat (fromIntegral n/ fromIntegral m)
 simplAExprAux' (BinaryOp DivOp (Int n) (Rat m)) = Just $ Rat (fromIntegral n/m)
 simplAExprAux' (BinaryOp DivOp (Rat n) (Int m)) = Just $ Rat (n / fromIntegral m)
@@ -920,19 +970,19 @@ substituteInAExpr subs = replaceInAExpr (replaceVarWithAExpr subs) (const Nothin
 isExactlyRepresentable :: Rational -> Bool
 isExactlyRepresentable n = toRational(fromRational n :: Double) == n
 
-nextDouble :: Data.Bits.Floating.FloatingBits a w => Rational -> a
+nextDouble :: IEEE a => Rational -> a
 nextDouble f = if isExactlyRepresentable f then fromRational f else
-    nextUp $ fromRational f
+    succIEEE $ fromRational f
 
-prevDouble :: Data.Bits.Floating.FloatingBits a w => Rational -> a
+prevDouble :: IEEE a => Rational -> a
 prevDouble f =  if isExactlyRepresentable f then fromRational f else
-   nextDown $ fromRational f
+   predIEEE $ fromRational f
 
-nextUp' :: (RealFrac a, Data.Bits.Floating.FloatingBits a w) => a -> a
-nextUp' f = if isInt f then f else nextUp f
+nextUp' :: (IEEE a, RealFrac a) => a -> a
+nextUp' f = if isInt f then f else succIEEE f
 
-nextDown' :: (RealFrac a, Data.Bits.Floating.FloatingBits a w) => a -> a
-nextDown' f = if isInt f then f else nextDown f
+nextDown' :: (IEEE a, RealFrac a) => a -> a
+nextDown' f = if isInt f then f else predIEEE f
 
 localVars :: FAExpr -> [(VarName, FAExpr)]
 localVars fae = elimDuplicates (foldFAExpr const varList' varListAExpr' fae [])
@@ -967,6 +1017,7 @@ localVarsBExprStm = elimDuplicates . localVarsBExprStm'
     localVarsBExprStm' (BExpr be) = localVarsBExpr be
     localVarsBExprStm' BUnstWarning = []
 
+localVarsDecl :: Decl -> [(VarName, FAExpr)]
 localVarsDecl (Decl _ _ _ _ expr) = localVars expr
 localVarsDecl (Pred _ _ _ _ expr) = localVarsBExprStm expr
 
@@ -1009,7 +1060,7 @@ funCallListFBExprStm be = elimDuplicates $ foldFBExprStm const funFCallListAcc c
 funCallListFBExprStmWithConds :: RProgram -> FBExprStm -> [FAExpr]
 funCallListFBExprStmWithConds rprog expr = filter hasConds list
    where
-      hasConds (FEFun _ name _ _) = hasConditionals rprog (fromLeft (notFound name)
+      hasConds (FEFun _ name _ _) = hasConditionals True rprog (fromLeft (notFound name)
             $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog))
       hasConds aexpr = error $ "funCallListFBExprStmWithConds: Expression " ++ show aexpr ++ " is not a function call."
       list = funCallListFBExprStm expr
@@ -1024,7 +1075,7 @@ funCallListFAExpr ae = elimDuplicates $ foldFAExpr (\acc be -> acc++(funCallList
 funCallListFAExprWithConds :: RProgram -> FAExpr -> [FAExpr]
 funCallListFAExprWithConds rprog expr = filter hasConds list
    where
-      hasConds (FEFun _ name _ _) = hasConditionals rprog (fromLeft (notFound name)
+      hasConds (FEFun _ name _ _) = hasConditionals True rprog (fromLeft (notFound name)
             $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog))
       hasConds aexpr = error $ "funCallListFBExprStmWithConds: Expression " ++ show aexpr ++ " is not a function call."
       list = funCallListFAExpr expr
@@ -1044,7 +1095,7 @@ predCallListFBExprStm be = elimDuplicates $ foldFBExprStm predFCallListAcc const
 predCallListFBExprStmWithCond :: RProgram -> FBExprStm -> [FBExpr]
 predCallListFBExprStmWithCond rprog expr = filter hasConds list
    where
-      hasConds (FEPred _ _ name _) = hasConditionalsBExpr rprog (fromRight (notFound name)
+      hasConds (FEPred _ _ name _) = hasConditionalsBExpr True rprog (fromRight (notFound name)
             $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog))
       hasConds bexpr = error $ "Predicate expected instead of " ++ show bexpr ++ "."
       list = predCallListFBExprStm expr
@@ -1059,7 +1110,7 @@ predCallListFAExpr ae = elimDuplicates $ foldFAExpr predFCallListAcc const const
 predCallListFAExprWithConds :: RProgram -> FAExpr -> [FBExpr]
 predCallListFAExprWithConds rprog expr = filter hasConds list
    where
-      hasConds (FEPred _ _ name _) = hasConditionalsBExpr rprog (fromRight (notFound name)
+      hasConds (FEPred _ _ name _) = hasConditionalsBExpr True rprog (fromRight (notFound name)
         $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog))
       hasConds bexpr = error $ "Predicate expected instead of " ++ show bexpr ++ "."
       list = predCallListFAExpr expr
@@ -1069,8 +1120,9 @@ predFCallListAcc :: [FBExpr] -> FBExpr -> [FBExpr]
 predFCallListAcc acc fc@FEPred{} = acc++[fc]
 predFCallListAcc acc _           = acc
 
-funHasConds :: RProgram -> FunName -> Bool
-funHasConds rprog name = either (hasConditionals rprog) (hasConditionalsBExpr rprog)
+funHasConds :: CheckFunCalls -> RProgram -> FunName -> Bool
+funHasConds checkFunCalls rprog name = either (hasConditionals checkFunCalls rprog)
+                                              (hasConditionalsBExpr checkFunCalls rprog)
     $ realDeclBody (fromMaybe (notFound name) $ findInRealProg name rprog)
       where
         notFound funName = error $ "Function " ++ show funName ++ " not found in program."
@@ -1347,6 +1399,8 @@ replaceInFBExprStm rg fg (BListIte listThen stmElse) = BListIte (map (bimap (rep
 replaceInFBExprStm rg fg (BExpr be) = BExpr $ replaceInFBExpr rg fg be
 replaceInFBExprStm _ _ BUnstWarning = BUnstWarning
 
+replaceInLetElem rf ff letElem = letElem {letExpr = replaceInAExpr rf ff (letExpr letElem)}
+
 replaceInAExpr :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr) -> AExpr -> AExpr
 replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
   where
@@ -1374,7 +1428,7 @@ replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
     replaceInAExpr' (ErrBinOp op fp ae1 ee1 ae2 ee2) = ErrBinOp op fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
                                                               (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
     replaceInAExpr' (ErrSubSternenz fp ae1 ee1 ae2 ee2) = ErrSubSternenz fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
-                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)    
+                                                              (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
     replaceInAExpr' (ErrUnOp op fp ae1 ee1) = ErrUnOp op fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
     replaceInAExpr' (ErrFloorNoRound fp ae1 ee1) = ErrFloorNoRound fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
     replaceInAExpr' (ErrMulPow2R fp i ee) = ErrMulPow2R fp i (replaceInAExpr rf ff ee)
@@ -1382,10 +1436,9 @@ replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
     replaceInAExpr' (HalfUlp ae fp) = HalfUlp (replaceInAExpr rf ff ae) fp
     replaceInAExpr' (ErrCast fp1 fp2 ae ee) = ErrCast fp1 fp2 (replaceInAExpr rf ff ae) (replaceInAExpr rf ff ee)
     ----------------------
-    replaceInAExpr' (RLet letElems body)     = RLet (map replaceInLetElem letElems) (replaceInAExpr rf ff body)
-      where
-        replaceInLetElem letElem = letElem {letExpr = replaceInAExpr rf ff (letExpr letElem)}
-    replaceInAExpr' (RIte be  thenExpr elseExpr) = RIte be (replaceInAExpr rf ff thenExpr) (replaceInAExpr rf ff elseExpr)
+    replaceInAExpr' (RLet letElems body)     = RLet (map (replaceInLetElem rf ff) letElems) (replaceInAExpr rf ff body)
+
+    replaceInAExpr' (RIte be  thenExpr elseExpr) = RIte (replaceInBExpr rf ff be) (replaceInAExpr rf ff thenExpr) (replaceInAExpr rf ff elseExpr)
     replaceInAExpr' (RListIte listThen elseExpr) = RListIte (map (bimap (replaceInBExpr rf ff) (replaceInAExpr rf ff)) listThen)
                                                             (replaceInAExpr rf ff elseExpr)
     replaceInAExpr' (RForLoop fp idxStart idxEnd initAcc idx acc body) = RForLoop fp (replaceInAExpr rf ff idxStart)
@@ -1403,6 +1456,17 @@ replaceInBExpr rg fg (Rel rel  ae1 ae2) = Rel rel  (replaceInAExpr rg fg ae1) (r
 replaceInBExpr rg fg (EPred f args) = EPred f (map (replaceInAExpr rg fg) args)
 replaceInBExpr  _ _ BTrue  = BTrue
 replaceInBExpr  _ _ BFalse = BFalse
+
+replaceInBExprStm :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr) -> BExprStm -> BExprStm
+replaceInBExprStm rg fg (RBLet letElems stmElse) = RBLet (map (replaceInLetElem rg fg) letElems) (replaceInBExprStm rg fg stmElse)
+replaceInBExprStm rg fg (RBIte be stmThen stmElse) = RBIte (replaceInBExpr rg fg be)
+                                                           (replaceInBExprStm rg fg stmThen)
+                                                           (replaceInBExprStm rg fg stmElse)
+replaceInBExprStm rg fg (RBListIte listThen stmElse) = RBListIte (map (bimap (replaceInBExpr rg fg)
+                                                                             (replaceInBExprStm rg fg)) listThen)
+                                                                (replaceInBExprStm rg fg stmElse)
+replaceInBExprStm rg fg (RBExpr be) = RBExpr $ replaceInBExpr rg fg be
+
 
 replaceVarWithAExpr :: [(VarName, AExpr)] -> AExpr -> Maybe AExpr
 replaceVarWithAExpr ((y,ae):subs) var@(Var _ x) | x == y = Just ae
@@ -1423,9 +1487,10 @@ isZeroFAExpr (TypeCast _ _ ae)   = isZeroFAExpr ae
 isZeroFAExpr _ = False
 
 isZeroAExpr :: AExpr -> Bool
-isZeroAExpr (Int 0)            = True
+isZeroAExpr (Int 0) = True
 isZeroAExpr (FromFloat _ (FInt 0)) = True
-isZeroAExpr (Rat r)         = r == toRational (0 :: Integer)
+isZeroAExpr (ErrRat r) = r == toRational (0 :: Integer)
+isZeroAExpr (Rat r) = r == toRational (0 :: Integer)
 isZeroAExpr _ = False
 
 errVar :: FAExpr -> AExpr
@@ -1510,55 +1575,137 @@ listFPGuards fae = foldFAExpr const fpGuardList' fpGuardListAExpr' fae []
     fpGuardListAExpr' :: [FAExpr] -> AExpr -> [FAExpr]
     fpGuardListAExpr' acc _ = acc
 
-
-buildListIsFiniteCheck :: [Arg] -> Either FAExpr FBExprStm -> [FAExpr]
-buildListIsFiniteCheck args expr = elimDuplicates $ map arg2var (filter isArgFP args)
-
-
-hasConditionals :: RProgram -> AExpr -> Bool
-hasConditionals _ (Int _) = False
-hasConditionals _ (Rat _) = False
-hasConditionals _ (Var _ _) = False
-hasConditionals _ (ArrayElem _ _ _ _) = False
-hasConditionals prog (BinaryOp _ e1 e2) = hasConditionals prog e1 || hasConditionals prog e2
-hasConditionals prog (UnaryOp _ e) = hasConditionals prog e
-hasConditionals prog (Min es) = foldl1 (||) (map (hasConditionals prog) es)
-hasConditionals prog (Max es) = foldl1 (||) (map (hasConditionals prog) es)
-hasConditionals prog (RLet letElems expr) = hasConditionals prog expr
-                                            || foldl1 (||) (map ((hasConditionals prog) . letExpr) letElems)
-hasConditionals _ (RIte _ _ _) = True
-hasConditionals _ (RListIte _ _) = True
-hasConditionals prog (RForLoop _ _ _ _ _ _ forBody) = hasConditionals prog forBody
-hasConditionals prog (EFun f _ _) = applyFunToRDeclBody (hasConditionals prog)
-                                                        (hasConditionalsBExpr prog)
-                                                        body
+hasConditionals :: CheckFunCalls -> RProgram -> AExpr -> Bool
+hasConditionals _ _ (Int _) = False
+hasConditionals _ _ (Rat _) = False
+hasConditionals _ _ (Var _ _) = False
+hasConditionals _ _ (ArrayElem _ _ _ _) = False
+hasConditionals checkFunCalls prog (BinaryOp _ e1 e2) = hasConditionals checkFunCalls prog e1 ||
+                                                        hasConditionals checkFunCalls prog e2
+hasConditionals checkFunCalls prog (UnaryOp _ e) = hasConditionals checkFunCalls prog e
+hasConditionals checkFunCalls prog (Min es) = foldl1 (||) (map (hasConditionals checkFunCalls prog) es)
+hasConditionals checkFunCalls prog (Max es) = foldl1 (||) (map (hasConditionals checkFunCalls prog) es)
+hasConditionals checkFunCalls prog (RLet letElems expr) =
+  hasConditionals checkFunCalls prog expr ||
+  foldl1 (||) (map ((hasConditionals checkFunCalls prog) . letExpr) letElems)
+hasConditionals _ _ (RIte _ _ _) = True
+hasConditionals _ _  (RListIte _ _) = True
+hasConditionals checkFunCalls prog (RForLoop _ _ _ _ _ _ forBody) = hasConditionals checkFunCalls prog forBody
+hasConditionals checkFunCalls prog (EFun f _ _) =
+  if checkFunCalls
+  then applyFunToRDeclBody (hasConditionals checkFunCalls prog)
+                           (hasConditionalsBExpr checkFunCalls prog) body
+  else False
    where
       body = fromMaybe (error $ "Function " ++ show f ++ " not found.")
                  $ findInRealProg f prog
-hasConditionals _ expr = error $ "hasConditionals not defined for expression " ++ show expr ++ "."
+hasConditionals _ _ expr = error $ "hasConditionals not defined for expression " ++ show expr ++ "."
 
 
-hasConditionalsBExpr :: RProgram -> BExprStm -> Bool
-hasConditionalsBExpr _ (RBIte _ _ _) = True
-hasConditionalsBExpr _ (RBListIte _ _) = True
-hasConditionalsBExpr prog (RBLet letElems body) = hasConditionalsBExpr prog body
-                                                  || foldl1 (||) (map ((hasConditionals prog) . letExpr) letElems)
-hasConditionalsBExpr prog (RBExpr be) = hasConditionalsBExpr' be
+hasConditionalsBExpr :: CheckFunCalls -> RProgram -> BExprStm -> Bool
+hasConditionalsBExpr _ _ (RBIte _ _ _) = True
+hasConditionalsBExpr _ _ (RBListIte _ _) = True
+hasConditionalsBExpr checkFunCalls prog (RBLet letElems body) =
+  hasConditionalsBExpr checkFunCalls prog body ||
+  foldl1 (||) (map ((hasConditionals checkFunCalls prog) . letExpr) letElems)
+hasConditionalsBExpr checkFunCalls prog (RBExpr be) = hasConditionalsBExpr' checkFunCalls be
   where
-    hasConditionalsBExpr' BTrue  = False
-    hasConditionalsBExpr' BFalse = False
-    hasConditionalsBExpr' (Or  be1 be2) = hasConditionalsBExpr' be1 ||
-                                          hasConditionalsBExpr' be2
-    hasConditionalsBExpr' (And be1 be2) = hasConditionalsBExpr' be1 ||
-                                          hasConditionalsBExpr' be2
-    hasConditionalsBExpr' (Not be1) = hasConditionalsBExpr' be1
-    hasConditionalsBExpr' (Rel _ ae1 ae2) = hasConditionals prog ae1 ||
-                                            hasConditionals prog ae2
-    hasConditionalsBExpr' (EPred f _) = applyFunToRDeclBody (hasConditionals prog)
-                                          (hasConditionalsBExpr prog) body
-      where
-        body = fromMaybe (error $ "Function " ++ show f ++ " not found.")
+    hasConditionalsBExpr' _ BTrue  = False
+    hasConditionalsBExpr' _ BFalse = False
+    hasConditionalsBExpr' checkFunCalls (Or  be1 be2) = hasConditionalsBExpr' checkFunCalls be1 ||
+                                                        hasConditionalsBExpr' checkFunCalls be2
+    hasConditionalsBExpr' checkFunCalls (And be1 be2) = hasConditionalsBExpr' checkFunCalls be1 ||
+                                                        hasConditionalsBExpr' checkFunCalls be2
+    hasConditionalsBExpr' checkFunCalls (Not be1) = hasConditionalsBExpr' checkFunCalls be1
+    hasConditionalsBExpr' checkFunCalls (Rel _ ae1 ae2) = hasConditionals checkFunCalls prog ae1 ||
+                                                          hasConditionals checkFunCalls prog ae2
+    hasConditionalsBExpr' checkFunCalls (EPred f _) =
+      if checkFunCalls
+      then applyFunToRDeclBody (hasConditionals checkFunCalls prog)
+                               (hasConditionalsBExpr checkFunCalls prog) body
+      else False
+        where
+          body = fromMaybe (error $ "Function " ++ show f ++ " not found.")
                  $ findInRealProg f prog
+
+renameInLetElem :: VarSubs -> LetElem -> LetElem
+renameInLetElem subs letElem = letElem {letVar = newLetVar
+                                        ,letExpr = renameVarsAExpr subs (letExpr letElem)}
+  where
+    newLetVar = if (take 4 (letVar letElem)) == "Err_"
+                then case lookup (drop 4 (letVar letElem)) subs of
+                      Nothing -> letVar letElem
+                      Just y -> "Err_" ++ y
+                else case lookup (letVar letElem) subs of
+                      Nothing -> letVar letElem
+                      Just y -> y
+
+renameVar :: VarSubs -> AExpr -> Maybe AExpr
+renameVar subs (RLet letElems expr) = Just $ RLet (map (renameInLetElem subs) letElems) (renameVarsAExpr subs expr)
+
+renameVar subs (ArrayElem t size x expr) = Just $ ArrayElem t size newVarName (renameVarsAExpr subs expr)
+  where
+    newVarName = case lookup x subs of
+                  Nothing -> x
+                  Just y -> y
+
+renameVar subs (Var t x) =  if (take 4 x) == "Err_"
+                            then case lookup (drop 4 x) subs of
+                                  Nothing -> Nothing
+                                  Just y -> Just $ Var t ("Err_" ++ y)
+                            else case lookup x subs of
+                                  Nothing -> Nothing
+                                  Just y -> Just $ Var t y
+
+renameVar subs (RealMark x) = case lookup x subs of
+                                  Nothing -> Nothing
+                                  Just y -> Just $ RealMark y
+renameVar subs (ErrorMark x t) = case lookup x subs of
+                                  Nothing -> Nothing
+                                  Just y -> Just $ ErrorMark y t
+renameVar _ _ = Nothing
+
+renameInFLetElem :: VarSubs -> FLetElem -> FLetElem
+renameInFLetElem subs (varName, t, ae) = (newVarName, t, renameVarsFAExpr subs ae)
+  where
+    newVarName = case lookup varName subs of
+                  Nothing -> varName
+                  Just y -> y
+
+renameFVar :: VarSubs -> FAExpr -> Maybe FAExpr
+renameFVar subs (Let letElems expr) = Just $ Let (map (renameInFLetElem subs) letElems) (renameVarsFAExpr subs expr)
+
+renameFVar subs (FArrayElem t size x expr) = Just $ FArrayElem t size newVarName (renameVarsFAExpr subs expr)
+  where
+    newVarName = case lookup x subs of
+                  Nothing -> x
+                  Just y -> y
+
+renameFVar subs (FVar t x) = case lookup x subs of
+                                  Nothing -> Nothing
+                                  Just y -> Just $ FVar t y
+
+renameFVar _ _ = Nothing
+
+renameVarsAExpr :: VarSubs -> AExpr -> AExpr
+renameVarsAExpr subs expr = replaceInAExpr (renameVar subs) (renameFVar subs) expr
+
+renameVarsFAExpr :: VarSubs -> FAExpr -> FAExpr
+renameVarsFAExpr subs expr = replaceInFAExpr (renameVar subs) (renameFVar subs) expr
+
+renameVarsBExpr :: VarSubs -> BExpr -> BExpr
+renameVarsBExpr subs expr = replaceInBExpr (renameVar subs) (renameFVar subs) expr
+
+renameVarsBExprStm :: VarSubs -> BExprStm -> BExprStm
+renameVarsBExprStm subs (RBLet letElems expr) = RBLet (map (renameInLetElem subs) letElems) (renameVarsBExprStm subs expr)
+renameVarsBExprStm subs expr = replaceInBExprStm (renameVar subs) (renameFVar subs) expr
+
+renameVarsFBExpr :: VarSubs -> FBExpr -> FBExpr
+renameVarsFBExpr subs expr = replaceInFBExpr (renameVar subs) (renameFVar subs) expr
+
+renameVarsFBExprStm :: VarSubs -> FBExprStm -> FBExprStm
+renameVarsFBExprStm subs (BLet letElems expr) = BLet (map (renameInFLetElem subs) letElems) (renameVarsFBExprStm subs expr)
+renameVarsFBExprStm subs expr = replaceInFBExprStm (renameVar subs) (renameFVar subs) expr
 
 -----------------------
 -- PPExt instances --

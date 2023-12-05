@@ -1,8 +1,8 @@
 bbiadp_mul: THEORY
 BEGIN
 
-  IMPORTING interval_ulp_dp,
-  	    float@aerr754dp_mul
+  importing interval_ulp_dp
+  importing axm_bnd@aerr_ulp__double
 
   R1,E1,R2,E2: VAR Interval
 
@@ -11,20 +11,26 @@ BEGIN
     THEN Add(Add(Add(Mult(Abs(R1),E2),Mult(Abs(R2),E1)),Mult(E1,E2)),
              Div(Ulp_dp(
 	          Add(
-		   Mult(Abs(R1),Abs(R2)),
-	           Add(Add(Mult(Abs(R1),E2),Mult(Abs(R2),E1)),Mult(E1,E2)))),
+		    Add(Add(Mult(Abs(R1),Abs(R2)),Mult(Abs(R1),E2)), Mult(E1,Abs(R2))),
+		    Mult(E1,E2))
+		 ),
 		 [|2|]))
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2,re3,re4: VAR RealExpr
 
   x1,x2,x3,x4: VAR real
 
   aebounddp_mul_safe(x1,x2,x3,x4): real =
-    IF x2 < 0 OR x4 < 0 THEN 1
-    ELSE aebounddp_mul(x1,x2,x3,x4) ENDIF
+    IF x2 >= 0 AND x4 >= 0
+    THEN aerr_ulp_mul(x1,x2,x3,x4)
+    ELSE 1
+    ENDIF
 
+  %|-   AEB_MUL_inclusion_j : PROOF
+  %|- (branch (prove-inclusion-judgement)  ((grind)))
+  %|- QED   AEB_MUL_inclusion_j 
   AEB_MUL_inclusion_j: JUDGEMENT
     aebounddp_mul_ia
     HAS_TYPE (Inclusion4?( Any?,
@@ -32,7 +38,7 @@ BEGIN
 			   Any3?,
 			   pre1to4d(NonNeg?),
 			   aebounddp_mul_safe ))
-               
+
   AEB_MUL_fundmental_j: JUDGEMENT
     aebounddp_mul_ia
     HAS_TYPE (Fundamental4?(Any?,pre1to2b(NonNeg?), Any3?,pre1to4d(NonNeg?)))
@@ -55,26 +61,29 @@ BEGIN
   % --- special cases: multiplication by power of two
 
   % Contrary to the cases of the trigonometric functions where n represents the
-  % precision used to calculate the function, here n represents the power of 
+  % precision used to calculate the function, here n represents the power of
   % two participating in the multiplication.
-  
+
   aebounddp_mul_p2l_ia(n:nat)(E1): Interval =
-    If NonNeg?(E1) 
+    If NonNeg?(E1)
     THEN Mult([|2^n|],E1)
     ELSE EmptyInterval
     ENDIF
 
   aebounddp_mul_p2l_safe(n:nat)(x1): real =
-    IF x1 < 0 THEN 1
-    ELSE aebounddp_mul_p2l(n,x1) ENDIF
+    IF x1 >= 0
+    THEN aerr_ulp_mul_p2l(n,x1)
+    ELSE 1 ENDIF
 
   n: VAR nat
 
+  %|-   AEB_MUL_P2L_inclusion_j : PROOF
+  %|- (prove-inclusion-judgement)
+  %|- QED   AEB_MUL_P2L_inclusion_j 
   AEB_MUL_P2L_inclusion_j: JUDGEMENT
     aebounddp_mul_p2l_ia(n)
     HAS_TYPE (Inclusion?( NonNeg?,
 			  aebounddp_mul_p2l_safe(n)))
-
 
   AEB_MUL_P2L_j: JUDGEMENT
     aebounddp_mul_p2l_ia(n)
@@ -88,15 +97,19 @@ BEGIN
   %
 
   aebounddp_mul_p2r_ia(n:nat)(E1): Interval =
-    If NonNeg?(E1) 
+    If NonNeg?(E1)
     THEN Mult(E1,[|2^n|])
     ELSE EmptyInterval
     ENDIF
 
   aebounddp_mul_p2r_safe(n:nat)(x1): real =
-    IF x1 < 0 THEN 1
-    ELSE aebounddp_mul_p2r(n,x1) ENDIF
+    IF x1 >= 0
+    THEN aerr_ulp_mul_p2r(n,x1)
+    ELSE 1 ENDIF
 
+  %|-   AEB_MUL_P2R_inclusion_j : PROOF
+  %|- (prove-inclusion-judgement)
+  %|- QED   AEB_MUL_P2R_inclusion_j 
   AEB_MUL_P2R_inclusion_j: JUDGEMENT
     aebounddp_mul_p2r_ia(n)
     HAS_TYPE (Inclusion?( NonNeg?,

@@ -1,0 +1,7 @@
+(FPCore kahan (y)
+  :name "Kahan's Monster"
+  :pre (<= 1 y 9999) ; Integers only in Kahan's example but this is not essential
+  (let ([Qx (- (fabs (- y (sqrt (+ (* y y) 1))))
+               (/ 1  (+ y (sqrt (+ (* y y) 1)))))])
+    (let ([z (* Qx Qx)])
+      (if (== z 0) 1 (/ (- (exp z) 1) z)))))

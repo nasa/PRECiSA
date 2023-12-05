@@ -17,7 +17,7 @@
 
 module Main where
 
-import qualified Precisa
+import qualified PRECiSA
 
 main :: IO ()
-main = Precisa.main
+main = PRECiSA.main

@@ -11,9 +11,12 @@
 {-# LANGUAGE DisambiguateRecordFields #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Precisa where
+module PRECiSA
+  ( main,
+    computeAllErrorsInKodiak,
+  )
+where
 
-import qualified Data.List as List
 import AbsPVSLang
 import AbsSpecLang
 import AbstractSemantics
@@ -21,15 +24,15 @@ import AbstractDomain
 import Common.DecisionPath
 import Common.ControlFlow
 import Control.Monad.Except
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe,fromJust)
 import ErrM
+import FPCore.FPCorePrinter
 import PVSTypes
-import FramaC.PrettyPrint
-import FramaC.PrecisaPrelude
 import Options
 import PPExt
 import Kodiak.Runner
 import Kodiak.Runnable
+import MapFPCoreLangAST
 import qualified Kodiak.Paver as KP
 import Prelude hiding ((<>))
 import PVSCert
@@ -37,106 +40,11 @@ import Parser.Parser
 import SMT.SMT
 import System.Directory
 import System.FilePath
-import Transformation
-import TransformationUtils
 import Translation.Float2Real
-import Translation.Real2Float
+import Debug.Trace
 
 main :: IO ()
-main = do
-  cmd <- parseOptions
-  case cmd of
-    Options (Analyze  options) -> parseAndAnalyze options
-    Options (Generate options) -> generateCProg   options
-
-printVersion :: String -> IO ()
-printVersion prgname = do
-    putStr " ("
-    putStr prgname
-    putStr ")"
-
-parseRealProg :: FilePath -> IO RProgram
-parseRealProg fileprog = do
-  errparseProg <- parseFileToRealProgram fileprog
-  errify error errparseProg
-
-generateCProg :: GenerateOptions -> IO ()
-generateCProg
-  GenerateOptions
-    { optRealProgramFile     = prog
-    , optRealInputRangeFile  = inputs
-    , targetFormat           = fprec }
-  = case fprec of
-    "double" ->  real2FPC prog inputs FPDouble
-    "single" ->  real2FPC prog inputs FPSingle
-    _ -> error ""
-
-
-real2FPC :: FilePath -> FilePath -> PVSType -> IO ()
-real2FPC fileprog filespec fp = do
-  realProg <- parseRealProg fileprog
-
-  -- fp progam
-  let decls = real2fpProg fp realProg
-  errparseSpec <- parseFileToSpec decls filespec
-  spec <- errify fail errparseSpec
-  let dpsNone = map initDpsToNone decls
-
-  -- transfromed program --
-  let tranProgTuples = transformProgramSymb realProg decls
-
-  -- program semantics
-  let progSemStable = fixpointSemantics decls (botInterp decls) 3 semConf dpsNone
-  let progStableConds = map (stableConditions . semantics) progSemStable
-  let progSymbRoundOffErrs = map (maxRoundOffError . semantics) progSemStable
-
-  let maxBBDepth = 7
-  let prec = 14
-  let searchParams = KP.SP { maximumDepth = fromInteger . toInteger $ maxBBDepth
-                           , minimumPrecision = fromInteger . toInteger $ prec }
-  results <- computeAllErrorsInKodiak progSemStable spec searchParams
-  -- numerical round-off errors declarations
-  let numROErrorsDecl =  summarizeAllStableErrors (getKodiakResults results)
-
-  -- symbolic round-off errors error vars
-  let roErrorsDecl = zip (map fst progSemStable) (zip progSymbRoundOffErrs progStableConds)
-
-  -- numerical round-off errors error vars
-  funErrEnv <- mapM (computeErrorGuards spec progSemStable) tranProgTuples
-
-  let framaCfileContent = genFramaCFile fp spec realProg decls tranProgTuples roErrorsDecl numROErrorsDecl
-                                        funErrEnv progSemStable
-  writeFile framaCfile (render framaCfileContent)
-
-  writeFile precisaPreludeFile (render precisaPreludeContent)
-
-  writeFile pvsProgFile (render $ genFpProgFile fp fpFileName decls)
-
-  let symbCertificate = render $ genCertFile fpFileName certFileName inputFileName decls progSemStable
-  writeFile certFile symbCertificate
-
-  let numCertificate = render $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec True
-  writeFile numCertFile numCertificate
-
-  let guardExpressionsCert = render $ genExprCertFile fp inputFileName fpFileName exprCertFileName (vcat (map (printExprFunCert fp) funErrEnv))
-  writeFile exprCertFile guardExpressionsCert
-  putStrLn $ "PRECiSA: instrumented C code and PVS certificate generated in " ++ filePath ++ "."
-
-  return ()
-    where
-      precisaPreludeFile = filePath ++ "precisa_prelude.c"
-      inputFileName = takeBaseName fileprog
-      fpFileName = inputFileName ++ "_fp"
-      filePath = dropFileName fileprog
-      framaCfile = filePath ++ inputFileName ++ ".c"
-      pvsProgFile = filePath ++ fpFileName ++ ".pvs"
-      certFileName = "cert_" ++ inputFileName
-      numCertFileName = inputFileName ++ "_num_cert"
-      exprCertFileName = inputFileName ++ "_expr_cert"
-      exprCertFile = filePath ++ exprCertFileName ++ ".pvs"
-      certFile =  filePath ++ certFileName ++ ".pvs"
-      numCertFile =  filePath ++ numCertFileName ++ ".pvs"
-      semConf = SemConf {improveError = False, assumeTestStability = True, mergeUnstables = True}
+main = parseOptions >>= parseAndAnalyze
 
 initDpsToNone :: Decl -> (FunName, [LDecisionPath])
 initDpsToNone (Decl _ _ f _ _) = (f,[])
@@ -146,12 +54,18 @@ initDpsToAll :: Decl -> (FunName, [LDecisionPath])
 initDpsToAll (Decl _ _ f _ _) = (f,[root])
 initDpsToAll (Pred _ _ f _ _) = (f,[root])
 
-parseAndAnalyze :: AnalyzeOptions -> IO ()
+renderPVS :: Doc -> String
+renderPVS = renderStyle Style{mode = LeftMode, lineLength = 80, ribbonsPerLine = 2.0}
+
+parseAndAnalyze :: Options -> IO ()
 parseAndAnalyze
-  AnalyzeOptions
+  Options
           { optProgramFile          = fileprog
           , optInputRangeFile       = filespec
           , optPathFile             = filedps
+          , optParseFPCore          = parsefpcore
+          , optParseFPCoreSpec      = parsefpcorespec
+          , optPrintFPCore          = printfpcore
           , optImproveError         = impErr
           , optWithPaving           = withPaving
           , optMaxDepth             = maxBBDepth
@@ -161,10 +75,22 @@ parseAndAnalyze
           , optAssumeStability      = sta
           , optNoCollapsedUnstables = notMu
           , optSMTOptimization      = useSMT } = do
-  errparseProg <- parseFileToProgram fileprog
+  errparseProg <- if parsefpcore
+                  then do
+                    parseFileToFPCoreProgram fileprog
+                  else do
+                    parseFileToProgram fileprog
   decls <- errify error errparseProg
-  errparseSpec <- parseFileToSpec decls filespec
-  spec <- errify fail errparseSpec
+  spec <- if parsefpcorespec
+          then do
+            if parsefpcore
+            then
+              parseFileToFPCoreSpec fileprog
+            else
+              error $ "Cannot parse FPCore as spec unless also parsed as program"
+          else do
+            errparseSpec <- parseFileToSpec decls filespec
+            errify fail errparseSpec
   dps <- if noCollapsedStables
          then return $ map initDpsToAll decls
          else if null filedps
@@ -172,33 +98,36 @@ parseAndAnalyze
          else do
            errparseTargetDPs <- parseFileToTargetDPs filedps
            errify fail errparseTargetDPs
+
   -------------
   let progSem = fixpointSemantics decls (botInterp decls) 3 semConf dps
   checkProgSize progSem 0 maxel
-  let symbCertificates = render $ genCertFile inputFileName certFileName realProgFileName decls progSem
+  let symbCertificates = renderPVS $ genCertFile inputFileName certFileName realProgFileName decls progSem
   writeFile certFile symbCertificates
   let realProgDoc = genRealProgFile inputFileName  realProgFileName (fp2realProg decls)
-  writeFile realProgFile (render realProgDoc)
+  writeFile realProgFile (renderPVS realProgDoc)
   -------------- just for batch mode
   putStrLn "********************************************************************"
   putStrLn "****************************** PRECiSA *****************************"
   putStrLn ""
   let searchParams = KP.SP { maximumDepth = fromInteger . toInteger $ maxBBDepth
                            , minimumPrecision = fromInteger . toInteger $ prec }
-  let rawPgmSemUlp = initErrVars progSem
-  let pgmSemUlp = removeInfiniteCebS rawPgmSemUlp
+  let pgmSemUlp = removeInfiniteCebS progSem
 
   filteredPgmSemUlp <- if useSMT
     then do createDirectoryIfMissing True filePathSMT
-            filterUnsatCebs filePathSMT pgmSemUlp spec
+            filterUnsatCebs (KP.maximumDepth searchParams) (KP.minimumPrecision searchParams) filePathSMT pgmSemUlp spec
     else return pgmSemUlp
 
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
   results <- computeAllErrorsInKodiak unfoldedPgmSem spec searchParams
   let resultSummary = summarizeAllErrors (getKodiakResults results)
   printAllErrors resultSummary
-  let numCertificate = render $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
+  let numCertificate = renderPVS $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
   writeFile numCertFile numCertificate
+  if printfpcore
+  then do putStrLn $ renderPVS $ fpcprintProgram decls spec
+  else return ()
   putStrLn ""
   -------------- just for batch mode
   putStrLn "********************************************************************"
@@ -215,7 +144,6 @@ parseAndAnalyze
       mapM_ (\(fun,file) -> putStrLn $ "Paving for function " ++ fun ++ " generated in: " ++ file) pavingFiles
     where
       mu = not notMu
-      collapseStables = not noCollapsedStables
       semConf = SemConf {improveError = impErr, assumeTestStability = sta, mergeUnstables = mu}
       inputFileName = takeBaseName fileprog
       filePath = dropFileName fileprog
@@ -245,11 +173,6 @@ summarizeAllErrors errorMap = map aux errorMap
          if null unstableCases then []
          else [(Unstable, maximum $ map (maximumUpperBound . snd) unstableCases)])
 
-summarizeAllStableErrors :: [(String, [(ControlFlow, KodiakResult)])] -> [(String, Double)]
-summarizeAllStableErrors errorMap = map aux errorMap
-  where
-    aux (f, results) = (f,maximum $ map (maximumUpperBound . snd) (filter ((== Stable) . fst) results))
-
 printAllErrors :: [(String,[(ControlFlow,Double)])] -> IO ()
 printAllErrors = mapM_ printFunction
   where
@@ -267,13 +190,15 @@ computeAllErrorsInKodiak :: Interpretation
                          -> IO [(String,PVSType,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])]
 computeAllErrorsInKodiak interp (Spec specBinds) searchParams = mapM runFunction functionNames
   where
-    functionNames = map fst functionBindingsMap
+    declInterps = filter isDeclInterp interp
+    functionNames = map fst declInterps
     functionBindingsMap = map (\(SpecBind f b) -> (f,b)) specBinds
-    functionErrorExpressionsMap = map toPathFlowErrorTuple interp
+    functionErrorExpressionsMap = map toPathFlowErrorTuple declInterps
       where
         toPathFlowErrorTuple (f,(_,fp,args,acebs)) = (f,map (\x -> (fp,args,aceb2PathFlowErrorTuple x)) acebs)
           where
-            aceb2PathFlowErrorTuple aceb = (conds aceb, decisionPath aceb, cFlow aceb, eExpr aceb, fpExprs aceb, rExprs aceb)
+            aceb2PathFlowErrorTuple aceb = (conds aceb, decisionPath aceb, cFlow aceb,
+              fromJust $ eExpr aceb, fDeclRes $ fpExprs aceb, rDeclRes $ rExprs aceb)
 
     runFunction fname = do
       results <- mapM runErrorExpression $

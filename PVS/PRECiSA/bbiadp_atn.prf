@@ -1,198 +1,63 @@
 (bbiadp_atn
  (AEB_ATN_inclusion_j 0
   (AEB_ATN_inclusion_j-1 nil 3699960369
-   ("" (expand "Inclusion2?")
-    (("" (skeep*)
-      (("" (expand "aebounddp_atn_ia")
-        (("" (expand "aebounddp_atn_safe")
-          (("" (lift-if)
-            (("" (split)
-              (("1" (flatten)
-                (("1" (lift-if)
-                  (("1" (split)
-                    (("1" (flatten)
-                      (("1" (expand "aebounddp_atn")
-                        (("1" (use "Add_inclusion")
-                          (("1" (split -1)
-                            (("1" (propax) nil nil)
-                             ("2" (hide 2)
-                              (("2"
-                                (expand "atn_aerr_bound")
-                                (("2" (propax) nil nil))
-                                nil))
-                              nil)
-                             ("3" (hide 2)
-                              (("3"
-                                (use "Div_inclusion")
-                                (("3"
-                                  (assert)
-                                  (("3"
-                                    (hide 2)
-                                    (("3"
-                                      (split 1)
-                                      (("1"
-                                        (expand "atn_ulp_bound")
-                                        (("1"
-                                          (use "Ulp_dp_inclusion")
-                                          (("1"
-                                            (assert)
-                                            (("1"
-                                              (hide 2)
-                                              (("1"
-                                                (use "Atan_inclusion")
-                                                (("1"
-                                                  (assert)
-                                                  (("1"
-                                                    (hide 2)
-                                                    (("1"
-                                                      (use
-                                                       "Add_inclusion")
-                                                      (("1"
-                                                        (assert)
-                                                        (("1"
-                                                          (use
-                                                           "Abs_inclusion")
-                                                          (("1"
-                                                            (assert)
-                                                            nil
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil)
-                                       ("2" (eval-formula) nil nil)
-                                       ("3" (eval-formula) nil nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil)
-                     ("2" (flatten)
-                      (("2" (typepred "X2")
-                        (("2" (expand "pre1to2b")
-                          (("2" (propax) nil nil)) nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil)
-               ("2" (flatten)
-                (("2" (hide 2)
-                  (("2" (typepred "X2")
-                    (("2" (expand "pre1to2b")
-                      (("2" (expand "NonNeg?")
-                        (("2" (expand "Ge")
-                          (("2" (flatten)
-                            (("2" (expand "##")
-                              (("2"
-                                (flatten)
-                                (("2" (assert) nil nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil))
-              nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
+   ("" (prove-inclusion-judgement) nil)
    ((TRUE const-decl "bool" booleans nil)
     (bool nonempty-type-eq-decl nil booleans nil)
     (boolean nonempty-type-decl nil booleans nil)
     (aebounddp_atn_safe const-decl "real" bbiadp_atn nil)
     (NOT const-decl "[bool -> bool]" booleans nil)
-    (Add_inclusion formula-decl nil interval "interval_arith/")
-    (atn_ulp_bound const-decl "real" accum_err_atn "float/")
-    (ulp_dp const-decl "nonneg_real" ieee754dp "float/")
+    (Add_inclusion formula-decl nil interval interval_arith) nil nil
     (/ const-decl "[numfield, nznum -> numfield]" number_fields nil)
     (nznum nonempty-type-eq-decl nil number_fields nil)
     (/= const-decl "boolean" notequal nil)
-    (numfield nonempty-type-eq-decl nil number_fields nil)
-    (atn_aerr_bound const-decl "nonneg_real" accum_err_atn "float/")
-    (RtoD const-decl "{f: unb_double | closest_double?(x1)(f)}"
-     ieee754dp "float/")
-    (closest_double? const-decl "bool" ieee754dp "float/")
-    (unb_double type-eq-decl nil ieee754dp "float/")
-    (Fcanonic? const-decl "bool" float "float/")
-    (dp_closest? const-decl "bool" ieee754dp "float/")
-    (Fbounded? const-decl "bool" float "float/")
-    (float type-eq-decl nil float "float/")
-    (double_precision_format const-decl "Format" ieee754dp "float/")
-    (Format type-eq-decl nil float "float/")
+    (numfield nonempty-type-eq-decl nil number_fields nil) nil nil nil
+    nil nil nil nil nil nil nil
     (above nonempty-type-eq-decl nil integers nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    ([\|\|] const-decl "Interval" interval "interval_arith/")
-    (Abs const-decl "(NonNeg?)" interval "interval_arith/")
-    (Add const-decl "Interval" interval "interval_arith/")
-    (Atan const-decl "Interval" interval_trig "interval_arith/")
+    (nonneg_real nonempty-type-eq-decl nil real_types nil) nil
+    (Abs const-decl "(NonNeg?)" interval interval_arith)
+    (Add const-decl "Interval" interval interval_arith)
+    (Atan const-decl "Interval" interval_trig interval_arith)
     (nat nonempty-type-eq-decl nil naturalnumbers nil)
     (int nonempty-type-eq-decl nil integers nil)
     (integer_pred const-decl "[rational -> boolean]" integers nil)
     (rational nonempty-type-from-decl nil rationals nil)
     (rational_pred const-decl "[real -> boolean]" rationals nil)
     (Ulp_dp const-decl "Interval" interval_ulp_dp nil)
-    (Div const-decl "Interval" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
+    (Div const-decl "Interval" interval interval_arith)
+    (Any? const-decl "bool" interval interval_arith)
+    (NonNeg? const-decl "bool" interval interval_arith)
+    (pre1to2b const-decl "(Precondition2?)" interval interval_arith)
+    (Precondition2? const-decl "bool" interval interval_arith)
+    (Precondition? const-decl "bool" interval interval_arith)
     (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
-    (x2 skolem-const-decl "real" bbiadp_atn nil)
+    (Interval type-eq-decl nil interval interval_arith) nil
     (>= const-decl "bool" reals nil)
     (real nonempty-type-from-decl nil reals nil)
     (real_pred const-decl "[number_field -> boolean]" reals nil)
     (number_field nonempty-type-from-decl nil number_fields nil)
     (number_field_pred const-decl "[number -> boolean]" number_fields
      nil)
-    (number nonempty-type-decl nil numbers nil)
-    (dp_closest?_closestroundingpred_j name-judgement
-     "ClosestRoundingPred[2](double_precision_format)" ieee754dp
-     "float/")
-    (dp_closest?_j name-judgement
-     "{round: RestrictedRounding[2](double_precision_format, EvenClosest?) |
-         rounded_mode?(double_precision_format)(round)}" ieee754dp
-     "float/")
-    (rtos_canonicroundfun_exactrepconservation_j name-judgement
-     "{RtoF: CanonicRoundingFun(double_precision_format, dp_closest?) |
-         exact_rep_conservation[2]
-             (double_precision_format, dp_closest?)(RtoF)}" ieee754dp
-     "float/")
+    (number nonempty-type-decl nil numbers nil) nil nil nil
     (nnreal_div_posreal_is_nnreal application-judgement "nnreal"
      real_types nil)
-    (gt_realorder name-judgement "RealOrder" real_orders "reals/")
+    (gt_realorder name-judgement "RealOrder" real_orders reals)
     (real_gt_is_strict_total_order name-judgement
      "(strict_total_order?[real])" real_props nil)
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (ge_realorder name-judgement "RealOrder" real_orders reals)
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
     (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
+     interval_arith)
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
+     interval_arith)
+    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
     (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
+     interval_arith)
     (Ulp_dp_Fundamental name-judgement "(Fundamental?(PreTrue))"
      interval_ulp_dp nil)
-    (Ulp_dp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_dp))"
+    (Ulp_dp_Inclusion name-judgement
+     "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
      interval_ulp_dp nil)
     (Ulp_dp_inclusion formula-decl nil interval_ulp_dp nil)
     (AND const-decl "[bool, bool -> bool]" booleans nil)
@@ -200,37 +65,39 @@
     (- const-decl "[numfield -> numfield]" number_fields nil)
     (> const-decl "bool" reals nil)
     (= const-decl "[T, T -> boolean]" equalities nil)
-    (cos const-decl "real" sincos_def "trig/")
+    (cos const-decl "real" sincos_def trig)
     (pi const-decl "{x: real | x > 2 AND x < 4 AND cos(x / 2) = 0}"
-     pi_def "trig/")
-    (real_abs_lt_pi2 nonempty-type-eq-decl nil trig_types "trig/")
-    (tan_restrict const-decl "real" trig_basic "trig/")
+     pi_def trig)
+    (real_abs_lt_pi2 nonempty-type-eq-decl nil trig_types trig)
+    (tan_restrict const-decl "real" trig_basic trig)
     (atan const-decl "{x: real_abs_lt_pi2 | y = tan_restrict(x)}" atan
-          "trig/")
+          trig)
     (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
     (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
          nil)
     (real_plus_real_is_real application-judgement "real" reals nil)
-    (Abs_inclusion formula-decl nil interval "interval_arith/")
-    (Atan_inclusion formula-decl nil interval_trig "interval_arith/")
+    (Abs_inclusion formula-decl nil interval interval_arith)
+    (Atan_inclusion formula-decl nil interval_trig interval_arith)
     (minus_nzreal_is_nzreal application-judgement "nzreal" real_types
      nil)
     (pi_bound name-judgement "{r: posreal | pi_lb < r AND r < pi_ub}"
-     atan_approx "trig/")
+     atan_approx trig)
     (pi_bound name-judgement
-     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def "trig/")
+     "{r: posreal | pi_lb_new <= r AND r <= pi_ub_new}" pi_def trig)
     (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
-    (Div_inclusion formula-decl nil interval "interval_arith/")
-    (aebounddp_atn const-decl "nonneg_real" aerr754dp_atn "float/")
-    (Ge const-decl "bool" interval "interval_arith/")
-    (|##| const-decl "bool" interval "interval_arith/")
+    (Div_inclusion formula-decl nil interval interval_arith) nil
+    (Ge const-decl "bool" interval interval_arith)
+    (|##| const-decl "bool" interval interval_arith)
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
+    (le_realorder name-judgement "RealOrder" real_orders reals)
     (aebounddp_atn_ia const-decl "Interval" bbiadp_atn nil)
-    (Inclusion2? const-decl "bool" interval "interval_arith/"))
-   nil))
+    (Inclusion2? const-decl "bool" interval interval_arith))
+   nil
+   (AEB_ATN_inclusion_j subtype
+    "bbiadp_atn.aebounddp_atn_ia(bbiadp_atn.n)"
+    "(interval.Inclusion2?(interval.Any?, interval.pre1to2b(interval.NonNeg?), bbiadp_atn.aebounddp_atn_safe))")))
  (AEB_ATN_fundmental_j 0
   (AEB_ATN_fundmental_j-1 nil 3699960369
    ("" (expand "Fundamental2?")
@@ -338,19 +205,19 @@
    ((TRUE const-decl "bool" booleans nil)
     (bool nonempty-type-eq-decl nil booleans nil)
     (boolean nonempty-type-decl nil booleans nil)
-    (Ge const-decl "bool" interval "interval_arith/")
-    (<< const-decl "bool" interval "interval_arith/")
+    (Ge const-decl "bool" interval interval_arith)
+    (<< const-decl "bool" interval interval_arith)
     (real_ge_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (ge_realorder name-judgement "RealOrder" real_orders "reals/")
+    (ge_realorder name-judgement "RealOrder" real_orders reals)
     (real_le_is_total_order name-judgement "(total_order?[real])"
      real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders "reals/")
-    (Add_fundamental formula-decl nil interval "interval_arith/")
-    ([\|\|] const-decl "Interval" interval "interval_arith/")
-    (Abs const-decl "(NonNeg?)" interval "interval_arith/")
-    (Add const-decl "Interval" interval "interval_arith/")
-    (Atan const-decl "Interval" interval_trig "interval_arith/")
+    (le_realorder name-judgement "RealOrder" real_orders reals)
+    (Add_fundamental formula-decl nil interval interval_arith)
+    ([\|\|] const-decl "Interval" interval interval_arith)
+    (Abs const-decl "(NonNeg?)" interval interval_arith)
+    (Add const-decl "Interval" interval interval_arith)
+    (Atan const-decl "Interval" interval_trig interval_arith)
     (nat nonempty-type-eq-decl nil naturalnumbers nil)
     (>= const-decl "bool" reals nil)
     (int nonempty-type-eq-decl nil integers nil)
@@ -363,46 +230,50 @@
      nil)
     (number nonempty-type-decl nil numbers nil)
     (Ulp_dp const-decl "Interval" interval_ulp_dp nil)
-    (Div const-decl "Interval" interval "interval_arith/")
-    (ProperInterval type-eq-decl nil interval "interval_arith/")
-    (Proper? const-decl "bool" interval "interval_arith/")
-    (Any? const-decl "bool" interval "interval_arith/")
-    (NonNeg? const-decl "bool" interval "interval_arith/")
-    (pre1to2b const-decl "(Precondition2?)" interval "interval_arith/")
-    (Precondition2? const-decl "bool" interval "interval_arith/")
-    (Precondition? const-decl "bool" interval "interval_arith/")
+    (Div const-decl "Interval" interval interval_arith)
+    (ProperInterval type-eq-decl nil interval interval_arith)
+    (Proper? const-decl "bool" interval interval_arith)
+    (Any? const-decl "bool" interval interval_arith)
+    (NonNeg? const-decl "bool" interval interval_arith)
+    (pre1to2b const-decl "(Precondition2?)" interval interval_arith)
+    (Precondition2? const-decl "bool" interval interval_arith)
+    (Precondition? const-decl "bool" interval interval_arith)
     (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval "interval_arith/")
+    (Interval type-eq-decl nil interval interval_arith)
     (real nonempty-type-from-decl nil reals nil)
     (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Incl_reflx formula-decl nil interval "interval_arith/")
+     interval_arith)
+    (Incl_reflx formula-decl nil interval interval_arith)
     (Ulp_dp_proper formula-decl nil interval_ulp_dp nil)
-    (Atan_fundamental formula-decl nil interval_trig "interval_arith/")
-    (Abs_fundamental formula-decl nil interval "interval_arith/")
+    (Atan_fundamental formula-decl nil interval_trig interval_arith)
+    (Abs_fundamental formula-decl nil interval interval_arith)
     (Ulp_dp_fundamental formula-decl nil interval_ulp_dp nil)
-    (bijective? const-decl "bool" functions nil)
     (id const-decl "(bijective?[T, T])" identity nil)
-    (Div_fundamental formula-decl nil interval "interval_arith/")
+    (bijective? const-decl "bool" functions nil)
+    (Div_fundamental formula-decl nil interval interval_arith)
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
-    (Ulp_dp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp_dp))"
+     interval_arith)
+    (Ulp_dp_Inclusion name-judgement
+     "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
      interval_ulp_dp nil)
     (Ulp_dp_Fundamental name-judgement "(Fundamental?(PreTrue))"
      interval_ulp_dp nil)
     (Proper_Atan application-judgement "ProperInterval" interval_trig
-     "interval_arith/")
+     interval_arith)
     (Proper_Add application-judgement "ProperInterval" interval
-     "interval_arith/")
+     interval_arith)
     (Proper_Abs application-judgement "ProperInterval" interval
-     "interval_arith/")
-    (r2i_Nneg application-judgement "(NonNeg?)" interval
-     "interval_arith/")
-    (r2i_Pos application-judgement "(Pos?)" interval "interval_arith/")
+     interval_arith)
+    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
+    (r2i_Proper application-judgement "ProperInterval" interval
+     interval_arith)
     (NOT const-decl "[bool -> bool]" booleans nil)
     (aebounddp_atn_ia const-decl "Interval" bbiadp_atn nil)
-    (Fundamental2? const-decl "bool" interval "interval_arith/"))
-   nil))
+    (Fundamental2? const-decl "bool" interval interval_arith))
+   nil
+   (AEB_ATN_fundmental_j subtype
+    "bbiadp_atn.aebounddp_atn_ia(bbiadp_atn.n)"
+    "(interval.Fundamental2?(interval.Any?, interval.pre1to2b(interval.NonNeg?)))")))
  (AEB_ATN_TCC1 0
   (AEB_ATN_TCC1-1 nil 3699960369
    ("" (skeep) (("" (assert) nil nil)) nil)
@@ -412,8 +283,10 @@
     (AEB_ATN_fundmental_j application-judgement
      "(Fundamental2?(Any?, pre1to2b(NonNeg?)))" bbiadp_atn nil)
     (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/")
+     interval_arith)
     (Any_Precondition name-judgement "(Precondition?)" interval
-     "interval_arith/"))
-   nil)))
+     interval_arith))
+   nil
+   (AEB_ATN subtype "bbiadp_atn.aebounddp_atn_ia(bbiadp_atn.n)"
+    "{F: [[interval.Interval, interval.Interval] -> interval.Interval] | booleans.AND(interval.Inclusion2?(interval.Any?, interval.pre1to2b(interval.NonNeg?), bbiadp_atn.aebounddp_atn_safe)(F), interval.Fundamental2?(interval.Any?, interval.pre1to2b(interval.NonNeg?))(F))}"))))
 

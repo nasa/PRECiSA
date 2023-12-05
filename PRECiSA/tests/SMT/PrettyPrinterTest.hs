@@ -31,9 +31,9 @@ testSMTPrettyPrinter = testGroup "SMT.PrettyPrinter"
 testPrettySMT :: TestTree
 testPrettySMT = testGroup "SMT.PrettyPrinter.prettySMT" [
     testCase "[] returns false" $
-        (test $ Cond []) @?= "false",
+        (test $ Conds []) @?= "false",
     testCase "[(BTrue, FBTrue)] returns empty" $
-        (test $ Cond [(BTrue, FBTrue)]) @?= ""
+        (test $ trueConds) @?= ""
     ]
     where
         test = render . prettySMT
@@ -41,13 +41,25 @@ testPrettySMT = testGroup "SMT.PrettyPrinter.prettySMT" [
 testPrettySMTCondition :: TestTree
 testPrettySMTCondition = testGroup "SMT.PrettyPrinter.prettySMTCondition"
     [testCase "(BTrue, FBTrue) returns empty" $
-        (test $ (BTrue, FBTrue)) @?= ""
+        (test $ Cond {realPathCond = BTrue
+                     ,fpPathCond = FBTrue
+                     ,realCond = BTrue
+                     ,fpCond = FBTrue}) @?= ""
     ,testCase "(BFalse, FBFalse) returns false" $
-        (test $ (BFalse, FBFalse)) @?= "false"
+        (test $ Cond {realPathCond = BFalse
+                     ,fpPathCond = FBFalse
+                     ,realCond = BFalse
+                     ,fpCond = FBFalse}) @?= "false"
     ,testCase "(BFalse, FBTrue) returns false" $
-        (test $ (BFalse, FBTrue)) @?= "false"
+        (test $ Cond {realPathCond = BFalse
+                     ,fpPathCond = FBFalse
+                     ,realCond = BTrue
+                     ,fpCond = FBTrue}) @?= "false"
     ,testCase "(BTrue, FBFalse) returns false" $
-        (test $ (BTrue, FBFalse)) @?= "false"
+        (test $ Cond {realPathCond = BTrue
+                     ,fpPathCond = FBTrue
+                     ,realCond = BFalse
+                     ,fpCond = FBFalse}) @?= "false"
     ]
     where
         test = render . prettySMTCondition

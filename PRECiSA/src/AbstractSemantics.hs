@@ -27,6 +27,7 @@ import Foreign.C.Types (CDouble, CFloat)
 import Data.Maybe
 import Translation.Float2Real
 import Translation.Real2Float
+import FreshVariables
 
 data SemanticConfiguration = SemConf {
     assumeTestStability :: Bool,
@@ -44,16 +45,21 @@ type FunctionInterpretation = (FunName, (IsTrans, PVSType, [Arg] ,ACebS))
 
 type Interpretation = [FunctionInterpretation]
 
+envVars :: Env a -> [VarName]
+envVars (Env env) = map fst env
+
 errVarName :: VarName -> VarName
 errVarName x = "Err_" ++ x
 
 symbolicError :: Interpretation -> Env ACebS -> FAExpr -> EExpr
 symbolicError interp env fae =
-  eExpr $ mergeACebFold $ exprSemantics interp env fae
+  fromMaybe (error "symbolicError: unexpected argument") $
+    eExpr $ mergeACebFold $ exprSemantics interp env fae
 
 symbolicErrorStable :: Interpretation -> Env ACebS -> FAExpr -> EExpr
 symbolicErrorStable interp env fae =
-  eExpr $ mergeACebFold $ exprSemanticsStable interp env fae
+  fromMaybe (error "symbolicErrorStable: unexpected argument") $
+    eExpr $ mergeACebFold $ exprSemanticsStable interp env fae
 
 exprSemanticsStable :: Interpretation -> Env ACebS -> FAExpr -> [ACeb]
 exprSemanticsStable interp env fae =
@@ -69,13 +75,21 @@ exprSemantics interp env fae =
 
 maxRoundOffError :: ACebS -> EExpr
 maxRoundOffError [] = error "maxRoundOffError: empty list."
-maxRoundOffError acebs = eExpr $ foldl1 mergeACeb acebs
+maxRoundOffError acebs = fromMaybe (error "maxRoundOffError: unexpected argument") $
+  eExpr $ foldl1 mergeACeb acebs
 
 stableConditions :: ACebS -> [Condition]
 stableConditions = concatMap (uncond . conds)
 
 semantics :: FunctionInterpretation -> ACebS
 semantics (_,(_,_,_,sem)) = sem
+
+isPredInterp :: FunctionInterpretation -> Bool
+isPredInterp (_,(_,Boolean,_,_)) = True
+isPredInterp _                = False
+
+isDeclInterp :: FunctionInterpretation -> Bool
+isDeclInterp = not . isPredInterp
 
 functionSemantics :: FunName -> Interpretation -> ACebS
 functionSemantics f interp = frt4 $ fromMaybe (error $ "functionSemantics: function " ++ show f ++ " not found.") (lookup f interp)
@@ -88,8 +102,8 @@ emptyInterpretation = []
 
 equivInterp :: Interpretation -> Interpretation -> Bool
 equivInterp i1 i2 = setEq (map aux i1) (map aux i2)
-    where
-        aux (f, (isTrans, fp, vars ,acebs)) = (f, (isTrans, fp, vars, Set.fromList acebs))
+  where
+    aux (f, (isTrans, fp, vars ,acebs)) = (f, (isTrans, fp, vars, Set.fromList acebs))
 
 errorNotGrowing :: Interpretation -> Interpretation -> Bool
 errorNotGrowing [] _ = True
@@ -102,10 +116,11 @@ errorNotGrowingFun current = all (`existsEquivError` current)
 
 existsEquivError :: ACeb -> ACebS -> Bool
 existsEquivError aceb iter = result
-    where
-        result = any hasEquivError iter
-        ACeb{conds = cc, eExpr = ee} = aceb
-        hasEquivError aceb' = equivEExpr ee (eExpr aceb') && cc /= conds aceb'
+  where
+    result = any hasEquivError iter
+    ACeb{conds = cc, eExpr = ee} = aceb
+    hasEquivError aceb' = equivEExpr (fromMaybe (error "existsEquivError: unexpected argument") ee)
+                         (fromMaybe (error "existsEquivError: unexpected argument") $ eExpr aceb') && cc /= conds aceb'
 
 botInterp :: [Decl] -> Interpretation
 botInterp = map buildBottomElem
@@ -122,19 +137,21 @@ insertEnv var a (Env env) =
     Just _ -> error "insertVarEnv: Variable already present in the environment"
     Nothing -> Env $ (var, a):env
 
-addCond :: Condition -> ACeb -> ACeb
-addCond (be,fbe) ceb@ACeb{ conds = Cond cs } = ceb{conds = Cond (map aux cs)}
+addPathCond :: BExpr -> FBExpr -> ACeb -> ACeb
+addPathCond be fbe ceb@ACeb{ conds = Conds cs } = ceb{conds = Conds (map aux cs)}
   where
-    aux (rc,fc) = (simplBExprFix $ And rc be, simplFBExprFix $  FAnd fc fbe)
+    aux condACeb = condACeb {realPathCond = simplBExprFix $ And be (realPathCond condACeb)
+                            ,fpPathCond = simplFBExprFix $ FAnd fbe (fpPathCond condACeb)
+                            ,realCond = simplBExprFix (realCond condACeb)
+                            ,fpCond = simplFBExprFix (fpCond condACeb)}
 
-addCondS :: Condition -> ACebS -> ACebS
-addCondS cond = map (addCond cond)
+addPathCondS :: BExpr -> FBExpr -> ACebS -> ACebS
+addPathCondS be fbe = map (addPathCond be fbe)
 
 filterCondFalse :: ACebS -> ACebS
 filterCondFalse = filter aux
   where
-    isFalseCondition (b,fb) = isBExprEquivFalse b || isFBExprEquivFalse fb
-    aux ACeb{ conds = Cond cs } = not $ all isFalseCondition cs
+    aux ACeb{ conds = Conds cs } = not $ all isFalseCond cs
 
 fixpointSemantics :: Program -> Interpretation -> Iteration -> SemanticConfiguration -> TargetDPs -> Interpretation
 fixpointSemantics pgm interp max_ite = iterateImmediateConsequence pgm interp max_ite 0
@@ -155,20 +172,20 @@ widening = map convergeToTop
 
 topAceb :: ACeb
 topAceb = ACeb {
-            conds  = Cond [(BTrue, FBTrue)],
-            rExprs = [] ,
-            fpExprs = [],
-            eExpr  = Infinity,
+            conds  = trueConds,
+            rExprs = RDeclRes [] ,
+            fpExprs = FDeclRes [],
+            eExpr  = Just Infinity,
             decisionPath = root,
             cFlow  = Stable
         }
 
 zeroErrAceb :: ACeb
 zeroErrAceb = ACeb {
-            conds  = Cond [(BTrue, FBTrue)],
-            rExprs = [] ,
-            fpExprs = [],
-            eExpr  = Int 0,
+            conds  = trueConds,
+            rExprs = RDeclRes [] ,
+            fpExprs = FDeclRes [],
+            eExpr  = Just $ Int 0,
             decisionPath = root,
             cFlow  = Stable
         }
@@ -188,7 +205,7 @@ declSem (Pred _ _ fun _ stm) interp decPaths semConf = addDeclInterp fun (bexprS
 
 addDeclInterp :: FunName -> ACebS -> Interpretation -> Interpretation
 addDeclInterp fun sem interp =
-    let (l1,l2) = List.partition (isFun fun) interp in
+  let (l1,l2) = List.partition (isFun fun) interp in
         case l1 of
           [] -> error $ "addDeclInterp: function " ++ show fun ++ " not found."
           [(_, (isTrans, fp, args, cebs))] ->
@@ -197,22 +214,22 @@ addDeclInterp fun sem interp =
                 else
                     l2 ++ [(fun, (isTrans, fp, args,  unionACebS cebs sem))]
           _ -> error ("addDeclInterp: More than one occurrence of function " ++ fun ++ " in the interpretation.")
-    where
-        isFun f1 (f2, (_,_,_,_)) = f1 == f2
-        hasInfiniteError = any isErrorInfinite
-        replaceInfFun = map replaceInfFun'
-        replaceInfFun' ceb =  ceb { rExprs = [Infinity] }
-        isErrorInfinite aceb = ee == Infinity
-            where
-                ACeb{ eExpr = ee} = aceb
+  where
+    isFun f1 (f2, (_,_,_,_)) = f1 == f2
+    hasInfiniteError = any isErrorInfinite
+    replaceInfFun = map replaceInfFun'
+    replaceInfFun' ceb =  ceb { rExprs = RDeclRes [Infinity] }
+    isErrorInfinite aceb = ee == Just Infinity
+      where
+        ACeb{ eExpr = ee} = aceb
 
 representative :: (b -> b -> Bool) -> [b] -> [b]
 representative equiv sem = map head (partition equiv sem)
 
 realEquivalence :: ACeb -> ACeb -> Bool
 realEquivalence
-  ACeb { conds = Cond cs1 }
-  ACeb { conds = Cond cs2 }
+  ACeb { conds = Conds cs1 }
+  ACeb { conds = Conds cs2 }
   = setEq rCs1 rCs2
   where
     rCs1 = map realCond cs1
@@ -220,8 +237,8 @@ realEquivalence
 
 fpEquivalence :: ACeb -> ACeb -> Bool
 fpEquivalence
-  ACeb { conds = Cond cs1 }
-  ACeb { conds = Cond cs2 }
+  ACeb { conds = Conds cs1 }
+  ACeb { conds = Conds cs2 }
   = setEq fpCs1 fpCs2
   where
     fpCs1 = map fpCond cs1
@@ -235,20 +252,24 @@ partition eqRel xs@(x:_) = elems : partition eqRel rest
 
 makeUnstable :: ACeb -> ACeb -> ACeb
 makeUnstable
-  ACeb { conds = Cond rCs,  rExprs = rRs }
-  ACeb { conds = Cond fpCs, rExprs = fpRs, fpExprs = fpFs, eExpr = fpE, decisionPath = dp}
+  ACeb { conds = Conds rCs,  rExprs = rRs }
+  ACeb { conds = Conds fpCs, rExprs = fpRs, fpExprs = fpFs, eExpr = fpE, decisionPath = dp}
   = ACeb {
-      conds  = Cond cs',
+      conds  = Conds cs',
       rExprs = rRs,
       fpExprs = fpFs,
-      eExpr  = ee',
+      eExpr  = case fpE of
+                 Just e -> Just $ maxErr $ [BinaryOp AddOp e (UnaryOp AbsOp (BinaryOp SubOp fpR rR))
+                                 | fpR <- rDeclRes fpRs, rR <- rDeclRes rRs]
+                 Nothing -> Nothing,
       decisionPath = dp,
       cFlow  = Unstable
   }
   where
-    list = [BinaryOp AddOp fpE (UnaryOp AbsOp (BinaryOp SubOp fpR rR)) | fpR <- fpRs, rR <- rRs]
-    ee' = if null list then Int 0 else  maxErr list
-    cs' = [(And rCond rfCond, fCond) | rCond <- map realCond rCs, (rfCond,fCond) <- fpCs]
+    cs' = [Cond {realPathCond = realPathCond rC
+                ,fpPathCond = fpPathCond fpC
+                ,realCond = And (realCond rC) (realCond fpC)
+                ,fpCond = fpCond fpC} | rC <- rCs , fpC <- fpCs]
 
 
 unTestSem :: ACebS -> ACebS -> ACebS
@@ -267,20 +288,20 @@ maxErr listErr = MaxErr listErr
 
 intSem :: Integer -> LDecisionPath -> [ACeb]
 intSem n dp = [ ACeb {
-  conds  = Cond [(BTrue,FBTrue)],
-  rExprs = [Int n],
-  fpExprs = [FInt n],
-  eExpr  = ErrRat 0,
+  conds  = trueConds,
+  rExprs = RDeclRes [Int n],
+  fpExprs = FDeclRes [FInt n],
+  eExpr  = Just $ ErrRat 0,
   decisionPath = dp,
   cFlow  = Stable
   } ]
 
 fpSem :: PVSType -> Rational -> LDecisionPath -> [ACeb]
 fpSem fp n dp = [ ACeb {
-  conds  = Cond [(BTrue,FBTrue)],
-  rExprs = [Rat n],
-  fpExprs = [FCnst fp n],
-  eExpr  = ErrRat $ abs $ rat - (n :: Rational),
+  conds  = trueConds,
+  rExprs = RDeclRes [Rat n],
+  fpExprs = FDeclRes [FCnst fp n],
+  eExpr  = Just $ ErrRat $ abs $ rat - (n :: Rational),
   decisionPath = dp,
   cFlow  = Stable
   } ]
@@ -290,34 +311,55 @@ fpSem fp n dp = [ ACeb {
               FPSingle -> toRational (fromRat n :: CFloat)
               _ -> error "fpSem: unexpected type."
 
-condDenomitorNotZero :: PVSType -> ACeb -> ACeb -> Conditions
-condDenomitorNotZero fp ceb1 ceb2 =  Cond [(simplBExprFix  $  And (And  c1 c2) (Rel  Neq  r2  (Int 0)),
-                                        simplFBExprFix  $ FAnd (FAnd g1 g2)
-                                                               (if (isIntFAExpr a2)
-                                                                  then FRel Neq a2 (FInt 0)
-                                                                  else FRel Neq a2 (TypeCast TInt fp (FInt 0))))
-                                        |(c1, g1) <- uncond (conds ceb1),
-                                         (c2, g2) <- uncond (conds ceb2),
-                                         r2       <- rExprs ceb2,
-                                         a2       <- fpExprs ceb2]
+condDenomNotZero :: PVSType -> ACeb -> ACeb -> Conditions
+condDenomNotZero fp ceb1 ceb2 =
+  Conds [Cond {realPathCond = simplBExprFix $ And (realPathCond cond1) (realPathCond cond2)
+              ,fpPathCond = simplFBExprFix  $ FAnd (fpPathCond cond1) (fpPathCond cond2)
+              ,realCond = simplBExprFix $ And (And (realCond cond1)(realCond cond2))
+                                              (Rel  Neq  r2  (Int 0))
+              ,fpCond = simplFBExprFix $ FAnd (FAnd (fpCond cond1) (fpCond cond2))
+                                              (if (isIntFAExpr a2)
+                                               then FRel Neq a2 (FInt 0)
+                                               else FRel Neq a2 (TypeCast TInt fp (FInt 0)))}
+        | cond1 <- uncond (conds ceb1),
+          cond2 <- uncond (conds ceb2),
+          r2 <- rDeclRes $ rExprs ceb2,
+          a2 <- fDeclRes $ fpExprs ceb2]
 
 conditionUnOp :: Operators.UnOp -> PVSType -> ACeb -> Conditions
-conditionUnOp SqrtOp _ ceb = Cond [(simplBExprFix $
-  And rc (Rel GtE (BinaryOp SubOp r (eExpr ceb)) (Int 0)), fc)
-    | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb]
-conditionUnOp LnOp fp ceb =  Cond [(simplBExprFix $
-  And (And rc (Rel Lt (Int 0)(BinaryOp SubOp r (eExpr ceb))))(Rel Gt (FromFloat fp a) (Int 0)), fc)
-    | (rc,fc) <- uncond (conds ceb), r <- rExprs ceb, a <- fpExprs ceb]
+conditionUnOp SqrtOp _ ceb =
+  Conds [Cond {realPathCond = realPathCond cond
+              ,fpPathCond = fpPathCond cond
+              ,realCond = simplBExprFix $ And (realCond cond)
+                          (Rel GtE (BinaryOp SubOp r
+                          (fromMaybe (error "conditionUnOp SqrtOp: unexpected argument.") $ eExpr ceb)) (Int 0))
+              ,fpCond = fpCond cond}
+          | cond <- uncond (conds ceb), r <- rDeclRes $ rExprs ceb]
+
+conditionUnOp LnOp fp ceb =
+  Conds [Cond {realPathCond = realPathCond cond
+              ,fpPathCond = fpPathCond cond
+              ,realCond = simplBExprFix $ And (And (realCond cond) (Rel Lt (Int 0)
+                                          (BinaryOp SubOp r
+                                          (fromMaybe (error "conditionUnOp LnOp: unexpected argument.") $ eExpr ceb))))
+                                                                   (Rel Gt (FromFloat fp a) (Int 0))
+              ,fpCond = fpCond cond}
+        | cond <- uncond (conds ceb), r <- rDeclRes$ rExprs ceb, a <- fDeclRes $ fpExprs ceb]
+
 conditionUnOp _ _ ceb = conds ceb
 
 conditionBinOp :: Operators.BinOp -> PVSType -> ACeb -> ACeb -> Conditions
-conditionBinOp DivOp   fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
-conditionBinOp IDivOp  fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
-conditionBinOp ItDivOp fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
-conditionBinOp ModOp   fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
-conditionBinOp ItModOp fp ceb1 ceb2 = condDenomitorNotZero fp ceb1 ceb2
-conditionBinOp       _  _ ceb1 ceb2 = Cond [(simplBExprFix $ And c1 c2, simplFBExprFix $ FAnd g1 g2)
-                                           | (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2)]
+conditionBinOp DivOp   fp ceb1 ceb2 = condDenomNotZero fp ceb1 ceb2
+conditionBinOp IDivOp  fp ceb1 ceb2 = condDenomNotZero fp ceb1 ceb2
+conditionBinOp ItDivOp fp ceb1 ceb2 = condDenomNotZero fp ceb1 ceb2
+conditionBinOp ModOp   fp ceb1 ceb2 = condDenomNotZero fp ceb1 ceb2
+conditionBinOp ItModOp fp ceb1 ceb2 = condDenomNotZero fp ceb1 ceb2
+conditionBinOp       _  _ ceb1 ceb2 =
+  Conds [Cond {realPathCond = simplBExprFix $ And (realPathCond cond1) (realPathCond cond2)
+              ,fpPathCond = simplFBExprFix  $ FAnd (fpPathCond cond1) (fpPathCond cond2)
+              ,realCond = simplBExprFix $ And (realCond cond1)(realCond cond2)
+              ,fpCond = simplFBExprFix $ FAnd (fpCond cond1) (fpCond cond2)}
+        | cond1 <- uncond (conds ceb1), cond2 <- uncond (conds ceb2)]
 
 semUnOp :: SemanticConfiguration -> Operators.UnOp -> PVSType -> [ACeb] -> LDecisionPath -> [ACeb]
 semUnOp config op fp semOp1 dp =
@@ -326,9 +368,9 @@ semUnOp config op fp semOp1 dp =
   where
     makeCeb ceb1 = ACeb {
         conds  = conditionUnOp op fp ceb1,
-        rExprs  = [UnaryOp   op    r1 | r1 <- rExprs ceb1],
-        fpExprs = [UnaryFPOp op fp f1 | f1 <- fpExprs ceb1],
-        eExpr   = maxErr [ErrUnOp op fp r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        rExprs  = RDeclRes [UnaryOp   op    r1 | r1 <- rDeclRes $ rExprs ceb1],
+        fpExprs = FDeclRes [UnaryFPOp op fp f1 | f1 <- fDeclRes $ fpExprs ceb1],
+        eExpr   = Just $ maxErr [ErrUnOp op fp r1 (fromMaybe (error "semUnOp: unexpected argument.") $ eExpr ceb1) | r1 <- rDeclRes $ rExprs ceb1],
         decisionPath = dp,
         cFlow  = cFlow ceb1
     }
@@ -340,9 +382,11 @@ semBinOp config op fp semOp1 semOp2 dp =
   where
     makeCeb [ceb1, ceb2] = ACeb {
         conds  = conditionBinOp op fp ceb1 ceb2,
-        rExprs  = [BinaryOp   op r1 r2 | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
-        fpExprs = [BinaryFPOp op fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-        eExpr   = maxErr [ErrBinOp op fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+        rExprs  = RDeclRes [BinaryOp   op r1 r2 | r1 <- rDeclRes $ rExprs ceb1, r2 <- rDeclRes $ rExprs ceb2],
+        fpExprs = FDeclRes [BinaryFPOp op fp f1 f2 | f1 <- fDeclRes $ fpExprs ceb1, f2 <- fDeclRes $ fpExprs ceb2],
+        eExpr   = Just $ maxErr [ErrBinOp op fp r1 (fromMaybe (error "semBinOp: unexpected argument.") $ eExpr ceb1)
+                                                r2 (fromMaybe (error "semBinOp: unexpected argument.") $ eExpr ceb2)
+                                | r1 <- rDeclRes $  rExprs ceb1, r2 <- rDeclRes $ rExprs ceb2],
         decisionPath = dp,
         cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
     }
@@ -370,8 +414,8 @@ stableCasesIteSem dps semThen semElse fbe | null stableNotOfInterest = stableOfI
     be = fbe2be fbe
     (stableOfInterest, stableNotOfInterest) = List.partition (isDecPathOfInterestACeb dps)
                                                              (filter isStable sem)
-    sem = addCondS (be, fbe) semThen ++
-          addCondS (Not be, FNot fbe) semElse
+    sem = addPathCondS be fbe semThen ++
+          addPathCondS (Not be) (FNot fbe) semElse
 
 unstableCasesIteSem :: ACebS
                     -> ACebS
@@ -382,22 +426,22 @@ unstableCasesIteSem semThen semElse fbe = filter isUnstable (stableCases ++ unst
     be = fbe2be fbe
     semThenStable = filter isStable semThen
     semElseStable = filter isStable semElse
-    unstableCases = addCondS (be,FNot fbe)
+    unstableCases = addPathCondS be (FNot fbe)
                              (unTestSem (representative realEquivalence semThenStable)
                                         (representative fpEquivalence   semElseStable))
                     ++
-                    addCondS (Not be, fbe)
+                    addPathCondS (Not be) fbe
                              (unTestSem (representative realEquivalence semElseStable)
                                         (representative fpEquivalence   semThenStable))
-    stableCases = addCondS (be, fbe) semThen ++
-                  addCondS (Not be, FNot fbe) semElse
+    stableCases = addPathCondS be fbe semThen ++
+                  addPathCondS (Not be) (FNot fbe) semElse
 
-semIte :: Bool -> Bool -> LDecisionPath -> [LDecisionPath] -> ACebS -> ACebS -> FBExpr -> ACebS
-semIte sta mu dp dps semThen semElse fbe | sta = stableCases
-                                         | mu = case mergedUnstableCase of
+semIte :: Bool -> Bool -> [LDecisionPath] -> ACebS -> ACebS -> FBExpr -> ACebS
+semIte sta mu dps semThen semElse fbe | sta = stableCases
+                                      | mu = case mergedUnstableCase of
                                                 Nothing -> stableCases
                                                 Just uc -> uc : stableCases
-                                         | otherwise = unstableCases ++ stableCases
+                                      | otherwise = unstableCases ++ stableCases
   where
     stableCases   = stableCasesIteSem dps semThen semElse fbe
     unstableCases = unstableCasesIteSem semThen semElse fbe
@@ -428,7 +472,7 @@ unstableCasesListIte  unstableCases' listSemThen semElse = unstableCases' ++ fil
         guards = map fst semWithGuards
         negGuards = foldl And BTrue (map (Not . fbe2be) (take i guards))
 
-    unstableCases = concat [addCondS (realUnstableGuards i, fpUnstableGuards j)
+    unstableCases = concat [addPathCondS (realUnstableGuards i)(fpUnstableGuards j)
                       (unTestSem (representative realEquivalence (snd (semWithGuards !! i)))
                                  (representative fpEquivalence   (snd (semWithGuards !! j)))) | (i,j) <- pairCombinations (length semWithGuards)]
 
@@ -441,15 +485,32 @@ semIteList sta mu dps listSemThen semElse | sta = stableCases
   where
     (basicStable, basicUnstable) = List.partition isStable (addCondsToSem listSemThen (0::Int) BTrue FBTrue)
 
-    addCondsToSem [] _ neg_bes neg_fbes = addCondS (neg_bes, neg_fbes) semElse
+    addCondsToSem [] _ neg_bes neg_fbes = addPathCondS neg_bes neg_fbes semElse
     addCondsToSem ((fbe_i,sem_i):restThen) i neg_bes neg_fbes =
-      addCondS (And (fbe2be fbe_i) neg_bes, FAnd fbe_i neg_fbes) sem_i
+      addPathCondS (And (fbe2be fbe_i) neg_bes) (FAnd fbe_i neg_fbes) sem_i
       ++
       addCondsToSem restThen (i+1) (And (Not (fbe2be fbe_i)) neg_bes) (FAnd (FNot fbe_i) neg_fbes)
 
     stableCases   = stableCasesListIte   dps basicStable
     unstableCases = unstableCasesListIte     basicUnstable listSemThen semElse
     mergedUnstableCase = if null unstableCases then Nothing else Just $ mergeACebFold unstableCases
+
+replaceLetVarsFresh :: Env ACebS -> [Arg] -> ACebS -> ACebS
+replaceLetVarsFresh env formArgs funSem = map (replaceLetVarsFresh' env formArgs) funSem
+  where
+    replaceLetVarsFresh' env formArgs aceb =
+      aceb {
+        conds   = renameVarsConds subs (conds aceb),
+        rExprs  = renameVarsRResult subs (rExprs aceb),
+        fpExprs = renameVarsFResult subs (fpExprs aceb),
+        eExpr   = maybe Nothing (Just . renameVarsAExpr subs) (eExpr aceb)
+      }
+      where
+        subs = buildLetInSubs ((envVars env) ++ (map argName formArgs)) (fpExprs aceb)
+        buildLetInSubs varList exprs =  (map ((buildLetInPair varList 0) . fst) (localVarsFResult exprs))
+        buildLetInPair varList n x = if elem (x ++ "__" ++ show n) varList
+                                     then buildLetInPair varList (n + 1) x
+                                     else (x,x ++ "__" ++ show n)
 
 addLetElem2Env :: Interpretation
                -> SemanticConfiguration
@@ -477,16 +538,17 @@ bexprStmSem (BLet (letElem:rest) stm) interp env config dp dps
   | isArithExpr (exprFLetElem letElem) =
     [ACeb{
        conds = simplifyConditions $ mergeConds (varBindConds [var] [expr] [cebExpr] $ conds cebStm) (conds cebExpr)
-      ,rExprs  = [RLet [realLetElem realExprLetElem] realExpr | realExpr <- rExprs cebStm]
-      ,fpExprs = [Let  [letElem]      fpExpr  | fpExpr   <- fpExprs cebStm]
-      ,eExpr   = RLet [realLetElem realExprLetElem
-                      ,errorLetElem cebExpr] (replaceInAExpr (replaceErrorMarks var) (const Nothing) $ eExpr cebStm)
+      ,rExprs  = RPredRes [RBLet [realLetElem realExprLetElem] realExpr | realExpr <- rPredRes $ rExprs cebStm]
+      ,fpExprs = FPredRes [BLet  [letElem] fpExpr | fpExpr <- fPredRes $ fpExprs cebStm]
+      ,eExpr   = Nothing
+      -- Just $  RLet [realLetElem realExprLetElem ,errorLetElem cebExpr]
+                              -- (replaceInAExpr (replaceErrorMarks var) (const Nothing) $ fromMaybe (error "fromMaybe") $ eExpr cebStm)
       ,decisionPath = decisionPath cebStm
       ,cFlow = mergeControlFlow (cFlow cebStm) (cFlow cebExpr)
     }
-    | cebStm  <- bexprStmSem newStm  interp env config dp dps
-    , cebExpr <- stmSem expr    interp env config dp dps
-    , realExprLetElem <- rExprs cebExpr
+    | cebStm  <- bexprStmSem newStm interp env config dp dps
+    , cebExpr <- stmSem expr interp env config dp dps
+    , realExprLetElem <- rDeclRes $ rExprs cebExpr
     ]
   | otherwise = []
   where
@@ -499,12 +561,12 @@ bexprStmSem (BLet (letElem:rest) stm) interp env config dp dps
                           ,letExpr = re}
     errorLetElem ceb = LetElem {letVar  = errVarName var
                                ,letType = Real
-                               ,letExpr = eExpr ceb}
+                               ,letExpr = fromMaybe (error "bexprStmSem BLet: unexpected argument.") $ eExpr ceb}
     newStm = if null rest then stm else (BLet rest stm)
 
 bexprStmSem (BIte fbe stmThen stmElse) interp env config@SemConf{ assumeTestStability = sta
                                                                 , mergeUnstables = mu } dp dps =
-  semIte sta mu dp dps semThen semElse fbe
+  semIte sta mu dps semThen semElse fbe
   where
     semThen = bexprStmSem stmThen interp env config (dp ~> 0) dps
     semElse = bexprStmSem stmElse interp env config (dp ~> 1) dps
@@ -518,14 +580,84 @@ bexprStmSem (BListIte listThen stmElse) interp env config@SemConf{ assumeTestSta
     buildThenCasesSem ((be_i,stm_i):listStm) i = (be_i,bexprStmSem stm_i interp env config (dp ~> i) dps) :
                                                   buildThenCasesSem listStm (i+1)
 
-bexprStmSem (BExpr fbe) _ _ _ dp _ = [ACeb {
-  conds  = Cond [(fbe2be fbe, fbe)],
-  rExprs = [] ,
-  fpExprs = [],
-  eExpr  = Int 0,
+bexprStmSem (BExpr FBTrue) _ _ _ dp _ = [ACeb {
+  conds  = trueConds,
+  rExprs = RPredRes [RBExpr BTrue] ,
+  fpExprs = FPredRes [BExpr FBTrue],
+  eExpr  = Nothing,
   decisionPath = dp,
   cFlow  = Stable
   }]
+
+bexprStmSem (BExpr FBFalse) _ _ _ dp _ = [ACeb {
+  conds  = trueConds,
+  rExprs = RPredRes [RBExpr BFalse] ,
+  fpExprs = FPredRes [BExpr FBFalse],
+  eExpr  = Nothing,
+  decisionPath = dp,
+  cFlow  = Stable
+  }]
+
+bexprStmSem (BExpr fbe@(FOr be1 be2)) interp env config dp dps = [ACeb {
+  conds  = mergeConds (conds ceb1) (conds ceb2),
+  rExprs = RPredRes [RBExpr rbe] ,
+  fpExprs = FPredRes [BExpr fbe],
+  eExpr  = Nothing,
+  decisionPath = dp,
+  cFlow  = Stable
+  } | ceb1 <- bexprStmSem (BExpr be1) interp env config dp dps
+    , ceb2 <- bexprStmSem (BExpr be2) interp env config dp dps]
+  where
+    rbe = fbe2be fbe
+
+bexprStmSem (BExpr fbe@(FAnd be1 be2)) interp env config dp dps = [ACeb {
+  conds  = mergeConds (conds ceb1) (conds ceb2),
+  rExprs = RPredRes [RBExpr rbe] ,
+  fpExprs = FPredRes [BExpr fbe],
+  eExpr  = Nothing,
+  decisionPath = dp,
+  cFlow  = Stable
+  } | ceb1 <- bexprStmSem (BExpr be1) interp env config dp dps
+    , ceb2 <- bexprStmSem (BExpr be2) interp env config dp dps]
+  where
+    rbe = fbe2be fbe
+
+bexprStmSem (BExpr fbe@(FNot be)) interp env config dp dps = [ACeb {
+  conds  = conds ceb,
+  rExprs = RPredRes [RBExpr rbe] ,
+  fpExprs = FPredRes [BExpr fbe],
+  eExpr  = Nothing,
+  decisionPath = dp,
+  cFlow  = Stable
+  } | ceb <- bexprStmSem (BExpr be) interp env config dp dps]
+  where
+    rbe = fbe2be fbe
+
+bexprStmSem (BExpr fbe@(FRel _ ae1 ae2)) interp env config dp dps = [ACeb {
+  conds  = mergeConds (conds ceb1) (conds ceb2),
+  rExprs = RPredRes [RBExpr rbe] ,
+  fpExprs = FPredRes [BExpr fbe],
+  eExpr  = Nothing,
+  decisionPath = dp,
+  cFlow  = Stable
+  } | ceb1 <- stmSem ae1 interp env config dp dps
+    , ceb2 <- stmSem ae2 interp env config dp dps]
+  where
+    rbe = fbe2be fbe
+
+bexprStmSem (BExpr (FEPred _ _ p actArgs)) interp env config dp dps =
+  case lookup p interp of
+    Just (_, _, formArgs, funSem) -> semEFun p formArgs actArgs
+                                             (combos argSem)
+                                             (replaceLetVarsFresh env formArgs funSem)
+                                             (length funSem) dp
+    --
+    Nothing -> error ("Function " ++ p ++ " not found")
+  where
+    argSem = map (\arg -> stmSem arg interp env config dp dps) actArgs
+
+
+bexprStmSem (BExpr be) _ _ _ _ _ = error $ "bexprStmSem not defined for " ++ show be ++ "."
 
 bexprStmSem  BUnstWarning _ _ _ _ _ = [zeroErrAceb]
 
@@ -544,19 +676,19 @@ stmSem (ToFloat _ (Int n)) _ _ _ dp _ = intSem n dp
 stmSem (ToFloat fp (Rat n)) _ _ _ dp _ = fpSem fp n dp
 
 stmSem (ToFloat fp (UnaryOp NegOp (Int n))) _ _ _ dp _ = [ ACeb {
-  conds  = Cond [(BTrue,FBTrue)],
-  rExprs = [UnaryOp NegOp (Int n)],
-  fpExprs = [UnaryFPOp NegOp fp (FInt n)],
-  eExpr  = ErrRat 0,
+  conds  = trueConds,
+  rExprs = RDeclRes [UnaryOp NegOp (Int n)],
+  fpExprs = FDeclRes [UnaryFPOp NegOp fp (FInt n)],
+  eExpr  = Just $ ErrRat 0,
   decisionPath = dp,
   cFlow  = Stable
   } ]
 
 stmSem (ToFloat fp (UnaryOp NegOp (Rat n))) _ _ _ dp _ = [ ACeb {
-  conds  = Cond [(BTrue,FBTrue)],
-  rExprs  = [UnaryOp   NegOp (Rat n)],
-  fpExprs = [UnaryFPOp NegOp fp (FCnst fp n)],
-  eExpr  = ErrRat $ abs $ rat - ((-n) :: Rational),
+  conds  = trueConds,
+  rExprs  = RDeclRes [UnaryOp   NegOp (Rat n)],
+  fpExprs = FDeclRes [UnaryFPOp NegOp fp (FCnst fp n)],
+  eExpr  = Just $ ErrRat $ abs $ rat - ((-n) :: Rational),
   decisionPath = dp,
   cFlow  = Stable
   } ]
@@ -568,20 +700,20 @@ stmSem (ToFloat fp (UnaryOp NegOp (Rat n))) _ _ _ dp _ = [ ACeb {
 
 stmSem (TypeCast _ _ (FInt n)) _ _ _ dp _ =
   [ ACeb {
-    conds  = Cond [(BTrue,FBTrue)],
-    rExprs = [Int n],
-    fpExprs = [FInt n],
-    eExpr  = ErrRat 0,
+    conds  = trueConds,
+    rExprs = RDeclRes [Int n],
+    fpExprs = FDeclRes [FInt n],
+    eExpr  = Just $ ErrRat 0,
     decisionPath = dp,
     cFlow  = Stable
   } ]
 
 stmSem (TypeCast _ toType (FCnst fromType n)) _ _ _ dp _ =
   [ ACeb {
-    conds   = Cond [(BTrue,FBTrue)],
-    rExprs  = [Rat n],
-    fpExprs = [TypeCast fromType toType (FCnst fromType n)],
-    eExpr   = ErrRat $ errRat + abs (ratTo - ratFrom),
+    conds   = trueConds,
+    rExprs  = RDeclRes [Rat n],
+    fpExprs = FDeclRes [TypeCast fromType toType (FCnst fromType n)],
+    eExpr   = Just $ ErrRat $ errRat + abs (ratTo - ratFrom),
     decisionPath = dp,
     cFlow  = Stable
   } ]
@@ -602,32 +734,36 @@ stmSem (TypeCast fp1 fp2 a) interp env config dp dps =
     where
       makeCebCast :: ACeb -> ACeb
       makeCebCast ceb = ceb {
-                  rExprs  = rExprs ceb,
-                  fpExprs = [TypeCast fp1 fp2 f | f <- fpExprs ceb],
-                  eExpr  = maxErr [ErrCast fp1 fp2 r (eExpr ceb)| r <- rExprs ceb]
+                  rExprs  = RDeclRes $ rDeclRes $ rExprs ceb,
+                  fpExprs = FDeclRes [TypeCast fp1 fp2 f | f <- fDeclRes $ fpExprs ceb],
+                  eExpr  = Just $ maxErr [ErrCast fp1 fp2 r (fromMaybe (error "stmSem TypeCast: unexpected argument")
+                                $ eExpr ceb)| r <- rDeclRes $ rExprs ceb]
               }
 
 stmSem (FVar fp x) _ (Env env) _ dp _ =
   fromMaybe
-    [ACeb{conds = Cond [(BTrue, FBTrue)],
-          rExprs = [RealMark x],
-          fpExprs = [FVar fp x],
-          eExpr = if fp == TInt then ErrRat 0 else ErrorMark x fp,
+    [ACeb{conds = trueConds,
+          rExprs = RDeclRes [RealMark x],
+          fpExprs = FDeclRes [FVar fp x],
+          eExpr = Just $ if fp == TInt then ErrRat 0 else ErrorMark x fp,
           decisionPath = dp, cFlow = Stable}]
     (lookup x env)
 
 stmSem (FArrayElem fp _ v _) _ (Env env) _ dp _ =
   fromMaybe
-    [ACeb{conds = Cond [(BTrue, FBTrue)],
-          rExprs  = [RealMark v],
-          fpExprs = [FVar fp v],
-          eExpr = if fp == TInt then ErrRat 0 else ErrorMark v fp,
+    [ACeb{conds = trueConds,
+          rExprs  = RDeclRes [RealMark v],
+          fpExprs = FDeclRes [FVar fp v],
+          eExpr = Just $ if fp == TInt then ErrRat 0 else ErrorMark v fp,
           decisionPath = dp, cFlow = Stable}]
     (lookup v env)
 
 stmSem (FEFun _ f _ actArgs) interp env config dp dps =
   case lookup f interp of
-    Just (_, _, formArgs, funSem) -> semEFun f formArgs actArgs (combos argSem) funSem (length funSem) dp
+    Just (_, _, formArgs, funSem) -> semEFun f formArgs actArgs
+                                             (combos argSem)
+                                             (replaceLetVarsFresh env formArgs funSem)
+                                             (length funSem) dp
     --
     Nothing -> error ("Function " ++ f ++ " not found")
   where
@@ -655,21 +791,34 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env config dp dps =
 
     semMulPow2 :: Bool -> ACebS -> ACeb
     semMulPow2 left [ceb1,ceb2] =
-        ACeb {
-            conds  = if left
-                     then Cond [(simplBExprFix $ And c2 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a2))), g2) | (c2, g2) <- uncond (conds ceb2)]
-                     else Cond [(simplBExprFix $ And c1 (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a1))), g1) | (c1, g1) <- uncond (conds ceb1)],
-            rExprs  = [BinaryOp   MulOp    r1 r2 | r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
-            fpExprs = [BinaryFPOp MulOp fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr   = if left then ErrMulPow2L fp n (eExpr ceb2) else ErrMulPow2R fp n (eExpr ceb1),
-            decisionPath = root,
-            cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
-        }
-        where
-            n = if left then getExp (rExprs ceb1) else getExp (rExprs ceb2)
-            getExp [Int m] = round $ logBase (2 :: Double) (fromIntegral m)
-            getExp [Rat m] = round $ logBase (2 :: Double) (realToFrac m)
-            getExp _ = error "getExp: something went wrong"
+      ACeb {
+        conds = if left
+                then Conds [Cond {
+                  realPathCond = realPathCond cond
+                 ,fpPathCond = fpPathCond cond
+                 ,realCond = simplBExprFix $ And (realCond cond) (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a2)))
+                 ,fpCond = fpPathCond cond}
+                | cond <- uncond (conds ceb2)]
+                else Conds [Cond {
+                  realPathCond = realPathCond cond
+                 ,fpPathCond = fpPathCond cond
+                 ,realCond = simplBExprFix $ And (realCond cond) (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a1)))
+                 ,fpCond = fpPathCond cond}
+                | cond <- uncond (conds ceb1)],
+        rExprs  = RDeclRes [BinaryOp   MulOp    r1 r2 | r1 <- rDeclRes $ rExprs  ceb1, r2 <- rDeclRes $ rExprs ceb2],
+        fpExprs = FDeclRes [BinaryFPOp MulOp fp f1 f2 | f1 <- fDeclRes $ fpExprs ceb1, f2 <- fDeclRes $ fpExprs ceb2],
+        eExpr   = Just $ if left then ErrMulPow2L fp n (fromMaybe (error "semMulPow2: unexpected argument.")
+                                                       $ eExpr ceb2)
+                         else ErrMulPow2R fp n (fromMaybe (error "semMulPow2: unexpected argument.")
+                                               $ eExpr ceb1),
+        decisionPath = root,
+        cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
+      }
+      where
+        n = if left then getExp (rDeclRes $ rExprs ceb1) else getExp (rDeclRes $ rExprs ceb2)
+        getExp [Int m] = round $ logBase (2 :: Double) (fromIntegral m)
+        getExp [Rat m] = round $ logBase (2 :: Double) (realToFrac m)
+        getExp _ = error "getExp: something went wrong"
 
     semMulPow2 _ cebs = error $ "semMulPow2: something went wrong\n ceb1 = " ++ show cebs ++ "\n"
 
@@ -689,30 +838,41 @@ stmSem (BinaryFPOp SubOp fp a1 a2) interp env config dp dps =
   where
     semSubImproved [ceb1,ceb2] =
       [ACeb {
-            conds  = Cond [(
-            simplBExprFix $
-            And (And (Rel LtE (BinaryOp DivOp r2 (Int 2)) r1)
-                     (Rel LtE r1 (BinaryOp MulOp r2 (Int 2)))) (And c1 c2)
-                           ,simplFBExprFix $ FAnd g1 g2) |
-                                         (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2),
-                                         r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
-            rExprs  = [BinaryOp   SubOp    r1 r2 | r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
-            fpExprs = [BinaryFPOp SubOp fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr   = maxErr [ErrSubSternenz fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+        conds = Conds [Cond {realPathCond = simplBExprFix $ And (realPathCond cond1) (realPathCond cond2)
+                            ,fpPathCond = simplFBExprFix  $ FAnd (fpPathCond cond1) (fpPathCond cond2)
+                            ,realCond = simplBExprFix $
+                                         And (And (Rel LtE (BinaryOp DivOp r2 (Int 2)) r1)
+                                         (Rel LtE r1 (BinaryOp MulOp r2 (Int 2)))) (And (realCond cond1) (realCond cond2))
+                            ,fpCond = simplFBExprFix $ FAnd (fpCond cond1) (fpCond cond2)}
+                      | cond1 <- uncond (conds ceb1), cond2 <- uncond (conds ceb2),
+                        r1 <- rDeclRes $ rExprs ceb1, r2 <- rDeclRes $ rExprs ceb2],
+            rExprs  = RDeclRes [BinaryOp   SubOp    r1 r2 | r1 <- rDeclRes $ rExprs  ceb1
+                                                          , r2 <- rDeclRes $ rExprs ceb2],
+            fpExprs = FDeclRes [BinaryFPOp SubOp fp f1 f2 | f1 <- fDeclRes $ fpExprs ceb1
+                                                          , f2 <- fDeclRes $ fpExprs ceb2],
+            eExpr   = Just $ maxErr [ErrSubSternenz fp r1 (fromMaybe (error "stmSem BinaryFPOp: unexpected argument.") $ eExpr ceb1) r2 (fromMaybe (error "stmSem BinaryFPOp: unexpected argument.") $ eExpr ceb2)
+                                    | r1 <- rDeclRes $ rExprs ceb1
+                                    , r2 <- rDeclRes $ rExprs ceb2],
             decisionPath = dp,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }
       ,ACeb {
-            conds  = Cond [(
-              simplBExprFix $
-              And (Or (Rel Gt (BinaryOp DivOp r2 (Int 2)) r1)
-                      (Rel Gt r1 (BinaryOp MulOp r2 (Int 2)))) (And c1 c2)
-                           ,simplFBExprFix $ FAnd g1 g2) |
-                                         (c1, g1) <- uncond (conds ceb1), (c2, g2) <- uncond (conds ceb2),
-                                         r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
-            rExprs  = [BinaryOp   SubOp    r1 r2 | r1 <- rExprs  ceb1, r2 <- rExprs ceb2],
-            fpExprs = [BinaryFPOp SubOp fp f1 f2 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2],
-            eExpr   = maxErr [ErrBinOp SubOp fp r1 (eExpr ceb1) r2 (eExpr ceb2) | r1 <- rExprs ceb1, r2 <- rExprs ceb2],
+            conds  = Conds [Cond {realPathCond = simplBExprFix $ And (realPathCond cond1) (realPathCond cond2)
+                                 ,fpPathCond = simplFBExprFix  $ FAnd (fpPathCond cond1) (fpPathCond cond2)
+                                 ,realCond = simplBExprFix $
+                                        And (Or (Rel Gt (BinaryOp DivOp r2 (Int 2)) r1)
+                                                (Rel Gt r1 (BinaryOp MulOp r2 (Int 2)))) (And (realCond cond1) (realCond cond2))
+                                 ,fpCond = simplFBExprFix $ FAnd (fpCond cond1) (fpCond cond2)}
+                           | cond1 <- uncond (conds ceb1), cond2 <- uncond (conds ceb2),
+                                      r1 <- rDeclRes $ rExprs  ceb1, r2 <- rDeclRes $ rExprs ceb2],
+            rExprs  = RDeclRes [BinaryOp SubOp r1 r2 | r1 <- rDeclRes $ rExprs  ceb1
+                                                     , r2 <- rDeclRes $ rExprs ceb2],
+            fpExprs = FDeclRes [BinaryFPOp SubOp fp f1 f2 | f1 <- fDeclRes $ fpExprs ceb1
+                                                          , f2 <- fDeclRes $ fpExprs ceb2],
+            eExpr   = Just $ maxErr [ErrBinOp SubOp fp r1 (fromMaybe (error "stmSem BinaryFPOp: unexpected argument.")
+                                    $ eExpr ceb1) r2 (fromMaybe (error "stmSem BinaryFPOp: unexpected argument.") $ eExpr ceb2)
+                                    | r1 <- rDeclRes $ rExprs ceb1
+                                    , r2 <- rDeclRes $ rExprs ceb2],
             decisionPath = dp,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }]
@@ -729,9 +889,9 @@ stmSem (UnaryFPOp FloorOp TInt a) interp env config dp dps =
     makeCeb ceb1 =
       ACeb {
         conds  = conds ceb1,
-        rExprs  = [UnaryOp   FloorOp    r1 | r1 <- rExprs ceb1],
-        fpExprs = [UnaryFPOp FloorOp TInt f1 | f1 <- fpExprs ceb1],
-        eExpr   = maxErr [ErrUnOp FloorOp TInt r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        rExprs  = RDeclRes [UnaryOp   FloorOp    r1 | r1 <- rDeclRes $ rExprs ceb1],
+        fpExprs = FDeclRes [UnaryFPOp FloorOp TInt f1 | f1 <- fDeclRes $  fpExprs ceb1],
+        eExpr   = Just $ maxErr [ErrUnOp FloorOp TInt r1 (fromMaybe (error "stmSem FloorOp: unexpected argument.") $ eExpr ceb1) | r1 <- rDeclRes $ rExprs ceb1],
         decisionPath = dp,
         cFlow  = cFlow ceb1}
 
@@ -743,23 +903,29 @@ stmSem (UnaryFPOp FloorOp fp a) interp env config dp dps =
     semOperand = stmSem a interp env config dp dps
     makeCeb ceb1 =
       [ACeb {
-        conds  = Cond [(simplBExprFix $
-            And rc (Or (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (eExpr ceb1))))
-            (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (eExpr ceb1))))), fc)
-            | (rc,fc) <- uncond (conds ceb1), r <- rExprs ceb1],
-        rExprs  = [UnaryOp   FloorOp    r1 | r1 <- rExprs ceb1],
-        fpExprs = [UnaryFPOp FloorOp fp f1 | f1 <- fpExprs ceb1],
-        eExpr   = maxErr [ErrUnOp FloorOp fp r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        conds = Conds [Cond {realPathCond = realPathCond cond
+                            ,fpPathCond = fpPathCond cond
+                            ,realCond = simplBExprFix $
+                                        And (realCond cond) (Or (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (fromMaybe (error "UnaryFPOp FloorOp: unexpected argument.") $ eExpr ceb1))))
+                                        (Rel Neq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (fromMaybe (error "UnaryFPOp FloorOp: unexpected argument.") $ eExpr ceb1)))))
+                            ,fpCond = fpCond cond}
+                           | cond <- uncond (conds ceb1), r <- rDeclRes $ rExprs ceb1],
+        rExprs  = RDeclRes [UnaryOp   FloorOp    r1 | r1 <- rDeclRes $ rExprs ceb1],
+        fpExprs = FDeclRes [UnaryFPOp FloorOp fp f1 | f1 <- fDeclRes $ fpExprs ceb1],
+        eExpr   = Just $ maxErr [ErrUnOp FloorOp fp r1 (fromMaybe (error "UnaryFPOp FloorOp: unexpected argument.") $ eExpr ceb1) | r1 <- rDeclRes $ rExprs ceb1],
         decisionPath = dp,
         cFlow  = cFlow ceb1}
       ,ACeb {
-        conds  = Cond [(simplBExprFix $
-            And rc (And (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (eExpr ceb1))))
-            (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (eExpr ceb1))))),fc)
-            | (rc,fc) <- uncond (conds ceb1), r <- rExprs ceb1],
-        rExprs  = [UnaryOp   FloorOp    r1 | r1 <- rExprs ceb1],
-        fpExprs = [UnaryFPOp FloorOp fp f1 | f1 <- fpExprs ceb1],
-        eExpr   = maxErr [ErrFloorNoRound fp r1 (eExpr ceb1) | r1 <- rExprs ceb1],
+        conds = Conds [Cond {realPathCond = realPathCond cond
+                            ,fpPathCond = fpPathCond cond
+                            ,realCond = simplBExprFix $
+                                        And (realCond cond) (And (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp SubOp r (fromMaybe (error "UnaryFPOp FloorOp: unexpected argument.") $ eExpr ceb1))))
+                                        (Rel Eq (UnaryOp FloorOp r) (UnaryOp FloorOp (BinaryOp AddOp r (fromMaybe (error "UnaryFPOp FloorOp: unexpected argument.") $ eExpr ceb1)))))
+                            ,fpCond = fpCond cond}
+                           | cond <- uncond (conds ceb1), r <- rDeclRes $ rExprs ceb1],
+        rExprs  = RDeclRes [UnaryOp FloorOp r1 | r1 <- rDeclRes $ rExprs ceb1],
+        fpExprs = FDeclRes [UnaryFPOp FloorOp fp f1 | f1 <- fDeclRes $ fpExprs ceb1],
+        eExpr   = Just $ maxErr [ErrFloorNoRound fp r1 (fromMaybe (error "UnaryFPOp FloorOp: unexpected argument.") $ eExpr ceb1) | r1 <- rDeclRes $ rExprs ceb1],
         decisionPath = dp,
         cFlow  = cFlow ceb1}
       ]
@@ -783,23 +949,39 @@ stmSem (FFma fp a1 a2 a3) interp env config dp dps =
     semFma :: ACebS -> ACeb
     semFma [ceb1,ceb2,ceb3] =
         ACeb {
-            conds  = Cond [ (simplBExprFix $ And c1 (And c2 c3), simplFBExprFix $ FAnd g1 (FAnd g2 g3)) |
-                       (c1, g1) <- uncond (conds ceb1),
-                       (c2, g2) <- uncond (conds ceb2),
-                       (c3, g3) <- uncond (conds ceb3)],
-            rExprs  = [BinaryOp AddOp r1 (BinaryOp MulOp r2 r3) | r1 <- rExprs  ceb1, r2 <- rExprs  ceb2, r3 <- rExprs  ceb3],
-            fpExprs = [FFma fp f1 f2 f3 | f1 <- fpExprs ceb1, f2 <- fpExprs ceb2, f3 <- fpExprs ceb3],
-            eExpr  = maxErr [ErrFma fp r1 (eExpr ceb1) r2 (eExpr ceb2) r3 (eExpr ceb3) | r1 <- rExprs ceb1, r2 <- rExprs ceb2, r3 <- rExprs ceb3],
+            conds  = Conds [Cond {realPathCond = simplBExprFix $ And (realPathCond cond1)
+                                                 (And (realPathCond cond2) (realPathCond cond3))
+                                 ,fpPathCond = simplFBExprFix $ FAnd (fpPathCond cond1)
+                                                 (FAnd (fpPathCond cond2) (fpPathCond cond3))
+                                 ,realCond = simplBExprFix $ And (realCond cond1)
+                                                 (And (realCond cond2) (realCond cond3))
+                                 ,fpCond = simplFBExprFix $ FAnd (fpCond cond1)
+                                                 (FAnd (fpCond cond2) (fpCond cond3))}
+                      |cond1 <- uncond (conds ceb1),
+                       cond2 <- uncond (conds ceb2),
+                       cond3 <- uncond (conds ceb3)],
+            rExprs  = RDeclRes [BinaryOp AddOp r1 (BinaryOp MulOp r2 r3) | r1 <- rDeclRes $ rExprs  ceb1
+                                                                         , r2 <- rDeclRes $ rExprs  ceb2
+                                                                         , r3 <- rDeclRes $ rExprs  ceb3],
+            fpExprs = FDeclRes [FFma fp f1 f2 f3 | f1 <- fDeclRes $ fpExprs ceb1
+                                                 , f2 <- fDeclRes $ fpExprs ceb2
+                                                 , f3 <- fDeclRes $ fpExprs ceb3],
+            eExpr  = Just $ maxErr [ErrFma fp r1 (fromMaybe (error "semFma: unexpected argument.") $ eExpr ceb1)
+                                              r2 (fromMaybe (error "semFma: unexpected argument.") $ eExpr ceb2)
+                                              r3 (fromMaybe (error "semFma: unexpected argument.") $ eExpr ceb3)
+                            | r1 <- rDeclRes $ rExprs ceb1
+                            , r2 <- rDeclRes $ rExprs ceb2
+                            , r3 <- rDeclRes $ rExprs ceb3],
             decisionPath = dp,
             cFlow  = mergeControlFlow (cFlow ceb1) (mergeControlFlow (cFlow ceb2) (cFlow ceb3))
         }
     semFma _ = error "stmSem semISub: something went wrong"
 
 stmSem UnstWarning _ _ _ dp _ = [ ACeb {
-    conds  = Cond [(BTrue,FBTrue)],
-    rExprs = [Int 0],
-    fpExprs = [FInt 0],
-    eExpr  = ErrRat 0,
+    conds  = trueConds,
+    rExprs = RDeclRes [Int 0],
+    fpExprs = FDeclRes [FInt 0],
+    eExpr  = Just $ ErrRat 0,
     decisionPath = dp,
     cFlow  = Stable
     } ]
@@ -810,16 +992,17 @@ stmSem (Let (letElem:rest) stm) interp env config dp dps
   | isArithExpr (exprFLetElem letElem) =
     [ACeb{
        conds = simplifyConditions $ mergeConds (varBindConds [var] [expr] [cebExpr] $ conds cebStm) (conds cebExpr)
-      ,rExprs  = [RLet [realLetElem realExprLetElem] realExpr | realExpr <- rExprs cebStm]
-      ,fpExprs = [Let  [letElem]      fpExpr  | fpExpr   <- fpExprs cebStm]
-      ,eExpr   = RLet [realLetElem realExprLetElem
-                      ,errorLetElem cebExpr] (replaceInAExpr (replaceErrorMarks var) (const Nothing) $ eExpr cebStm)
+      ,rExprs  = RDeclRes [RLet [realLetElem realExprLetElem] realExpr | realExpr <- rDeclRes $ rExprs cebStm]
+      ,fpExprs = FDeclRes [Let [letElem] fpExpr | fpExpr <- fDeclRes $ fpExprs cebStm]
+      ,eExpr   = Just $ RLet [realLetElem realExprLetElem, errorLetElem cebExpr]
+                             (replaceInAExpr (replaceErrorMarks var) (const Nothing)
+                              $ fromMaybe (error "stmSem: unexpected argument.") $ eExpr cebStm)
       ,decisionPath = decisionPath cebStm
       ,cFlow = mergeControlFlow (cFlow cebStm) (cFlow cebExpr)
     }
-    | cebStm  <- stmSem newStm  interp env config dp dps
-    , cebExpr <- stmSem expr    interp env config dp dps
-    , realExprLetElem <- rExprs cebExpr
+    | cebStm  <- stmSem newStm interp env config dp dps
+    , cebExpr <- stmSem expr interp env config dp dps
+    , realExprLetElem <- rDeclRes $ rExprs cebExpr
     ]
   where
     var  = varFLetElem  letElem
@@ -831,7 +1014,7 @@ stmSem (Let (letElem:rest) stm) interp env config dp dps
                           ,letExpr = re}
     errorLetElem ceb = LetElem {letVar  = errVarName var
                                ,letType = Real
-                               ,letExpr = eExpr ceb}
+                               ,letExpr = fromMaybe (error "stmSem let: unexpected argument") $ eExpr ceb}
     newStm = if null rest then stm else (Let rest stm)
 
 stmSem (Let (letElem:rest) stm) interp env config dp dps = stmSem newStm interp newEnv config dp dps
@@ -840,7 +1023,7 @@ stmSem (Let (letElem:rest) stm) interp env config dp dps = stmSem newStm interp 
     newEnv = addLetElem2Env interp config dp dps env letElem
 
 stmSem (Ite fbe stm1 stm2) interp env config@SemConf{ assumeTestStability = sta, mergeUnstables = mu } dp dps =
-  semIte sta mu dp dps semThen semElse fbe
+  semIte sta mu dps semThen semElse fbe
   where
     semThen = stmSem stm1 interp env config (dp ~> 0) dps
     semElse = stmSem stm2 interp env config (dp ~> 1) dps
@@ -856,20 +1039,20 @@ stmSem (ListIte listThen stmElse) interp env config@SemConf { assumeTestStabilit
 
 stmSem forloop@(ForLoop _ (FInt _) (FInt _) _ _ _ forBody) _ _ _ _ _
   | isIntFAExpr forBody = [ACeb {
-            conds  = Cond [(BTrue, FBTrue)],
-            rExprs = [fae2real forloop] ,
-            fpExprs = [forloop],
-            eExpr  = Int 0,
+            conds  = trueConds,
+            rExprs = RDeclRes [fae2real forloop] ,
+            fpExprs = FDeclRes [forloop],
+            eExpr  = Just $ Int 0,
             decisionPath = root,
             cFlow  = Stable
         }]
 
 stmSem forloop@(ForLoop _ (ToFloat _ (Int _)) (ToFloat _ (Int _)) _ _ _ forBody) _ _ _ _ _
   | isIntFAExpr forBody = [ACeb {
-            conds  = Cond [(BTrue, FBTrue)],
-            rExprs = [fae2real forloop] ,
-            fpExprs = [forloop],
-            eExpr  = Int 0,
+            conds  = trueConds,
+            rExprs = RDeclRes [fae2real forloop] ,
+            fpExprs = FDeclRes [forloop],
+            eExpr  = Just $ Int 0,
             decisionPath = root,
             cFlow  = Stable
         }]
@@ -879,6 +1062,7 @@ stmSem (ForLoop _ _ _ _ _ _ _) _ _ _ _ _ =
 
 stmSem fae _ _ _ _ _ = error $ "stmSem: niy for " ++ show fae
 
+
 semEFun :: FunName -> [Arg] -> [FAExpr] -> [ACebS] -> ACebS -> Int -> LDecisionPath -> ACebS
 semEFun _ _ _ _ [] _ _ = []
 semEFun fun formArgs actualArgs semArgsCombos (c:cs) n dp =
@@ -887,24 +1071,35 @@ semEFun fun formArgs actualArgs semArgsCombos (c:cs) n dp =
   semEFun fun formArgs actualArgs semArgsCombos cs n dp
   where
     aux ceb fa aa argsSem =
-      ceb {
-          conds  = Cond $ map newcond $ combos [uncond (conds ceb), conjComboArgs],
-          rExprs = map (argsBindAExpr fa aa argsSem) (rExprs ceb),
-          eExpr  = argsBindAExpr fa aa argsSem (eExpr ceb),
-          cFlow  = mergeControlFlowList (cFlow ceb : map cFlow argsSem)
-      }
+      ceb {conds  = Conds $ map newcond $ combos [uncond (conds ceb), conjComboArgs],
+           rExprs = case rExprs ceb of
+                      RDeclRes decls -> RDeclRes $ map (argsBindAExpr fa aa argsSem) decls
+                      RPredRes decls -> RPredRes $ map (argsBindBExprStm fa aa argsSem) decls,
+           eExpr  = case eExpr ceb of
+                      Just e -> Just $ argsBindAExpr fa aa argsSem e
+                      Nothing -> Nothing,
+           cFlow  = mergeControlFlowList (cFlow ceb : map cFlow argsSem)
+          }
       where
         combosArgs = combos (map (uncond . conds) argsSem)
-        conjComboArgs = zip (map condArgs combosArgs) (map guardArgs combosArgs)
-        newcond [(rc, fpc), (rcargs, fpcargs)] =
-           (simplBExprFix  $ And  (argsBindBExpr  fa aa argsSem rc) rcargs,
-            simplFBExprFix $ FAnd (argsBindFBExpr fa aa fpc) fpcargs)
+        conjComboArgs = map toCond $ List.zip4 (map realPathCondArgs combosArgs)
+                                               (map fpPathCondArgs combosArgs)
+                                               (map realCondArgs combosArgs)
+                                               (map fpCondArgs combosArgs)
+        newcond [cond, condArg] =
+          Cond {realPathCond = simplBExprFix $ And (argsBindBExpr fa aa argsSem (realPathCond cond)) (realPathCond condArg)
+               ,fpPathCond = simplFBExprFix $ FAnd (argsBindFBExpr fa aa (fpPathCond cond)) (fpPathCond condArg)
+               ,realCond = simplBExprFix $ And (argsBindBExpr fa aa argsSem (realCond cond)) (realCond condArg)
+               ,fpCond = simplFBExprFix $ FAnd (argsBindFBExpr fa aa (fpCond cond)) (fpCond condArg)}
         newcond _ = error "semEFun newcond: something went wrong"
-
-        condArgs  []  = BTrue
-        condArgs  arg = foldl1 And   (map realCond arg)
-        guardArgs [] = FBTrue
-        guardArgs arg = foldl1 FAnd (map fpCond   arg)
+        realPathCondArgs  []  = BTrue
+        realPathCondArgs arg = foldl1 And (map realPathCond arg)
+        fpPathCondArgs [] = FBTrue
+        fpPathCondArgs arg = foldl1 FAnd (map fpPathCond arg)
+        realCondArgs  []  = BTrue
+        realCondArgs arg = foldl1 And (map realCond arg)
+        fpCondArgs [] = FBTrue
+        fpCondArgs arg = foldl1 FAnd (map fpCond arg)
 
 collapseSem :: [ACeb] -> [ACeb]
 collapseSem sem = collapsedStableCase ++ collapsedUnstableCase
@@ -950,7 +1145,7 @@ varBindAExprReal fa _ sem (ErrorMark x fp) = bindErrorMark fa sem
     where
         bindErrorMark :: [VarName] -> ACebS -> EExpr
         bindErrorMark [] [] = ErrorMark x fp
-        bindErrorMark (y:ys) (ceb:cebs) | x == y    = eExpr ceb
+        bindErrorMark (y:ys) (ceb:cebs) | x == y    = fromMaybe (error "varBindAExprReal: unexpected argument.") $ eExpr ceb
                                         | otherwise = bindErrorMark ys cebs
         bindErrorMark _ _ = error "bindErrorMark: something went wrong"
 varBindAExprReal fa aa sem (ErrBinOp op fp r1 e1 r2 e2) = ErrBinOp op fp (varBindAExprReal fa aa sem r1)
@@ -1008,10 +1203,13 @@ varBindBExprReal fa aa sem (Rel rel a1 a2)  = Rel rel (varBindAExprReal fa aa se
 varBindBExprReal fa aa sem (EPred f args) = EPred f (map (varBindAExprReal fa aa sem) args)
 
 varBindCond :: [VarName] -> [FAExpr] -> ACebS -> Condition -> Condition
-varBindCond varNames exprs sem (be,fbe) = (varBindBExpr varNames exprs sem be, varBindFBExpr varNames exprs fbe)
+varBindCond varNames exprs sem cond = Cond {realPathCond = varBindBExpr varNames exprs sem (realPathCond cond)
+                                           ,fpPathCond = varBindFBExpr varNames exprs (fpPathCond cond)
+                                           ,realCond = varBindBExpr varNames exprs sem (realCond cond)
+                                           ,fpCond = varBindFBExpr varNames exprs (fpCond cond)}
 
 varBindConds :: [VarName] -> [FAExpr] -> ACebS -> Conditions -> Conditions
-varBindConds varNames exprs sem (Cond cs) = Cond (map (varBindCond varNames exprs sem) cs)
+varBindConds varNames exprs sem (Conds cs) = Conds (map (varBindCond varNames exprs sem) cs)
 
 replaceLocalVarsInErrExpr :: LocalEnv -> AExpr -> AExpr
 replaceLocalVarsInErrExpr localEnv = replaceInAExpr (const Nothing) replaceLocalVars
@@ -1055,7 +1253,8 @@ varBindAExpr fa _ sem (ErrorMark x fp) = bindErrorMark fa sem
     where
         bindErrorMark :: [VarName] -> ACebS -> EExpr
         bindErrorMark [] [] = ErrorMark x fp
-        bindErrorMark (y:ys) (ceb:cebs) | x == y    = eExpr ceb
+        bindErrorMark (y:ys) (ceb:cebs) | x == y    = fromMaybe (error "varBindAExpr: unexpected argument.")
+                                                      $ eExpr ceb
                                         | otherwise = bindErrorMark ys cebs
         bindErrorMark _ _ = error "bindErrorMark: something went wrong"
 varBindAExpr fa aa sem (ErrBinOp op fp r1 e1 r2 e2) = ErrBinOp op fp (varBindAExpr fa aa sem r1)
@@ -1126,6 +1325,22 @@ varBindBExpr fa aa sem (Not e)     = Not (varBindBExpr fa aa sem e)
 varBindBExpr fa aa sem (Rel rel a1 a2) = Rel rel (varBindAExpr fa aa sem a1) (varBindAExpr fa aa sem a2)
 varBindBExpr fa aa sem (EPred f args) = EPred f (map (varBindAExpr fa aa sem) args)
 
+varBindBExprStm :: [VarName] -> [FAExpr] -> ACebS -> BExprStm -> BExprStm
+varBindBExprStm fa aa sem (RBLet letElems stm) = RBLet (map argsBindLetElem letElems) (varBindBExprStm fa aa sem stm)
+  where
+    argsBindLetElem elem = elem {letExpr = varBindAExpr fa aa sem (letExpr elem)}
+
+varBindBExprStm fa aa sem (RBIte be stmThen stmElse)  = RBIte (varBindBExpr fa aa sem be)
+                                                              (varBindBExprStm fa aa sem stmThen)
+                                                              (varBindBExprStm fa aa sem stmElse)
+
+varBindBExprStm fa aa sem (RBListIte listThen stmElse) = RBListIte (map argsBindThenBranch listThen)
+                                                                   (varBindBExprStm fa aa sem stmElse)
+  where
+    argsBindThenBranch (beThen,stmThen) = (varBindBExpr fa aa sem beThen, varBindBExprStm fa aa sem stmThen)
+
+varBindBExprStm fa aa sem (RBExpr be) = RBExpr $ varBindBExpr fa aa sem be
+
 varBindFBExpr :: [VarName] -> [FAExpr] -> FBExpr -> FBExpr
 varBindFBExpr _  _  FBTrue       = FBTrue
 varBindFBExpr _  _  FBFalse      = FBFalse
@@ -1139,12 +1354,10 @@ varBindFBExpr fa aa (FEPred isTrans predAbs f args) = FEPred isTrans predAbs f (
 varBindFBExpr fa aa (BIsValid be)   = BIsValid $ varBindFBExpr fa aa be
 varBindFBExpr fa aa (BValue be)     = BValue $ varBindFBExpr fa aa be
 
-
 varBindFBExprStm :: [VarName] -> [FAExpr] -> FBExprStm -> FBExprStm
 varBindFBExprStm fa aa (BLet letElems stm) = BLet (map argsBindLetElem letElems) (varBindFBExprStm fa aa stm)
   where
     argsBindLetElem (x,t,expr) = (x,t,varBindFAExpr fa aa expr)
-
 
 varBindFBExprStm fa aa (BIte be stmThen stmElse)  = BIte (varBindFBExpr    fa aa be)
                                                           (varBindFBExprStm fa aa stmThen)
@@ -1171,6 +1384,9 @@ argsBindFAExpr args = varBindFAExpr (map argName args)
 
 argsBindBExpr :: [Arg] -> [FAExpr] -> ACebS -> BExpr -> BExpr
 argsBindBExpr args = varBindBExpr (map argName args)
+
+argsBindBExprStm :: [Arg] -> [FAExpr] -> ACebS -> BExprStm -> BExprStm
+argsBindBExprStm args = varBindBExprStm (map argName args)
 
 argsBindFBExpr :: [Arg] -> [FAExpr] -> FBExpr -> FBExpr
 argsBindFBExpr args = varBindFBExpr (map argName args)
@@ -1200,7 +1416,7 @@ removeInfiniteCebS ((f,(isTrans,fp,args,cebs)):is) =
   else removeInfiniteCebS is
   where
     filteredCebS = filter (not . hasInfiniteError) cebs
-    hasInfiniteError ACeb{ eExpr = ee} = ee == Infinity
+    hasInfiniteError ACeb{ eExpr = ee} = fromMaybe (error "removeInfiniteCebS: unexpected argument.") ee == Infinity
 
 checkProgSize :: [(String, (IsTrans,PVSType,[Arg], ACebS))] -> Int -> Int -> IO ()
 checkProgSize [] n maxel | n >= maxel = error "The generated file is too big! Try to run the analysis with the stable tests assumption."
@@ -1219,23 +1435,22 @@ unfoldFunCallInSem interp (f, (isTrans, fp, args, sem)) = (f, (isTrans, fp, args
 
 unfoldFunCallInCeb :: Interpretation -> ACeb -> ACeb
 unfoldFunCallInCeb interp aceb =
-  aceb {
-        conds  = Cond (elimDuplicates $ concatMap (unfoldFunCallsInCond interp) cs),
-        eExpr  = unfoldFunCallInEExprRec interp ee
-    }
+  aceb {conds  = Conds (elimDuplicates $ concatMap (unfoldFunCallsInCond interp) cs),
+        eExpr  = Just $ unfoldFunCallInEExprRec interp (fromMaybe (error "unfoldFunCallInCeb: unexpected argument.") ee)
+       }
     where
-       ACeb { conds = Cond cs, eExpr = ee} = aceb
+       ACeb {conds = Conds cs, eExpr = ee} = aceb
 
 ------------ TO DO --------------------------------------
 -- unfold real and fp condition at the same time ----------
 unfoldFunCallsInCond :: Interpretation -> Condition -> [Condition]
-unfoldFunCallsInCond interp (be,fbe) = res
+unfoldFunCallsInCond interp cond = res
   where
-    res = elimDuplicates $ filter (not . isConditionInconsistent) $ unfoldFunCallsInCond' interp (reverse funCallsF) (reverse funCallsR) [(be,fbe)]
-    funCallsF = funCallListFBExpr fbe
-    funCallsR = funCallListBExpr  be
+    res = elimDuplicates $ filter (not . isFalseCond) $ unfoldFunCallsInCond' interp (reverse funCallsF) (reverse funCallsR) [cond]
+    funCallsF = (funCallListFBExpr (fpCond cond)) ++ (funCallListFBExpr (fpPathCond cond))
+    funCallsR = (funCallListBExpr  (realCond cond)) ++ (funCallListBExpr (realPathCond cond))
 
-unfoldFunCallsInCond' :: [FunctionInterpretation] -> [FAExpr] -> [AExpr] -> [(BExpr, FBExpr)] -> [(BExpr, FBExpr)]
+unfoldFunCallsInCond' :: [FunctionInterpretation] -> [FAExpr] -> [AExpr] -> [Condition] -> [Condition]
 unfoldFunCallsInCond' _ [] [] conditions = conditions
 
 unfoldFunCallsInCond' interp [] (call@(EFun fun _ actArgs):calls) conditions =
@@ -1257,28 +1472,33 @@ unfoldFunCallsInCond' interp (call@(FEFun isTrans fun fp actArgs):calls) funCall
 unfoldFunCallsInCond' _ (ae:_) _ _ = error $ "unfoldFunCallsInCond': function call expected but got " ++ show ae ++ "."
 unfoldFunCallsInCond' _ [] (_:_) _ = error "unfoldFunCallsInCond': something went wrong, real and fp function call lists have a different number of elements."
 
-unfoldRFunCall :: AExpr -> [AExpr] -> [Arg] -> [ACeb] -> (BExpr, FBExpr) -> [(BExpr, FBExpr)]
-unfoldRFunCall call actArgs formArgs sem (bexpr,fbexpr) = map (aux (bexpr,fbexpr)) sem
+unfoldRFunCall :: AExpr -> [AExpr] -> [Arg] -> [ACeb] -> Condition -> [Condition]
+unfoldRFunCall call actArgs formArgs sem cond = map (aux cond) sem
   where
-    aux (be,fbe) ceb = (simplBExprFix $ And (argsBindBExprReal formArgs actArgs sem (realConds $ conds ceb))
-                           (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) be)  (rExprs ceb))
-                       ,fbe)
+    aux cond ceb = cond {realCond = simplBExprFix $ And (argsBindBExprReal formArgs actArgs sem (realConds $ conds ceb))
+                           (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) (realCond cond))  (rDeclRes $ rExprs ceb))
+                        ,realPathCond = simplBExprFix $ And (argsBindBExprReal formArgs actArgs sem (realPathConds $ conds ceb))
+                           (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) (realPathCond cond))  (rDeclRes $ rExprs ceb))}
     replaceRealFunCall expr = replaceR call (argsBindAExprReal  formArgs actArgs sem expr)
 
-unfoldFpFunCall :: IsTrans -> FunName -> PVSType -> [FAExpr] -> [Arg] -> AExpr -> [AExpr] -> [ACeb] -> (BExpr, FBExpr) -> [(BExpr, FBExpr)]
-unfoldFpFunCall isTrans fun fp actArgs formArgs realCall funCallsR sem (bexpr,fbexpr) =
-  concatMap (makeConditions (bexpr,fbexpr)) sem
+unfoldFpFunCall :: IsTrans -> FunName -> PVSType -> [FAExpr] -> [Arg] -> AExpr -> [AExpr] -> [ACeb] -> Condition -> [Condition]
+unfoldFpFunCall isTrans fun fp actArgs formArgs realCall funCallsR sem cond =
+  concatMap (makeConditions cond) sem
   where
-    makeConditions (be,fbe) ceb = map (makeCondition (be,fbe) (rExprs ceb) (fpExprs ceb)) (uncond $ conds ceb)
-    makeCondition  (be,fbe) realExprs fExprs (befun,fbefun) =
-      (if realCall `notElem` funCallsR then
-          be
-        else
-          simplBExprFix $ And (argsBindBExprReal formArgs realActArgs sem befun)
-                           (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) be) realExprs)
-      ,
-      simplFBExprFix $ FAnd (argsBindFBExpr formArgs actArgs fbefun)
-                            (listFOr $ map (\fpExpr -> replaceInFBExpr (return Nothing) (replaceFPFunCall fpExpr) fbe) fExprs))
+    makeConditions cond ceb = map (makeCondition cond (rDeclRes $ rExprs ceb) (fDeclRes $ fpExprs ceb)) (uncond $ conds ceb)
+    makeCondition  cond realExprs fExprs condFun =
+      Cond {realPathCond = if realCall `notElem` funCallsR then (realPathCond cond)
+                           else
+                           simplBExprFix $ And (argsBindBExprReal formArgs realActArgs sem (realPathCond condFun))
+                           (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) (realPathCond cond)) realExprs)
+           ,fpPathCond = simplFBExprFix $ FAnd (argsBindFBExpr formArgs actArgs (fpPathCond condFun))
+                            (listFOr $ map (\fpExpr -> replaceInFBExpr (return Nothing) (replaceFPFunCall fpExpr) (fpPathCond cond)) fExprs)
+           ,realCond = if realCall `notElem` funCallsR then (realCond cond)
+                       else
+                       simplBExprFix $ And (argsBindBExprReal formArgs realActArgs sem (realCond condFun))
+                           (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) (realCond cond)) realExprs)
+           ,fpCond = simplFBExprFix $ FAnd (argsBindFBExpr formArgs actArgs (fpCond condFun))
+                            (listFOr $ map (\fpExpr -> replaceInFBExpr (return Nothing) (replaceFPFunCall fpExpr) (fpCond cond)) fExprs)}
     realActArgs  = map (replaceInAExpr realMark2Var (const Nothing) . fae2real) actArgs
     fpCall   = FEFun isTrans fun fp actArgs
     replaceRealFunCall expr = replaceR realCall (argsBindAExprReal  formArgs realActArgs sem expr)
@@ -1309,7 +1529,7 @@ unfoldFunCallInEExpr interp (call@(EFun fun _ actArgs):calls) be = unfoldFunCall
   where
     unfoldedFun = maxErr $ map (\expr -> replaceInAExpr (replaceR call (argsBindAExprReal formArgs actArgs sem expr)) (const Nothing) be) rexprs
     -- unfoldedFun = listOr $ map (\expr -> replaceInBExpr (replaceR call expr) (const Nothing) be) rexprs
-    rexprs = concatMap rExprs sem
+    rexprs = concatMap (rDeclRes . rExprs) sem
     formArgs = functionFormalArgs fun interp
     sem = functionSemantics fun interp
 unfoldFunCallInEExpr _ (expr:_) _ = error $ "unfoldFunCallInEExpr: " ++ show expr ++ " is not a function call."

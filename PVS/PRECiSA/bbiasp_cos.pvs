@@ -2,8 +2,8 @@ bbiasp_cos: THEORY
 BEGIN
 
   IMPORTING interval_ulp_sp,
-  	    float@aerr754sp_cos,
-	    interval_arith@interval_trig
+  	        axm_bnd@aerr_ulp__single,
+	          interval_arith@interval_trig
 
   R,E: VAR Interval
   n  : VAR nat
@@ -14,14 +14,14 @@ BEGIN
     	     Div(Ulp_sp(Add(Abs(Cos(n)(R)),Min(E,[|2|]))),[|2|]))
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2: VAR RealExpr
 
   x1,x2: VAR real
 
   aeboundsp_cos_safe(r,e: real): real =
     IF e >= 0
-    THEN aeboundsp_cos(r,e)
+    THEN aerr_ulp_cos(r,e)
     ELSE 1 ENDIF
 
   AEB_COS_inclusion_j: JUDGEMENT

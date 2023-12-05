@@ -27,7 +27,7 @@
             (("1" (flatten)
               (("1" (typepred "X2") (("1" (grind) nil nil)) nil)) nil)
              ("2" (flatten)
-              (("2" (expand "aeboundsp_neg")
+              (("2" (expand "aerr_ulp_neg")
                 (("2" (expand "aeboundsp_neg_ia")
                   (("2" (typepred "X2") (("2" (assert) nil nil)) nil))
                   nil))

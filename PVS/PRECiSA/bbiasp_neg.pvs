@@ -2,7 +2,7 @@ bbiasp_neg: THEORY
 BEGIN
 
   IMPORTING interval_ulp_sp,
-            float@aerr754sp_neg
+            axm_bnd@aerr_ulp__single
 
   R,E: VAR Interval
 
@@ -11,14 +11,14 @@ BEGIN
     THEN E
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2: VAR RealExpr
 
   x1,x2: VAR real
 
   aeboundsp_neg_safe(x1,x2): real =
     IF x2 < 0 THEN 1
-    ELSE aeboundsp_neg(x1,x2) ENDIF
+    ELSE aerr_ulp_neg(x1,x2) ENDIF
 
   AEB_NEG_inclusion_j: JUDGEMENT
     aeboundsp_neg_ia

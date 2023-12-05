@@ -1,33 +1,32 @@
 cabal-version:       3.0
 name:                precisa
-version:             3.2.1
+version:             4.0.0
 synopsis:            PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
-homepage:            http://precisa.nianet.org
+homepage:            https://nasa.github.io/precisa
 author:              Laura Titolo, Marco A. Feliu
-maintainer:          laura.titolo@nianet.org
-                     marco.feliu@nianet.org
+maintainer:          laura.titolo@nasa.gov
+                     marco.feliu@nasa.gov
 category:            Language
 build-type:          Simple
 
 
 common shared
   default-language:    Haskell2010
-  ghc-options: -Wall
   build-depends:
-      base                 >= 4.8
+      base                 >= 4.14
     , array                >= 0.5  && <0.6
     , containers           >= 0.5  && <0.7
     , directory            >= 1.3
     , extra
     , filepath             >= 1.4  && <1.5
     , FloatingHex          >= 0.4
-    , floating-bits        >= 0.3  && <0.4
     , mtl                  >= 2.2
     , optparse-applicative >= 0.14
     , pretty               >= 1.1  && <1.2
     , process              >= 1.4
     , scientific           >= 0.3  && <0.4
-    , time      >= 1.5 && <1.10
+    , time                 >= 1.5 && <1.10
+    , ieee                 >= 0.7
   extra-libraries:
     kodiak
 
@@ -35,7 +34,8 @@ library
   import: shared
   hs-source-dirs: src/
   exposed-modules:
-    Precisa
+    PRECiSA
+    AbsFPCoreLang
     AbsPVSLang
     AbsRawPVSLang
     AbsRawRealPVSLang
@@ -46,18 +46,11 @@ library
     Common.ControlFlow
     Common.DecisionPath
     Common.ShowRational
-    Common.TypeConversions
     Common.TypesUtils
-    FramaC.ACSLTypes
-    FramaC.ACSLlang
-    FramaC.CLang
-    FramaC.GenerateACSL
-    FramaC.PVS2C
-    FramaC.Types
-    FramaC.PrecisaPrelude
     ErrM
+    FPCore.FPCorePrinter
+    FreshVariables
     PVSTypes
-    FramaC.PrettyPrint
     Kodiak.Expression
     Kodiak.Generator
     Kodiak.Kodiak
@@ -65,6 +58,8 @@ library
     Kodiak.PrettyPrint
     Kodiak.Runnable
     Kodiak.Runner
+    MapFPCoreLangAST
+    MapFPCoreSpecLangAST
     MapPVSLangAST
     MapRealPVSLangAST
     MapSpecLangAST
@@ -72,10 +67,12 @@ library
     Operators
     Options
     Parser.LexDecisionPaths
+    Parser.LexFPCoreLang
     Parser.LexRawPVSLang
     Parser.LexRawRealPVSLang
     Parser.LexRawSpecLang
     Parser.ParDecisionPaths
+    Parser.ParFPCoreLang
     Parser.ParRawPVSLang
     Parser.ParRawRealPVSLang
     Parser.ParRawSpecLang
@@ -85,16 +82,15 @@ library
     SMT.GenerateSMTModel
     SMT.PrettyPrinter
     SMT.SMT
-    Transformation
-    TransformationUtils
     Translation.Float2Real
     Translation.Real2Float
     Utils
+  ghc-options:
 
 executable precisa
   import: shared
   build-depends:
-      base      >= 4.8
+      base      >= 4.14
     , precisa
   hs-source-dirs: app/
   main-is:
@@ -104,7 +100,7 @@ test-suite precisaTests
   import: shared
   ghc-options: -Wno-missing-signatures
   build-depends:
-      base >=4.8
+      base >=4.14
     , containers >=0.5 && <0.7
     , pretty >=1.1 && <1.2
     , mtl >= 2.2
@@ -125,19 +121,15 @@ test-suite precisaTests
     Common.DecisionPathTest
     Common.ShowRationalTest
     Common.Test
-    FramaC.GenerateACSLTest
-    FramaC.PVS2CTest
-    FramaC.PrettyPrint.CLangTest
+    FreshVariablesTest
     Kodiak.GeneratorTest
     Kodiak.ExpressionTest
     Kodiak.PaverTest
     Kodiak.PrettyPrintTest
     Kodiak.Test
     MapRealPVSLangASTTest
-    SMT.ModelTest
+    MapFPCoreLangASTTest
     SMT.PrettyPrinterTest
     SMT.Test
-    TransformationTest
-    TransformationUtilsTest
     Translation.Real2FloatTest
     UtilsTest

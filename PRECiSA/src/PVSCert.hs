@@ -144,25 +144,24 @@ prPvsProof f n =
 prIsFinite :: FAExpr -> Doc
 prIsFinite ae | getPVSType ae == FPSingle = text "finite?" <> parens (prettyDoc ae)
               | getPVSType ae == FPDouble = text "finite?" <> parens (prettyDoc ae)
-              | otherwise = error $ "prIsFinite: " ++ show ae ++ " is not a floating-point expression."
+              | getPVSType ae == TInt = text "int_in_range?" <> parens (prettyDoc ae)
+              | otherwise = error $ "prIsFinite: " ++ show ae ++ " is not a floating-point or integer expression."
 
-prIsFiniteHp :: String -> PVSType -> [FAExpr] -> [FAExpr] -> Doc
-prIsFiniteHp f fp args [] = prIsFinite (FEFun False f fp args)
-prIsFiniteHp f fp args isFiniteCheckList = hsep (punctuate (text " AND") (map prIsFinite isFiniteCheckList))
+prIsFiniteHp :: [FAExpr] -> Doc
+prIsFiniteHp [] = error ""
+prIsFiniteHp isFiniteCheckList = hsep (punctuate (text " AND") (map prIsFinite isFiniteCheckList))
 
 
 prPvsLemma :: String -> String -> [Arg] -> ACeb -> PVSType -> Int -> [FAExpr] -> Doc
 prPvsLemma f fReal args aceb fp n fpGuards =
-  text "% Floating-Point Result:" <+> hsep (punctuate comma $ map prettyDoc fpes)
-  $$ text "% Control Flow:"<+> prettyDoc cflow
-  $$ text f <> text "_" <> int n <+> text ": LEMMA"
+  text f <> text "_" <> int n <+> text ": LEMMA"
   $$ text "FORALL(" <>  hsep (punctuate comma $ map prErrorInt args)
                     <>  text ": nonneg_real" <> comma
                     <+> hsep (punctuate comma $ map prRealInt args)
                     <>  text ": real" <> comma
                     <+> hsep (punctuate comma $ map prettyDoc args)
                     <> text ")" <> text ":"
-  $$ prIsFiniteHp f fp (map arg2var args) (map arg2var (filter isArgFP args) ++ fpGuards)
+  $$ prIsFiniteHp (concatMap subExpressions (fDeclRes $ fpExprs aceb))
   <+> text "AND"
   $$ prPvsArgs' args
   $$ (if isTrueCondition c then empty else text "AND" <+> parens (prettyDoc c))
@@ -173,7 +172,7 @@ prPvsLemma f fReal args aceb fp n fpGuards =
      <+> text fReal <> text "("
      <> hsep (punctuate comma $ map (prettyDoc . realVar . arg2var) args) <> text ")"
      <> text ")"
-     <> text "<=" <> prettyError err
+     <+> text "<=" <+> prettyError (fromMaybe (error "prPvsLemma: unexpected argument.") err)
   $$ text "\n"
   where
     prPvsArgs' arguments = hsep $ punctuate (text " AND") $ map prPVSVarId' arguments
@@ -220,8 +219,6 @@ printNumCertsFun :: String
                  -> Doc
 printNumCertsFun _ _ _ [] _ _ _ _ _ _ _ = emptyDoc
 printNumCertsFun f fReal args ((cond, _, cflow, res, err, fpes, reales):result') ranges n fp prec maxBBDepth isTran fpGuardList =
-  prInfoLemma cflow fpes reales
-  $$
   prPvsNumLemma numLemma f fReal args cond roundOffError ranges fp Nothing fpGuardList
   $$
   prPvsNumProof numLemma symbLemma prec maxBBDepth
@@ -266,7 +263,6 @@ prPvsNumLemma nameLemma f fReal args cond roundOffError ranges fp symbError fpGu
   $$ text "FORALL(" <>  hsep (punctuate comma $ map (prettyDoc . realVar . arg2var) args)
                     <>  text ": real" <> comma
                     <+> hsep (punctuate comma $ map prettyDoc args) <> text ")" <> text ":"
-  $$ prIsFiniteHp f fp (map arg2var args) (map arg2var (filter isArgFP args) ++ fpGuards)
   <+> text "AND"
   $$ prPvsArgs args
   $$ (if isTrueCondition cond then empty else text "AND" <+> parens (prettyDoc cond))
@@ -274,8 +270,8 @@ prPvsNumLemma nameLemma f fReal args cond roundOffError ranges fp symbError fpGu
   $$ hsep (punctuate (text " AND ") $ map printVarRange ranges)
   $$ text "IMPLIES"
   $$ lhs
-  <> text "<="
-  <> prettyRatNumError roundOffError <> text "\n"
+  <+> text "<="
+  <+> prettyRatNumError roundOffError <> text "\n"
   where
     divergence =  text "abs("
       <>  f2r fp (text f <> text "("
@@ -375,7 +371,7 @@ printSymbExprCert fp f faeVarList errVarList realVarList fae ae be symbErr n =
   $$ text "\n"
 
 printNumExprCert :: PVSType -> String -> [FAExpr] -> [AExpr] -> FAExpr -> AExpr -> FBExpr -> Double -> [VarBind] -> Int -> Int -> Int -> Doc
-printNumExprCert fp f faeVarList realVarList fae ae be roundOffError ranges n prec maxBBDepth =
+printNumExprCert fp f faeVarList realVarList fae ae be roundOffError ranges n maxBBDepth prec  =
   text f <> text "_expr_num_" <> int n <+> text ": LEMMA"
   $$ text "FORALL(" <>  hsep (punctuate comma $ map prettyVarWithType faeVarList)
                     <>  comma
@@ -403,16 +399,16 @@ printVarErrBound fp var@(FVar _ _) = text "abs(" <> f2r fp (prettyDoc var)
                                                  <> text ")<=" <> prettyDoc (errVar var)
 printVarErrBound _ ae = error $ "printVarErrBound: case " ++ show ae ++ " not expected."
 
-printExprFunCert :: PVSType -> (Decl, [(VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind])]) -> Doc
-printExprFunCert fp (Decl _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' fp f) exprList [1, 2 ..]
-printExprFunCert _ (Pred _ TauMinus _ _ _, _) = emptyDoc
-printExprFunCert fp (Pred _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' fp f) exprList [1, 2 ..]
+printExprFunCert :: Int -> Int -> PVSType -> (Decl, [(VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind])]) -> Doc
+printExprFunCert maxDepth minPrec fp (Decl _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1, 2 ..]
+printExprFunCert maxDepth minPrec _ (Pred _ TauMinus _ _ _, _) = emptyDoc
+printExprFunCert maxDepth minPrec fp (Pred _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1, 2 ..]
 
-printExprCert' :: PVSType -> String -> (VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind]) -> Int -> Doc
-printExprCert' fp f (_,fae, ae, be, symbErr, numErr, faeVarList, realVarList, errVarList,varBinds) n =
+printExprCert' :: Int -> Int -> PVSType -> String -> (VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind]) -> Int -> Doc
+printExprCert' maxDepth minPrec fp f (_,fae, ae, be, symbErr, numErr, faeVarList, realVarList, errVarList,varBinds) n =
   printSymbExprCert fp f faeVarList errVarList realVarList fae ae be symbErr n
   $$
-  printNumExprCert fp f faeVarList realVarList fae ae be numErr varBindsRestricted n 14 7
+  printNumExprCert fp f faeVarList realVarList fae ae be numErr varBindsRestricted n maxDepth minPrec
   where
     varBindsRestricted = filter (isVarInList (map fvarName faeVarList)) varBinds
     isVarInList vars (VarBind x _ _ _) = x `elem` vars

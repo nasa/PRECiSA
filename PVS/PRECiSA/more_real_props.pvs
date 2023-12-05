@@ -1,0 +1,14 @@
+more_real_props: THEORY
+BEGIN
+
+  one_minus_x_over_y_ge_0
+  : lemma
+    ∀(x,y: real)
+    : (x >= 0) ∧ (0 < y - x) ⇒ 1 - x/y >= 0
+
+%|- one_minus_x_over_y_ge_0 : PROOF
+%|- (then (skeep) (both-sides "+" "x" -2)
+%|-  (spread (both-sides "*" "y" 1) ((assert) (assert))))
+%|- QED one_minus_x_over_y_ge_0
+
+END more_real_props

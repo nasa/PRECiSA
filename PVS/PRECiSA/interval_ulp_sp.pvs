@@ -1,33 +1,33 @@
-interval_ulp_sp: THEORY
-BEGIN
+interval_ulp_sp: theory
+begin
 
-  IMPORTING float@ieee754sp,
-  	    interval_ulp
+  importing axm_bnd@ieee754_single_base
+  importing interval_ulp[single, safe_proj_single, RtoS, min_ulp_single, ulp_single]
 
-  x: VAR real
-  X,Y: VAR Interval
+  x: var real
+  X,Y: var Interval
 
   Ulp_sp(I:Interval): Interval =
-    interval_ulp[unb_single, StoR, RtoS, min_Sulp, ulp_sp].Ulp(I)
+    interval_ulp.Ulp(I)
 
-  Ulp_sp_proper: LEMMA
-    Proper?(X) IMPLIES Proper?(Ulp_sp(X))
+  Ulp_sp_proper: lemma
+    Proper?(X) implies Proper?(Ulp_sp(X))
 
-  Ulp_sp_inclusion : LEMMA
-    x ## X IMPLIES 
-    ulp_sp(x) ## Ulp_sp(X)
+  Ulp_sp_inclusion : lemma
+    x ## X implies
+    ulp_single(x) ## Ulp_sp(X)
 
-  Ulp_sp_Inclusion : JUDGEMENT
-    Ulp_sp HAS_TYPE (Inclusion?(PreTrue,ulp_sp))
+  Ulp_sp_Inclusion : judgement
+    Ulp_sp has_type (Inclusion?(PreTrue,ulp_single))
 
-  Ulp_sp_fundamental : LEMMA
-    Proper?(X) AND
-    X << Y IMPLIES
+  Ulp_sp_fundamental : lemma
+    Proper?(X) and
+    X << Y implies
     Ulp_sp(X) << Ulp_sp(Y)
-    
-  Ulp_sp_Fundamental : JUDGEMENT
-    Ulp_sp HAS_TYPE (Fundamental?(PreTrue))
-  
-  ULP_SP(expr: RealExpr): RealExpr = FUN(PreTrue, ulp_sp, Ulp_sp, expr)
 
-END interval_ulp_sp
+  Ulp_sp_Fundamental : judgement
+    Ulp_sp HAS_TYPE (Fundamental?(PreTrue))
+
+  ULP_SP(expr: RealExpr): RealExpr = FUN(PreTrue, ulp_single, Ulp_sp, expr)
+
+end interval_ulp_sp

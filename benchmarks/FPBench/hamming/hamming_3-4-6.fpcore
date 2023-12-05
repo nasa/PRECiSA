@@ -1,0 +1,6 @@
+(FPCore (x n)
+ :name "NMSE problem 3.4.6"
+ :cite (hamming-1987 herbie-2015)
+ :fpbench-domain textbook
+ :pre (>= x 0)
+ (- (pow (+ x 1) (/ 1 n)) (pow x (/ 1 n))))

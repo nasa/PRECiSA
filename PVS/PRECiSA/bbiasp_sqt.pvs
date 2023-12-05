@@ -1,9 +1,9 @@
 bbiasp_sqt: THEORY
 BEGIN
 
-  IMPORTING interval_ulp_sp,
-  	    float@aerr754sp_sqt,
-	    interval_arith@interval_sqrt
+  importing interval_ulp_sp
+  importing axm_bnd@aerr_ulp__single
+  importing interval_arith@interval_sqrt
 
   R,E: VAR Interval
   n  : VAR nat
@@ -20,19 +20,26 @@ BEGIN
     THEN Add(Sqrt(n)(E), Div(Ulp_sp(Sqrt(n)(Add(R,E))),[|2|]))
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2: VAR RealExpr
 
   x1,x2: VAR real
 
   aeboundsp_sqt_safe(r,e: real): real =
     IF r - e >= 0 AND e >= 0
-    THEN aeboundsp_sqt(r,e)
+    THEN aerr_ulp_sqt(r,e)
     ELSE 1 ENDIF
 
   AEB_SQT_inclusion_j: JUDGEMENT
     aeboundsp_sqt_ia(n)
     HAS_TYPE (Inclusion2?(Any?,aeb_sqt_pre2,aeboundsp_sqt_safe))
+
+%|- AEB_SQT_inclusion_j : PROOF
+%|- (then
+%|-  (install-rewrites :rewrites
+%|-   ("aeb_sqt_pre2" "axm_bnd@ieee754_sqt.sqrt"))
+%|-  (prove-inclusion-judgement) (grind))
+%|- QED AEB_SQT_inclusion_j
 
   AEB_SQT_fundmental_j: JUDGEMENT
     aeboundsp_sqt_ia(n)

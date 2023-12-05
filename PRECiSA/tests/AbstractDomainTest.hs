@@ -38,30 +38,58 @@ mergeConds__tests = testGroup "mergeConds tests"
 mergeConds__test1 = testCase "the conditions are correctly merged 1" $
     mergeConds cond1 cond2 @?= expected
     where
-      cond1 = Cond [(BTrue,FBTrue)]
-      cond2 = Cond [(BTrue,FBTrue)]
-      expected = Cond [(BTrue,FBTrue)] 
+      cond1 = trueConds
+      cond2 = trueConds
+      expected = trueConds
 
 mergeConds__test2 = testCase "the conditions are correctly merged 1" $
     mergeConds cond1 cond2 @?= expected
     where
-      cond1 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
-      cond2 = Cond [(BTrue,FBTrue)]
-      expected = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))] 
+      cond1 = Conds [Cond {realPathCond = BTrue
+                          ,fpPathCond = FBTrue
+                          ,realCond = Rel Lt (Int 0) (Int 1)
+                          ,fpCond = FRel Lt (FInt 0) (FInt 1)}]
+      cond2 = trueConds
+      expected = Conds [Cond {realPathCond = BTrue
+                          ,fpPathCond = FBTrue
+                          ,realCond = Rel Lt (Int 0) (Int 1)
+                          ,fpCond = FRel Lt (FInt 0) (FInt 1)}]
 
 mergeConds__test3 = testCase "the conditions are correctly merged 1" $
     mergeConds cond1 cond2 @?= expected
     where
-      cond1 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
-      cond2 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
-      expected = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
+      cond1 = Conds [Cond {realPathCond = BTrue
+                          ,fpPathCond = FBTrue
+                          ,realCond = Rel Lt (Int 0) (Int 1)
+                          ,fpCond = FRel Lt (FInt 0) (FInt 1)}]
+      cond2 = Conds [Cond {realPathCond = BTrue
+                          ,fpPathCond = FBTrue
+                          ,realCond = Rel Lt (Int 0) (Int 1)
+                          ,fpCond = FRel Lt (FInt 0) (FInt 1)}]
+      expected = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}]
 
 mergeConds__test4 = testCase "the conditions are correctly merged 1" $
     mergeConds cond1 cond2 @?= expected
     where
-      cond1 = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))]
-      cond2 = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))]
-      expected = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1)),(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))]
+      cond1 = Conds [Cond {realPathCond = BTrue
+                          ,fpPathCond = FBTrue
+                          ,realCond = Rel Lt (Int 0) (Int 1)
+                          ,fpCond = FRel Lt (FInt 0) (FInt 1)}]
+      cond2 = Conds [Cond {realPathCond = BTrue
+                          ,fpPathCond = FBTrue
+                          ,realCond = Rel Lt (Int 1) (Int 2)
+                          ,fpCond = FRel Lt (FInt 1) (FInt 2)}]
+      expected = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}
+                       ,Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}]
 
 mergeACeb__tests = testGroup "mergeACeb tests"
   [mergeACeb__test1
@@ -75,26 +103,39 @@ mergeACeb__test1 = testCase "the semantics fields are correctly merged 1" $
     mergeACeb aceb1 aceb2 @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 1,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 1,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
       aceb2 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 4],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 4],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
       expected = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1)),(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 2,Int 4],
-        fpExprs = [FInt 2,FInt 4],
-        eExpr  = MaxErr [ErrRat 1, ErrRat 2],
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}
+                       ,Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 2,Int 4],
+        fpExprs = FDeclRes [FInt 2,FInt 4],
+        eExpr  = Just $ MaxErr [ErrRat 1, ErrRat 2],
         decisionPath = root ~> 1,
         cFlow  = Stable
       }
@@ -104,26 +145,39 @@ mergeACeb__test2 = testCase "the semantics fields are correctly merged 2" $
     mergeACeb aceb1 aceb2 @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 1,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 1,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
       aceb2 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 4],
-        eExpr  = ErrRat (2 :: Rational),
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 4],
+        eExpr  = Just $ ErrRat (2 :: Rational),
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Unstable
         }
       expected = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1)),(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 2,Int 4],
-        fpExprs = [FInt 2,FInt 4],
-        eExpr  = MaxErr [ErrRat (1 :: Rational), ErrRat (2 :: Rational)],
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}
+                       ,Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 2,Int 4],
+        fpExprs = FDeclRes [FInt 2,FInt 4],
+        eExpr  = Just $ MaxErr [ErrRat (1 :: Rational), ErrRat (2 :: Rational)],
         decisionPath = root ~> 1,
         cFlow  = Unstable
       }
@@ -132,26 +186,39 @@ mergeACeb__test3 = testCase "the semantics fields are correctly merged 3" $
     mergeACeb aceb1 aceb2 @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat (1 :: Rational),
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat (1 :: Rational),
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Unstable
         }
       aceb2 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Unstable
         }
       expected = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1)),(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 2,Int 4],
-        fpExprs = [FInt 2],
-        eExpr  = MaxErr [ErrRat 1, ErrRat 2],
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}
+                       ,Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 2,Int 4],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ MaxErr [ErrRat 1, ErrRat 2],
         decisionPath = root ~> 1,
         cFlow  = Unstable
       }
@@ -160,26 +227,32 @@ mergeACeb__test4 = testCase "the semantics fields are correctly merged 4" $
     mergeACeb aceb1 aceb2 @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(BTrue, FBTrue)],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat (1 :: Rational),
+        conds  = trueConds,
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat (1 :: Rational),
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Unstable
         }
       aceb2 = ACeb {
-        conds  = Cond [(BTrue,FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = BTrue
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Unstable
         }
       expected = ACeb {
-        conds  = Cond [(BTrue,FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 2,Int 4],
-        fpExprs = [FInt 2],
-        eExpr  = MaxErr [ErrRat 1, ErrRat 2],
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = BTrue
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 2,Int 4],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ MaxErr [ErrRat 1, ErrRat 2],
         decisionPath = root ~> 1,
         cFlow  = Unstable
       }
@@ -188,26 +261,26 @@ mergeACeb__test5 = testCase "the semantics fields are correctly merged 4" $
     mergeACeb aceb1 aceb2 @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(BTrue, FBTrue)],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat (1 :: Rational),
+        conds  = trueConds,
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat (1 :: Rational),
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Unstable
         }
       aceb2 = ACeb {
-        conds  = Cond [(BTrue,FBTrue)],
-        rExprs = [Int 4],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 2,
+        conds  = trueConds,
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Unstable
         }
       expected = ACeb {
-        conds  = Cond [(BTrue,FBTrue)],
-        rExprs = [Int 2,Int 4],
-        fpExprs = [FInt 2],
-        eExpr  = MaxErr [ErrRat 1, ErrRat 2],
+        conds  = trueConds,
+        rExprs = RDeclRes [Int 2,Int 4],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ MaxErr [ErrRat 1, ErrRat 2],
         decisionPath = root ~> 1,
         cFlow  = Unstable
       }
@@ -222,34 +295,50 @@ mergeACebFold__test1 = testCase "the semantics fields of a list are correctly me
     mergeACebFold [aceb1,aceb2,aceb3] @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 1,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 1,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
       aceb2 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 4],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 4],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
       aceb3 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Var Real "X"],
-        fpExprs = [FVar FPDouble "X"],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Var Real "X"],
+        fpExprs = FDeclRes [FVar FPDouble "X"],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
       expected  = ACeb {
-        conds   = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1)),(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs  = [Int 2, Int 4, Var Real "X"],
-        fpExprs = [FInt 2,FInt 4,FVar FPDouble "X"],
-        eExpr   = MaxErr [MaxErr [ErrRat 1,ErrRat 2],ErrRat 2],
+        conds   = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}
+                        ,Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs  = RDeclRes [Int 2, Int 4, Var Real "X"],
+        fpExprs = FDeclRes [FInt 2,FInt 4,FVar FPDouble "X"],
+        eExpr   = Just $ MaxErr [MaxErr [ErrRat 1,ErrRat 2],ErrRat 2],
         decisionPath = root ~> 1,
         cFlow  = Stable
       }
@@ -258,34 +347,50 @@ mergeACebFold__test2 = testCase "the semantics fields of a list are correctly me
     mergeACebFold [aceb1,aceb2,aceb3] @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 1,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 1,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Unstable
         }
       aceb2 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
       aceb3 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Var Real "X"],
-        fpExprs = [FVar FPDouble "X"],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Var Real "X"],
+        fpExprs = FDeclRes [FVar FPDouble "X"],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 0 ~> 1,
         cFlow  = Stable
         }
       expected  = ACeb {
-        conds   = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1)),(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs  = [Int 2, Int 4, Var Real "X"],
-        fpExprs = [FInt 2,FVar FPDouble "X"],
-        eExpr   = MaxErr [MaxErr [ErrRat 1,ErrRat 2],ErrRat 2],
+        conds   = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}
+                        ,Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs  = RDeclRes [Int 2, Int 4, Var Real "X"],
+        fpExprs = FDeclRes [FInt 2,FVar FPDouble "X"],
+        eExpr   = Just $ MaxErr [MaxErr [ErrRat 1,ErrRat 2],ErrRat 2],
         decisionPath = root,
         cFlow  = Unstable
       }
@@ -299,26 +404,35 @@ unionACebS__test1 = testCase "the semantics fields of a list are correctly merge
     unionACebS [aceb1,aceb2] [aceb3] @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 1,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 1,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
       aceb2 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 4],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 4],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
       aceb3 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Var Real "X"],
-        fpExprs = [FVar FPDouble "X"],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Var Real "X"],
+        fpExprs = FDeclRes [FVar FPDouble "X"],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
@@ -328,26 +442,35 @@ unionACebS__test2 = testCase "the semantics fields of a list are correctly merge
     unionACebS [aceb1,aceb2,aceb3] [aceb3] @?= expected
     where
       aceb1 = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 1,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 1,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
       aceb2 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Int 4],
-        fpExprs = [FInt 4],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Int 4],
+        fpExprs = FDeclRes [FInt 4],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
       aceb3 = ACeb {
-        conds  = Cond [(Rel Lt (Int 1) (Int 2),FRel Lt (FInt 1) (FInt 2))],
-        rExprs = [Var Real "X"],
-        fpExprs = [FVar FPDouble "X"],
-        eExpr  = ErrRat 2,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 1) (Int 2)
+                             ,fpCond = FRel Lt (FInt 1) (FInt 2)}],
+        rExprs = RDeclRes [Var Real "X"],
+        fpExprs = FDeclRes [FVar FPDouble "X"],
+        eExpr  = Just $ ErrRat 2,
         decisionPath = root ~> 1 ~> 1,
         cFlow  = Stable
         }
@@ -364,10 +487,13 @@ initErrAceb__test1 = testCase "init a constant error 1 is 1" $
     initErrAceb aceb @?= expected
       where
         aceb = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrRat 1,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrRat 1,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
@@ -378,29 +504,35 @@ initErrAceb__test2 = testCase "init an integer error mark is (Int 0)" $
     initErrAceb aceb @?= expected
       where
         aceb = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrorMark "x" TInt,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $  ErrorMark "x" TInt,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
 
-        expected = aceb {eExpr = Int 0}
+        expected = aceb {eExpr = Just $ Int 0}
 
 initErrAceb__test3 = testCase "init an integer error mark is (Int 0)" $
     initErrAceb aceb @?= expected
       where
         aceb = ACeb {
-        conds  = Cond [(Rel Lt (Int 0) (Int 1),FRel Lt (FInt 0) (FInt 1))],
-        rExprs = [Int 2],
-        fpExprs = [FInt 2],
-        eExpr  = ErrorMark "x" TInt,
+        conds  = Conds [Cond {realPathCond = BTrue
+                             ,fpPathCond = FBTrue
+                             ,realCond = Rel Lt (Int 0) (Int 1)
+                             ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
+        rExprs = RDeclRes [Int 2],
+        fpExprs = FDeclRes [FInt 2],
+        eExpr  = Just $ ErrorMark "x" TInt,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
 
-        expected = aceb {eExpr = Int 0}
+        expected = aceb {eExpr = Just $ Int 0}
 
 isTrueCondition__tests = testGroup "isTrueCondition tests"
   [isTrueCondition__test1
@@ -411,16 +543,28 @@ isTrueCondition__tests = testGroup "isTrueCondition tests"
   ]
 
 isTrueCondition__test1 = testCase "(true,true) is a true condition" $
-    isTrueCondition (Cond [(BTrue, FBTrue)]) @?= True
+    isTrueCondition (trueConds) @?= True
 
 isTrueCondition__test2 = testCase "(true,false) is not a true condition" $
-    isTrueCondition (Cond [(BTrue, FBFalse)]) @?= False
+    isTrueCondition (Conds [Cond {realPathCond = BTrue
+                                 ,fpPathCond = FBTrue
+                                 ,realCond = BFalse
+                                ,fpCond = FRel Lt (FInt 1) (FInt 2)}]) @?= False
 
 isTrueCondition__test3 = testCase "(false,true) is not a true condition" $
-    isTrueCondition (Cond [(BFalse, FBTrue)]) @?= False
+    isTrueCondition (Conds [Cond {realPathCond = BFalse
+                                 ,fpPathCond = FBTrue
+                                 ,realCond = BTrue
+                                ,fpCond = FBTrue}]) @?= False
 
 isTrueCondition__test4 = testCase "(true,true) is a true condition" $
-    isTrueCondition (Cond [(Or BTrue BTrue, FBTrue)]) @?= True
+    isTrueCondition (Conds [Cond {realPathCond = Or BTrue BTrue
+                                 ,fpPathCond = FBTrue
+                                 ,realCond = Or BTrue BTrue
+                                ,fpCond = FBTrue}]) @?= True
 
 isTrueCondition__test5 = testCase "(true,true) is a true condition" $
-    isTrueCondition (Cond [(Or BTrue BTrue, FAnd FBTrue FBTrue)]) @?= True
+    isTrueCondition (Conds [Cond {realPathCond = And BTrue BTrue
+                                 ,fpPathCond = FBTrue
+                                 ,realCond = Or BTrue BTrue
+                                ,fpCond = FAnd FBTrue FBTrue}]) @?= True

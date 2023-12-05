@@ -1,0 +1,5 @@
+(FPCore compsqrt (re im)
+ :name "Complex square root"
+ :cite (herbie-2015)
+ :pre (and (<= 0 re 10000000) (<= 0 im 10000000))
+ (* 0.5 (sqrt (* 2.0 (+ (sqrt (+ (* re re) (* im im))) re)))))

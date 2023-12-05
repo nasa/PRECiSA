@@ -19,6 +19,7 @@ import Control.Monad (foldM)
 import Control.Monad.Except (runExcept)
 
 import AbsSpecLang
+import AbsPVSLang (BExpr(..), FBExpr(..))
 import AbstractDomain
 import Kodiak.Kodiak
 import Kodiak.Runnable
@@ -75,12 +76,12 @@ conds2Kodiak' :: [Conditions] -> Maybe K.BExpr
 conds2Kodiak' = foldM (\b a -> conds2Kodiak a >>= (Just . K.Or b)) K.False
   where
     conds2Kodiak :: Conditions -> Maybe K.BExpr
-    conds2Kodiak (Cond cs) = foldM (\b a -> cond2Kodiak a >>= (Just . K.Or b)) K.False cs
+    conds2Kodiak (Conds cs) = foldM (\b a -> cond2Kodiak a >>= (Just . K.Or b)) K.False cs
       where
         cond2Kodiak :: Condition -> Maybe K.BExpr
-        cond2Kodiak (r,f) =
-          case runExcept (kodiakize r) of
+        cond2Kodiak cond =
+          case runExcept (kodiakize (And (realPathCond cond) (realCond cond))) of
             Left _ -> Nothing
-            Right kr -> case runExcept (kodiakize f) of
+            Right kr -> case runExcept (kodiakize (FAnd (fpPathCond cond) (fpCond cond))) of
               Left _ -> Nothing
               Right kf -> Just (K.And kr kf)

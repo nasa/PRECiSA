@@ -19,35 +19,24 @@ import Common.Test
 import Kodiak.Test
 import UtilsTest
 import AbsPVSLangTest
-import TransformationTest
 import Translation.Real2FloatTest
 import MapRealPVSLangASTTest
-import FramaC.PVS2CTest
-import qualified FramaC.PrettyPrint.CLangTest as PrettyPrintCLang
-import qualified FramaC.GenerateACSLTest as GenerateACSL
+import MapFPCoreLangASTTest
 
 main :: IO ()
-main = defaultMain tests
-
-tests :: TestTree
-tests = testGroup "Tests" [unitTests]
+main = defaultMain unitTests
 
 unitTests :: TestTree
 unitTests = testGroup "Unit tests"
-    [testAbsPVSLang
-    ,testAbstractSemantics
-    ,testAbstractDomain
-    ,testCommon
-    ,testUtils
-    ,testTransformation
-    -- ,testTransformationUtils
-    ,testKodiak
-    ,testSMT
-    ,testUtils
-    ,testReal2Float
-    ,testMapRealPVSLangAST
-    ,testPCS2C
-    ,PrettyPrintCLang.test
-    ,GenerateACSL.test
-    ]
-
+  [testAbsPVSLang
+  ,testAbstractSemantics
+  ,testAbstractDomain
+  ,testCommon
+  ,testUtils
+  ,testKodiak
+  ,testSMT
+  ,testUtils
+  ,testReal2Float
+  ,testMapRealPVSLangAST
+  ,testMapFPCoreLangAST
+  ]

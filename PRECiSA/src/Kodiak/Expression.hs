@@ -21,7 +21,8 @@ import Kodiak.Runnable
 import Kodiak.Runner hiding (runBExpr)
 import Common.TypesUtils
 import Control.Exception (throw,AssertionFailed(..),assert)
-import Data.Bits.Floating (nextUp,nextDown)
+-- import Data.Bits.Floating (nextUp,nextDown)
+import Numeric.IEEE
 import Foreign.C
 import Prelude hiding (True,False,LT,GT)
 
@@ -57,10 +58,10 @@ runAExpr e vmap@(VMap vMap)
             then interval_create dr dr
             else let rdr = toRational dr in
                 if (rdr > r)
-                then do let lb = nextDown dr
+                then do let lb = succIEEE dr
                         assert (toRational lb < rdr) $
                             interval_create lb dr
-                else do let ub = nextUp dr
+                else do let ub = predIEEE dr
                         assert (rdr < toRational ub) $
                             interval_create dr ub
         real_create_value pint

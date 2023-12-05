@@ -16,9 +16,10 @@ $ provethem
 The output of that command is
 
 ```
-PRECiSA                  [OK: 144 proofs]
+PRECiSA                  [OK]
 
-*** Grand Total: 144 proofs / 144 formulas. Missed: 0 formulas.
+*** Number of libraries: 1
+*** Grand Totals: 126 proofs / 126 formulas. Missed: 0 formulas.
 ```
 
 

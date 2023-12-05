@@ -1,13 +1,13 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-  
-  
+
+
 module MapRealPVSLangAST
 where
 
@@ -40,7 +40,7 @@ raw2FPType TypeInteger   = TInt
 raw2FPType TypeReal      = Real
 raw2FPType TypePosNat    = TInt
 raw2FPType (TypeBelow _) = TInt
-raw2FPType TypeBool      = Boolean 
+raw2FPType TypeBool      = Boolean
 raw2FPType (TypeArrayInteger    t) = Array (raw2FPType t) Nothing
 raw2FPType (TypeArrayInt        t) = Array (raw2FPType t) Nothing
 raw2FPType (TypeArrayBelow (AbsRawRealPVSLang.Int n) t) = Array (raw2FPType t) (Just (ArraySizeInt n))
@@ -112,7 +112,7 @@ raw2AExpr env fenv (AbsRawRealPVSLang.Let letElems stm)
       where
         newLetElem = raw2LetElem accEnv fenv letElem
         env' = (letVar newLetElem, letType newLetElem):accEnv
-    
+
 raw2AExpr env fenv (AbsRawRealPVSLang.For retType startIdx endIdx initValueAcc idxVarId@(AbsRawRealPVSLang.Id idx) _ _ accVarId@(AbsRawRealPVSLang.Id acc) accType forBody)
   = if retType == accType
     then RForLoop fp
@@ -130,7 +130,7 @@ raw2AExpr env fenv (AbsRawRealPVSLang.If be thenSmt elseStm)  = RIte (raw2BExpr 
 
 raw2AExpr env fenv (AbsRawRealPVSLang.ListIf be stmThen listElsif elseStm) =
     RListIte ((raw2BExpr env fenv be,raw2AExpr env fenv stmThen) : map (raw2Elsif env fenv) listElsif) (raw2AExpr env fenv elseStm)
-    
+
 raw2AExpr _ _ AbsRawRealPVSLang.UnstWarning = RUnstWarning
 
 raw2AExpr env fenv (AbsRawRealPVSLang.Add  ae1 ae2) = AbsPVSLang.BinaryOp Op.AddOp   (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2)
@@ -157,7 +157,7 @@ raw2AExpr env fenv (AbsRawRealPVSLang.Exp      ae)  = AbsPVSLang.UnaryOp  Op.Exp
 raw2AExpr   _    _ (AbsRawRealPVSLang.Int      i)   = AbsPVSLang.Int i
 raw2AExpr   _    _ (AbsRawRealPVSLang.Rat      d)   = AbsPVSLang.Rat (toRational d)
 raw2AExpr env    _ (AbsRawRealPVSLang.Var (AbsRawRealPVSLang.Id x)) = AbsPVSLang.Var fp x
-  where 
+  where
     fp = fromMaybe (error $ "raw2FAExpr: variable " ++ show x ++ " not found in " ++ show env ++ ".")
                    (lookup x env)
 
@@ -181,8 +181,8 @@ raw2BExprStm :: VarTypeEnv -> FunTypeEnv -> AbsRawRealPVSLang.Expr -> AbsPVSLang
 raw2BExprStm env fenv (AbsRawRealPVSLang.Let letElems stm)
   = RBLet letList (raw2BExprStm newenv fenv stm)
   where
-    (newenv,letList) = foldr aux_fold (env,[]) letElems
-    aux_fold letElem (accEnv,elems) =  (env',elems ++ [newLetElem])
+    (newenv,letList) = foldl aux_fold (env,[]) letElems
+    aux_fold (accEnv,elems) letElem =  (env',elems ++ [newLetElem])
       where
         newLetElem = raw2LetElem accEnv fenv letElem
         env' = (letVar newLetElem, letType newLetElem):accEnv
@@ -197,19 +197,19 @@ raw2BExprStm env fenv (AbsRawRealPVSLang.ListIf be stmThen listElsif elseStm) =
 raw2BExprStm env fenv be = RBExpr $ raw2BExpr env fenv be
 
 
-raw2BExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawRealPVSLang.Expr -> AbsPVSLang.BExpr 
+raw2BExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawRealPVSLang.Expr -> AbsPVSLang.BExpr
 raw2BExpr env fenv (AbsRawRealPVSLang.Or  be1 be2) = AbsPVSLang.Or  (raw2BExpr env fenv be1) (raw2BExpr env fenv be2)
 raw2BExpr env fenv (AbsRawRealPVSLang.And be1 be2) = AbsPVSLang.And (raw2BExpr env fenv be1) (raw2BExpr env fenv be2)
 raw2BExpr env fenv (AbsRawRealPVSLang.Not be)      = AbsPVSLang.Not (raw2BExpr env fenv be)
-raw2BExpr env fenv (AbsRawRealPVSLang.Eq  ae1 ae2) = AbsPVSLang.Rel Op.Eq  (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2) 
-raw2BExpr env fenv (AbsRawRealPVSLang.Neq ae1 ae2) = AbsPVSLang.Rel Op.Neq (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2) 
-raw2BExpr env fenv (AbsRawRealPVSLang.Lt  ae1 ae2) = AbsPVSLang.Rel Op.Lt  (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2) 
-raw2BExpr env fenv (AbsRawRealPVSLang.LtE ae1 ae2) = AbsPVSLang.Rel Op.LtE (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2) 
-raw2BExpr env fenv (AbsRawRealPVSLang.Gt  ae1 ae2) = AbsPVSLang.Rel Op.Gt  (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2) 
-raw2BExpr env fenv (AbsRawRealPVSLang.GtE ae1 ae2) = AbsPVSLang.Rel Op.GtE (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2) 
+raw2BExpr env fenv (AbsRawRealPVSLang.Eq  ae1 ae2) = AbsPVSLang.Rel Op.Eq  (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2)
+raw2BExpr env fenv (AbsRawRealPVSLang.Neq ae1 ae2) = AbsPVSLang.Rel Op.Neq (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2)
+raw2BExpr env fenv (AbsRawRealPVSLang.Lt  ae1 ae2) = AbsPVSLang.Rel Op.Lt  (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2)
+raw2BExpr env fenv (AbsRawRealPVSLang.LtE ae1 ae2) = AbsPVSLang.Rel Op.LtE (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2)
+raw2BExpr env fenv (AbsRawRealPVSLang.Gt  ae1 ae2) = AbsPVSLang.Rel Op.Gt  (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2)
+raw2BExpr env fenv (AbsRawRealPVSLang.GtE ae1 ae2) = AbsPVSLang.Rel Op.GtE (raw2AExpr env fenv ae1) (raw2AExpr env fenv ae2)
 raw2BExpr _   _     AbsRawRealPVSLang.BTrue        = AbsPVSLang.BTrue
 raw2BExpr _   _     AbsRawRealPVSLang.BFalse       = AbsPVSLang.BFalse
-raw2BExpr env fenv  (FCallN (Id f) args) = 
+raw2BExpr env fenv  (FCallN (Id f) args) =
   case lookup f fenv of
     Just Boolean -> AbsPVSLang.EPred f (map (raw2AExpr env fenv) args)
     Just _ -> error "raw2BExpr: Boolean function expected."

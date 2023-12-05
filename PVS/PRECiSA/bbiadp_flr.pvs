@@ -1,32 +1,43 @@
 bbiadp_flr: THEORY
 BEGIN
 
-  IMPORTING interval_ulp_dp,
-  	    float@aerr754dp_flr
+  importing axm_bnd@aerr_ulp__double
+  importing interval_arith@interval_expr
 
   R,E: VAR Interval
 
+  % Opertor to mimic:
+  % aerr_ulp_floor(r1:real,e1:nnreal) : nnreal = abs(floor(abs(r1)) - floor(abs(r1) + e1))
   aebounddp_flr_ia(R,E): Interval =
     If NonNeg?(E)
-    THEN Add(E,[|1|])
+    THEN Abs(Sub(Floor(Abs(R)),Floor(Add(Abs(R),E))))
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2: VAR RealExpr
 
   x1,x2: VAR real
 
   aebounddp_flr_safe(x1,x2): real =
-    IF x2 < 0 THEN 1
-    ELSE aebounddp_flr(x1,x2) ENDIF
+    IF x2 >= 0
+    THEN aerr_ulp_floor(x1,x2)
+    ELSE 1 ENDIF
 
   AEB_FLR_inclusion_j: JUDGEMENT
     aebounddp_flr_ia
     HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aebounddp_flr_safe))
 
+  %|- AEB_FLR_inclusion_j : PROOF
+  %|- (prove-inclusion-judgement)
+  %|- QED   AEB_FLR_inclusion_j
+  
   AEB_FLR_fundmental_j: JUDGEMENT
     aebounddp_flr_ia
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
+    
+  %|- AEB_FLR_fundmental_j : PROOF
+  %|- (prove-fundamental-judgement)
+  %|- QED AEB_FLR_fundmental_j
 
   AEB_FLR(re1,re2):  RealExpr =
     FUN2(Any?,pre1to2b(NonNeg?),aebounddp_flr_safe,aebounddp_flr_ia,re1,re2)

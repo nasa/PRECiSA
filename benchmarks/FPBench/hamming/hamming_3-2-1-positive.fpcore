@@ -1,0 +1,6 @@
+(FPCore (a b2 c)
+ :name "NMSE problem 3.2.1, positive"
+ :cite (hamming-1987 herbie-2015)
+ :fpbench-domain textbook
+ :pre (and (>= (* b2 b2) (* a c)) (!= a 0))
+ (/ (+ (- b2) (sqrt (- (* b2 b2) (* a c)))) a))

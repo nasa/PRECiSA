@@ -14,28 +14,32 @@ import AbsPVSLang
 import AbsSpecLang
 import AbstractDomain
 import AbstractSemantics
+import Data.Maybe(fromMaybe)
 import Kodiak.Runnable
 import Kodiak.Runner
 import Common.DecisionPath
 import Common.TypesUtils
+import Foreign.C
 
-roError :: [VarBind] -> Interpretation -> [(VarName,ACebS)] -> FAExpr -> IO Double
-roError varBinds interp env ae =  maximumUpperBound <$> run kodiakInput ()
+roError :: CUInt -> CUInt -> [VarBind] -> Interpretation -> [(VarName,ACebS)] -> FAExpr -> IO Double
+roError maximumDepth minimumPrecision varBinds interp env ae =  maximumUpperBound <$> run kodiakInput ()
     where
         kodiakInput = KI { kiName = "error",
-                           kiExpression = simplAExpr $ initAExpr $ eExpr acebAExpr,
+                           kiExpression = errExpr,
                            kiBindings = varBinds,
-                           kiMaxDepth = 7,
-                           kiPrecision = 14
+                           kiMaxDepth = maximumDepth,
+                           kiPrecision = minimumPrecision
                            }
+        errExpr = simplAExpr $ initAExpr $ fromMaybe (error "roError: unexpected argument.") $
+                                                     eExpr (unfoldFunCallInCeb interp acebAExpr)
         acebAExpr = initErrAceb $ mergeACebFold $ stmSem ae interp (Env env) SemConf{improveError = False, assumeTestStability = False, mergeUnstables = True } (LDP []) []
 
-computeNumRoundOffError :: [VarBind] -> EExpr -> IO Double
-computeNumRoundOffError varBinds ee =  maximumUpperBound <$> run kodiakInput ()
+computeNumRoundOffError :: CUInt -> CUInt -> [VarBind] -> EExpr -> IO Double
+computeNumRoundOffError maximumDepth minimumPrecision varBinds ee = maximumUpperBound <$> run kodiakInput ()
     where
         kodiakInput = KI { kiName = "error",
                            kiExpression = simplAExpr $ initAExpr ee,
                            kiBindings = varBinds,
-                           kiMaxDepth = 7,
-                           kiPrecision = 14
+                           kiMaxDepth = maximumDepth,
+                           kiPrecision =  minimumPrecision
                            }

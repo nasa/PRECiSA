@@ -12,18 +12,13 @@ module Options where
 
 import Options.Applicative
 
-newtype Options = Options
-   { optCommand :: Command
-   } deriving Show
-
-data Command = Analyze  AnalyzeOptions
-             | Generate GenerateOptions
-  deriving Show
-
-data AnalyzeOptions = AnalyzeOptions
+data Options = Options
    { optProgramFile          :: FilePath
    , optInputRangeFile       :: FilePath
    , optPathFile             :: FilePath
+   , optParseFPCore          :: Bool
+   , optParseFPCoreSpec      :: Bool
+   , optPrintFPCore          :: Bool
    , optImproveError         :: Bool
    , optWithPaving           :: Bool
    , optMaxDepth             :: Int
@@ -35,44 +30,9 @@ data AnalyzeOptions = AnalyzeOptions
    , optSMTOptimization      :: Bool
    } deriving Show
 
-data GenerateOptions = GenerateOptions
-   { optRealProgramFile      :: FilePath
-   , optRealInputRangeFile   :: FilePath
-   , targetFormat            :: String
-   } deriving Show
-
 optionsParser :: Parser Options
-optionsParser = Options <$> commandParser
-
-
-commandParser :: Parser Command
-commandParser =
-  subparser
-    ( command "analyze"  (info (Analyze  <$> analyzeOptions)  ( progDesc "Analyze a FP program" ))
-   <> command "gen-code" (info (Generate <$> generateOptions) ( progDesc "Generate a stable C FP version of a real PVS program" ))
-    )
-
-generateOptions :: Parser GenerateOptions
-generateOptions =
-    GenerateOptions
-        <$> strArgument
-           ( metavar "PROGRAM"
-          <> help "Program to analyze")
-        <*> strArgument
-           ( metavar "INPUT"
-          <> help "Input ranges for variables")
-        <*> strOption
-           ( long "format"
-          <> short 'f'
-          <> showDefault
-          <> value "double"
-          <> help "Target floating-point format (single or double)"
-          <> metavar "PREC"
-          )
-
-analyzeOptions :: Parser AnalyzeOptions
-analyzeOptions =
-    AnalyzeOptions
+optionsParser =
+    Options
         <$> strArgument
            ( metavar "PROGRAM"
           <> help "Program to analyze")
@@ -86,6 +46,18 @@ analyzeOptions =
          <> help "Decision paths of interest"
          <> metavar "PATHS"
          )
+        <*> switch
+          (  long "fpcore"
+          <> help "Use FPCore as input. This option does not yet fully support FPCore."
+          )
+        <*> switch
+          (  long "fpcore-spec"
+          <> help "Try to infer input ranges from FPCore preconditions. Must use FPCore as input as well."
+          )
+        <*> switch
+          (  long "print-fpcore"
+          <> help "Print program as FPCore."
+          )
         <*> switch
           (  long "improve-accuracy"
           <> help "Use an optimized version of the round-off error expressions that models special cases such as the Sterbenz exact subtraction and the exact floor operation. This option may increase the analysis time."
@@ -130,7 +102,6 @@ analyzeOptions =
         <*> switch
           (  long "smt-optimization"
           <> help "Use SMT solvers to elimiate unfeasible cases" )
-
 
 parseOptions :: IO Options
 parseOptions = execParser parserOpts

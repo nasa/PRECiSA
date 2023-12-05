@@ -1,10 +1,12 @@
 bbiasp_ln: THEORY
 BEGIN
 
-  IMPORTING interval_ulp_sp,
-  	    float@aerr754sp_ln,
-	    interval_arith@interval_lnexp,
-	    interval_arith@interval_props
+  importing interval_arith@more_interval_props
+  importing more_real_props
+  importing interval_ulp_sp
+  importing axm_bnd@aerr_ulp__single
+  importing interval_arith@interval_lnexp
+  importing interval_arith@interval_props
 
   R,E: VAR Interval
   n  : VAR nat
@@ -28,19 +30,30 @@ BEGIN
     	     Div(Ulp_sp(Max(Abs(Ln(n)(Sub(R,E))),Abs(Ln(n)(Add(R,E))))),[|2|]))
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2: VAR RealExpr
 
   x1,x2: VAR real
 
   aeboundsp_ln_safe(r,e: real): real =
     IF e >= 0 AND 0<r-e
-    THEN aeboundsp_ln(r,e)
+    THEN aerr_ulp_ln(r,e)
     ELSE 1 ENDIF
 
   AEB_LN_inclusion_j: JUDGEMENT
     aeboundsp_ln_ia(n)
     HAS_TYPE (Inclusion2?(Any?,aeb_lgn_pre2,aeboundsp_ln_safe))
+
+%|- AEB_LN_inclusion_j : PROOF
+%|- (then
+%|-  (install-rewrites :rewrites
+%|-   ("aeb_lgn_pre2"
+%|-    "one_minus_x_over_y_ge_0"
+%|-    "ia_pos_x_minus_nneg_y_implies_pos_x"
+%|-    "ia_pos_x_minus_nneg_y_implies_pos_1_minus_y_over_x"))
+%|-  (branch (prove-inclusion-judgement)
+%|-   ((then (assert) (assert) (grind)))))
+%|- QED AEB_LN_inclusion_j
 
   AEB_LN_fundmental_j: JUDGEMENT
     aeboundsp_ln_ia(n)

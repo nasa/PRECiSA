@@ -2,8 +2,8 @@ bbiadp_exp: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-  	    float@aerr754dp_exp,
-	    interval_arith@interval_lnexp
+  	        axm_bnd@aerr_ulp__double,
+	          interval_arith@interval_lnexp
 
   R,E: VAR Interval
   n  : VAR nat
@@ -14,16 +14,19 @@ BEGIN
     	     Div(Ulp_dp(Exp(n)(Add(R,E))),[|2|]))
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2: VAR RealExpr
 
   x1,x2: VAR real
 
   aebounddp_exp_safe(r,e: real): real =
     IF e >= 0
-    THEN aebounddp_exp(r,e)
+    THEN aerr_ulp_exp(r,e)
     ELSE 1 ENDIF
 
+  %|-   AEB_EXP_inclusion_j : PROOF
+  %|- (prove-inclusion-judgement)
+  %|- QED   AEB_EXP_inclusion_j 
   AEB_EXP_inclusion_j: JUDGEMENT
     aebounddp_exp_ia(n)
     HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aebounddp_exp_safe))

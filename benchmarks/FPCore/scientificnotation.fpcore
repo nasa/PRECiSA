@@ -1,0 +1,2 @@
+(FPCore scinot (x)
+  (+ x 1e100))

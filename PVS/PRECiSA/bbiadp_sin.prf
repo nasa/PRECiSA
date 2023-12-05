@@ -11,7 +11,7 @@
                 (("1" (lift-if 1)
                   (("1" (split 1)
                     (("1" (flatten)
-                      (("1" (expand "aebounddp_sin")
+                      (("1" (expand "aerr_ulp_sin")
                         (("1" (use "Add_inclusion")
                           (("1" (split -1)
                             (("1" (propax) nil nil)

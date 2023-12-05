@@ -1,9 +1,9 @@
 bbiadp_cos: THEORY
 BEGIN
 
-  IMPORTING interval_ulp_dp,
-  	    float@aerr754dp_cos,
-	    interval_arith@interval_trig
+  importing interval_ulp_dp
+  importing axm_bnd@aerr_ulp__double
+  importing interval_arith@interval_trig
 
   R,E: VAR Interval
   n  : VAR nat
@@ -14,14 +14,14 @@ BEGIN
     	     Div(Ulp_dp(Add(Abs(Cos(n)(R)),Min(E,[|2|]))),[|2|]))
     ELSE EmptyInterval
     ENDIF
- 
+
   re1,re2: VAR RealExpr
 
   x1,x2: VAR real
 
   aebounddp_cos_safe(r,e: real): real =
     IF e >= 0
-    THEN aebounddp_cos(r,e)
+    THEN aerr_ulp_cos(r,e)
     ELSE 1 ENDIF
 
   AEB_COS_inclusion_j: JUDGEMENT

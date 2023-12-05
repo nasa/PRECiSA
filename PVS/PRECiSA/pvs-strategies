@@ -1,3 +1,146 @@
+(defstep prove-fundamental-judgement ()
+  (try (match$
+	1
+	"%a(%%)(%%)"
+	step (let ((pred-name-check (prefix? "Fundamental" "%a")))
+	       (when pred-name-check
+		 (then
+		  (expand "%a")
+		  (skeep :preds? t)
+		  (assert)
+		  (match$
+		   "%A(%%) << %A(%%)"
+		   step (then
+			 (expand "%A" :assert? none)
+			 (match$
+			  "if %1 then %2 else %3 endif << if %4 then %5 else %6 endif"
+			  step (branch
+				(case "%4 implies %1")
+				((then (split -1)(flatten)(assert)(prove-interval-fundamental))
+				 (then (hide 2)(flatten)(grind)))))))))))
+       (skip-msg "Warning: proof couldn't be closed. Maybe there's some case still missing in the strategy?")
+       (skip-msg "Exected pattern not found: the initial goal of the proof should be Fundamental?(..)(..)"))
+  "Specialized strategy to prove judgements about fundamental property of interval arithmetic operators"
+  "Proving fundamental property...")
+
+(defstep prove-interval-fundamental (&optional (fnum 1))
+  (with-fresh-labels ((target-lbl fnum))
+   (match$ fnum "Proper?(Ulp_sp(%%))" step (then (use "Ulp_sp_proper") (split -1) (assert)))
+   (match$ fnum "Proper?(Ulp_dp(%%))" step (then (use "Ulp_dp_proper") (split -1) (assert)))
+   (match$ fnum "Proper?(%%)" step (assert))
+   (match fnum "Zeroless?([|%A|])"
+	  step (let ((is-ground (ground-arithmetic-term? (extra-get-expr (list '! fnum 1 1)))))
+		 (when is-ground
+		   (eval-formula fnum))))
+   (match$ fnum "[|%A|] << [|%A|]" step (let ((is-ground (ground-arithmetic-term? (extra-get-expr (list '! fnum 1 1)))))
+		 (when is-ground
+		   (eval-formula fnum))))
+   (match$ fnum "%A(%1,%2) << %A(%3,%4)"
+	  step (then (lemma "%A_fundamental")(inst -1 "%3" "%1" "%4" "%2") (branch (split -1) ((then (hide target-lbl) (prove-interval-fundamental$))))))
+   (match$ fnum "%A(%1) << %A(%3)"
+	  step (then (lemma "%A_fundamental")(inst -1 "%1" "%3")(branch (split -1) ((then (hide target-lbl) (prove-interval-fundamental$)))))))
+  "Proves fundamental inclusions between interval expressions, e.g., Add(X1,X2) << Add(Y1,Y2) given that X1<<Y1 and X2<<Y2."
+  "Proving fundamental interval inclusion...")
+
+(defstep prove-inclusion-judgement ()
+  (try (match$
+	1
+	"%a(%%)(%%)"
+	step (let ((pred-name-check (prefix? "Inclusion" "%a")))
+	       (when pred-name-check
+		 (then
+		  (expand "%a")
+		  (skeep* :preds? t)
+		  (repeat (match "real_pred(%%)" step (hide $1n)))
+		  (assert)
+		  ;; Operators such as 'aebounddp_mul_p2l_safe(n)(x) ## aebounddp_mul_p2l_ia(n)(X)'
+		  (match$
+		   "%c(%%)(%%) ## %d(%%)(%%)"
+		   step (then
+			 (expand "%c" :assert? none)
+			 (expand "%d")))
+		  ;; Operators such as 'aeboundsp_ln_ia(n)(X1, X2)'
+		  (match$
+		   "%c(%%) ## %d(%%)(%%)"
+		   step (then
+			 (expand "%c" :assert? none)
+			 (expand "%d")))
+		  (match$
+		   "%c(%%) ## %d(%%)"
+		   step (then
+			 (expand "%c" :assert? none)
+			 (expand "%d")))
+		  (match$
+		   "if %1 then %2 else %3 endif ## %% "
+		   step (branch
+			 (case "%1")
+			 ((then
+			   (replace -1)
+			   (flatten)
+			   (match$ "%e(%%) ## %%" step (then (expand "%e" :assert? none) (prove-interval-inclusion$))))
+			  (then
+			   (hide 2)
+			   (try (split 1)
+				;; when the guard of the if-then-else is complicated, a more careful proof is needed
+				(then
+				  (flatten)
+				  (assert)
+				  (assert))
+				;; if split didn't advance the proof, the goal is simple
+				(grind))
+				))))))))
+       (skip-msg "Warning: proof couldn't be closed. Maybe there's some case still missing in the strategy?")
+       (skip-msg "Exected pattern not found: the initial goal of the proof should be Inclusion?(..)(..)"))
+  "Specialized strategy to prove judgements about inclusion property of interval arithmetic operators"
+  "Proving inclusion property...")
+
+(defmacro prove-interval-inclusion--apply-lemma
+    (target-label lemma-name &rest lemma-args)
+  `(let ((my-lemma-args (quote ,lemma-args)))
+     `(then (lemma ,,lemma-name)
+	  (instantiate -1 ,my-lemma-args)
+	  (branch
+	   (split -1)
+	   ((then (assert) (assert))
+	    (then (hide ,,target-label)(prove-interval-inclusion$)))))))
+
+(defstep prove-interval-inclusion (&optional (fnum 1))
+  (with-fresh-labels
+   ((target-lbl fnum))
+   ;;
+   (match$ fnum "%A ## [|%A|]"
+	  step (then (expand "##")(assert)))
+   ;;
+   (match$ fnum "Zeroless?([|%A|])"
+	  step (let ((is-ground (ground-arithmetic-term? (extra-get-expr (list '! fnum 1 1)))))
+		 (when is-ground
+		   (eval-formula fnum))))
+   ;;
+   (match$ fnum "%1+%2 ## Add(%3,%4) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Add_inclusion " "%3""%4""%1""%2"))) end-steps))
+   (match$ fnum "%1*%2 ## Mult(%3,%4)" step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Mult_inclusion" "%3""%4""%1""%2"))) end-steps))
+   (match$ fnum "%1/%2 ## Div(%3,%4) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Div_inclusion " "%3""%4""%1""%2"))) end-steps))
+   (match$ fnum "%1-%2 ## Sub(%3,%4) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Sub_inclusion " "%3""%4""%1""%2"))) end-steps))
+   (match$ fnum "max(%1,%2) ## Max(%3,%4) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Max_inclusion " "%3""%4""%1""%2"))) end-steps))
+   (match$ fnum "min(%1,%2) ## Min(%3,%4) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Min_inclusion " "%3""%4""%1""%2"))) end-steps))
+   ;;	 
+   (match$ fnum "  ulp(%1) ## Ulp_sp(%2)  " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Ulp_sp_inclusion" "%2""%1"))) end-steps))
+   (match$ fnum "  ulp(%1) ## Ulp_dp(%2)  " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Ulp_dp_inclusion" "%2""%1"))) end-steps))
+   (match$ fnum "  abs(%1) ##  Abs(%2)    " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Abs_inclusion   " "%2""%1"))) end-steps))
+   (match$ fnum "   -%1    ##  Neg(%2)    " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Neg_inclusion   " "%2""%1"))) end-steps))
+   (match$ fnum "floor(%1) ##  Floor(%2)  " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Floor_inclusion " "%2""%1"))) end-steps))
+   (match$ fnum "  ln(%1)  ##  Ln(%3)(%2) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Ln_inclusion    " "%2""%3""%1"))) end-steps))
+   (match$ fnum " sqrt(%1) ## Sqrt(%3)(%2)" step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Sqrt_inclusion  " "%2""%3""%1"))) end-steps))
+   (match$ fnum "  cos(%1) ## Cos(%3)(%2) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Cos_inclusion   " "%2""%3""%1"))) end-steps))
+   (match$ fnum "  sin(%1) ## Sin(%3)(%2) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Sin_inclusion   " "%2""%3""%1"))) end-steps))
+   (match$ fnum "  tan(%1) ## Tan(%3)(%2) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Tan_inclusion   " "%2""%3""%1"))) end-steps))
+   (match$ fnum " atan(%1) ## Atan(%3)(%2)" step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Atan_inclusion  " "%2""%3""%1"))) end-steps))
+   (match$ fnum "  exp(%1) ## Exp(%3)(%2) " step (let ((end-steps (prove-interval-inclusion--apply-lemma target-lbl "Exp_inclusion   " "%2""%3""%1"))) end-steps))
+   ;;
+   (assert) ;; just in case some installed rewrite-rule can close the branch
+   )
+  ""
+  "")
+
 ;;
 ;; The strategies defined in this file are intended to be used to automatically prove
 ;; the certificates generated by PRECiSA.

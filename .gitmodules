@@ -1,0 +1,4 @@
+[submodule "Kodiak"]
+	path = Kodiak
+	url = https://github.com/nasa/Kodiak.git
+	branch = master

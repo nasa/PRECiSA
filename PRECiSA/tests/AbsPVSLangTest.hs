@@ -17,6 +17,7 @@ import PVSTypes
 import Operators
 import Common.TypesUtils
 import UtilsTest (fromDouble2Rat)
+import Data.Set (fromList)
 
 
 testAbsPVSLang = testGroup "AbsPVSLang"
@@ -54,34 +55,669 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,simplFRel__tests
    ,simplBExprFix__tests
    ,isIntAExpr__tests
+   ,simplAExpr__tests
+   ,renameVar__tests
+   ,renameFVar__tests
+   ,renameVarsAExpr__tests
+   ,renameVarsFAExpr__tests
+   ,renameVarsFBExprStm__tests
+   ,renameVarsBExprStm__tests
+   ,subExpressions__tests
    ]
+
+subExpressions__tests = testGroup "subExpressions__tests" $ [
+  subExpressions__test1
+ ,subExpressions__test2
+ ,subExpressions__test3
+ ,subExpressions__test4
+ ,subExpressions__test5
+ ,subExpressions__test6
+ ,subExpressions__test7
+ ,subExpressions__test8
+ ,subExpressions__test9
+ ,subExpressions__test10
+ ,subExpressions__test11
+ ,subExpressions__test12
+ ,subExpressions__test13
+ ]
+
+
+setEquiv :: (Ord a, Show a) => [a] -> [a] -> IO()
+setEquiv set1 set2 = fromList set1 @?= fromList set2
+
+subExpressions__test1 = testCase "subExpressions Let" $
+  subExpressions (Let [("x",TInt,FInt 3)] (FVar TInt "x"))
+  `setEquiv`
+  [Let [("x",TInt,FInt 3)] (FVar TInt "x"),FInt 3, FVar TInt "x"]
+
+subExpressions__test2 = testCase "subExpressions Let repetition" $
+  subExpressions (Let [("x",TInt,FInt 3)] (FInt 3))
+  `setEquiv`
+  [Let [("x",TInt,FInt 3)] (FInt 3),FInt 3]
+
+subExpressions__test3 = testCase "subExpressions Ite" $
+  subExpressions (Ite (FRel Eq (FVar TInt "x") (FInt 4)) (FVar TInt "x") (FVar TInt "z"))
+  `setEquiv`
+  [Ite (FRel Eq (FVar TInt "x") (FInt 4)) (FVar TInt "x") (FVar TInt "z")
+  ,FInt 4
+  ,FVar TInt "x"
+  ,FVar TInt "z"]
+
+subExpressions__test4 = testCase "subExpressions Ite repetition" $
+  subExpressions (Ite (FRel Eq (FVar TInt "x") (FInt 4)) (FVar TInt "x") (FVar TInt "x"))
+  `setEquiv`
+  [Ite (FRel Eq (FVar TInt "x") (FInt 4)) (FVar TInt "x") (FVar TInt "x")
+  ,FVar TInt "x"
+  ,FInt 4
+  ,FVar TInt "x"
+  ,FVar TInt "x"]
+
+subExpressions__test5 = testCase "subExpressions Binary Op" $
+  subExpressions (BinaryFPOp MulOp FPDouble (FVar TInt "x") (FVar TInt "x"))
+  `setEquiv`
+  [BinaryFPOp MulOp FPDouble (FVar TInt "x") (FVar TInt "x")
+  ,FVar TInt "x"
+  ,FVar TInt "x"]
+
+subExpressions__test6 = testCase "subExpressions Binary Op repetition" $
+  subExpressions (BinaryFPOp MulOp FPDouble (FVar TInt "x") (FVar TInt "z"))
+  `setEquiv`
+  [BinaryFPOp MulOp FPDouble (FVar TInt "x") (FVar TInt "z")
+  ,FVar TInt "x"
+  ,FVar TInt "z"]
+
+subExpressions__test7 = testCase "subExpressions Unary Op" $
+  subExpressions (UnaryFPOp NegOp FPDouble (FVar TInt "x"))
+  `setEquiv`
+  [UnaryFPOp NegOp FPDouble (FVar TInt "x")
+  ,FVar TInt "x"]
+
+subExpressions__test8 = testCase "subExpressions Unary Op repetition" $
+  subExpressions (UnaryFPOp NegOp FPDouble (FVar TInt "x"))
+  `setEquiv`
+  [UnaryFPOp NegOp FPDouble (FVar TInt "x"),FVar TInt "x"]
+
+subExpressions__test9 = testCase "subExpressions EFun" $
+  subExpressions (FEFun True "f" TInt [FVar TInt "y"])
+  `setEquiv`
+  [FEFun True "f" TInt [FVar TInt "y"], FVar TInt "y"]
+
+subExpressions__test10 = testCase "subExpressions ArrayElem" $
+  subExpressions (FArrayElem TInt (Just $ ArraySizeInt 3) "y" (FVar TInt "x"))
+  `setEquiv`
+  [FArrayElem TInt (Just $ ArraySizeInt 3) "y" (FVar TInt "x")
+  ,FVar TInt "x"]
+
+subExpressions__test11 = testCase "subExpressions ListIte" $
+  subExpressions (ListIte [(FRel Eq (FVar TInt "x") (FInt 4),FVar TInt "b")] (FVar TInt "x"))
+  `setEquiv`
+  [ListIte [(FRel Eq (FVar TInt "x") (FInt 4),FVar TInt "b")] (FVar TInt "x")
+  ,FVar TInt "b"
+  ,FVar TInt "x"
+  ,FInt 4]
+
+subExpressions__test12 = testCase "subExpressions FMin" $
+  subExpressions (FMin [(FVar TInt "y")])
+  `setEquiv`
+  [FMin [(FVar TInt "y")], FVar TInt "y"]
+
+subExpressions__test13 = testCase "subExpressions FMax" $
+  subExpressions  (FMax [(FVar TInt "y")])
+  `setEquiv`
+  [FMax [(FVar TInt "y")], FVar TInt "y"]
+
+
+renameVar__tests = testGroup "renameVar__tests" $ [
+  renameVar__test1
+ ,renameVar__test2
+ ,renameVar__test3
+ ,renameVar__test4
+ ,renameVar__test5
+ ,renameVar__test6
+ ,renameVar__test7
+ ,renameVar__test8
+ ,renameVar__test9
+ ,renameVar__test10
+ ]
+
+renameVar__test1 = testCase "renameVar RLet" $
+  renameVar [("x","y")] (RLet [LetElem {letVar = "x",
+                                       letType = TInt,
+                                       letExpr = Int 3}] (Var TInt "x"))
+  @?=
+  Just (RLet [LetElem {letVar = "y",
+                        letType = TInt,
+                        letExpr = Int 3}] (Var TInt "y"))
+
+renameVar__test2 = testCase "renameVar RLet no match" $
+  renameVar [("x","y")] (RLet [LetElem {letVar = "z",
+                                       letType = TInt,
+                                       letExpr = Int 3}] (Var TInt "z"))
+  @?=
+  Just (RLet [LetElem {letVar = "z",
+                        letType = TInt,
+                        letExpr = Int 3}] (Var TInt "z"))
+
+renameVar__test3 = testCase "renameVar Var" $
+  renameVar [("x","y")] (Var TInt "x")
+  @?=
+  Just (Var TInt "y")
+
+renameVar__test4 = testCase "renameVar Var no match" $
+  renameVar [("z","y")] (Var TInt "x")
+  @?=
+  Nothing
+
+renameVar__test5 = testCase "renameVar RealMark" $
+  renameVar [("x","y")] (RealMark "x")
+  @?=
+  Just (RealMark "y")
+
+renameVar__test6 = testCase "renameVar RealMark no match" $
+  renameVar [("z","y")] (RealMark "x")
+  @?=
+  Nothing
+
+renameVar__test7 = testCase "renameVar ErrorMark" $
+  renameVar [("x","y")] (ErrorMark "x" TInt)
+  @?=
+  Just (ErrorMark "y" TInt)
+
+renameVar__test8 = testCase "renameVar ErrorMark no match" $
+  renameVar [("z","y")] (ErrorMark "x" TInt)
+  @?=
+  Nothing
+
+renameVar__test9 = testCase "renameVar RLet nested" $
+  renameVar [("x","z")] (RLet [LetElem {letVar = "x",
+                                       letType = TInt,
+                                       letExpr = Int 3}]
+                                       (RLet [LetElem {letVar = "y",
+                                                       letType = TInt,
+                                                       letExpr = Var TInt "x"}] (Var TInt "y")))
+  @?=
+  Just (RLet [LetElem {letVar = "z",
+                       letType = TInt,
+                       letExpr = Int 3}]
+                       (RLet [LetElem {letVar = "y",
+                                        letType = TInt,
+                                        letExpr = Var TInt "z"}] (Var TInt "y")))
+
+renameVar__test10 = testCase "renameVar RLet nested nomatch" $
+  renameVar [("a","z")] (RLet [LetElem {letVar = "x",
+                                       letType = TInt,
+                                       letExpr = Int 3}]
+                                       (RLet [LetElem {letVar = "y",
+                                                       letType = TInt,
+                                                       letExpr = Var TInt "x"}] (Var TInt "y")))
+  @?=
+  Just (RLet [LetElem {letVar = "x",
+                                       letType = TInt,
+                                       letExpr = Int 3}]
+                                       (RLet [LetElem {letVar = "y",
+                                                       letType = TInt,
+                                                       letExpr = Var TInt "x"}] (Var TInt "y")))
+
+renameFVar__tests = testGroup "renameFVar__tests" $ [
+  renameFVar__test1
+ ,renameFVar__test2
+ ,renameFVar__test3
+ ,renameFVar__test4
+ ,renameFVar__test5
+ ,renameFVar__test6
+ ]
+
+renameFVar__test1 = testCase "renameFVar RLet" $
+  renameFVar [("x","y")] (Let [("x",TInt,FInt 3)] (FVar TInt "x"))
+  @?=
+  Just (Let [("y",TInt,FInt 3)] (FVar TInt "y"))
+
+renameFVar__test2 = testCase "renameVar RLet no match" $
+  renameFVar [("x","y")] (Let [("z",TInt,FInt 3)] (FVar TInt "z"))
+  @?=
+  Just (Let [("z",TInt,FInt 3)] (FVar TInt "z"))
+
+renameFVar__test3 = testCase "renameVar Var" $
+  renameFVar [("x","y")] (FVar TInt "x")
+  @?=
+  Just (FVar TInt "y")
+
+renameFVar__test4 = testCase "renameVar Var no match" $
+  renameFVar [("z","y")] (FVar TInt "x")
+  @?=
+  Nothing
+
+renameFVar__test5 = testCase "renameFVar RLet nested" $
+  renameFVar [("x","y")] (Let [("x",TInt,FInt 3)] (FVar TInt "x"))
+  @?=
+  Just (Let [("y",TInt,FInt 3)] (FVar TInt "y"))
+
+renameFVar__test6 = testCase "renameVar RLet nested no match" $
+  renameFVar [("x","y")] (Let [("z",TInt,FInt 3)] (FVar TInt "z"))
+  @?=
+  Just (Let [("z",TInt,FInt 3)] (FVar TInt "z"))
+
+
+renameVarsAExpr__tests = testGroup "renameVarsAExpr__tests" $ [
+  renameVarsAExpr__test1
+ ,renameVarsAExpr__test2
+ ,renameVarsAExpr__test3
+ ,renameVarsAExpr__test4
+ ,renameVarsAExpr__test5
+ ,renameVarsAExpr__test6
+ ,renameVarsAExpr__test7
+ ,renameVarsAExpr__test8
+ ,renameVarsAExpr__test9
+ ,renameVarsAExpr__test10
+ ,renameVarsAExpr__test11
+ ,renameVarsAExpr__test12
+ ,renameVarsAExpr__test12
+ ,renameVarsAExpr__test13
+ ,renameVarsAExpr__test14
+ ,renameVarsAExpr__test15
+ ,renameVarsAExpr__test16
+ ,renameVarsAExpr__test17
+ ,renameVarsAExpr__test18
+ ,renameVarsAExpr__test19
+ ,renameVarsAExpr__test20
+ ]
+
+renameVarsAExpr__test1 = testCase "renameVarsAExpr RLet" $
+  renameVarsAExpr [("x","y")] (RLet [LetElem {letVar = "x",
+                                              letType = TInt,
+                                              letExpr = Int 3}] (Var TInt "x"))
+  @?=
+  RLet [LetElem {letVar = "y",
+                 letType = TInt,
+                 letExpr = Int 3}] (Var TInt "y")
+
+renameVarsAExpr__test2 = testCase "renameVarsAExpr RLet no match" $
+  renameVarsAExpr [("x","y")] (RLet [LetElem {letVar = "z",
+                                              letType = TInt,
+                                              letExpr = Int 3}] (Var TInt "z"))
+  @?=
+  RLet [LetElem {letVar = "z",
+                 letType = TInt,
+                 letExpr = Int 3}] (Var TInt "z")
+
+renameVarsAExpr__test3 = testCase "renameVarsAExpr RIte" $
+  renameVarsAExpr [("x","y")] (RIte (Rel Eq (Var TInt "x") (Int 4)) (Var TInt "x") (Var TInt "z"))
+  @?=
+  (RIte (Rel Eq (Var TInt "y") (Int 4)) (Var TInt "y") (Var TInt "z"))
+
+renameVarsAExpr__test4 = testCase "renameVarsAExpr RIte no match" $
+  renameVarsAExpr [("a","y")] (RIte (Rel Eq (Var TInt "x") (Int 4)) (Var TInt "x") (Var TInt "z"))
+  @?=
+  (RIte (Rel Eq (Var TInt "x") (Int 4)) (Var TInt "x") (Var TInt "z"))
+
+renameVarsAExpr__test5 = testCase "renameVarsAExpr Binary Op" $
+  renameVarsAExpr [("x","y")] (BinaryOp MulOp (Var TInt "x") (Var TInt "z"))
+  @?=
+  (BinaryOp MulOp (Var TInt "y") (Var TInt "z"))
+
+renameVarsAExpr__test6 = testCase "renameVarsAExpr Binary Op no match" $
+  renameVarsAExpr [("a","y")] (BinaryOp MulOp (Var TInt "x") (Var TInt "z"))
+  @?=
+  (BinaryOp MulOp (Var TInt "x") (Var TInt "z"))
+
+renameVarsAExpr__test7 = testCase "renameVarsAExpr Unary Op" $
+  renameVarsAExpr [("x","y")] (UnaryOp NegOp (Var TInt "x"))
+  @?=
+  (UnaryOp NegOp (Var TInt "y"))
+
+renameVarsAExpr__test8 = testCase "renameVarsAExpr Unary Op no match" $
+  renameVarsAExpr [("a","y")] (UnaryOp NegOp (Var TInt "x"))
+  @?=
+  (UnaryOp NegOp (Var TInt "x"))
+
+renameVarsAExpr__test9 = testCase "renameVarsAExpr EFun" $
+  renameVarsAExpr [("x","y")] (EFun "f" TInt [Var TInt "x"])
+  @?=
+  EFun "f" TInt [Var TInt "y"]
+
+renameVarsAExpr__test10 = testCase "renameVarsAExpr EFun no match" $
+  renameVarsAExpr [("a","y")] (EFun "f" TInt [Var TInt "x"])
+  @?=
+  (EFun "f" TInt [Var TInt "x"])
+
+renameVarsAExpr__test11 = testCase "renameVarsAExpr ArrayElem" $
+  renameVarsAExpr [("x","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" (Var TInt "x"))
+  @?=
+  ArrayElem TInt (Just $ ArraySizeInt 3) "y" (Var TInt "y")
+
+renameVarsAExpr__test12 = testCase "renameVarsAExpr ArrayElem no match" $
+  renameVarsAExpr [("a","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" (Var TInt "x"))
+  @?=
+  (ArrayElem TInt (Just $ ArraySizeInt 3) "x" (Var TInt "x"))
+
+renameVarsAExpr__test13 = testCase "renameVarsAExpr RListIte" $
+  renameVarsAExpr [("x","y")] (RListIte [(Rel Eq (Var TInt "x") (Int 4),Var TInt "b")] (Var TInt "x"))
+  @?=
+  (RListIte [(Rel Eq (Var TInt "y") (Int 4),Var TInt "b")] (Var TInt "y"))
+
+renameVarsAExpr__test14 = testCase "renameVarsAExpr RListIte no match" $
+  renameVarsAExpr [("a","y")] (RListIte [(Rel Eq (Var TInt "x") (Int 4),Var TInt "b")] (Var TInt "x"))
+  @?=
+  (RListIte [(Rel Eq (Var TInt "x") (Int 4),Var TInt "b")] (Var TInt "x"))
+
+renameVarsAExpr__test15 = testCase "renameVarsAExpr Min" $
+  renameVarsAExpr [("x","y")] (Min [(Var TInt "x")])
+  @?=
+  (Min [(Var TInt "y")])
+
+renameVarsAExpr__test16 = testCase "renameVarsAExpr Max" $
+  renameVarsAExpr [("x","y")] (Max [(Var TInt "x")])
+  @?=
+  (Max [(Var TInt "y")])
+
+renameVarsAExpr__test17 = testCase "renameVarsAExpr MaxErr" $
+  renameVarsAExpr [("x","y")] (MaxErr [(Var TInt "x")])
+  @?=
+  (MaxErr [(Var TInt "y")])
+
+renameVarsAExpr__test18 = testCase "renameVarsAExpr ErrBinOp" $
+  renameVarsAExpr [("x","y")] (ErrBinOp MulOp FPDouble (Var TInt "x") (Var TInt "x") (Var TInt "z") (Var TInt "z"))
+  @?=
+  (ErrBinOp MulOp FPDouble (Var TInt "y") (Var TInt "y") (Var TInt "z") (Var TInt "z"))
+
+renameVarsAExpr__test19 = testCase "renameVarsAExpr MaxErr" $
+  renameVarsAExpr [("x","y")] (MaxErr [(Var TInt "Err_x")])
+  @?=
+  (MaxErr [(Var TInt "Err_y")])
+
+renameVarsAExpr__test20 = testCase "renameVarsAExpr RLet" $
+  renameVarsAExpr [("x","y")] (RLet [LetElem {letVar = "Err_x",
+                                              letType = TInt,
+                                              letExpr = Int 3}] (Var TInt "x"))
+  @?=
+  RLet [LetElem {letVar = "Err_y",
+                 letType = TInt,
+                 letExpr = Int 3}] (Var TInt "y")
+
+renameVarsFAExpr__tests = testGroup "renameVarsFAExpr__tests" $ [
+  renameVarsFAExpr__test1
+ ,renameVarsFAExpr__test2
+ ,renameVarsFAExpr__test3
+ ,renameVarsFAExpr__test4
+ ,renameVarsFAExpr__test5
+ ,renameVarsFAExpr__test6
+ ,renameVarsFAExpr__test7
+ ,renameVarsFAExpr__test8
+ ,renameVarsFAExpr__test9
+ ,renameVarsFAExpr__test10
+ ,renameVarsFAExpr__test11
+ ,renameVarsFAExpr__test12
+ ,renameVarsFAExpr__test12
+ ,renameVarsFAExpr__test13
+ ,renameVarsFAExpr__test14
+ ,renameVarsFAExpr__test15
+ ,renameVarsFAExpr__test16
+ ]
+
+renameVarsFAExpr__test1 = testCase "renameVarsFAExpr Let" $
+  renameVarsFAExpr [("x","y")] (Let [("x",TInt,FInt 3)] (FVar TInt "x"))
+  @?=
+  Let [("y",TInt,FInt 3)] (FVar TInt "y")
+
+renameVarsFAExpr__test2 = testCase "renameVarsFAExpr Let no match" $
+  renameVarsFAExpr [("a","y")] (Let [("x",TInt,FInt 3)] (FVar TInt "x"))
+  @?=
+  Let [("x",TInt,FInt 3)] (FVar TInt "x")
+
+renameVarsFAExpr__test3 = testCase "renameVarsFAExpr Ite" $
+  renameVarsFAExpr [("x","y")] (Ite (FRel Eq (FVar TInt "x") (FInt 4)) (FVar TInt "x") (FVar TInt "z"))
+  @?=
+  Ite (FRel Eq (FVar TInt "y") (FInt 4)) (FVar TInt "y") (FVar TInt "z")
+
+renameVarsFAExpr__test4 = testCase "renameVarsFAExpr Ite no match" $
+  renameVarsFAExpr [("a","y")] (Ite (FRel Eq (FVar TInt "x") (FInt 4)) (FVar TInt "x") (FVar TInt "z"))
+  @?=
+  Ite (FRel Eq (FVar TInt "x") (FInt 4)) (FVar TInt "x") (FVar TInt "z")
+
+renameVarsFAExpr__test5 = testCase "renameVarsFAExpr Binary Op" $
+  renameVarsFAExpr [("x","y")] (BinaryFPOp MulOp FPDouble (FVar TInt "x") (FVar TInt "z"))
+  @?=
+  BinaryFPOp MulOp FPDouble (FVar TInt "y") (FVar TInt "z")
+
+renameVarsFAExpr__test6 = testCase "renameVar Binary Op no match" $
+  renameVarsFAExpr [("a","y")] (BinaryFPOp MulOp FPDouble (FVar TInt "x") (FVar TInt "z"))
+  @?=
+  (BinaryFPOp MulOp FPDouble (FVar TInt "x") (FVar TInt "z"))
+
+renameVarsFAExpr__test7 = testCase "renameVar Unary Op" $
+  renameVarsFAExpr [("x","y")] (UnaryFPOp NegOp FPDouble (FVar TInt "x"))
+  @?=
+  (UnaryFPOp NegOp FPDouble (FVar TInt "y"))
+
+renameVarsFAExpr__test8 = testCase "renameVar Unary Op no match" $
+  renameVarsFAExpr [("a","y")] (UnaryFPOp NegOp FPDouble (FVar TInt "x"))
+  @?=
+  (UnaryFPOp NegOp FPDouble (FVar TInt "x"))
+
+renameVarsFAExpr__test9 = testCase "renameVar EFun" $
+  renameVarsFAExpr [("x","y")] (FEFun True "f" TInt [FVar TInt "x"])
+  @?=
+  FEFun True "f" TInt [FVar TInt "y"]
+
+renameVarsFAExpr__test10 = testCase "renameVar EFun no match" $
+  renameVarsFAExpr [("a","y")] (FEFun True "f" TInt [FVar TInt "x"])
+  @?=
+  (FEFun True "f" TInt [FVar TInt "x"])
+
+renameVarsFAExpr__test11 = testCase "renameVar ArrayElem" $
+  renameVarsFAExpr [("x","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" (FVar TInt "x"))
+  @?=
+  FArrayElem TInt (Just $ ArraySizeInt 3) "y" (FVar TInt "y")
+
+renameVarsFAExpr__test12 = testCase "renameVar ArrayElem no match" $
+  renameVarsFAExpr [("a","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" (FVar TInt "x"))
+  @?=
+  (FArrayElem TInt (Just $ ArraySizeInt 3) "x" (FVar TInt "x"))
+
+renameVarsFAExpr__test13 = testCase "renameVar ListIte" $
+  renameVarsFAExpr [("x","y")] (ListIte [(FRel Eq (FVar TInt "x") (FInt 4),FVar TInt "b")] (FVar TInt "x"))
+  @?=
+  (ListIte [(FRel Eq (FVar TInt "y") (FInt 4),FVar TInt "b")] (FVar TInt "y"))
+
+renameVarsFAExpr__test14 = testCase "renameVar ListIte no match" $
+  renameVarsFAExpr [("a","y")] (ListIte [(FRel Eq (FVar TInt "x") (FInt 4),FVar TInt "b")] (FVar TInt "x"))
+  @?=
+  (ListIte [(FRel Eq (FVar TInt "x") (FInt 4),FVar TInt "b")] (FVar TInt "x"))
+
+renameVarsFAExpr__test15 = testCase "renameVar FMin" $
+  renameVarsFAExpr [("x","y")] (FMin [(FVar TInt "x")])
+  @?=
+  (FMin [(FVar TInt "y")])
+
+renameVarsFAExpr__test16 = testCase "renameVar FMax" $
+  renameVarsFAExpr [("x","y")] (FMax [(FVar TInt "x")])
+  @?=
+  (FMax [(FVar TInt "y")])
+
+renameVarsFBExprStm__tests = testGroup "renameVarsFBExpr__tests" $ [
+  renameVarsFBExprStm__test1
+ ,renameVarsFBExprStm__test2
+ ,renameVarsFBExprStm__test3
+ ,renameVarsFBExprStm__test4
+ ,renameVarsFBExprStm__test5
+ ,renameVarsFBExprStm__test6
+ ,renameVarsFBExprStm__test7
+ ,renameVarsFBExprStm__test8
+ ,renameVarsFBExprStm__test9
+ ]
+
+renameVarsFBExprStm__test1 = testCase "renameVarsFBExprStm Let" $
+  renameVarsFBExprStm [("x","y")] (BLet [("x",TInt,FInt 3)] (BExpr (FRel Eq (FVar TInt "x") (FInt 4))))
+  @?=
+  BLet [("y",TInt,FInt 3)] (BExpr (FRel Eq (FVar TInt "y") (FInt 4)))
+
+renameVarsFBExprStm__test2 = testCase "renameVarsFBExprStm Let no match" $
+  renameVarsFBExprStm [("a","y")] (BLet [("x",TInt,FInt 3)] (BExpr (FRel Eq (FVar TInt "x") (FInt 4))))
+  @?=
+  BLet [("x",TInt,FInt 3)] (BExpr (FRel Eq (FVar TInt "x") (FInt 4)))
+
+renameVarsFBExprStm__test3 = testCase "renameVarsFBExprStm BIte" $
+  renameVarsFBExprStm [("x","y")] (BIte (FRel Eq (FVar TInt "x") (FInt 4))
+                                        (BExpr (FRel Neq (FVar TInt "x") (FInt 4)))
+                                        (BExpr (FRel Eq (FVar TInt "x") (FInt 4))))
+  @?=
+  BIte (FRel Eq  (FVar TInt "y") (FInt 4))
+       (BExpr (FRel Neq (FVar TInt "y") (FInt 4)))
+       (BExpr (FRel Eq  (FVar TInt "y") (FInt 4)))
+
+renameVarsFBExprStm__test4 = testCase "renameVarsFBExprStm BIte no match" $
+  renameVarsFBExprStm [("a","y")] (BIte (FRel Eq (FVar TInt "x") (FInt 4))
+                                        (BExpr (FRel Neq (FVar TInt "x") (FInt 4)))
+                                        (BExpr (FRel Eq (FVar TInt "x") (FInt 4))))
+  @?=
+  BIte (FRel Eq (FVar TInt "x") (FInt 4))
+       (BExpr (FRel Neq (FVar TInt "x") (FInt 4)))
+       (BExpr (FRel Eq (FVar TInt "x") (FInt 4)))
+
+renameVarsFBExprStm__test5 = testCase "renameVar BListIte" $
+  renameVarsFBExprStm [("x","y")] (BListIte [(FRel Eq (FVar TInt "x") (FInt 4)
+                                            ,BExpr (FRel Eq (FVar TInt "b") (FInt 4)))]
+                                             (BExpr (FRel Eq (FVar TInt "x") (FInt 4))))
+  @?=
+  BListIte [(FRel Eq (FVar TInt "y") (FInt 4), BExpr (FRel Eq (FVar TInt "b") (FInt 4)))]
+                                         (BExpr (FRel Eq (FVar TInt "y") (FInt 4)))
+
+renameVarsFBExprStm__test6 = testCase "renameVar BListIte no match" $
+  renameVarsFBExprStm [("a","y")] (BListIte [(FRel Eq (FVar TInt "x") (FInt 4)
+                                             ,BExpr (FRel Eq (FVar TInt "b") (FInt 4)))]
+                                             (BExpr (FRel Eq (FVar TInt "x") (FInt 4))))
+  @?=
+  BListIte [(FRel Eq (FVar TInt "x") (FInt 4), BExpr (FRel Eq (FVar TInt "b") (FInt 4)))]
+                                             (BExpr (FRel Eq (FVar TInt "x") (FInt 4)))
+
+renameVarsFBExprStm__test7 = testCase "renameVar FOr" $
+  renameVarsFBExprStm [("x","y")] (BExpr (FOr (FRel Eq (FVar TInt "x") (FInt 4)) (FRel Eq (FVar TInt "z") (FInt 4))))
+  @?=
+  BExpr (FOr (FRel Eq (FVar TInt "y") (FInt 4)) (FRel Eq (FVar TInt "z") (FInt 4)))
+
+renameVarsFBExprStm__test8 = testCase "renameVar FAnd" $
+  renameVarsFBExprStm [("x","y")] (BExpr (FAnd (FRel Eq (FVar TInt "x") (FInt 4)) (FRel Eq (FVar TInt "z") (FInt 4))))
+  @?=
+  BExpr (FAnd (FRel Eq (FVar TInt "y") (FInt 4)) (FRel Eq (FVar TInt "z") (FInt 4)))
+
+renameVarsFBExprStm__test9 = testCase "renameVar FNot" $
+  renameVarsFBExprStm [("x","y")] (BExpr (FNot (FRel Eq (FVar TInt "x") (FInt 4))))
+  @?=
+  BExpr (FNot (FRel Eq (FVar TInt "y") (FInt 4)))
+
+renameVarsBExprStm__tests = testGroup "renameVarsFBExpr__tests" $ [
+  renameVarsBExprStm__test1
+ ,renameVarsBExprStm__test2
+ ,renameVarsBExprStm__test3
+ ,renameVarsBExprStm__test4
+ ,renameVarsBExprStm__test5
+ ,renameVarsBExprStm__test6
+ ,renameVarsBExprStm__test7
+ ,renameVarsBExprStm__test8
+ ,renameVarsBExprStm__test9
+ ]
+
+renameVarsBExprStm__test1 = testCase "renameVarsBExprStm Let" $
+  renameVarsBExprStm [("x","y")] (RBLet [LetElem {letVar = "x",
+                                              letType = TInt,
+                                              letExpr = Int 3}] (RBExpr (Rel Eq (Var TInt "x") (Int 4))))
+  @?=
+  RBLet [LetElem {letVar = "y",
+                  letType = TInt,
+                  letExpr = Int 3}] (RBExpr (Rel Eq (Var TInt "y") (Int 4)))
+
+renameVarsBExprStm__test2 = testCase "renameVarsBExprStm Let no match" $
+  renameVarsBExprStm [("a","y")] (RBLet [LetElem {letVar = "x",
+                                              letType = TInt,
+                                              letExpr = Int 3}] (RBExpr (Rel Eq (Var TInt "x") (Int 4))))
+  @?=
+  RBLet [LetElem {letVar = "x",
+                 letType = TInt,
+                 letExpr = Int 3}] (RBExpr (Rel Eq (Var TInt "x") (Int 4)))
+
+renameVarsBExprStm__test3 = testCase "renameVarsBExprStm RBIte" $
+  renameVarsBExprStm [("x","y")] (RBIte (Rel Eq (Var TInt "x") (Int 4))
+                                        (RBExpr (Rel Neq (Var TInt "x") (Int 4)))
+                                        (RBExpr (Rel Eq (Var TInt "x") (Int 4))))
+  @?=
+  RBIte (Rel Eq  (Var TInt "y") (Int 4))
+       (RBExpr (Rel Neq (Var TInt "y") (Int 4)))
+       (RBExpr (Rel Eq  (Var TInt "y") (Int 4)))
+
+renameVarsBExprStm__test4 = testCase "renameVarsBExprStm RBIte no match" $
+  renameVarsBExprStm [("a","y")] (RBIte (Rel Eq (Var TInt "x") (Int 4))
+                                        (RBExpr (Rel Neq (Var TInt "x") (Int 4)))
+                                        (RBExpr (Rel Eq (Var TInt "x") (Int 4))))
+  @?=
+  RBIte (Rel Eq (Var TInt "x") (Int 4))
+       (RBExpr (Rel Neq (Var TInt "x") (Int 4)))
+       (RBExpr (Rel Eq (Var TInt "x") (Int 4)))
+
+renameVarsBExprStm__test5 = testCase "renameVar RBListIte" $
+  renameVarsBExprStm [("x","y")] (RBListIte [(Rel Eq (Var TInt "x") (Int 4)
+                                            ,RBExpr (Rel Eq (Var TInt "b") (Int 4)))]
+                                             (RBExpr (Rel Eq (Var TInt "x") (Int 4))))
+  @?=
+  RBListIte [(Rel Eq (Var TInt "y") (Int 4), RBExpr (Rel Eq (Var TInt "b") (Int 4)))]
+                                         (RBExpr (Rel Eq (Var TInt "y") (Int 4)))
+
+renameVarsBExprStm__test6 = testCase "renameVar RBListIte no match" $
+  renameVarsBExprStm [("a","y")] (RBListIte [(Rel Eq (Var TInt "x") (Int 4)
+                                             ,RBExpr (Rel Eq (Var TInt "b") (Int 4)))]
+                                             (RBExpr (Rel Eq (Var TInt "x") (Int 4))))
+  @?=
+  RBListIte [(Rel Eq (Var TInt "x") (Int 4), RBExpr (Rel Eq (Var TInt "b") (Int 4)))]
+                                             (RBExpr (Rel Eq (Var TInt "x") (Int 4)))
+
+renameVarsBExprStm__test7 = testCase "renameVar FOr" $
+  renameVarsBExprStm [("x","y")] (RBExpr (Or (Rel Eq (Var TInt "x") (Int 4)) (Rel Eq (Var TInt "z") (Int 4))))
+  @?=
+  RBExpr (Or (Rel Eq (Var TInt "y") (Int 4)) (Rel Eq (Var TInt "z") (Int 4)))
+
+renameVarsBExprStm__test8 = testCase "renameVar And" $
+  renameVarsBExprStm [("x","y")] (RBExpr (And (Rel Eq (Var TInt "x") (Int 4)) (Rel Eq (Var TInt "z") (Int 4))))
+  @?=
+  RBExpr (And (Rel Eq (Var TInt "y") (Int 4)) (Rel Eq (Var TInt "z") (Int 4)))
+
+renameVarsBExprStm__test9 = testCase "renameVar Not" $
+  renameVarsBExprStm [("x","y")] (RBExpr (Not (Rel Eq (Var TInt "x") (Int 4))))
+  @?=
+  RBExpr (Not (Rel Eq (Var TInt "y") (Int 4)))
+
+simplAExpr__tests = testGroup "simplAExpr" $ [
+   testCase "int 1" $ simplAExpr (Int 1) @?= Int 1
+  ,testCase "maxerr(0,0)" $ simplAExpr (MaxErr [Int 0, Int 0]) @?= Int 0
+  ,testCase "maxerr(errrat 0, errrat 0)" $ simplAExpr (MaxErr [ErrRat (toRational (0::Double)),ErrRat (toRational (0::Double))]) @?= Int 0
+  ,testCase "1 + maxerr(0,0)"
+    $ simplAExpr (BinaryOp AddOp (Int 1) (MaxErr [Int 0, Int 0])) @?= Int 1
+  ]
 
 hasConditionals__tests = testGroup "hasConditionals" $ [
     testGroup "function calls" $ [
       testCase "with if" $
                 let program = [RDecl Real "f" [] (RIte BTrue (Int 1) (Int 2))] in
-                    hasConditionals program (EFun "f" Real []) @?= True,
+                    hasConditionals True program (EFun "f" Real []) @?= True,
       testCase "without if" $
                 let program = [RDecl Real "f" [] (Int 2)] in
-                    hasConditionals program (EFun "f" Real []) @?= False
+                    hasConditionals True program (EFun "f" Real []) @?= False
     ],
       testCase "variable" $
-            hasConditionals [] (Var TInt "x") @?= False
-   ] ++ map (\(i,o) -> testCase (show i) $ hasConditionals [] i @?= o) testcasesHasConditionals
+            hasConditionals True [] (Var TInt "x") @?= False
+   ] ++ map (\(i,o) -> testCase (show i) $ hasConditionals True [] i @?= o) testcasesHasConditionals
 
 testcasesHasConditionals
     =[
     (Int 4, False),
-    (Rat (toRational 0.1), False),
+    (Rat (toRational (0.1::Double)), False),
     (Var  TInt "x",False),
     (ArrayElem TInt (Just $ ArraySizeInt 3) "a" (Int 2), False),
     (BinaryOp AddOp (Int 1) (Int 2),False),
     (UnaryOp NegOp (Int 2), False),
     (Min [Int 3], False),
     (Max [Int 3], False),
-    (RLet [(LetElem "x" Real (Rat $ toRational 0.2))] (Var Real "x"), False),
-    (RLet [(LetElem "x" Real (RIte BTrue (Rat $ toRational 0.2) (Rat $ toRational 0.1)))] (Var Real "x"), True),
-    (RLet [(LetElem "x" Real (Rat $ toRational 0.2))] (RIte BTrue (Rat $ toRational 0.2) (Var Real "x")), True),
+    (RLet [(LetElem "x" Real (Rat $ toRational (0.2::Double)))] (Var Real "x"), False),
+    (RLet [(LetElem "x" Real (RIte BTrue (Rat $ toRational (0.2::Double)) (Rat $ toRational (0.1::Double))))] (Var Real "x"), True),
+    (RLet [(LetElem "x" Real (Rat $ toRational (0.2::Double)))] (RIte BTrue (Rat $ toRational (0.2::Double)) (Var Real "x")), True),
     (RIte BTrue (Int 1) (Int 2), True),
     (RListIte [(BTrue, Int 1)] (Int 2), True),
     (RForLoop Real (Int 1) (Int 3) (Int 0) "x" "acc" (Int 4), False)
@@ -90,28 +726,28 @@ testcasesHasConditionals
 hasConditionalsBExpr__tests = testGroup "hasConditionalsBExpr" [
     testCase "function call with if" $
       let program = [RDecl Real "f" [] (RIte BTrue (Int 1) (Int 2))] in
-        hasConditionalsBExpr program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= True,
+        hasConditionalsBExpr True program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= True,
     testCase "function call with no if" $
       let program = [RDecl Real "f" [] (Int 2)] in
-        hasConditionalsBExpr program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= False,
+        hasConditionalsBExpr True program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= False,
     testCase "predicate call with no if" $
       let program = [RPred "f" [] (RBExpr BTrue)] in
-        hasConditionalsBExpr program (RBExpr $ EPred "f" []) @?= False,
+        hasConditionalsBExpr True program (RBExpr $ EPred "f" []) @?= False,
     testCase "predicate call with if" $
       let program = [RPred "f" [] (RBIte (Rel Lt (Int 2) (Var TInt "x")) (RBExpr BTrue) (RBExpr BFalse))] in
-        hasConditionalsBExpr program (RBExpr $ EPred "f" []) @?= True,
+        hasConditionalsBExpr True program (RBExpr $ EPred "f" []) @?= True,
     testCase "conditional" $
-        hasConditionalsBExpr [] (RBIte BTrue (RBExpr BTrue) (RBExpr BTrue)) @?= True,
+        hasConditionalsBExpr True [] (RBIte BTrue (RBExpr BTrue) (RBExpr BTrue)) @?= True,
     testCase "conditional list" $
-        hasConditionalsBExpr [] (RBListIte [(BTrue, RBExpr BTrue)] (RBExpr BTrue)) @?= True,
+        hasConditionalsBExpr True [] (RBListIte [(BTrue, RBExpr BTrue)] (RBExpr BTrue)) @?= True,
     testCase "simple boolean expression" $
-        hasConditionalsBExpr [] (RBExpr BTrue) @?= False,
+        hasConditionalsBExpr True  [] (RBExpr BTrue) @?= False,
     testCase "let in with conditional body" $
-        hasConditionalsBExpr [] (RBLet [LetElem "x" TInt (Int 2)] (RBListIte [(Rel Lt (Int 2) (Var TInt "x"), RBExpr BTrue)] (RBExpr BTrue))) @?= True,
+        hasConditionalsBExpr True [] (RBLet [LetElem "x" TInt (Int 2)] (RBListIte [(Rel Lt (Int 2) (Var TInt "x"), RBExpr BTrue)] (RBExpr BTrue))) @?= True,
     testCase "let in with conditional let element" $
-        hasConditionalsBExpr [] (RBLet [LetElem "x" TInt (RIte (Rel Lt (Int 2) (Int 6)) (Int 3) (Int 5))] (RBExpr $ Rel Eq (Int 4) (Var TInt "x"))) @?= True,
+        hasConditionalsBExpr True [] (RBLet [LetElem "x" TInt (RIte (Rel Lt (Int 2) (Int 6)) (Int 3) (Int 5))] (RBExpr $ Rel Eq (Int 4) (Var TInt "x"))) @?= True,
     testCase "let in with non conditional body" $
-        hasConditionalsBExpr [] (RBLet [LetElem "x" TInt (Int 2)] (RBExpr BTrue)) @?= False
+        hasConditionalsBExpr True [] (RBLet [LetElem "x" TInt (Int 2)] (RBExpr BTrue)) @?= False
    ]
 
 
@@ -142,6 +778,8 @@ localVarsBExpr__tests   = testGroup "localVarsBExpr" [
     testCase "let and" $
       localVarsBExpr (FAnd (FRel LtE (Let [("a", TInt , FInt 1)] (FVar TInt "x")) (FVar TInt "z")) (FRel LtE (Let [("y", TInt , FInt 3)] (FVar TInt "x")) (FVar TInt "z"))) @?= [("a", FInt 1),("y",FInt 3)]
   ]
+
+
 
 localVarsBExprStm__tests   = testGroup "localVarsBExprStm" [
     testCase "true" $
@@ -579,6 +1217,7 @@ funCallListAExpr__tests = testGroup "funCallListAExpr tests"
   ,funCallListAExpr__test3
   ,funCallListAExpr__test4
   ,funCallListAExpr__test5
+  ,funCallListAExpr__test6
   ]
 
 funCallListAExpr__test1 = testCase "funCallList of 8 is []" $
@@ -602,8 +1241,12 @@ funCallListAExpr__test5 = testCase "funCallList of f(g(5)) is [f(g(5)), g(5)]" $
     @?=
     [EFun "f" Real [EFun "g" Real [Int 5]],EFun "g" Real [Int 5]]
 
--- funCallListFAExpr__test6 = testCase "funCallList of f(g(5)) is [f(g(5)), g(5)]" $
---     funCallListFAExpr (ToFloat FPDouble (Int 9)) @?= []
+funCallListAExpr__test6 = testCase "funCallList of f(g(5)) is [f(g(5)), g(5)]" $
+    funCallListAExpr (EFun "f" Real [EFun "g" Real [EFun "h" Real [Int 7]]])
+    @?=
+    [EFun "f" Real [EFun "g" Real [EFun "h" Real [Int 7]]]
+    ,EFun "g" Real [EFun "h" Real [Int 7]]
+    ,EFun "h" Real [Int 7]]
 
 funCallListBExpr__tests = testGroup "funCallListBExpr tests"
   [funCallListBExpr__test1

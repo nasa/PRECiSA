@@ -1,13 +1,13 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-    
-    
+
+
 module SMT.PrettyPrinter where
 
 import AbstractDomain
@@ -74,26 +74,28 @@ prettySMTRat rat = text $ Rat.showRational Nothing rat -- double $ ((fromRat rat
 prettySMTPVSType :: PVSType -> Doc
 prettySMTPVSType FPSingle = text "single"
 prettySMTPVSType FPDouble = text "double"
-prettySMTPVSType _ = error "prettySMTPVSType: unexpected value" 
+prettySMTPVSType _ = error "prettySMTPVSType: unexpected value"
 
 prettySMT :: Conditions -> Doc
-prettySMT (Cond [])       = text "false"
-prettySMT (Cond [c])      = prettySMTCondition c
-prettySMT (Cond listCond) = text "or" <> parens (vcat $ punctuate comma (map prettySMTCondition' listCond))
+prettySMT (Conds [])       = text "false"
+prettySMT (Conds [c])      = prettySMTCondition c
+prettySMT (Conds listCond) = text "or" <> parens (vcat $ punctuate comma (map prettySMTCondition' listCond))
 
 prettySMTCondition :: Condition -> Doc
-prettySMTCondition (BTrue ,  FBTrue) = empty
-prettySMTCondition (BFalse, FBFalse) = text "false"
-prettySMTCondition (BTrue ,     fbe) = prettySMTfbexpr fbe
-prettySMTCondition (be    ,  FBTrue) = prettySMTbexpr  be
-prettySMTCondition (be    ,     fbe) = prettySMTbexpr  be $$ prettySMTfbexpr fbe
+prettySMTCondition cond | isTrueCond  cond = empty
+                        | isFalseCond cond = text "false"
+prettySMTCondition cond = if realPathCond cond == BTrue then empty else prettySMTbexpr (realPathCond cond) $$
+                          if fpPathCond cond == FBTrue then empty else prettySMTfbexpr (fpPathCond cond)   $$
+                          if realCond cond == BTrue then empty else prettySMTbexpr (realCond cond) $$
+                          if fpCond cond == FBTrue then empty else prettySMTfbexpr (fpCond cond)
 
 prettySMTCondition' :: Condition -> Doc
-prettySMTCondition' (BTrue ,  FBTrue) = empty
-prettySMTCondition' (BFalse, FBFalse) = text "false"
-prettySMTCondition' (BTrue ,     fbe) = prettySMTfbexpr fbe
-prettySMTCondition' (be    ,  FBTrue) = prettySMTbexpr  be
-prettySMTCondition' (be    ,     fbe) = text "and" <> parens (prettySMTbexpr' be <> comma <+> prettySMTfbexpr' fbe)
+prettySMTCondition' cond | isTrueCond  cond = empty
+                         | isFalseCond cond = text "false"
+prettySMTCondition' cond = text "and" <> parens (prettySMTbexpr' (realPathCond cond) <> comma
+                                                         <+> prettySMTfbexpr' (fpPathCond cond) <> comma
+                                                         <+> prettySMTbexpr' (realCond cond)  <> comma
+                                                         <+> prettySMTfbexpr' (fpCond cond) <> comma)
 
 
 prettySMTbexpr :: BExpr -> Doc

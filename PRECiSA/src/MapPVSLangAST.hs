@@ -1,13 +1,13 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-  
-  
+
+
 module MapPVSLangAST
 where
 
@@ -22,6 +22,7 @@ import qualified Operators as Op
 import Parser.ParRawPVSLang
 import Parser.LexRawPVSLang
 import Utils (fst3,snd3)
+import Debug.Trace
 
 type VarTypeEnv = [(String, PVSTypes.PVSType)]
 type FunTypeEnv = [(String, PVSTypes.PVSType)]
@@ -60,7 +61,7 @@ raw2Elsif :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.ElsIf -> (AbsPVSLang.FBEx
 raw2Elsif env fenv (ElsIf fbexpr stm) = (raw2FBExpr env fenv fbexpr, raw2FAExpr env fenv stm)
 
 raw2BinOp :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsRawPVSLang.Expr -> Op.BinOp -> AbsPVSLang.FAExpr
-raw2BinOp env fenv fae1 fae2 op = AbsPVSLang.BinaryFPOp op fp ae1 ae2 
+raw2BinOp env fenv fae1 fae2 op = AbsPVSLang.BinaryFPOp op fp ae1 ae2
   where
     ae1 = raw2FAExpr env fenv fae1
     ae2 = raw2FAExpr env fenv fae2
@@ -75,12 +76,12 @@ intToFP :: PVSTypes.PVSType -> AbsRawPVSLang.Expr -> AbsPVSLang.FAExpr
 intToFP _ (AbsRawPVSLang.Int i) = AbsPVSLang.FInt i
 intToFP _ fae = error $ "intToFP: " ++ show fae ++ "is not of type int."
 
-raw2FBExprStm :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FBExprStm 
+raw2FBExprStm :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FBExprStm
 raw2FBExprStm env fenv (AbsRawPVSLang.Let letElems stm)
   = BLet letList (raw2FBExprStm newenv fenv stm)
   where
-    (newenv,letList) = foldr aux_fold (env,[]) letElems
-    aux_fold letElem (accEnv,elems) = (env',elems ++ [newLetElem])
+    (newenv,letList) = foldl aux_fold (env,[]) letElems
+    aux_fold (accEnv,elems) letElem = (env',elems ++ [newLetElem])
       where
         newLetElem = raw2LetElem accEnv fenv letElem
         env' = (fst3 newLetElem, snd3 newLetElem):accEnv
@@ -97,7 +98,7 @@ raw2FBExprStm _ _ be = error $ "raw2FBExprStm: Boolean expression expected but g
 raw2BElsif :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.ElsIf -> (AbsPVSLang.FBExpr, AbsPVSLang.FBExprStm)
 raw2BElsif env fenv (ElsIf fbexpr stm) = (raw2FBExpr env fenv fbexpr, raw2FBExprStm env fenv stm)
 
-raw2FBExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FBExpr 
+raw2FBExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FBExpr
 raw2FBExpr env fenv (AbsRawPVSLang.Or  fbe1 fbe2) = AbsPVSLang.FOr  (raw2FBExpr env fenv fbe1) (raw2FBExpr env fenv fbe2)
 raw2FBExpr env fenv (AbsRawPVSLang.And fbe1 fbe2) = AbsPVSLang.FAnd (raw2FBExpr env fenv fbe1) (raw2FBExpr env fenv fbe2)
 raw2FBExpr env fenv (AbsRawPVSLang.Not       fbe) = AbsPVSLang.FNot (raw2FBExpr env fenv fbe)
@@ -120,19 +121,19 @@ raw2FAExpr _ _ (AbsRawPVSLang.Int n) = AbsPVSLang.FInt n
 raw2FAExpr _ _ (AbsRawPVSLang.Rat d) = AbsPVSLang.ToFloat FPDouble $ AbsPVSLang.Rat $ rationalizeFP d
 
 raw2FAExpr env fenv (AbsRawPVSLang.ExprId (AbsRawPVSLang.Id i)) =
-  case lookup i fenv of 
+  case lookup i fenv of
     Just fp -> AbsPVSLang.FEFun False i fp []
     Nothing -> case lookup i env of
                   Just fp -> AbsPVSLang.FVar fp i
-                  Nothing -> error $ "Identifier " ++ show i ++ "not found."
+                  Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env
 
 raw2FAExpr _ _ (AbsRawPVSLang.ExprNeg (AbsRawPVSLang.Int i)) = AbsPVSLang.FInt (-i)
 raw2FAExpr _ _ (AbsRawPVSLang.ExprNeg (AbsRawPVSLang.Rat d)) = AbsPVSLang.ToFloat FPDouble
                                                                $ AbsPVSLang.Rat (rationalizeFP (-d))
 
-raw2FAExpr _ _ (AbsRawPVSLang.ExprNeg (AbsRawPVSLang.Call (AbsRawPVSLang.Id "ItoD") [AbsRawPVSLang.Int i])) 
+raw2FAExpr _ _ (AbsRawPVSLang.ExprNeg (AbsRawPVSLang.Call (AbsRawPVSLang.Id "ItoD") [AbsRawPVSLang.Int i]))
   = AbsPVSLang.ToFloat FPDouble $ AbsPVSLang.Int (-i)
-raw2FAExpr _ _ (AbsRawPVSLang.ExprNeg (AbsRawPVSLang.Call (AbsRawPVSLang.Id "ItoS") [AbsRawPVSLang.Int i])) 
+raw2FAExpr _ _ (AbsRawPVSLang.ExprNeg (AbsRawPVSLang.Call (AbsRawPVSLang.Id "ItoS") [AbsRawPVSLang.Int i]))
   = AbsPVSLang.ToFloat FPSingle $ AbsPVSLang.Int (-i)
 raw2FAExpr _ _ (AbsRawPVSLang.ExprNeg (AbsRawPVSLang.Call (AbsRawPVSLang.Id "RtoD") [AbsRawPVSLang.Rat d]))
   = AbsPVSLang.ToFloat FPDouble $ AbsPVSLang.Rat (rationalizeFP (-d))
@@ -201,24 +202,24 @@ raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [fae])
 
 raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [fae1,fae2])
   | f == "add"  = raw2BinOp env fenv fae1 fae2 Op.AddOp
-  | f == "Iadd" = AbsPVSLang.BinaryFPOp Op.AddOp TInt     ae1 ae2 
-  | f == "Sadd" = AbsPVSLang.BinaryFPOp Op.AddOp FPSingle ae1 ae2 
-  | f == "Dadd" = AbsPVSLang.BinaryFPOp Op.AddOp FPDouble ae1 ae2 
+  | f == "Iadd" = AbsPVSLang.BinaryFPOp Op.AddOp TInt     ae1 ae2
+  | f == "Sadd" = AbsPVSLang.BinaryFPOp Op.AddOp FPSingle ae1 ae2
+  | f == "Dadd" = AbsPVSLang.BinaryFPOp Op.AddOp FPDouble ae1 ae2
   | f == "sub"  = raw2BinOp env fenv fae1 fae2 Op.SubOp
-  | f == "Isub" = AbsPVSLang.BinaryFPOp Op.SubOp TInt     ae1 ae2 
-  | f == "Ssub" = AbsPVSLang.BinaryFPOp Op.SubOp FPSingle ae1 ae2 
-  | f == "Dsub" = AbsPVSLang.BinaryFPOp Op.SubOp FPDouble ae1 ae2 
+  | f == "Isub" = AbsPVSLang.BinaryFPOp Op.SubOp TInt     ae1 ae2
+  | f == "Ssub" = AbsPVSLang.BinaryFPOp Op.SubOp FPSingle ae1 ae2
+  | f == "Dsub" = AbsPVSLang.BinaryFPOp Op.SubOp FPDouble ae1 ae2
   | f == "mul"  = raw2BinOp env fenv fae1 fae2 Op.MulOp
-  | f == "Imul" = AbsPVSLang.BinaryFPOp Op.MulOp TInt     ae1 ae2 
-  | f == "Smul" = AbsPVSLang.BinaryFPOp Op.MulOp FPSingle ae1 ae2 
-  | f == "Dmul" = AbsPVSLang.BinaryFPOp Op.MulOp FPDouble ae1 ae2 
+  | f == "Imul" = AbsPVSLang.BinaryFPOp Op.MulOp TInt     ae1 ae2
+  | f == "Smul" = AbsPVSLang.BinaryFPOp Op.MulOp FPSingle ae1 ae2
+  | f == "Dmul" = AbsPVSLang.BinaryFPOp Op.MulOp FPDouble ae1 ae2
   | f == "div"  = raw2BinOp env fenv fae1 fae2 Op.DivOp
-  | f == "Idiv" = AbsPVSLang.BinaryFPOp Op.DivOp TInt     ae1 ae2 
-  | f == "Sdiv" = AbsPVSLang.BinaryFPOp Op.DivOp FPSingle ae1 ae2 
-  | f == "Ddiv" = AbsPVSLang.BinaryFPOp Op.DivOp FPDouble ae1 ae2 
+  | f == "Idiv" = AbsPVSLang.BinaryFPOp Op.DivOp TInt     ae1 ae2
+  | f == "Sdiv" = AbsPVSLang.BinaryFPOp Op.DivOp FPSingle ae1 ae2
+  | f == "Ddiv" = AbsPVSLang.BinaryFPOp Op.DivOp FPDouble ae1 ae2
   | f == "mod"  = raw2BinOp env fenv fae1 fae2 Op.ModOp
-  | f == "Imod" = AbsPVSLang.BinaryFPOp Op.ModOp TInt     ae1 ae2 
-  | f == "Smod" = AbsPVSLang.BinaryFPOp Op.ModOp FPSingle ae1 ae2 
+  | f == "Imod" = AbsPVSLang.BinaryFPOp Op.ModOp TInt     ae1 ae2
+  | f == "Smod" = AbsPVSLang.BinaryFPOp Op.ModOp FPSingle ae1 ae2
   | f == "Dmod" = AbsPVSLang.BinaryFPOp Op.ModOp FPDouble ae1 ae2
   where
     ae1 = raw2FAExpr env fenv fae1
@@ -233,13 +234,13 @@ raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) actArgs)
 raw2FAExpr env fenv (AbsRawPVSLang.Let letElems stm)
   = AbsPVSLang.Let letList (raw2FAExpr newenv fenv stm)
   where
-    (newenv,letList) = foldr aux_fold (env,[]) letElems
-    aux_fold letElem (accEnv,elems) =  (env',elems ++ [newLetElem])
+    (newenv,letList) = foldl aux_fold (env,[]) letElems
+    aux_fold  (accEnv,elems) letElem = (env',elems ++ [newLetElem])
       where
         newLetElem = raw2LetElem accEnv fenv letElem
         env' = (fst3 newLetElem, snd3 newLetElem):accEnv
 
-raw2FAExpr env fenv (If bexpr stmThen stmElse) = 
+raw2FAExpr env fenv (If bexpr stmThen stmElse) =
     Ite (raw2FBExpr env fenv bexpr) (raw2FAExpr env fenv stmThen) (raw2FAExpr env fenv stmElse)
 
 raw2FAExpr env fenv (ListIf bexpr stmThen listElsif stmElse) =
@@ -271,15 +272,16 @@ raw2Id (AbsRawPVSLang.Id x) = x
 raw2FPType :: AbsRawPVSLang.Id -> PVSTypes.PVSType
 raw2FPType (Id "int")            = TInt
 raw2FPType (Id "integer")        = TInt
-raw2FPType (Id "single")         = FPSingle 
-raw2FPType (Id "unb_single")     = FPSingle 
-raw2FPType (Id "unb_pos_single") = FPDouble 
-raw2FPType (Id "unb_nz_single")  = FPDouble 
-raw2FPType (Id "double")         = FPDouble 
-raw2FPType (Id "unb_double")     = FPDouble 
-raw2FPType (Id "unb_pos_double") = FPDouble 
-raw2FPType (Id "unb_nz_double")  = FPDouble 
+raw2FPType (Id "single")         = FPSingle
+raw2FPType (Id "unb_single")     = FPSingle
+raw2FPType (Id "unb_pos_single") = FPDouble
+raw2FPType (Id "unb_nz_single")  = FPDouble
+raw2FPType (Id "double")         = FPDouble
+raw2FPType (Id "unb_double")     = FPDouble
+raw2FPType (Id "unb_pos_double") = FPDouble
+raw2FPType (Id "unb_nz_double")  = FPDouble
 raw2FPType (Id "bool")           = Boolean
+raw2FPType t = error $ "raw2FPType: type " ++ show t ++ " not recognized."
 
 rawparserPVS :: String -> Err AbsRawPVSLang.Program
 rawparserPVS = pProgram . tokens

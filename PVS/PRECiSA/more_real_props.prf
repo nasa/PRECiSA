@@ -1,0 +1,13 @@
+(more_real_props
+ (one_minus_x_over_y_ge_0_TCC1 0
+  (one_minus_x_over_y_ge_0_TCC1-1 nil 3909498393
+   ("" (subtype-tcc) nil nil) nil nil
+   (one_minus_x_over_y_ge_0 subtype "more_real_props.y" "nznum")))
+ (one_minus_x_over_y_ge_0 0
+  (one_minus_x_over_y_ge_0-1 nil 3909498402
+   (""
+    (then (skeep) (both-sides "+" "x" -2)
+     (spread (both-sides "*" "y" 1) ((assert) (assert))))
+    nil)
+   nil shostak)))
+
