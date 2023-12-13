@@ -1,7 +1,0 @@
-Processing PRECiSA. Writing output to file ./PRECiSA.summary
-Grand Totals: 144 proofs, 144 attempted, 144 succeeded (223.37 s)
-
-PRECiSA                  [OK: 144 proofs]
-
-*** Grand Totals: 144 proofs / 144 formulas. Missed: 0 formulas.
-*** Number of libraries: 1

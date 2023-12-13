@@ -208,7 +208,7 @@ $ proveit -sc num_cert_example.pvs
 
 ## Version
 
-*PRECiSA v-4.0.0* (November 2023)
+*PRECiSA v-4.0.1* (November 2023)
 
 ## Contact information
 If you have any question or problem, please contact:
@@ -218,6 +218,12 @@ If you have any question or problem, please contact:
 * [Marco A. Feliu](mailto:marco.feliu@nasa.gov) (for Kodiak and installation issues)
 * [Paolo Masci](mailto:paolo.m.masci@nasa.gov) (for VSCode-PRECiSA)
 * [César Muñoz](mailto:cesar.a.munoz@nasa.gov) (for PRECiSA at NASA)
+
+## Additional Contributors
+
+* Rocco Salvia, University of Utah (at time of contribution)
+* Caleb Chan, University of Washington
+* Nikson Bernardes Fernandes Ferreira, University of Brasilia
 
 ## Related Publications
 
