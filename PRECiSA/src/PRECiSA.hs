@@ -42,6 +42,7 @@ import System.Directory
 import System.FilePath
 import Translation.Float2Real
 import Debug.Trace
+import Json
 
 main :: IO ()
 main = parseOptions >>= parseAndAnalyze
@@ -66,15 +67,18 @@ parseAndAnalyze
           , optParseFPCore          = parsefpcore
           , optParseFPCoreSpec      = parsefpcorespec
           , optPrintFPCore          = printfpcore
-          , optImproveError         = impErr
+          -- , optImproveError         = impErr
           , optWithPaving           = withPaving
           , optMaxDepth             = maxBBDepth
           , optPrecision            = prec
           , optMaxNumLemma          = maxel
-          , optNoCollapsedStables   = noCollapsedStables
           , optAssumeStability      = sta
-          , optNoCollapsedUnstables = notMu
+          -- , optNoCollapsedStables   = noCollapsedStables
+          -- , optNoCollapsedUnstables = notMu
+          , jsonOutput              = jsonOut
           , optSMTOptimization      = useSMT } = do
+  let noCollapsedStables = False
+  let notMu = False
   errparseProg <- if parsefpcore
                   then do
                     parseFileToFPCoreProgram fileprog
@@ -106,10 +110,7 @@ parseAndAnalyze
   writeFile certFile symbCertificates
   let realProgDoc = genRealProgFile inputFileName  realProgFileName (fp2realProg decls)
   writeFile realProgFile (renderPVS realProgDoc)
-  -------------- just for batch mode
-  putStrLn "********************************************************************"
-  putStrLn "****************************** PRECiSA *****************************"
-  putStrLn ""
+
   let searchParams = KP.SP { maximumDepth = fromInteger . toInteger $ maxBBDepth
                            , minimumPrecision = fromInteger . toInteger $ prec }
   let pgmSemUlp = removeInfiniteCebS progSem
@@ -122,28 +123,41 @@ parseAndAnalyze
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
   results <- computeAllErrorsInKodiak unfoldedPgmSem spec searchParams
   let resultSummary = summarizeAllErrors (getKodiakResults results)
-  printAllErrors resultSummary
+
   let numCertificate = renderPVS $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
   writeFile numCertFile numCertificate
+
   if printfpcore
   then do putStrLn $ renderPVS $ fpcprintProgram decls spec
   else return ()
-  putStrLn ""
-  -------------- just for batch mode
-  putStrLn "********************************************************************"
-  putStrLn "***** Files generated successfully *****"
-  putStrLn ("Symbolic lemmas and proofs in: " ++ certFile)
-  putStrLn ("Numeric lemmas and proofs in: " ++ numCertFile)
+
   pavingFiles <- if withPaving
   then do
     let unstableCondInterp = map (\(fun, (_,_,_,sem)) -> (fun, map conds (filter isUnstable sem))) unfoldedPgmSem
     let kodiakFunConds = map (\(f,conditions) -> (f,fromMaybe (error "kodiakFunConds") (KP.conds2Kodiak' conditions))) unstableCondInterp
     KP.paveUnstabilityConditions kodiakFunConds spec searchParams (generatePavingFilename (filePath++inputFileName))
   else return []
-  when withPaving $
-      mapM_ (\(fun,file) -> putStrLn $ "Paving for function " ++ fun ++ " generated in: " ++ file) pavingFiles
+
+  if jsonOut
+  then do
+    let jsonRes = map toJSONAnalysisResults resultSummary
+    putStrLn (show jsonRes)
+  else do
+    putStrLn "**************************************************************************"
+    putStrLn "********************************* PRECiSA ********************************"
+    putStrLn ""
+    printAllErrors resultSummary
+    putStrLn ("Symbolic lemmas and proofs in: " ++ certFile)
+    putStrLn ("Numeric lemmas and proofs in: " ++ numCertFile)
+
+    when withPaving $
+        mapM_ (\(fun,file) -> putStrLn $ "Paving for function " ++ fun ++ " generated in: " ++ file) pavingFiles
+
+    putStrLn ""
+    putStrLn "**************************************************************************"
     where
-      mu = not notMu
+      mu = True
+      impErr = False
       semConf = SemConf {improveError = impErr, assumeTestStability = sta, mergeUnstables = mu}
       inputFileName = takeBaseName fileprog
       filePath = dropFileName fileprog
@@ -162,27 +176,30 @@ getKodiakResults = map getKodiakResult
      getKodiakResult (f,_,_,errors) = (f, map getKodiakError errors)
      getKodiakError (_,_,cf,err,_,_,_) = (cf,err)
 
-summarizeAllErrors :: [(String, [(ControlFlow, KodiakResult)])] -> [(String, [(ControlFlow, Double)])]
+summarizeAllErrors :: [(String, [(ControlFlow, KodiakResult)])] -> [(String, Double, Maybe Double)]
 summarizeAllErrors errorMap = map aux errorMap
   where
     aux (f, results) =
       let stableCases = filter ((== Stable) . fst) results in
       let unstableCases = filter ((== Unstable) . fst) results in
-      (f,[(Stable,maximum $ map (maximumUpperBound . snd) stableCases)]
-         ++
-         if null unstableCases then []
-         else [(Unstable, maximum $ map (maximumUpperBound . snd) unstableCases)])
+      (f, maximum $ map (maximumUpperBound . snd) stableCases
+        , if null unstableCases then Nothing
+          else Just $ maximum $ map (maximumUpperBound . snd) unstableCases)
 
-printAllErrors :: [(String,[(ControlFlow,Double)])] -> IO ()
+printAllErrors :: [(String,Double,Maybe Double)] -> IO ()
 printAllErrors = mapM_ printFunction
   where
-    printFunction (f,results) = do
+    printFunction (f,stableErr, unstableErr) = do
       putStrLn $ "Function " ++ f
-      mapM_ printRes results
-    printRes (flow, err) = do
-      if flow == Stable
-        then putStrLn $ "  stable paths: " ++ render (prettyNumError $ err)
-        else putStrLn $ "  unstable paths: " ++ render (prettyNumError $ err)
+      putStrLn $ "|real - floating-point| <= " ++ render (prettyNumError $ stableErr)
+      case unstableErr of
+        Nothing -> return ()
+        Just divergence -> do
+          putStrLn ""
+          putStrLn "There are unstable conditionals leading to divergent real and floating-point control-flows."
+          putStrLn $ "divergence <= " ++ render (prettyNumError $ divergence)
+      putStrLn ""
+      putStrLn "**************************************************************************"
 
 computeAllErrorsInKodiak :: Interpretation
                          -> Spec

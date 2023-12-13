@@ -19,14 +19,15 @@ data Options = Options
    , optParseFPCore          :: Bool
    , optParseFPCoreSpec      :: Bool
    , optPrintFPCore          :: Bool
-   , optImproveError         :: Bool
+  --  , optImproveError         :: Bool
    , optWithPaving           :: Bool
    , optMaxDepth             :: Int
    , optPrecision            :: Int
    , optMaxNumLemma          :: Int
    , optAssumeStability      :: Bool
-   , optNoCollapsedStables   :: Bool
-   , optNoCollapsedUnstables :: Bool
+  --  , optNoCollapsedStables   :: Bool
+  --  , optNoCollapsedUnstables :: Bool
+   , jsonOutput              :: Bool
    , optSMTOptimization      :: Bool
    } deriving Show
 
@@ -58,10 +59,10 @@ optionsParser =
           (  long "print-fpcore"
           <> help "Print program as FPCore."
           )
-        <*> switch
-          (  long "improve-accuracy"
-          <> help "Use an optimized version of the round-off error expressions that models special cases such as the Sterbenz exact subtraction and the exact floor operation. This option may increase the analysis time."
-          )
+        -- <*> switch
+        --   (  long "improve-accuracy"
+        --   <> help "Use an optimized version of the round-off error expressions that models special cases such as the Sterbenz exact subtraction and the exact floor operation. This option may increase the analysis time."
+        --   )
         <*> switch
           (  long "paving"
           <> help "Generate a paving of the regions of unstability"
@@ -92,13 +93,16 @@ optionsParser =
           (  long "assume-stability"
           <> short 's'
           <> help "Enable stable test assumption" )
+        -- <*> switch
+        --   (  long "no-collapsed-unstables"
+        --   <> short 'u'
+        --   <> help "Do not collapse unstable cases" )
+        -- <*> switch
+        --   (  long "no-collapsed-stables"
+        --   <> help "Do not collapse stable paths. It may lead to a more accurate analysis since each path is analyzed separately." )
         <*> switch
-          (  long "no-collapsed-unstables"
-          <> short 'u'
-          <> help "Do not collapse unstable cases" )
-        <*> switch
-          (  long "no-collapsed-stables"
-          <> help "Do not collapse stable paths. It may lead to a more accurate analysis since each path is analyzed separately." )
+          (  long "json"
+          <> help "Output results in JSON format" )
         <*> switch
           (  long "smt-optimization"
           <> help "Use SMT solvers to elimiate unfeasible cases" )
