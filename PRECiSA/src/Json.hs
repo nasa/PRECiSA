@@ -9,28 +9,51 @@
 
 
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Json where
 
 import GHC.Generics
 import Data.Aeson
 
-data AnalysisResult = AnalysisResult {
+data AnalysisResultFun = AnalysisResultFun {
     function :: String,
     stableError :: Double,
     unstableError :: Maybe Double
 } deriving (Generic, Show)
 
+data AnalysisResult = AnalysisResult {
+    results :: [AnalysisResultFun],
+    certFile :: String,
+    numCertFile :: String
+} deriving (Generic, Show)
+
+
+instance ToJSON AnalysisResultFun
+instance FromJSON AnalysisResultFun
+
 instance ToJSON AnalysisResult
+  where
+    toEncoding (AnalysisResult results certFile numCertFile) =
+      pairs ("results" .= results <> "certFile" .= certFile <> "numCertFile" .= numCertFile)
 
 instance FromJSON AnalysisResult
 
-toAnalysisResults :: (String, Double, Maybe Double) -> AnalysisResult
-toAnalysisResults (funName, stableErr, unstableErr) =
-  AnalysisResult { function = funName,
-                   stableError = stableErr,
-                   unstableError = unstableErr
-                 }
 
 
-toJSONAnalysisResults = encode . toAnalysisResults
+toAnalysisResultFun :: (String, Double, Maybe Double) -> AnalysisResultFun
+toAnalysisResultFun (funName, stableErr, unstableErr) =
+  AnalysisResultFun { function = funName,
+                      stableError = stableErr,
+                      unstableError = unstableErr
+                    }
+
+toAnalysisResult :: [(String, Double, Maybe Double)] -> String -> String -> AnalysisResult
+toAnalysisResult results certFile certFileName =
+  AnalysisResult {
+    results = map toAnalysisResultFun results,
+    certFile = certFile,
+    numCertFile = certFileName
+  }
+-- toJSONAnalysisResults :: [(String, Double, Maybe Double)] -> String -> String ->
+toJSONAnalysisResults results certFile certFileName  = encode $ toAnalysisResult results certFile certFileName

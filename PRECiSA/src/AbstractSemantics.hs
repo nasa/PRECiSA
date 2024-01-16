@@ -32,14 +32,13 @@ import FreshVariables
 data SemanticConfiguration = SemConf {
     assumeTestStability :: Bool,
     mergeUnstables :: Bool,
-    improveError :: Bool
+    improveError :: Bool,
+    unfoldFunCalls :: Bool
 }
 
 newtype Iteration = Iter Int deriving (Eq,Show,Num)
 
 newtype Env a = Env [(VarName,a)] deriving (Show)
-
-type LocalEnv = [FLetElem]
 
 type FunctionInterpretation = (FunName, (IsTrans, PVSType, [Arg] ,ACebS))
 
@@ -51,27 +50,31 @@ envVars (Env env) = map fst env
 errVarName :: VarName -> VarName
 errVarName x = "Err_" ++ x
 
-symbolicError :: Interpretation -> Env ACebS -> FAExpr -> EExpr
-symbolicError interp env fae =
+symbolicError :: Interpretation -> Env ACebS -> [Arg] -> FAExpr -> EExpr
+symbolicError interp env args fae =
   fromMaybe (error "symbolicError: unexpected argument") $
-    eExpr $ mergeACebFold $ exprSemantics interp env fae
+    eExpr $ mergeACebFold $ exprSemantics interp env args fae
 
-symbolicErrorStable :: Interpretation -> Env ACebS -> FAExpr -> EExpr
-symbolicErrorStable interp env fae =
+symbolicErrorStable :: Interpretation -> Env ACebS -> [Arg] -> FAExpr -> EExpr
+symbolicErrorStable interp env args fae =
   fromMaybe (error "symbolicErrorStable: unexpected argument") $
-    eExpr $ mergeACebFold $ exprSemanticsStable interp env fae
+    eExpr $ mergeACebFold $ exprSemanticsStable interp env args fae
 
-exprSemanticsStable :: Interpretation -> Env ACebS -> FAExpr -> [ACeb]
-exprSemanticsStable interp env fae =
-  stmSem fae interp env SemConf{ improveError = False
+exprSemanticsStable :: Interpretation -> Env ACebS -> [Arg] -> FAExpr -> [ACeb]
+exprSemanticsStable interp env args fae =
+  replaceLetVarsFresh env [] $
+    stmSem fae interp env SemConf{ improveError = False
                                , assumeTestStability = True
-                               , mergeUnstables = True } root []
+                               , mergeUnstables = True
+                               , unfoldFunCalls = False} root []
 
-exprSemantics :: Interpretation -> Env ACebS -> FAExpr -> [ACeb]
-exprSemantics interp env fae =
-  stmSem fae interp env SemConf{ improveError = False
+exprSemantics :: Interpretation -> Env ACebS -> [Arg] -> FAExpr -> [ACeb]
+exprSemantics interp env args fae =
+  replaceLetVarsFresh env [] $
+    stmSem fae interp env SemConf{ improveError = False
                                , assumeTestStability = False
-                               , mergeUnstables = True } root []
+                               , mergeUnstables = True
+                               , unfoldFunCalls = False } root []
 
 maxRoundOffError :: ACebS -> EExpr
 maxRoundOffError [] = error "maxRoundOffError: empty list."
@@ -758,13 +761,22 @@ stmSem (FArrayElem fp _ v _) _ (Env env) _ dp _ =
           decisionPath = dp, cFlow = Stable}]
     (lookup v env)
 
-stmSem (FEFun _ f _ actArgs) interp env config dp dps =
+stmSem fexpr@(FEFun _ f t actArgs) interp env config dp dps =
   case lookup f interp of
-    Just (_, _, formArgs, funSem) -> semEFun f formArgs actArgs
-                                             (combos argSem)
-                                             (replaceLetVarsFresh env formArgs funSem)
-                                             (length funSem) dp
-    --
+    Just (_, _, formArgs, funSem) ->
+      if (unfoldFunCalls config)
+      then semEFun f formArgs actArgs
+             (combos argSem)
+             (replaceLetVarsFresh env formArgs funSem)
+             (length funSem) dp
+      else [ ACeb {
+             conds  = trueConds,
+             rExprs = RDeclRes [fae2real fexpr],
+             fpExprs = FDeclRes [fexpr],
+             eExpr  = Just $ ErrFun f actArgs,
+             decisionPath = dp,
+             cFlow  = Stable
+           } ]
     Nothing -> error ("Function " ++ f ++ " not found")
   where
     argSem = map (\arg -> stmSem arg interp env config dp dps) actArgs
@@ -1139,7 +1151,7 @@ varBindAExprReal fa aa sem (ArrayElem fp size v a) = ArrayElem fp size v (varBin
 varBindAExprReal fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExprReal fa aa sem a)
 varBindAExprReal fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExprReal fa aa sem a1)
                                                              (varBindAExprReal fa aa sem a2)
-varBindAExprReal fa aa _   (FromFloat fp a)    = FromFloat fp   (varBindFAExpr fa (map (real2fpAexpr False fp []) aa) a)
+varBindAExprReal fa aa _   (FromFloat fp a)    = FromFloat fp   (varBindFAExpr fa (map (real2fpAexpr False False fp []) aa) a)
 varBindAExprReal _ _ _ (ErrRat n)    = ErrRat n
 varBindAExprReal fa _ sem (ErrorMark x fp) = bindErrorMark fa sem
     where
@@ -1416,7 +1428,8 @@ removeInfiniteCebS ((f,(isTrans,fp,args,cebs)):is) =
   else removeInfiniteCebS is
   where
     filteredCebS = filter (not . hasInfiniteError) cebs
-    hasInfiniteError ACeb{ eExpr = ee} = fromMaybe (error "removeInfiniteCebS: unexpected argument.") ee == Infinity
+    hasInfiniteError ACeb{ eExpr = ee} | isNothing ee = False
+                                       | otherwise = fromJust ee == Infinity
 
 checkProgSize :: [(String, (IsTrans,PVSType,[Arg], ACebS))] -> Int -> Int -> IO ()
 checkProgSize [] n maxel | n >= maxel = error "The generated file is too big! Try to run the analysis with the stable tests assumption."
@@ -1436,10 +1449,10 @@ unfoldFunCallInSem interp (f, (isTrans, fp, args, sem)) = (f, (isTrans, fp, args
 unfoldFunCallInCeb :: Interpretation -> ACeb -> ACeb
 unfoldFunCallInCeb interp aceb =
   aceb {conds  = Conds (elimDuplicates $ concatMap (unfoldFunCallsInCond interp) cs),
-        eExpr  = Just $ unfoldFunCallInEExprRec interp (fromMaybe (error "unfoldFunCallInCeb: unexpected argument.") ee)
+        eExpr  = maybe Nothing (Just . unfoldFunCallInEExprRec interp) ee
        }
     where
-       ACeb {conds = Conds cs, eExpr = ee} = aceb
+      ACeb {conds = Conds cs, eExpr = ee} = aceb
 
 ------------ TO DO --------------------------------------
 -- unfold real and fp condition at the same time ----------

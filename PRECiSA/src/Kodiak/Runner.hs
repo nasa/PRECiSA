@@ -29,6 +29,7 @@ data KodiakInput = KI { kiName :: String,
                         kiBindings :: [VarBind],
                         kiMaxDepth :: CUInt,
                         kiPrecision :: CUInt }
+  deriving Show
 
 data KodiakResult = KR { maximumLowerBound :: Double,
                          maximumUpperBound :: Double
@@ -166,7 +167,7 @@ instance KodiakRunnable AExpr VariableMap PReal where
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_addition
         run' (ErrBinOp SubOp FPDouble r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_subtraction
-        run' (ErrSubSternenz FPDouble r1 e1 r2 e2) vmap = 
+        run' (ErrSubSternenz FPDouble r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_error_subtraction --_Sternenz
         run' (ErrBinOp MulOp FPDouble r1 e1 r2 e2) vmap
           | (Int 2) <- r1 = run' e2 vmap
@@ -199,7 +200,7 @@ instance KodiakRunnable AExpr VariableMap PReal where
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_addition
         run' (ErrBinOp SubOp FPSingle r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_subtraction
-        run' (ErrSubSternenz FPSingle r1 e1 r2 e2) vmap = 
+        run' (ErrSubSternenz FPSingle r1 e1 r2 e2) vmap =
           runBinaryErrorOperator r1 e1 r2 e2 vmap real_create_single_error_subtraction --_Sternenz
         run' (ErrBinOp MulOp FPSingle r1 e1 r2 e2) vmap
           | (Int 2) <- r1 = run' e2 vmap

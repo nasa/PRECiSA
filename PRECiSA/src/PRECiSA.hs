@@ -14,6 +14,7 @@
 module PRECiSA
   ( main,
     computeAllErrorsInKodiak,
+    computeAllErrorsInKodiakMap
   )
 where
 
@@ -43,6 +44,8 @@ import System.FilePath
 import Translation.Float2Real
 import Debug.Trace
 import Json
+import Data.ByteString.Lazy (hPutStr)
+import System.IO (stdout)
 
 main :: IO ()
 main = parseOptions >>= parseAndAnalyze
@@ -67,16 +70,15 @@ parseAndAnalyze
           , optParseFPCore          = parsefpcore
           , optParseFPCoreSpec      = parsefpcorespec
           , optPrintFPCore          = printfpcore
-          -- , optImproveError         = impErr
+          , optFunctionCalls        = optUnfoldFuns
           , optWithPaving           = withPaving
           , optMaxDepth             = maxBBDepth
           , optPrecision            = prec
           , optMaxNumLemma          = maxel
           , optAssumeStability      = sta
-          -- , optNoCollapsedStables   = noCollapsedStables
-          -- , optNoCollapsedUnstables = notMu
           , jsonOutput              = jsonOut
           , optSMTOptimization      = useSMT } = do
+
   let noCollapsedStables = False
   let notMu = False
   errparseProg <- if parsefpcore
@@ -121,7 +123,11 @@ parseAndAnalyze
     else return pgmSemUlp
 
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
-  results <- computeAllErrorsInKodiak unfoldedPgmSem spec searchParams
+
+  results <- if optUnfoldFuns
+              then computeAllErrorsInKodiakMap unfoldedPgmSem spec searchParams
+              else computeAllErrorsInKodiak sta unfoldedPgmSem spec searchParams
+
   let resultSummary = summarizeAllErrors (getKodiakResults results)
 
   let numCertificate = renderPVS $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
@@ -140,8 +146,9 @@ parseAndAnalyze
 
   if jsonOut
   then do
-    let jsonRes = map toJSONAnalysisResults resultSummary
-    putStrLn (show jsonRes)
+    let jsonRes = toJSONAnalysisResults resultSummary certFile numCertFile
+    -- putStrLn (show jsonRes)
+    hPutStr stdout jsonRes
   else do
     putStrLn "**************************************************************************"
     putStrLn "********************************* PRECiSA ********************************"
@@ -158,7 +165,10 @@ parseAndAnalyze
     where
       mu = True
       impErr = False
-      semConf = SemConf {improveError = impErr, assumeTestStability = sta, mergeUnstables = mu}
+      semConf = SemConf {improveError = impErr
+                        ,assumeTestStability = sta
+                        ,mergeUnstables = mu
+                        ,unfoldFunCalls = optUnfoldFuns}
       inputFileName = takeBaseName fileprog
       filePath = dropFileName fileprog
       filePathSMT = filePath ++ inputFileName ++ "_SMT/"
@@ -172,19 +182,21 @@ parseAndAnalyze
 
 getKodiakResults :: [(String,PVSType,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])] -> [(String, [(ControlFlow,KodiakResult)])]
 getKodiakResults = map getKodiakResult
-  where
-     getKodiakResult (f,_,_,errors) = (f, map getKodiakError errors)
-     getKodiakError (_,_,cf,err,_,_,_) = (cf,err)
+
+getKodiakResult (f,_,_,errors) = (f, map getKodiakError errors)
+
+getKodiakError (_,_,cf,err,_,_,_) = (cf,err)
 
 summarizeAllErrors :: [(String, [(ControlFlow, KodiakResult)])] -> [(String, Double, Maybe Double)]
-summarizeAllErrors errorMap = map aux errorMap
-  where
-    aux (f, results) =
-      let stableCases = filter ((== Stable) . fst) results in
-      let unstableCases = filter ((== Unstable) . fst) results in
-      (f, maximum $ map (maximumUpperBound . snd) stableCases
-        , if null unstableCases then Nothing
-          else Just $ maximum $ map (maximumUpperBound . snd) unstableCases)
+summarizeAllErrors errorMap = map summarizeFunError errorMap
+
+summarizeFunError :: (String, [(ControlFlow, KodiakResult)]) -> (String, Double, Maybe Double)
+summarizeFunError (f, results) =
+  let stableCases = filter ((== Stable) . fst) results in
+  let unstableCases = filter ((== Unstable) . fst) results in
+    (f, maximum $ map (maximumUpperBound . snd) stableCases
+      , if null unstableCases then Nothing
+        else Just $ maximum $ map (maximumUpperBound . snd) unstableCases)
 
 printAllErrors :: [(String,Double,Maybe Double)] -> IO ()
 printAllErrors = mapM_ printFunction
@@ -201,11 +213,20 @@ printAllErrors = mapM_ printFunction
       putStrLn ""
       putStrLn "**************************************************************************"
 
-computeAllErrorsInKodiak :: Interpretation
+computeAllErrorsInKodiakMap :: Interpretation
                          -> Spec
                          -> KP.SearchParameters
-                         -> IO [(String,PVSType,[Arg],[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])]
-computeAllErrorsInKodiak interp (Spec specBinds) searchParams = mapM runFunction functionNames
+                         -> IO [(String
+                                ,PVSType
+                                ,[Arg]
+                                ,[(Conditions
+                                , LDecisionPath
+                                , ControlFlow
+                                , KodiakResult
+                                , AExpr
+                                , [FAExpr]
+                                , [AExpr])])]
+computeAllErrorsInKodiakMap interp (Spec specBinds) searchParams = mapM runFunction functionNames
   where
     declInterps = filter isDeclInterp interp
     functionNames = map fst declInterps
@@ -231,6 +252,60 @@ computeAllErrorsInKodiak interp (Spec specBinds) searchParams = mapM runFunction
             where
               kodiakInput = KI { kiName = fname,
                                  kiExpression = simplAExpr $ initAExpr err,
+                                 kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
+                                                      (lookup fname functionBindingsMap),
+                                 kiMaxDepth  = KP.maximumDepth searchParams,
+                                 kiPrecision = KP.minimumPrecision searchParams
+                               }
+
+computeAllErrorsInKodiak :: Bool
+                         -> Interpretation
+                         -> Spec
+                         -> KP.SearchParameters
+                         -> IO [(String
+                                ,PVSType
+                                ,[Arg]
+                                ,[(Conditions
+                                , LDecisionPath
+                                , ControlFlow
+                                , KodiakResult
+                                , AExpr
+                                , [FAExpr]
+                                , [AExpr])])]
+computeAllErrorsInKodiak sta interp (Spec specBinds) searchParams = computeErrorFunInKodiak functionNames []
+  where
+    declInterps = filter isDeclInterp interp
+    functionNames = map fst declInterps
+
+    computeErrorFunInKodiak [] _ = return []
+    computeErrorFunInKodiak (fname:fs) funErrors = do
+      fOutput <- runFunction fname funErrors
+      let funErrorBounds = summarizeFunError $ getKodiakResult fOutput
+      rest <- computeErrorFunInKodiak fs (funErrorBounds:funErrors)
+      return $ fOutput:rest
+
+    functionBindingsMap = map (\(SpecBind f b) -> (f,b)) specBinds
+    functionErrorExpressionsMap = map toPathFlowErrorTuple declInterps
+      where
+        toPathFlowErrorTuple (f,(_,fp,args,acebs)) = (f,map (\x -> (fp,args,aceb2PathFlowErrorTuple x)) acebs)
+          where
+            aceb2PathFlowErrorTuple aceb = (conds aceb, decisionPath aceb, cFlow aceb,
+              fromJust $ eExpr aceb, fDeclRes $ fpExprs aceb, rDeclRes $ rExprs aceb)
+
+    runFunction fname funErrors = do
+      results <- mapM runErrorExpression $
+                  fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found in input bound specification.")
+                            (lookup fname functionErrorExpressionsMap)
+      let (fprec,args,_):_ = results
+      let results' = map (\(_,_,a) -> a) results
+      return (fname, fprec, args, results')
+      where
+        runErrorExpression (fprec :: PVSType,args :: [Arg],(conditions :: Conditions,path :: LDecisionPath, flow, err, fpes, res)) = do
+          result <- run kodiakInput ()
+          return (fprec, args, (conditions, path, flow, result, initAExpr err, fpes, res))
+            where
+              kodiakInput = KI { kiName = fname,
+                                 kiExpression = (initErrFun sta funErrors) $ simplAExpr $ initAExpr err,
                                  kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
                                                       (lookup fname functionBindingsMap),
                                  kiMaxDepth  = KP.maximumDepth searchParams,

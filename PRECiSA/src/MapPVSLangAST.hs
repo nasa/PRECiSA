@@ -93,7 +93,7 @@ raw2FBExprStm env fenv (AbsRawPVSLang.If be thenSmt elseStm)
 raw2FBExprStm env fenv (AbsRawPVSLang.ListIf be stmThen listElsif elseStm)
   = BListIte ((raw2FBExpr env fenv be,raw2FBExprStm env fenv stmThen) : map (raw2BElsif env fenv) listElsif) (raw2FBExprStm env fenv elseStm)
 
-raw2FBExprStm _ _ be = error $ "raw2FBExprStm: Boolean expression expected but got " ++ show be ++ "."
+raw2FBExprStm env fenv be = BExpr $ raw2FBExpr env fenv be
 
 raw2BElsif :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.ElsIf -> (AbsPVSLang.FBExpr, AbsPVSLang.FBExprStm)
 raw2BElsif env fenv (ElsIf fbexpr stm) = (raw2FBExpr env fenv fbexpr, raw2FBExprStm env fenv stm)

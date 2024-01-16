@@ -42,6 +42,8 @@ data LetElem  = LetElem {letVar  :: VarName,
 
 type FLetElem = (VarName,PVSType,FAExpr)
 
+type LocalEnv = [FLetElem]
+
 type IsTrans = Bool
 
 type CheckFunCalls = Bool
@@ -77,6 +79,7 @@ data AExpr
     | ErrFloorNoRound PVSType AExpr EExpr
     | HalfUlp AExpr PVSType
     | ErrRat Rational
+    | ErrFun FunName [FAExpr]
     | MaxErr [EExpr]
     | Infinity
     deriving (Eq, Ord, Read, Show)
@@ -1325,8 +1328,9 @@ foldAExpr faExprF aExprF ae@(EFun _ _ aes) a = foldListAExpr faExprF aExprF aes 
 foldAExpr faExprF aExprF (Min      aes) a = foldListAExpr faExprF aExprF aes a
 foldAExpr faExprF aExprF (Max      aes) a = foldListAExpr faExprF aExprF aes a
 foldAExpr faExprF aExprF (MaxErr   aes) a = foldListAExpr faExprF aExprF aes a
-foldAExpr faExprF aExprF ae@(FExp fae)        a = foldFAExpr const faExprF aExprF fae
+foldAExpr faExprF aExprF ae@(FExp fae)  a = foldFAExpr const faExprF aExprF fae
                                                 $ aExprF a ae
+foldAExpr faExprF aExprF ae@(ErrFun _ args) a = aExprF a ae
 foldAExpr faExprF aExprF ae@(ErrFma _ ae1 ee1 ae2 ee2 ae3 ee3) a = foldAExpr faExprF aExprF ee3
                                                                  $ foldAExpr faExprF aExprF ae3
                                                                  $ foldAExpr faExprF aExprF ee2
@@ -1422,6 +1426,7 @@ replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
     replaceInAExpr' (Min    aes) = Min    (map (replaceInAExpr rf ff) aes)
     replaceInAExpr' (Max    aes) = Max    (map (replaceInAExpr rf ff) aes)
     replaceInAExpr' (MaxErr aes) = MaxErr (map (replaceInAExpr rf ff) aes)
+    replaceInAExpr' (ErrFun fun args) = ErrFun fun (map (replaceInFAExpr rf ff) args)
     replaceInAExpr' (ErrFma fp ae1 ee1 ae2 ee2 ae3 ee3) = ErrFma fp (replaceInAExpr rf ff ae1) (replaceInAExpr rf ff ee1)
                                                                     (replaceInAExpr rf ff ae2) (replaceInAExpr rf ff ee2)
                                                                     (replaceInAExpr rf ff ae3) (replaceInAExpr rf ff ee3)
@@ -1524,6 +1529,37 @@ unfoldForLoop' fp j n0 n acc varI varAcc body | j == n    = acc'
     replaceIdxAndAcc   _          = Nothing
 
 unfoldForLoop' _ _ _ _ acc0 _ _ _ = error $ "unfoldForLoop: " ++ show acc0 ++ ".\n"
+
+unfoldLetIn :: FAExpr -> FAExpr
+unfoldLetIn (Let [] ae) = unfoldLetIn ae
+unfoldLetIn (Let ((x,_,expr):rest) ae) =
+    replaceInFAExpr (const Nothing) replaceLocalVar (unfoldLetIn (Let rest ae))
+    where
+      replaceLocalVar (FVar _ var) | var == x = Just $ expr
+                                   | otherwise = Nothing
+      replaceLocalVar ae = Nothing
+unfoldLetIn (Ite be aeThen aeElse) = Ite be (unfoldLetIn aeThen) (unfoldLetIn aeElse)
+unfoldLetIn (ListIte listThen aeElse) = ListIte (map (\(be,aeThen) -> (be,unfoldLetIn aeThen)) listThen)
+                                                (unfoldLetIn aeElse)
+unfoldLetIn (ForLoop fp idxStart idxEnd initAcc idx acc forBody)
+  = ForLoop fp (unfoldLetIn idxStart) (unfoldLetIn idxEnd) (unfoldLetIn initAcc) idx acc (unfoldLetIn forBody)
+unfoldLetIn (TypeCast t1 t2 ae) = TypeCast t1 t2 (unfoldLetIn ae)
+unfoldLetIn (ToFloat t ae) = ToFloat t ae
+unfoldLetIn (Value ae) = Value (unfoldLetIn ae)
+unfoldLetIn (BinaryFPOp op t ae1 ae2) = BinaryFPOp op t (unfoldLetIn ae1) (unfoldLetIn ae2)
+unfoldLetIn (UnaryFPOp op t ae) = UnaryFPOp op t (unfoldLetIn ae)
+unfoldLetIn (FFma t ae1 ae2 ae3) = FFma t (unfoldLetIn ae1) (unfoldLetIn ae2) (unfoldLetIn ae3)
+unfoldLetIn (FMin aes) = FMin (map unfoldLetIn aes)
+unfoldLetIn (FMax aes) = FMax (map unfoldLetIn aes)
+unfoldLetIn ae = ae
+
+expandLocalVars :: LocalEnv -> FAExpr -> FAExpr
+expandLocalVars [] fae = fae
+expandLocalVars ((x,_,expr):rest) fae = expandLocalVars rest (replaceInFAExpr (const Nothing) replaceLocalVar fae)
+  where
+    replaceLocalVar (FVar _ var) | var == x = Just $ expr
+                                 | otherwise = Nothing
+    replaceLocalVar ae = Nothing
 
 listLetElems :: FAExpr -> [FLetElem]
 listLetElems ae = foldFAExpr const aux const ae []
@@ -1707,6 +1743,17 @@ renameVarsFBExprStm :: VarSubs -> FBExprStm -> FBExprStm
 renameVarsFBExprStm subs (BLet letElems expr) = BLet (map (renameInFLetElem subs) letElems) (renameVarsFBExprStm subs expr)
 renameVarsFBExprStm subs expr = replaceInFBExprStm (renameVar subs) (renameFVar subs) expr
 
+initErrFun :: Bool -> [(FunName,Double,Maybe Double)] -> AExpr -> AExpr
+initErrFun sta funErrs ae = replaceInAExpr (replaceErrFun funErrs) (const Nothing) ae
+-- TODO cases stables/unstable etc
+  where
+    replaceErrFun ((f,se,ue):restFunErr) (ErrFun fName args)
+      | f==fName && sta = Just $ Rat (toRational se)
+      | f==fName = Just $ Rat (max (toRational se)
+                                   (toRational $ fromMaybe 0 ue) )
+      | otherwise = replaceErrFun restFunErr (ErrFun fName args)
+    replaceErrFun [] (ErrFun fName args) = error $ "initErrFun: function " ++ fName ++ " not found."
+    replaceErrFun _ _ = Nothing
 -----------------------
 -- PPExt instances --
 -----------------------
@@ -1804,6 +1851,8 @@ prettyAExpr _ (MaxErr []) = error "Something went wrong: MaxErr applied to empty
 prettyAExpr f (MaxErr [es]) = f es
 prettyAExpr f (MaxErr ees@(_:(_:_))) =
     text "max" <> parens (hsep $ punctuate comma (map f ees))
+
+prettyAExpr f (ErrFun fun args) = text "ErrFun" <> parens (text fun)
 
 prettyAExpr f (ErrBinOp AddOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_add" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp AddOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_add" r1 e1 r2 e2

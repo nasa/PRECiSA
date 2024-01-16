@@ -63,7 +63,20 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,renameVarsFBExprStm__tests
    ,renameVarsBExprStm__tests
    ,subExpressions__tests
+   ,initErrFun__tests
+   ,unfoldLetIn__tests
    ]
+
+initErrFun__tests = testGroup "initErrFun__tests" $ [
+   initErrFun__test1
+  ,initErrFun__test2
+  ]
+
+initErrFun__test1 = testCase "initErrFun__test1" $
+  initErrFun False [("f", 0, Nothing)] (ErrFun "f" []) @?= Rat 0
+
+initErrFun__test2 = testCase "initErrFun__test1" $
+  initErrFun False [("f", 0, Nothing), ("g", 3, Nothing)] (ErrFun "f" []) @?= Rat 0
 
 subExpressions__tests = testGroup "subExpressions__tests" $ [
   subExpressions__test1
@@ -1458,6 +1471,52 @@ equivModuloIndex__test9 = testCase "w(3)+v(3) not equiv t(3)+v(4)" $
                     @?=
                     False
 
+unfoldLetIn__tests = testGroup "unfoldLetIn tests"
+  [unfoldLetIn__test1
+  ,unfoldLetIn__test2
+  ,unfoldLetIn__test3
+  ,unfoldLetIn__test4
+  ,unfoldLetIn__test5
+  ,unfoldLetIn__test6
+  ,unfoldLetIn__test7
+  ,unfoldLetIn__test8
+  ]
+
+unfoldLetIn__test1 = testCase "unfoldLetIn__test1" $
+  unfoldLetIn (FInt 0) @?= FInt 0
+
+unfoldLetIn__test2 = testCase "unfoldLetIn__test2" $
+  unfoldLetIn (FVar FPDouble "x") @?= FVar FPDouble "x"
+
+unfoldLetIn__test3 = testCase "unfoldLetIn__test3" $
+  unfoldLetIn (Let [("x", FPDouble, FInt 3)] (FVar FPDouble "x")) @?= FInt 3
+
+unfoldLetIn__test4 = testCase "unfoldLetIn__test4" $
+  unfoldLetIn (Let [("y", FPDouble, FInt 3),("x", FPDouble, FInt 3)] (FVar FPDouble "x")) @?= FInt 3
+
+unfoldLetIn__test5 = testCase "unfoldLetIn__test5" $
+  unfoldLetIn (Let [("y", FPDouble, FInt 4),("x", FPDouble, FInt 3)]
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))
+    @?= BinaryFPOp AddOp FPDouble (FInt 3) (FInt 4)
+
+unfoldLetIn__test6 = testCase "unfoldLetIn__test6" $
+  unfoldLetIn (Let [("y", FPDouble, FInt 4)]
+    (Let [("x", FPDouble, FInt 3)]
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y"))))
+    @?= BinaryFPOp AddOp FPDouble (FInt 3) (FInt 4)
+
+unfoldLetIn__test7 = testCase "unfoldLetIn__test7" $
+  unfoldLetIn (Let [("z", FPDouble, FInt 6)]
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (Let [("x", FPDouble, FInt 3),("y", FPDouble, FInt 4)]
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))))
+    @?= BinaryFPOp AddOp FPDouble (FInt 6) (BinaryFPOp AddOp FPDouble (FInt 3) (FInt 4))
+
+unfoldLetIn__test8 = testCase "unfoldLetIn__test8" $
+  unfoldLetIn (Let [("z", FPDouble, FInt 6)]
+    (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (Let [("x", FPDouble, FInt 3),("y", FPDouble, FInt 4)]
+    (Ite (FRel Lt (FEFun False "f" FPDouble []) (FVar FPDouble "z")) (FVar FPDouble "x") (FVar FPDouble "y")))))
+    @?= BinaryFPOp AddOp FPDouble (FInt 6)
+        (Ite (FRel Lt (FEFun False "f" FPDouble []) (FInt 6)) (FInt 3) (FInt 4))
 
 unfoldForLoop__tests = testGroup "unfoldForLoop tests"
   [unfoldForLoop__test1

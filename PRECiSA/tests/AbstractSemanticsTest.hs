@@ -1064,11 +1064,13 @@ stmSem__tests = testGroup "stmSem tests"
 
 semConf = SemConf { improveError = False
                   , assumeTestStability = False
-                  , mergeUnstables = True}
+                  , mergeUnstables = True
+                  , unfoldFunCalls = True}
 
 semConfImproveError = SemConf { improveError = True
                               , assumeTestStability = False
-                              , mergeUnstables = True}
+                              , mergeUnstables = True
+                              , unfoldFunCalls = True}
 
 stmSem__IntAdd = testCase "IntAdd" $
     stmSem (BinaryFPOp AddOp TInt (FInt 1) (FInt 2)) [] (Env []) semConf (LDP []) [] @?=

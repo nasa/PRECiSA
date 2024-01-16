@@ -85,7 +85,10 @@ generateErrorConstraint' rVar fVar fp ev = Rel GtE (Var Real ev) (UnaryOp AbsOp 
 computeErrorAExpr :: CUInt -> CUInt -> FAExpr -> [VarBind] -> IO Double
 computeErrorAExpr maximumDepth minimumPrecision ae varBind = maximumUpperBound <$> run kodiakInput ()
   where
-    semConf = SemConf {improveError = False, assumeTestStability = False, mergeUnstables = True }
+    semConf = SemConf {improveError = False
+                      ,assumeTestStability = False
+                      ,mergeUnstables = True
+                      ,unfoldFunCalls = False }
     sem = map initErrAceb $ stmSem ae emptyInterpretation emptyEnv semConf root []
     errorExpr = MaxErr (map (fromMaybe (error "computeErrorAExpr: unexpected argument.") . eExpr) sem)
     kodiakInput = KI { kiName = ""

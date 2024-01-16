@@ -19,14 +19,12 @@ data Options = Options
    , optParseFPCore          :: Bool
    , optParseFPCoreSpec      :: Bool
    , optPrintFPCore          :: Bool
-  --  , optImproveError         :: Bool
    , optWithPaving           :: Bool
+   , optFunctionCalls        :: Bool
    , optMaxDepth             :: Int
    , optPrecision            :: Int
    , optMaxNumLemma          :: Int
    , optAssumeStability      :: Bool
-  --  , optNoCollapsedStables   :: Bool
-  --  , optNoCollapsedUnstables :: Bool
    , jsonOutput              :: Bool
    , optSMTOptimization      :: Bool
    } deriving Show
@@ -66,6 +64,10 @@ optionsParser =
         <*> switch
           (  long "paving"
           <> help "Generate a paving of the regions of unstability"
+          )
+        <*> switch
+          (  long "unfold-fun-calls"
+          <> help "Perform an analysis where the body of each function call is unfolded in the expression and globally optimized. This option may lead to more accurate results."
           )
         <*> option auto
            (  long "max-depth"
