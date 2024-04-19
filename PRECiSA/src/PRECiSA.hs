@@ -26,6 +26,7 @@ import Common.DecisionPath
 import Common.ControlFlow
 import Control.Monad.Except
 import Data.Maybe (fromMaybe,fromJust)
+import Control.Monad (when)
 import ErrM
 import FPCore.FPCorePrinter
 import PVSTypes

@@ -27,6 +27,7 @@ import Common.TypesUtils
 import Control.Monad.State
 import Data.Either (fromLeft, fromRight)
 import Data.Maybe
+import Data.Function (fix)
 import Numeric.IEEE
 import Debug.Trace
 
