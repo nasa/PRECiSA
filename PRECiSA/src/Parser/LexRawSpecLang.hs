@@ -1,27 +1,19 @@
--- Notices:
---
--- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
--- Disclaimers
--- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
--- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-  
-  
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-missing-signatures #-}
 {-# LANGUAGE CPP #-}
-{-# LINE 3 "LexSpecLang.x" #-}
-
+{-# LINE 4 "LexRawSpecLang.x" #-}
 {-# OPTIONS -fno-warn-incomplete-patterns #-}
 {-# OPTIONS_GHC -w #-}
+
+{-# LANGUAGE PatternSynonyms #-}
+
 module Parser.LexRawSpecLang where
 
-
+import Prelude
 
 import qualified Data.Bits
-import Data.Word (Word8)
-import Data.Char (ord)
-
+import Data.Char     (ord)
+import Data.Function (on)
+import Data.Word     (Word8)
 #if __GLASGOW_HASKELL__ >= 603
 #include "ghcconfig.h"
 #elif defined(__GLASGOW_HASKELL__)
@@ -29,712 +21,382 @@ import Data.Char (ord)
 #endif
 #if __GLASGOW_HASKELL__ >= 503
 import Data.Array
-import Data.Array.Base (unsafeAt)
 #else
 import Array
 #endif
 alex_tab_size :: Int
 alex_tab_size = 8
 alex_base :: Array Int Int
-alex_base = listArray (0 :: Int, 15)
+alex_base = listArray (0 :: Int, 18)
   [ -8
-  , -99
-  , -103
-  , -37
   , -13
-  , 60
-  , 124
-  , -93
-  , 307
-  , -95
+  , 140
+  , 135
+  , 288
+  , -40
+  , 366
+  , 376
+  , 386
+  , 396
+  , 406
+  , 360
+  , 170
   , 0
-  , 292
-  , 391
-  , 490
-  , 369
-  , 381
+  , -95
+  , -92
+  , -86
+  , -85
+  , 504
   ]
 
 alex_table :: Array Int Int
-alex_table = listArray (0 :: Int, 745)
+alex_table = listArray (0 :: Int, 759)
   [ 0
-  , 8
-  , 8
-  , 8
-  , 8
-  , 8
-  , 2
+  , 12
+  , 12
+  , 12
+  , 12
+  , 12
   , 7
-  , 3
-  , 10
+  , 13
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 14
+  , 15
+  , 15
+  , 0
+  , 0
+  , 0
+  , 12
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 13
+  , 13
+  , 0
+  , 17
+  , 13
+  , 16
+  , 0
+  , 0
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 5
+  , 13
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 13
+  , 0
+  , 13
+  , 0
+  , 0
+  , 13
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
   , 2
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 0
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 0
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 12
+  , 12
+  , 12
+  , 12
+  , 12
   , 0
   , 0
   , 0
-  , 8
+  , 11
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 0
+  , 0
+  , 0
+  , 0
+  , 12
+  , 2
+  , 0
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 0
+  , 0
+  , 0
+  , 0
+  , 2
+  , 0
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 2
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 0
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 0
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
   , 0
   , 0
   , 0
   , 0
   , 0
   , 0
-  , 0
-  , 10
-  , 10
   , 0
   , 1
-  , 10
-  , 9
-  , 0
-  , 0
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 10
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 10
-  , 0
-  , 10
-  , 0
-  , 0
-  , 0
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 0
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 0
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 5
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 0
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 0
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 0
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 0
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 8
-  , 8
-  , 8
-  , 8
-  , 8
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 13
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 8
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 12
-  , 0
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 0
-  , 0
-  , 0
-  , 0
-  , 11
-  , 0
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 11
-  , 3
-  , 0
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 14
-  , 0
-  , 0
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 15
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 12
-  , 0
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 3
-  , 0
-  , 0
-  , 0
-  , 12
-  , 5
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 12
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 13
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 0
-  , 0
-  , 0
-  , 0
-  , 13
-  , 6
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 13
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
-  , 0
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
   , 0
   , 0
   , 0
@@ -743,6 +405,352 @@ alex_table = listArray (0 :: Int, 745)
   , 0
   , 0
   , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 0
+  , 0
+  , 0
+  , 0
+  , 4
+  , 0
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 4
+  , 9
+  , 0
+  , 0
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 8
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 10
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 3
+  , 0
+  , 0
+  , 0
+  , 6
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 0
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 4
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 2
+  , 0
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 0
+  , 0
+  , 0
+  , 0
+  , 18
+  , 0
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 18
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 0
+  , 11
   , 0
   , 0
   , 0
@@ -806,18 +814,15 @@ alex_table = listArray (0 :: Int, 745)
   ]
 
 alex_check :: Array Int Int
-alex_check = listArray (0 :: Int, 745)
+alex_check = listArray (0 :: Int, 759)
   [ -1
   , 9
   , 10
   , 11
   , 12
   , 13
-  , 105
-  , 110
-  , 45
+  , 46
   , 102
-  , 105
   , 48
   , 49
   , 50
@@ -828,6 +833,9 @@ alex_check = listArray (0 :: Int, 745)
   , 55
   , 56
   , 57
+  , 110
+  , 105
+  , 105
   , -1
   , -1
   , -1
@@ -895,7 +903,7 @@ alex_check = listArray (0 :: Int, 745)
   , 93
   , -1
   , -1
-  , -1
+  , 96
   , 97
   , 98
   , 99
@@ -922,143 +930,6 @@ alex_check = listArray (0 :: Int, 745)
   , 120
   , 121
   , 122
-  , 128
-  , 129
-  , 130
-  , 131
-  , 132
-  , 133
-  , 134
-  , 135
-  , 136
-  , 137
-  , 138
-  , 139
-  , 140
-  , 141
-  , 142
-  , 143
-  , 144
-  , 145
-  , 146
-  , 147
-  , 148
-  , 149
-  , 150
-  , -1
-  , 152
-  , 153
-  , 154
-  , 155
-  , 156
-  , 157
-  , 158
-  , 159
-  , 160
-  , 161
-  , 162
-  , 163
-  , 164
-  , 165
-  , 166
-  , 167
-  , 168
-  , 169
-  , 170
-  , 171
-  , 172
-  , 173
-  , 174
-  , 175
-  , 176
-  , 177
-  , 178
-  , 179
-  , 180
-  , 181
-  , 182
-  , -1
-  , 184
-  , 185
-  , 186
-  , 187
-  , 188
-  , 189
-  , 190
-  , 191
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , 195
-  , 128
-  , 129
-  , 130
-  , 131
-  , 132
-  , 133
-  , 134
-  , 135
-  , 136
-  , 137
-  , 138
-  , 139
-  , 140
-  , 141
-  , 142
-  , 143
-  , 144
-  , 145
-  , 146
-  , 147
-  , 148
-  , 149
-  , 150
-  , -1
-  , 152
-  , 153
-  , 154
-  , 155
-  , 156
-  , 157
-  , 158
-  , 159
-  , 160
-  , 161
-  , 162
-  , 163
-  , 164
-  , 165
-  , 166
-  , 167
-  , 168
-  , 169
-  , 170
-  , 171
-  , 172
-  , 173
-  , 174
-  , 175
-  , 176
-  , 177
-  , 178
-  , 179
-  , 180
-  , 181
-  , 182
-  , -1
-  , 184
-  , 185
-  , 186
-  , 187
-  , 188
-  , 189
-  , 190
-  , 191
   , 128
   , 129
   , 130
@@ -1131,37 +1002,22 @@ alex_check = listArray (0 :: Int, 745)
   , -1
   , -1
   , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , 39
-  , -1
-  , -1
-  , -1
+  , 195
+  , 48
+  , 49
+  , 50
+  , 51
+  , 52
+  , 53
+  , 54
+  , 55
+  , 56
+  , 57
   , -1
   , -1
   , -1
   , -1
   , 32
-  , 48
-  , 49
-  , 50
-  , 51
-  , 52
-  , 53
-  , 54
-  , 55
-  , 56
-  , 57
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
   , 63
   , -1
   , 65
@@ -1222,120 +1078,70 @@ alex_check = listArray (0 :: Int, 745)
   , 120
   , 121
   , 122
-  , 46
+  , 128
+  , 129
+  , 130
+  , 131
+  , 132
+  , 133
+  , 134
+  , 135
+  , 136
+  , 137
+  , 138
+  , 139
+  , 140
+  , 141
+  , 142
+  , 143
+  , 144
+  , 145
+  , 146
+  , 147
+  , 148
+  , 149
+  , 150
   , -1
-  , 48
-  , 49
-  , 50
-  , 51
-  , 52
-  , 53
-  , 54
-  , 55
-  , 56
-  , 57
+  , 152
+  , 153
+  , 154
+  , 155
+  , 156
+  , 157
+  , 158
+  , 159
+  , 160
+  , 161
+  , 162
+  , 163
+  , 164
+  , 165
+  , 166
+  , 167
+  , 168
+  , 169
+  , 170
+  , 171
+  , 172
+  , 173
+  , 174
+  , 175
+  , 176
+  , 177
+  , 178
+  , 179
+  , 180
+  , 181
+  , 182
   , -1
-  , -1
-  , 48
-  , 49
-  , 50
-  , 51
-  , 52
-  , 53
-  , 54
-  , 55
-  , 56
-  , 57
-  , 48
-  , 49
-  , 50
-  , 51
-  , 52
-  , 53
-  , 54
-  , 55
-  , 56
-  , 57
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , 63
-  , -1
-  , 65
-  , 66
-  , 67
-  , 68
-  , 69
-  , 70
-  , 71
-  , 72
-  , 73
-  , 74
-  , 75
-  , 76
-  , 77
-  , 78
-  , 79
-  , 80
-  , 81
-  , 82
-  , 83
-  , 84
-  , 85
-  , 86
-  , 87
-  , 88
-  , 89
-  , 90
-  , 101
-  , -1
-  , -1
-  , -1
-  , 95
-  , 195
-  , 97
-  , 98
-  , 99
-  , 100
-  , 101
-  , 102
-  , 103
-  , 104
-  , 105
-  , 106
-  , 107
-  , 108
-  , 109
-  , 110
-  , 111
-  , 112
-  , 113
-  , 114
-  , 115
-  , 116
-  , 117
-  , 118
-  , 119
-  , 120
-  , 121
-  , 122
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
-  , -1
+  , 184
+  , 185
+  , 186
+  , 187
+  , 188
+  , 189
+  , 190
+  , 191
   , 39
   , -1
   , -1
@@ -1344,7 +1150,7 @@ alex_check = listArray (0 :: Int, 745)
   , -1
   , -1
   , -1
-  , -1
+  , 195
   , 48
   , 49
   , 50
@@ -1393,7 +1199,223 @@ alex_check = listArray (0 :: Int, 745)
   , -1
   , -1
   , 95
+  , -1
+  , 97
+  , 98
+  , 99
+  , 100
+  , 101
+  , 102
+  , 103
+  , 104
+  , 105
+  , 106
+  , 107
+  , 108
+  , 109
+  , 110
+  , 111
+  , 112
+  , 113
+  , 114
+  , 115
+  , 116
+  , 117
+  , 118
+  , 119
+  , 120
+  , 121
+  , 122
+  , 45
+  , -1
+  , -1
+  , 48
+  , 49
+  , 50
+  , 51
+  , 52
+  , 53
+  , 54
+  , 55
+  , 56
+  , 57
+  , 48
+  , 49
+  , 50
+  , 51
+  , 52
+  , 53
+  , 54
+  , 55
+  , 56
+  , 57
+  , 48
+  , 49
+  , 50
+  , 51
+  , 52
+  , 53
+  , 54
+  , 55
+  , 56
+  , 57
+  , 48
+  , 49
+  , 50
+  , 51
+  , 52
+  , 53
+  , 54
+  , 55
+  , 56
+  , 57
+  , 48
+  , 49
+  , 50
+  , 51
+  , 52
+  , 53
+  , 54
+  , 55
+  , 56
+  , 57
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
   , 195
+  , -1
+  , -1
+  , -1
+  , 101
+  , 128
+  , 129
+  , 130
+  , 131
+  , 132
+  , 133
+  , 134
+  , 135
+  , 136
+  , 137
+  , 138
+  , 139
+  , 140
+  , 141
+  , 142
+  , 143
+  , 144
+  , 145
+  , 146
+  , 147
+  , 148
+  , 149
+  , 150
+  , -1
+  , 152
+  , 153
+  , 154
+  , 155
+  , 156
+  , 157
+  , 158
+  , 159
+  , 160
+  , 161
+  , 162
+  , 163
+  , 164
+  , 165
+  , 166
+  , 167
+  , 168
+  , 169
+  , 170
+  , 171
+  , 172
+  , 173
+  , 174
+  , 175
+  , 176
+  , 177
+  , 178
+  , 179
+  , 180
+  , 181
+  , 182
+  , 39
+  , 184
+  , 185
+  , 186
+  , 187
+  , 188
+  , 189
+  , 190
+  , 191
+  , 48
+  , 49
+  , 50
+  , 51
+  , 52
+  , 53
+  , 54
+  , 55
+  , 56
+  , 57
+  , -1
+  , -1
+  , -1
+  , -1
+  , -1
+  , 63
+  , -1
+  , 65
+  , 66
+  , 67
+  , 68
+  , 69
+  , 70
+  , 71
+  , 72
+  , 73
+  , 74
+  , 75
+  , 76
+  , 77
+  , 78
+  , 79
+  , 80
+  , 81
+  , 82
+  , 83
+  , 84
+  , 85
+  , 86
+  , 87
+  , 88
+  , 89
+  , 90
+  , -1
+  , -1
+  , -1
+  , -1
+  , 95
+  , -1
   , 97
   , 98
   , 99
@@ -1556,7 +1578,7 @@ alex_check = listArray (0 :: Int, 745)
   ]
 
 alex_deflt :: Array Int Int
-alex_deflt = listArray (0 :: Int, 15)
+alex_deflt = listArray (0 :: Int, 18)
   [ -1
   , -1
   , -1
@@ -1573,84 +1595,359 @@ alex_deflt = listArray (0 :: Int, 15)
   , -1
   , -1
   , -1
+  , -1
+  , -1
+  , -1
   ]
 
-alex_accept = listArray (0 :: Int, 15)
+alex_accept = listArray (0 :: Int, 18)
   [ AlexAccNone
   , AlexAccNone
+  , AlexAcc 7
   , AlexAccNone
-  , AlexAccNone
-  , AlexAccNone
-  , AlexAccNone
-  , AlexAccNone
-  , AlexAccNone
-  , AlexAccSkip
   , AlexAcc 6
   , AlexAcc 5
+  , AlexAccNone
+  , AlexAccNone
   , AlexAcc 4
+  , AlexAccNone
   , AlexAcc 3
+  , AlexAccNone
+  , AlexAccSkip
   , AlexAcc 2
+  , AlexAccNone
+  , AlexAccNone
   , AlexAcc 1
+  , AlexAccNone
   , AlexAcc 0
   ]
 
-alex_actions = array (0 :: Int, 7)
-  [ (6,alex_action_1)
-  , (5,alex_action_1)
-  , (4,alex_action_2)
-  , (3,alex_action_2)
-  , (2,alex_action_3)
-  , (1,alex_action_4)
-  , (0,alex_action_5)
+alex_actions = array (0 :: Int, 8)
+  [ (7,alex_action_2)
+  , (6,alex_action_3)
+  , (5,alex_action_4)
+  , (4,alex_action_5)
+  , (3,alex_action_5)
+  , (2,alex_action_1)
+  , (1,alex_action_1)
+  , (0,alex_action_2)
   ]
 
-{-# LINE 43 "LexSpecLang.x" #-}
+alex_action_1 = tok (eitherResIdent TV)
+alex_action_2 = tok (eitherResIdent T_Id)
+alex_action_3 = tok (eitherResIdent TV)
+alex_action_4 = tok TI
+alex_action_5 = tok TD
+
+#define ALEX_NOPRED 1
+-- -----------------------------------------------------------------------------
+-- ALEX TEMPLATE
+--
+-- This code is in the PUBLIC DOMAIN; you may copy it freely and use
+-- it for any purpose whatsoever.
+
+-- -----------------------------------------------------------------------------
+-- INTERNALS and main scanner engine
+
+#ifdef ALEX_GHC
+#  define ILIT(n) n#
+#  define IBOX(n) (I# (n))
+#  define FAST_INT Int#
+-- Do not remove this comment. Required to fix CPP parsing when using GCC and a clang-compiled alex.
+#  if __GLASGOW_HASKELL__ > 706
+#    define GTE(n,m) (tagToEnum# (n >=# m))
+#    define EQ(n,m) (tagToEnum# (n ==# m))
+#  else
+#    define GTE(n,m) (n >=# m)
+#    define EQ(n,m) (n ==# m)
+#  endif
+#  define PLUS(n,m) (n +# m)
+#  define MINUS(n,m) (n -# m)
+#  define TIMES(n,m) (n *# m)
+#  define NEGATE(n) (negateInt# (n))
+#  define IF_GHC(x) (x)
+#else
+#  define ILIT(n) (n)
+#  define IBOX(n) (n)
+#  define FAST_INT Int
+#  define GTE(n,m) (n >= m)
+#  define EQ(n,m) (n == m)
+#  define PLUS(n,m) (n + m)
+#  define MINUS(n,m) (n - m)
+#  define TIMES(n,m) (n * m)
+#  define NEGATE(n) (negate (n))
+#  define IF_GHC(x)
+#endif
+
+#ifdef ALEX_GHC
+data AlexAddr = AlexA# Addr#
+-- Do not remove this comment. Required to fix CPP parsing when using GCC and a clang-compiled alex.
+#if __GLASGOW_HASKELL__ < 503
+uncheckedShiftL# = shiftL#
+#endif
+
+{-# INLINE alexIndexInt16OffAddr #-}
+alexIndexInt16OffAddr :: AlexAddr -> Int# -> Int#
+alexIndexInt16OffAddr (AlexA# arr) off =
+#ifdef WORDS_BIGENDIAN
+  narrow16Int# i
+  where
+        i    = word2Int# ((high `uncheckedShiftL#` 8#) `or#` low)
+        high = int2Word# (ord# (indexCharOffAddr# arr (off' +# 1#)))
+        low  = int2Word# (ord# (indexCharOffAddr# arr off'))
+        off' = off *# 2#
+#else
+#if __GLASGOW_HASKELL__ >= 901
+  int16ToInt#
+#endif
+    (indexInt16OffAddr# arr off)
+#endif
+#else
+alexIndexInt16OffAddr arr off = arr ! off
+#endif
+
+#ifdef ALEX_GHC
+{-# INLINE alexIndexInt32OffAddr #-}
+alexIndexInt32OffAddr :: AlexAddr -> Int# -> Int#
+alexIndexInt32OffAddr (AlexA# arr) off =
+#ifdef WORDS_BIGENDIAN
+  narrow32Int# i
+  where
+   i    = word2Int# ((b3 `uncheckedShiftL#` 24#) `or#`
+                     (b2 `uncheckedShiftL#` 16#) `or#`
+                     (b1 `uncheckedShiftL#` 8#) `or#` b0)
+   b3   = int2Word# (ord# (indexCharOffAddr# arr (off' +# 3#)))
+   b2   = int2Word# (ord# (indexCharOffAddr# arr (off' +# 2#)))
+   b1   = int2Word# (ord# (indexCharOffAddr# arr (off' +# 1#)))
+   b0   = int2Word# (ord# (indexCharOffAddr# arr off'))
+   off' = off *# 4#
+#else
+#if __GLASGOW_HASKELL__ >= 901
+  int32ToInt#
+#endif
+    (indexInt32OffAddr# arr off)
+#endif
+#else
+alexIndexInt32OffAddr arr off = arr ! off
+#endif
+
+#ifdef ALEX_GHC
+
+#if __GLASGOW_HASKELL__ < 503
+quickIndex arr i = arr ! i
+#else
+-- GHC >= 503, unsafeAt is available from Data.Array.Base.
+quickIndex = unsafeAt
+#endif
+#else
+quickIndex arr i = arr ! i
+#endif
+
+-- -----------------------------------------------------------------------------
+-- Main lexing routines
+
+data AlexReturn a
+  = AlexEOF
+  | AlexError  !AlexInput
+  | AlexSkip   !AlexInput !Int
+  | AlexToken  !AlexInput !Int a
+
+-- alexScan :: AlexInput -> StartCode -> AlexReturn a
+alexScan input__ IBOX(sc)
+  = alexScanUser undefined input__ IBOX(sc)
+
+alexScanUser user__ input__ IBOX(sc)
+  = case alex_scan_tkn user__ input__ ILIT(0) input__ sc AlexNone of
+  (AlexNone, input__') ->
+    case alexGetByte input__ of
+      Nothing ->
+#ifdef ALEX_DEBUG
+                                   trace ("End of input.") $
+#endif
+                                   AlexEOF
+      Just _ ->
+#ifdef ALEX_DEBUG
+                                   trace ("Error.") $
+#endif
+                                   AlexError input__'
+
+  (AlexLastSkip input__'' len, _) ->
+#ifdef ALEX_DEBUG
+    trace ("Skipping.") $
+#endif
+    AlexSkip input__'' len
+
+  (AlexLastAcc k input__''' len, _) ->
+#ifdef ALEX_DEBUG
+    trace ("Accept.") $
+#endif
+    AlexToken input__''' len (alex_actions ! k)
 
 
-tok :: (Posn -> String -> Token) -> (Posn -> String -> Token)
-tok f p s = f p s
+-- Push the input through the DFA, remembering the most recent accepting
+-- state it encountered.
 
-share :: String -> String
-share = id
+alex_scan_tkn user__ orig_input len input__ s last_acc =
+  input__ `seq` -- strict in the input
+  let
+  new_acc = (check_accs (alex_accept `quickIndex` IBOX(s)))
+  in
+  new_acc `seq`
+  case alexGetByte input__ of
+     Nothing -> (new_acc, input__)
+     Just (c, new_input) ->
+#ifdef ALEX_DEBUG
+      trace ("State: " ++ show IBOX(s) ++ ", char: " ++ show c) $
+#endif
+      case fromIntegral c of { IBOX(ord_c) ->
+        let
+                base   = alexIndexInt32OffAddr alex_base s
+                offset = PLUS(base,ord_c)
 
-data Tok =
-   TS !String !Int    -- reserved words and symbols
- | TL !String         -- string literals
- | TI !String         -- integer literals
- | TV !String         -- identifiers
- | TD !String         -- double precision float literals
- | TC !String         -- character literals
- | T_Id !String
+                new_s = if GTE(offset,ILIT(0))
+                          && let check  = alexIndexInt16OffAddr alex_check offset
+                             in  EQ(check,ord_c)
+                          then alexIndexInt16OffAddr alex_table offset
+                          else alexIndexInt16OffAddr alex_deflt s
+        in
+        case new_s of
+            ILIT(-1) -> (new_acc, input__)
+                -- on an error, we want to keep the input *before* the
+                -- character that failed, not after.
+            _ -> alex_scan_tkn user__ orig_input
+#ifdef ALEX_LATIN1
+                   PLUS(len,ILIT(1))
+                   -- issue 119: in the latin1 encoding, *each* byte is one character
+#else
+                   (if c < 0x80 || c >= 0xC0 then PLUS(len,ILIT(1)) else len)
+                   -- note that the length is increased ONLY if this is the 1st byte in a char encoding)
+#endif
+                   new_input new_s new_acc
+      }
+  where
+        check_accs (AlexAccNone) = last_acc
+        check_accs (AlexAcc a  ) = AlexLastAcc a input__ IBOX(len)
+        check_accs (AlexAccSkip) = AlexLastSkip  input__ IBOX(len)
+#ifndef ALEX_NOPRED
+        check_accs (AlexAccPred a predx rest)
+           | predx user__ orig_input IBOX(len) input__
+           = AlexLastAcc a input__ IBOX(len)
+           | otherwise
+           = check_accs rest
+        check_accs (AlexAccSkipPred predx rest)
+           | predx user__ orig_input IBOX(len) input__
+           = AlexLastSkip input__ IBOX(len)
+           | otherwise
+           = check_accs rest
+#endif
 
- deriving (Eq,Show,Ord)
+data AlexLastAcc
+  = AlexNone
+  | AlexLastAcc !Int !AlexInput !Int
+  | AlexLastSkip     !AlexInput !Int
 
-data Token =
-   PT  Posn Tok
- | Err Posn
-  deriving (Eq,Show,Ord)
+data AlexAcc user
+  = AlexAccNone
+  | AlexAcc Int
+  | AlexAccSkip
+#ifndef ALEX_NOPRED
+  | AlexAccPred Int (AlexAccPred user) (AlexAcc user)
+  | AlexAccSkipPred (AlexAccPred user) (AlexAcc user)
 
+type AlexAccPred user = user -> AlexInput -> Int -> AlexInput -> Bool
+
+-- -----------------------------------------------------------------------------
+-- Predicates on a rule
+
+alexAndPred p1 p2 user__ in1 len in2
+  = p1 user__ in1 len in2 && p2 user__ in1 len in2
+
+--alexPrevCharIsPred :: Char -> AlexAccPred _
+alexPrevCharIs c _ input__ _ _ = c == alexInputPrevChar input__
+
+alexPrevCharMatches f _ input__ _ _ = f (alexInputPrevChar input__)
+
+--alexPrevCharIsOneOfPred :: Array Char Bool -> AlexAccPred _
+alexPrevCharIsOneOf arr _ input__ _ _ = arr ! alexInputPrevChar input__
+
+--alexRightContext :: Int -> AlexAccPred _
+alexRightContext IBOX(sc) user__ _ _ input__ =
+     case alex_scan_tkn user__ input__ ILIT(0) input__ sc AlexNone of
+          (AlexNone, _) -> False
+          _ -> True
+        -- TODO: there's no need to find the longest
+        -- match when checking the right context, just
+        -- the first match will do.
+#endif
+{-# LINE 58 "LexRawSpecLang.x" #-}
+-- | Create a token with position.
+tok :: (String -> Tok) -> (Posn -> String -> Token)
+tok f p = PT p . f
+
+-- | Token without position.
+data Tok
+  = TK {-# UNPACK #-} !TokSymbol  -- ^ Reserved word or symbol.
+  | TL !String                    -- ^ String literal.
+  | TI !String                    -- ^ Integer literal.
+  | TV !String                    -- ^ Identifier.
+  | TD !String                    -- ^ Float literal.
+  | TC !String                    -- ^ Character literal.
+  | T_Id !String
+  deriving (Eq, Show, Ord)
+
+-- | Smart constructor for 'Tok' for the sake of backwards compatibility.
+pattern TS :: String -> Int -> Tok
+pattern TS t i = TK (TokSymbol t i)
+
+-- | Keyword or symbol tokens have a unique ID.
+data TokSymbol = TokSymbol
+  { tsText :: String
+      -- ^ Keyword or symbol text.
+  , tsID   :: !Int
+      -- ^ Unique ID.
+  } deriving (Show)
+
+-- | Keyword/symbol equality is determined by the unique ID.
+instance Eq  TokSymbol where (==)    = (==)    `on` tsID
+
+-- | Keyword/symbol ordering is determined by the unique ID.
+instance Ord TokSymbol where compare = compare `on` tsID
+
+-- | Token with position.
+data Token
+  = PT  Posn Tok
+  | Err Posn
+  deriving (Eq, Show, Ord)
+
+-- | Pretty print a position.
 printPosn :: Posn -> String
 printPosn (Pn _ l c) = "line " ++ show l ++ ", column " ++ show c
 
+-- | Pretty print the position of the first token in the list.
 tokenPos :: [Token] -> String
 tokenPos (t:_) = printPosn (tokenPosn t)
-tokenPos [] = "end of file"
+tokenPos []    = "end of file"
 
+-- | Get the position of a token.
 tokenPosn :: Token -> Posn
 tokenPosn (PT p _) = p
-tokenPosn (Err p) = p
+tokenPosn (Err p)  = p
 
+-- | Get line and column of a token.
 tokenLineCol :: Token -> (Int, Int)
 tokenLineCol = posLineCol . tokenPosn
 
+-- | Get line and column of a position.
 posLineCol :: Posn -> (Int, Int)
 posLineCol (Pn _ l c) = (l,c)
 
+-- | Convert a token into "position token" form.
 mkPosToken :: Token -> ((Int, Int), String)
-mkPosToken t@(PT p _) = (posLineCol p, prToken t)
+mkPosToken t = (tokenLineCol t, tokenText t)
 
-prToken :: Token -> String
-prToken t = case t of
+-- | Convert a token to its text.
+tokenText :: Token -> String
+tokenText t = case t of
   PT _ (TS s _) -> s
   PT _ (TL s)   -> show s
   PT _ (TI s)   -> s
@@ -1660,33 +1957,52 @@ prToken t = case t of
   Err _         -> "#error"
   PT _ (T_Id s) -> s
 
+-- | Convert a token to a string.
+prToken :: Token -> String
+prToken t = tokenText t
 
-data BTree = N | B String Tok BTree BTree deriving (Show)
+-- | Finite map from text to token organized as binary search tree.
+data BTree
+  = N -- ^ Nil (leaf).
+  | B String Tok BTree BTree
+      -- ^ Binary node.
+  deriving (Show)
 
+-- | Convert potential keyword into token or use fallback conversion.
 eitherResIdent :: (String -> Tok) -> String -> Tok
 eitherResIdent tv s = treeFind resWords
   where
   treeFind N = tv s
-  treeFind (B a t left right) | s < a  = treeFind left
-                              | s > a  = treeFind right
-                              | s == a = t
+  treeFind (B a t left right) =
+    case compare s a of
+      LT -> treeFind left
+      GT -> treeFind right
+      EQ -> t
 
+-- | The keywords and symbols of the language organized as binary search tree.
 resWords :: BTree
-resWords = b "-inf" 6 (b "+inf" 3 (b ")" 2 (b "(" 1 N N) N) (b "-" 5 (b "," 4 N N) N)) (b "]" 9 (b "[" 8 (b ":" 7 N N) N) (b "in" 10 N N))
-   where b s n = let bs = id s
-                  in B bs (TS bs n)
+resWords =
+  b "-inf" 6
+    (b "+inf" 3 (b ")" 2 (b "(" 1 N N) N) (b "-" 5 (b "," 4 N N) N))
+    (b "]" 9 (b "[" 8 (b ":" 7 N N) N) (b "in" 11 (b "`" 10 N N) N))
+  where
+  b s n = B bs (TS bs n)
+    where
+    bs = s
 
+-- | Unquote string literal.
 unescapeInitTail :: String -> String
-unescapeInitTail = id . unesc . tail . id where
+unescapeInitTail = id . unesc . tail . id
+  where
   unesc s = case s of
     '\\':c:cs | elem c ['\"', '\\', '\''] -> c : unesc cs
     '\\':'n':cs  -> '\n' : unesc cs
     '\\':'t':cs  -> '\t' : unesc cs
     '\\':'r':cs  -> '\r' : unesc cs
     '\\':'f':cs  -> '\f' : unesc cs
-    '"':[]    -> []
-    c:cs      -> c : unesc cs
-    _         -> []
+    '"':[]       -> []
+    c:cs         -> c : unesc cs
+    _            -> []
 
 -------------------------------------------------------------------
 -- Alex wrapper code.
@@ -1694,7 +2010,7 @@ unescapeInitTail = id . unesc . tail . id where
 -------------------------------------------------------------------
 
 data Posn = Pn !Int !Int !Int
-      deriving (Eq, Show,Ord)
+  deriving (Eq, Show, Ord)
 
 alexStartPos :: Posn
 alexStartPos = Pn 0 1 1
@@ -1725,7 +2041,7 @@ tokens str = go (alexStartPos, '\n', [], str)
 alexGetByte :: AlexInput -> Maybe (Byte,AlexInput)
 alexGetByte (p, c, (b:bs), s) = Just (b, (p, c, bs, s))
 alexGetByte (p, _, [], s) =
-  case  s of
+  case s of
     []  -> Nothing
     (c:s) ->
              let p'     = alexMove p c
@@ -1738,7 +2054,7 @@ alexInputPrevChar (p, c, bs, s) = c
 -- | Encode a Haskell String to a list of Word8 values, in UTF8 format.
 utf8Encode :: Char -> [Word8]
 utf8Encode = map fromIntegral . go . ord
- where
+  where
   go oc
    | oc <= 0x7f       = [oc]
 
@@ -1755,246 +2071,3 @@ utf8Encode = map fromIntegral . go . ord
                         , 0x80 + ((oc `Data.Bits.shiftR` 6) Data.Bits..&. 0x3f)
                         , 0x80 + oc Data.Bits..&. 0x3f
                         ]
-
-alex_action_1 =  tok (\p s -> PT p (eitherResIdent (TV . share) s)) 
-alex_action_2 =  tok (\p s -> PT p (eitherResIdent (T_Id . share) s)) 
-alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s)) 
-alex_action_4 =  tok (\p s -> PT p (TI $ share s))    
-alex_action_5 =  tok (\p s -> PT p (TD $ share s)) 
-{-# LINE 1 "templates/GenericTemplate.hs" #-}
--- -----------------------------------------------------------------------------
--- ALEX TEMPLATE
---
--- This code is in the PUBLIC DOMAIN; you may copy it freely and use
--- it for any purpose whatsoever.
-
--- -----------------------------------------------------------------------------
--- INTERNALS and main scanner engine
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-alexIndexInt16OffAddr arr off = arr ! off
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-alexIndexInt32OffAddr arr off = arr ! off
-
-
-
-
-
-
-
-
-
-
-
-quickIndex arr i = arr ! i
-
-
--- -----------------------------------------------------------------------------
--- Main lexing routines
-
-data AlexReturn a
-  = AlexEOF
-  | AlexError  !AlexInput
-  | AlexSkip   !AlexInput !Int
-  | AlexToken  !AlexInput !Int a
-
--- alexScan :: AlexInput -> StartCode -> AlexReturn a
-alexScan input__ (sc)
-  = alexScanUser undefined input__ (sc)
-
-alexScanUser user__ input__ (sc)
-  = case alex_scan_tkn user__ input__ (0) input__ sc AlexNone of
-  (AlexNone, input__') ->
-    case alexGetByte input__ of
-      Nothing ->
-
-
-
-                                   AlexEOF
-      Just _ ->
-
-
-
-                                   AlexError input__'
-
-  (AlexLastSkip input__'' len, _) ->
-
-
-
-    AlexSkip input__'' len
-
-  (AlexLastAcc k input__''' len, _) ->
-
-
-
-    AlexToken input__''' len (alex_actions ! k)
-
-
--- Push the input through the DFA, remembering the most recent accepting
--- state it encountered.
-
-alex_scan_tkn user__ orig_input len input__ s last_acc =
-  input__ `seq` -- strict in the input
-  let
-  new_acc = (check_accs (alex_accept `quickIndex` (s)))
-  in
-  new_acc `seq`
-  case alexGetByte input__ of
-     Nothing -> (new_acc, input__)
-     Just (c, new_input) ->
-
-
-
-      case fromIntegral c of { (ord_c) ->
-        let
-                base   = alexIndexInt32OffAddr alex_base s
-                offset = (base + ord_c)
-                check  = alexIndexInt16OffAddr alex_check offset
-
-                new_s = if (offset >= (0)) && (check == ord_c)
-                          then alexIndexInt16OffAddr alex_table offset
-                          else alexIndexInt16OffAddr alex_deflt s
-        in
-        case new_s of
-            (-1) -> (new_acc, input__)
-                -- on an error, we want to keep the input *before* the
-                -- character that failed, not after.
-            _ -> alex_scan_tkn user__ orig_input (if c < 0x80 || c >= 0xC0 then (len + (1)) else len)
-                                                -- note that the length is increased ONLY if this is the 1st byte in a char encoding)
-                        new_input new_s new_acc
-      }
-  where
-        check_accs (AlexAccNone) = last_acc
-        check_accs (AlexAcc a  ) = AlexLastAcc a input__ (len)
-        check_accs (AlexAccSkip) = AlexLastSkip  input__ (len)
-
-        check_accs (AlexAccPred a predx rest)
-           | predx user__ orig_input (len) input__
-           = AlexLastAcc a input__ (len)
-           | otherwise
-           = check_accs rest
-        check_accs (AlexAccSkipPred predx rest)
-           | predx user__ orig_input (len) input__
-           = AlexLastSkip input__ (len)
-           | otherwise
-           = check_accs rest
-
-
-data AlexLastAcc
-  = AlexNone
-  | AlexLastAcc !Int !AlexInput !Int
-  | AlexLastSkip     !AlexInput !Int
-
-data AlexAcc user
-  = AlexAccNone
-  | AlexAcc Int
-  | AlexAccSkip
-
-  | AlexAccPred Int (AlexAccPred user) (AlexAcc user)
-  | AlexAccSkipPred (AlexAccPred user) (AlexAcc user)
-
-type AlexAccPred user = user -> AlexInput -> Int -> AlexInput -> Bool
-
--- -----------------------------------------------------------------------------
--- Predicates on a rule
-
-alexAndPred p1 p2 user__ in1 len in2
-  = p1 user__ in1 len in2 && p2 user__ in1 len in2
-
---alexPrevCharIsPred :: Char -> AlexAccPred _
-alexPrevCharIs c _ input__ _ _ = c == alexInputPrevChar input__
-
-alexPrevCharMatches f _ input__ _ _ = f (alexInputPrevChar input__)
-
---alexPrevCharIsOneOfPred :: Array Char Bool -> AlexAccPred _
-alexPrevCharIsOneOf arr _ input__ _ _ = arr ! alexInputPrevChar input__
-
---alexRightContext :: Int -> AlexAccPred _
-alexRightContext (sc) user__ _ _ input__ =
-     case alex_scan_tkn user__ input__ (0) input__ sc AlexNone of
-          (AlexNone, _) -> False
-          _ -> True
-        -- TODO: there's no need to find the longest
-        -- match when checking the right context, just
-        -- the first match will do.
-

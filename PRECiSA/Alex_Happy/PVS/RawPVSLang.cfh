@@ -12,14 +12,17 @@ ElsIf.      ElsIf ::= "ELSIF" Expr "THEN" Expr ;
 separator nonempty ElsIf "" ;
 
 LetElem.      LetElem ::= Id "=" Expr;
-LetElemType.  LetElem ::= Id ":" Id "=" Expr ;
+LetElemType.  LetElem ::= Id ":" Type "=" Expr ;
 separator nonempty LetElem "," ;
+
+RecordElem.  RecordElem ::= Id ":=" Expr;
+separator nonempty RecordElem "," ;
 
 separator nonempty Expr "," ;
 coercions   Expr 11 ;
 
 
-Let.         Expr ::= "LET" [LetElem] "IN" Expr ;
+Let.        Expr ::= "LET" [LetElem] "IN" Expr ;
 
 Or.         Expr1 ::= Expr1 "OR" Expr2 ;
 
@@ -48,45 +51,53 @@ If.          Expr9 ::= "IF" Expr "THEN" Expr "ELSE" Expr "ENDIF" ;
 ListIf.      Expr9 ::= "IF" Expr "THEN" Expr [ElsIf] "ELSE" Expr "ENDIF" ;
 For.         Expr9 ::= "for" "(" Integer "," Integer "," Expr "," Id ")";
 
-Call.        Expr10 ::= Id "(" [Expr] ")" ;
-ExprId.      Expr10 ::= Id ;
-Int.         Expr10 ::= Integer ;
-Rat.         Expr10 ::= Double ;
-BTrue.       Expr10 ::= "TRUE" ;
-BFalse.      Expr10 ::= "FALSE" ;
-
+TupleIndex.     Expr10 ::= Id "`" Integer ;
+RecordField.    Expr10 ::= Id "`" Id ;
+TupleFunIndex.  Expr10 ::= Id "(" [Expr] ")" "`" Integer ;
+RecordFunField. Expr10 ::= Id "(" [Expr] ")" "`" Id ;
+RecordExpr.     Expr10 ::= "(#" [RecordElem] "#)" ;
+TupleExpr.      Expr10 ::= "(" [Expr] ")" ;
+Call.           Expr10 ::= Id "(" [Expr] ")" ;
+ExprId.         Expr10 ::= Id ;
+Int.            Expr10 ::= Integer ;
+Rat.            Expr10 ::= Double ;
+BTrue.          Expr10 ::= "TRUE" ;
+BFalse.         Expr10 ::= "FALSE" ;
 
 
 {- PVS Program -}
 
+FieldDecls. FieldDecls ::= Id ":" Type ;
 
-SubrageType.   Subrange ::= "subrange" "(" Integer "," Integer ")" ;
+separator nonempty Type "," ;
+separator nonempty FieldDecls "," ;
+
+TypeSimple.   Type ::= Id ;
+ParametricTypeBi. Type ::= Id "(" Integer "," Integer ")" ;
+TypeBelow.    Type ::= "below" "(" Expr ")" ;
+TypeRecord.   Type ::= "[#" [FieldDecls] "#]" ;
+TypeTuple.    Type ::= "[" [Type] "]" ;
+TypeArray.    Type ::= "ARRAY" "[" [Type] "->" Type "]" ;
+TypeFun.      Type ::= "FUNCTION" "[" [Type] "->" Type "]" ;
+TypeFun2.     Type ::= "[" [Type] "->" Type "]" ;
+TypeList.     Type ::= "list" "[" Type "]" ;
 
 separator nonempty Arg "," ;
 
-FArg.         Arg ::= [Id] ":" Id ;
-FArgSubrange. Arg ::= [Id] ":" Subrange ;
-FArgGuard.    Arg ::= [Id] ":" Id "|" Expr  ;
+FArg.         Arg ::= [Id] ":" Type ;
+FArgGuard.    Arg ::= [Id] ":" Type "|" Expr  ;
 
 FArgs.         Args ::= [Arg] ;
 FArgsNoType.   Args ::= [Id] ;
 
 {- FLambda. ForLambda ::= "LAMBDA" "(" Id ":" "subrange" "(" Integer "," Integer ")" "," Id ":" Id ")" ":" Id "(" Id "," Id ")" ; -}
 
-
 separator nonempty Decl "" ;
 
-DeclN.    Decl ::= Id "(" Args ")" ":" Id "=" Expr ;
-Decl0.    Decl ::= Id ":" Id "=" Expr  ;
+DeclN.    Decl ::= Id "(" Args ")" ":" Type "=" Expr ;
+Decl0.    Decl ::= Id ":" Type "=" Expr  ;
 
-
-{- separator nonempty Id "," ; -}
 LibImp.   Imp ::= "IMPORTING" [Id] ;
 
-VarDeclaration. VarDecl ::= Id ":" "VAR" Id ;
-separator VarDecl "" ;
-
-ProgImp.    Program ::= Id ":" "THEORY" "BEGIN" Imp [VarDecl] [Decl] "END" Id ; 
-Prog.       Program ::= Id ":" "THEORY" "BEGIN" [VarDecl] [Decl] "END" Id;
-
-
+ProgImp.             Program ::= Id ":" "THEORY" "BEGIN" Imp [Decl] "END" Id ;
+Prog.                Program ::= Id ":" "THEORY" "BEGIN" [Decl] "END" Id ;

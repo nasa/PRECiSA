@@ -71,8 +71,8 @@ replaceFreshVarInAExpr :: AExpr -> ReplaceRState AExpr
 replaceFreshVarInAExpr ae@(Int _) = return ae
 replaceFreshVarInAExpr ae@(Rat _) = return ae
 replaceFreshVarInAExpr ae@(Var _ _) = return ae
-replaceFreshVarInAExpr ae@(RealMark _) = return ae
-replaceFreshVarInAExpr ae@(ErrorMark _ _) = return ae
+replaceFreshVarInAExpr ae@(RealMark _ _) = return ae
+replaceFreshVarInAExpr ae@(ErrorMark _ _ _) = return ae
 replaceFreshVarInAExpr ae@(FromFloat _ (FVar _ _)) = return ae
 replaceFreshVarInAExpr ae@(FromFloat _ (FInt _))   = return ae
 replaceFreshVarInAExpr ae@(UnaryOp NegOp (Int _))   = return ae

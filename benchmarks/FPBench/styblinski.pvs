@@ -1,9 +1,9 @@
 styblinski: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-styblinski(X,Y: unb_double): unb_double =
+styblinski(X,Y: double): double =
     IF (Y <= 0) THEN
 		IF (X <= 0) THEN
             -1.4717 +  2.83079 * X + 0.786996 * X * X
@@ -20,6 +20,6 @@ styblinski(X,Y: unb_double): unb_double =
             -1.4717 - 2.33079 * X + 0.786996 * X * X
             - 2.33079 * Y + 0.00000000000000172702 * X * Y + 0.786996 * Y * Y
         ENDIF
-    ENDIF     
+    ENDIF
 
 END styblinski

@@ -20,11 +20,11 @@ import Data.Maybe (fromMaybe)
 type NormBoolExpr = Bool
 
 real2fpArg :: PVSType -> Arg -> Arg
-real2fpArg  _ (Arg x  TInt) = Arg x TInt
-real2fpArg fp (Arg x  Real) = Arg x fp
+real2fpArg  _ (Arg x TInt) = Arg x TInt
+real2fpArg fp (Arg x Real) = Arg x fp
 real2fpArg _  (Arg x (Array TInt size)) = Arg x (Array TInt size)
 real2fpArg fp (Arg x (Array Real size)) = Arg x (Array fp size)
-real2fpArg _  (Arg _  t) = error $ "real2fpArg not defined for " ++ show t
+real2fpArg _  (Arg _ t) = error $ "real2fpArg not defined for " ++ show t
 
 real2fpProg :: NormBoolExpr -> PVSType -> RProgram -> Program
 real2fpProg normBE fp prog = map (real2fpDecl normBE fp prog) prog
@@ -113,19 +113,27 @@ real2fpAexpr _ _ _ _ (Int n) = FInt n
 real2fpAexpr _ _     TInt _ (Rat r) | isInt r = FInt $ floor r
 real2fpAexpr _ True  _    _ (Rat r) | isInt r = FInt $ floor r
 real2fpAexpr _ _     fp   _ (Rat r) = ToFloat fp (Rat r)
+real2fpAexpr _ _ fp _ (Interval lb ub) = FInterval fp lb ub
 real2fpAexpr _ _    TInt  _ (Var TInt x) = FVar TInt x
 real2fpAexpr _ True _     _ (Var TInt x) = FVar TInt x
 real2fpAexpr _ _    fp    _ (Var _    x) = FVar fp   x
-real2fpAexpr normBE _    TInt  prog (ArrayElem TInt size v idxExpr) = FArrayElem TInt size v
-                                                               (real2fpAexpr normBE True TInt prog idxExpr)
-real2fpAexpr normBE True fp    prog (ArrayElem _    size v idxExpr) = FArrayElem fp   size v
-                                                               (real2fpAexpr normBE True TInt prog idxExpr)
+real2fpAexpr _ _    fp    _ (RealMark x ResValue) = FVar fp   x
+real2fpAexpr normBE _    TInt  prog (ArrayElem TInt size v idxs)
+  = FArrayElem TInt size v (map (real2fpAexpr normBE True TInt prog) idxs)
+real2fpAexpr normBE True fp prog (ArrayElem _    size v idxs)
+  = FArrayElem fp size v (map (real2fpAexpr normBE True TInt prog) idxs)
 real2fpAexpr _ _    fp    _ (FromFloat fp' ae) = ToFloat fp (FromFloat fp' ae)
-real2fpAexpr normBE isCast fp prog (EFun f TInt args) = FEFun True f TInt (real2fpActArgs normBE isCast fp prog formArgs args)
+real2fpAexpr normBE isCast fp prog (EFun f field TInt args) = FEFun True f field TInt $
+  if null prog
+    then map (real2fpAexpr normBE isCast fp prog) args
+    else (real2fpActArgs normBE isCast fp prog formArgs args)
   where
     formArgs = realDeclArgs $ fromMaybe (error $ "real2fpAexpr: function " ++ f ++ " not found in program.")
                             (findInRealProg f prog)
-real2fpAexpr normBE isCast fp prog (EFun f _ args)    = FEFun True f fp (real2fpActArgs normBE isCast fp prog formArgs args)
+real2fpAexpr normBE isCast fp prog (EFun f field _ args)    = FEFun True f field fp $
+  if null prog
+    then map (real2fpAexpr normBE isCast fp prog) args
+    else (real2fpActArgs normBE isCast fp prog formArgs args)
   where
     formArgs = realDeclArgs $ fromMaybe (error $ "real2fpAexpr: function " ++ f ++ " not found in program.")
                             (findInRealProg f prog)

@@ -31,13 +31,14 @@ data KodiakInput = KI { kiName :: String,
                         kiPrecision :: CUInt }
   deriving Show
 
+variableMapFromBinds :: [VarBind] -> VariableMap
+variableMapFromBinds binds = VMap $ zip variableNames [(0::CUInt)..]
+  where
+    variableNames = map (\(VarBind s field _ _ _) -> (cVarName s field)) binds
+
 data KodiakResult = KR { maximumLowerBound :: Double,
                          maximumUpperBound :: Double
                        } deriving Show
-
-variableMapFromBinds :: [VarBind] -> VariableMap
-variableMapFromBinds binds = VMap $ zip variableNames [(0::CUInt)..]
-  where variableNames = map (\(VarBind s _ _ _) -> s) binds
 
 instance KodiakRunnable KodiakInput () KodiakResult where
   run kInput _ =
@@ -48,6 +49,8 @@ instance KodiakRunnable KodiakInput () KodiakResult where
           variableMap   = variableMapFromBinds varRanges
           thisPrecision = kiPrecision kInput
           thisMaxDepth  = kiMaxDepth kInput
+      -- putStrLn ""
+      -- putStrLn $ "   " ++ show kInput
       cName <- newCString sysName
       pSys <- minmax_system_create cName
       minmax_system_set_maxdepth pSys thisMaxDepth
@@ -55,12 +58,49 @@ instance KodiakRunnable KodiakInput () KodiakResult where
       mapM_ (`run` pSys) varRanges
       pExpr <- run errorExpr variableMap
       minmax_system_maximize pSys pExpr
+      -- minmax_system_print pSys
       lb <- minmax_system_maximum_lower_bound pSys >>= fmap (fromRational . toRational) . return
       ub <- minmax_system_maximum_upper_bound pSys >>= fmap (fromRational . toRational) . return
       return $ KR { maximumLowerBound = lb,
                     maximumUpperBound = ub }
 
 newtype VariableMap = VMap [(String,CUInt)] deriving Show
+
+data KodiakMinMaxInput
+  = KodiakMinMaxInput
+  { kmmiName :: String
+  , kmmiExpression :: EExpr
+  , kmmiBindings :: [VarBind]
+  , kmmiMaxDepth :: CUInt
+  , kmmiPrecision :: CUInt
+  }
+  deriving Show
+
+data KodiakMinMaxResult
+  = KodiakMinMaxResult
+  { kmmoMinimumLowerBound :: Double
+  , kmmoMaximumUpperBound :: Double
+  } deriving Show
+
+instance KodiakRunnable KodiakMinMaxInput () KodiakMinMaxResult where
+  run kInput _ =
+    do
+      let sysName       = kmmiName kInput
+          errorExpr     = kmmiExpression kInput
+          varRanges     = kmmiBindings kInput
+          variableMap   = variableMapFromBinds varRanges
+          thisPrecision = kmmiPrecision kInput
+          thisMaxDepth  = kmmiMaxDepth kInput
+      cName <- newCString sysName
+      pSys <- minmax_system_create cName
+      minmax_system_set_maxdepth pSys thisMaxDepth
+      minmax_system_set_precision pSys (negate (fromInteger $ toInteger thisPrecision))
+      mapM_ (`run` pSys) varRanges
+      pExpr <- run errorExpr variableMap
+      minmax_system_minmax pSys pExpr
+      lb <- minmax_system_minimum_lower_bound pSys >>= fmap (fromRational . toRational) . return
+      ub <- minmax_system_maximum_upper_bound pSys >>= fmap (fromRational . toRational) . return
+      return $ KodiakMinMaxResult { kmmoMinimumLowerBound = lb, kmmoMaximumUpperBound = ub }
 
 lookup' :: String -> VariableMap -> CUInt
 lookup' str (VMap mappings) = fromMaybe (error $ "lookup': tried to search \"" ++ str ++ "\" in \"" ++ show mappings ++ "\"")
@@ -122,11 +162,21 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (Int i) vmap = run' (Rat $ toRational i) vmap
         run' (Rat r) _ = interval_create lb ub >>= real_create_value
           where (lb,ub) = rat2interval r
-        run' (Var _ x) vmap = run' (RealMark x) vmap
-        run' (RealMark x) vmap = case lookup x vmap of
+        run' (Interval lb ub) _ =
+          if lblb > ubub
+            then error ("Invalid Interval [" ++ show lb ++ "," ++ show ub ++ "]")
+            else interval_create lblb ubub >>= real_create_value
+          where
+            (lblb,lbub) = rat2interval lb
+            (ublb,ubub) = rat2interval ub
+        run' (Var _ x)              vmap = run' (RealMark x ResValue) vmap
+        run' (ListElem _ x _)       vmap = run' (RealMark x ResValue) vmap
+        run' (TupleElem _ x idx)    vmap = run' (RealMark x (ResTupleIndex idx)) vmap
+        run' (RecordElem _ x field) vmap = run' (RealMark x (ResRecordField field)) vmap
+        run' (RealMark x field) vmap = case lookup (cVarName x field) vmap of
                                   Just pVar -> return pVar
                                   Nothing -> createKodiakLocalVariable x
-        run' (ErrorMark _ _) _ = throw (AssertionFailed "ErrorMark should not be used") >> return undefined
+        run' (ErrorMark _ _ _) _ = throw (AssertionFailed "ErrorMark should not be used") >> return undefined
         run' (RLet defs body) vmap = run' body vmap >>= \pBody -> foldM f pBody (reverse defs)
             where
                 f pBody (LetElem{letVar = name, letExpr = expr}) =
@@ -147,10 +197,10 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (UnaryOp LnOp    e) vmap = runUnaryOperator e vmap real_create_elogarithm
         run' (UnaryOp ExpoOp  e) vmap = runUnaryOperator e vmap real_create_eexponent
         run' (UnaryOp SinOp   e) vmap = runUnaryOperator e vmap real_create_sine
-        run' (UnaryOp AsinOp   e) vmap = runUnaryOperator e vmap real_create_arcsine
+        run' (UnaryOp AsinOp  e) vmap = runUnaryOperator e vmap real_create_arcsine
         run' (UnaryOp CosOp   e) vmap = runUnaryOperator e vmap real_create_cosine
-        run' (UnaryOp AcosOp   e) vmap = runUnaryOperator e vmap real_create_arccosine
-        run' (UnaryOp TanOp  e) vmap = runUnaryOperator e vmap real_create_tangent
+        run' (UnaryOp AcosOp  e) vmap = runUnaryOperator e vmap real_create_arccosine
+        run' (UnaryOp TanOp   e) vmap = runUnaryOperator e vmap real_create_tangent
         run' (UnaryOp AtanOp  e) vmap = runUnaryOperator e vmap real_create_arctangent
         run' (UnaryOp FloorOp e) vmap = runUnaryOperator e vmap real_create_floor
         run' (HalfUlp e FPDouble) vmap =
@@ -227,13 +277,21 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (ErrUnOp SqrtOp FPSingle r e) vmap = runUnaryErrorOperator r e vmap real_create_single_error_sqrt
         run' (ErrUnOp  _ TInt _ _)     vmap = run' (Rat 0) vmap
         --
-        run' (MaxErr es) vmap = let
+        run' (Min es) vmap = let
+          buildVector = do pVector <- real_vector_create
+                           mapM_ (flip run' vmap >=> real_vector_add pVector) es
+                           return pVector
+          in if length es > 1
+             then buildVector >>= real_create_minimum
+             else run' (head es) vmap
+        run' (Max es) vmap = let
           buildVector = do pVector <- real_vector_create
                            mapM_ (flip run' vmap >=> real_vector_add pVector) es
                            return pVector
           in if length es > 1
              then buildVector >>= real_create_maximum
              else run' (head es) vmap
+        run' (MaxErr es) vmap = run' (Max es) vmap
         run' (ErrCast TInt FPDouble _ _) vmap = run' (Rat 0) vmap
         run' (ErrCast TInt FPSingle _ _) vmap = run' (Rat 0) vmap
         run' e _ = error $ "KodiakRunnable instance for AExpr, VariableMap and PReal undefined for " ++ show e

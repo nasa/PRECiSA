@@ -1,19 +1,16 @@
 module FPCore.FPCorePrinter where
 
-import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
 import Data.Ratio
 import PPExt
-import PVSTypes
 import Prelude hiding ((<>))
-import qualified Common.ShowRational as Rat
+import Common.ShowRational
 import Operators
-import Common.TypesUtils
 
 fpcprintProgram :: Program -> Spec -> Doc
 fpcprintProgram [decl] spec = fpcprintDecl decl spec
-fpcprintProgram p _ = error $ "fpcprintProgram: only programs with one function declaration can be converted to FPCore"
+fpcprintProgram _ _ = error $ "fpcprintProgram: only programs with one function declaration can be converted to FPCore."
 
 fpcprintDecl :: Decl -> Spec -> Doc
 fpcprintDecl (Decl _ _ sym args fae) spec = hcat [text $ "(FPCore " ++ sym ++ " (", hsep $ map fpcprintArg args, text ") ", fpcprintSpec spec, text " ", fpcprintFAExpr fae, text ")"]
@@ -31,7 +28,7 @@ fpcprintSpecBind (SpecBind _ vars) =
   hcat [text ":pre (and ", hsep $ map fpcprintVarBind vars,    text ")"]
 
 fpcprintVarBind :: VarBind -> Doc
-fpcprintVarBind (VarBind name _ lb ub) =
+fpcprintVarBind (VarBind name ResValue _ lb ub) =
   hcat $ [text "(<= ", fpcprintLBound lb,
     text $ " " ++ name ++ " ", fpcprintUBound ub, text ")"]
 

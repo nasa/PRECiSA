@@ -12,6 +12,7 @@
 module Kodiak.Runnable where
 
 import AbsSpecLang
+import AbsPVSLang (ResultField(..))
 import Foreign.C (newCString)
 import Kodiak.Kodiak
 
@@ -21,6 +22,11 @@ class KodiakRunnable a b c | a -> c where
 
 class KodiakBuildable a where
   buildInKodiak :: a -> IO ()
+
+cVarName :: String -> ResultField -> String
+cVarName x ResValue = x
+cVarName x (ResRecordField field) = x ++ "_" ++ field
+cVarName x (ResTupleIndex idx) = x ++ "_" ++ show idx
 
 fromLBoundToRational :: LBound -> Rational
 fromLBoundToRational (LBInt i) = toRational i
@@ -33,9 +39,9 @@ fromUBoundToRational (UBDouble r) = toRational r
 fromUBoundToRational UInf = error "not implemented for UInf TODO: Refactor"
 
 instance KodiakRunnable VarBind PMinMaxSystem () where
-  run (VarBind x _ lowerBound upperBound) pSys =
+  run (VarBind x field _ lowerBound upperBound) pSys =
     do
-      cName <- newCString x
+      cName <- newCString (cVarName x field)
       pLb <- interval_create cLowerBound cLowerBound
       pUb <- interval_create cUpperBound cUpperBound
       minmax_system_register_variable pSys cName pLb pUb
@@ -44,9 +50,9 @@ instance KodiakRunnable VarBind PMinMaxSystem () where
           cUpperBound = fromRational $ fromUBoundToRational upperBound
 
 instance KodiakRunnable VarBind PPaver () where
-  run (VarBind x _ lowerBound upperBound) pSys =
+  run (VarBind x field _ lowerBound upperBound) pSys =
     do
-      cName <- newCString x
+      cName <- newCString (cVarName x field)
       pLb <- interval_create cLowerBound cLowerBound
       pUb <- interval_create cUpperBound cUpperBound
       paver_register_variable pSys cName pLb pUb

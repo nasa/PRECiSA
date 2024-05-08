@@ -80,6 +80,9 @@ foreign import ccall unsafe ""
   real_vector_print :: PRealVector -> IO ()
 
 foreign import ccall unsafe ""
+  real_create_minimum :: PRealVector -> IO PReal
+
+foreign import ccall unsafe ""
   real_create_maximum :: PRealVector -> IO PReal
 
 foreign import ccall unsafe ""
@@ -323,10 +326,19 @@ foreign import ccall unsafe ""
   minmax_system_maximize :: PMinMaxSystem -> PReal -> IO ()
 
 foreign import ccall unsafe ""
+  minmax_system_minmax :: PMinMaxSystem -> PReal -> IO ()
+
+foreign import ccall unsafe ""
   minmax_system_maximum_lower_bound :: PMinMaxSystem -> IO CDouble
 
 foreign import ccall unsafe ""
   minmax_system_maximum_upper_bound :: PMinMaxSystem -> IO CDouble
+
+foreign import ccall unsafe ""
+  minmax_system_minimum_lower_bound :: PMinMaxSystem -> IO CDouble
+
+foreign import ccall unsafe ""
+  minmax_system_minimum_upper_bound :: PMinMaxSystem -> IO CDouble
 
 
 {----------------------------------------------------------------------}

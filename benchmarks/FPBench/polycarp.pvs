@@ -1,9 +1,9 @@
 polycarp: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-polycarp (P_i_x,P_i_y,S_x,S_y,BUFF: unb_double) : unb_double =
+polycarp (P_i_x,P_i_y,S_x,S_y,BUFF: double) : double =
 		IF (P_i_y >= S_y - BUFF AND abs(P_i_x -S_x)<BUFF)
 		THEN P_i_x - (2 * BUFF)
         ELSE P_i_x ENDIF

@@ -14,7 +14,6 @@ where
 import AbsRawPVSLang
 import AbsPVSLang
 import Common.TypesUtils
-import Data.Maybe(fromMaybe)
 import ErrM
 import PVSTypes
 import Numeric
@@ -22,18 +21,47 @@ import qualified Operators as Op
 import Parser.ParRawPVSLang
 import Parser.LexRawPVSLang
 import Utils (fst3,snd3)
-import Debug.Trace
+import Data.Maybe (fromMaybe)
 
 type VarTypeEnv = [(String, PVSTypes.PVSType)]
 type FunTypeEnv = [(String, PVSTypes.PVSType)]
 
+isNumType :: AbsRawPVSLang.Type -> Bool
+isNumType (TypeSimple (Id "int"))                  = True
+isNumType (TypeSimple (Id "integer"))              = True
+isNumType (TypeSimple (Id "single"))               = True
+isNumType (TypeSimple (Id "unb_single"))           = True
+isNumType (TypeSimple (Id "unb_pos_single"))       = True
+isNumType (TypeSimple (Id "unb_nz_single"))        = True
+isNumType (TypeSimple (Id "double"))               = True
+isNumType (TypeSimple (Id "unb_double"))           = True
+isNumType (TypeSimple (Id "unb_pos_double"))       = True
+isNumType (TypeSimple (Id "unb_nz_double"))        = True
+isNumType (TypeBelow _)                            = True
+isNumType (ParametricTypeBi (Id "fixed_point") _ _)= True
+isNumType _ = False
+
+isIntType :: AbsRawPVSLang.Type -> Bool
+isIntType (TypeSimple (Id "int"))     = True
+isIntType (TypeSimple (Id "integer")) = True
+isIntType (TypeBelow _)               = True
+isIntType _                           = False
+
+isRecordType :: AbsRawPVSLang.Type -> Bool
+isRecordType (TypeRecord _) = True
+isRecordType _ = False
+
+isTupleType :: AbsRawPVSLang.Type -> Bool
+isTupleType (TypeTuple _) = True
+isTupleType _ = False
+
 namePVSTheory :: AbsRawPVSLang.Program -> String
-namePVSTheory (Prog    (Id name) _ _ _) = name
-namePVSTheory (ProgImp (Id name) _ _ _ _)   = name
+namePVSTheory (Prog    (Id name) _ _) = name
+namePVSTheory (ProgImp (Id name) _ _  _)   = name
 
 raw2Prog :: AbsRawPVSLang.Program -> AbsPVSLang.Program
-raw2Prog (AbsRawPVSLang.Prog    _ _ listDecl _) = raw2Decsl (map retTypeFun listDecl) listDecl
-raw2Prog (AbsRawPVSLang.ProgImp _ _ _ listDecl _)   = raw2Decsl (map retTypeFun listDecl) listDecl
+raw2Prog (AbsRawPVSLang.Prog     _   listDecl _) = raw2Decsl (map retTypeFun listDecl) listDecl
+raw2Prog (AbsRawPVSLang.ProgImp  _ _ listDecl _) = raw2Decsl (map retTypeFun listDecl) listDecl
 
 retTypeFun :: AbsRawPVSLang.Decl -> (String, PVSTypes.PVSType)
 retTypeFun (Decl0 (AbsRawPVSLang.Id f)   fp _) = (f, raw2FPType fp)
@@ -46,13 +74,38 @@ raw2Decsl :: FunTypeEnv -> [AbsRawPVSLang.Decl] -> [AbsPVSLang.Decl]
 raw2Decsl fenv = map (raw2Decl fenv)
 
 raw2Decl :: FunTypeEnv -> AbsRawPVSLang.Decl -> AbsPVSLang.Decl
-raw2Decl fenv (Decl0 f (Id "bool") be)       = Pred False Original (raw2Id f) [] (raw2FBExprStm [] fenv be)
-raw2Decl fenv (DeclN f rawArgs (Id "bool") be) = Pred False Original (raw2Id f) args (raw2FBExprStm env fenv be)
+raw2Decl fenv (Decl0 f (TypeSimple (Id "bool")) be)
+  = Pred False Original (raw2Id f) [] (raw2FBExprStm [] fenv be)
+
+raw2Decl fenv (DeclN f rawArgs (TypeSimple (Id "bool")) be)
+  = Pred False Original (raw2Id f) args (raw2FBExprStm env fenv be)
   where
     args = raw2Args rawArgs
     env  = map mapArg2Pair args
-raw2Decl fenv (Decl0 f fptype stm) = Decl False (raw2FPType fptype) (raw2Id f) [] (raw2FAExpr [] fenv stm)
-raw2Decl fenv (DeclN f rawArgs fptype stm) = Decl False (raw2FPType fptype) (raw2Id f) args (raw2FAExpr env fenv stm)
+
+raw2Decl fenv (Decl0 f fptype@(TypeRecord _) stm)
+  = RecordDecl False (raw2FPType fptype) (raw2Id f) [] (raw2CollExpr [] fenv stm)
+
+raw2Decl fenv (DeclN f rawArgs fptype@(TypeRecord _) stm)
+  = RecordDecl False (raw2FPType fptype) (raw2Id f) args (raw2CollExpr env fenv stm)
+  where
+    args = raw2Args rawArgs
+    env  = map mapArg2Pair args
+
+raw2Decl fenv (Decl0 f fptype@(TypeTuple _) stm)
+  = TupleDecl False (raw2FPType fptype) (raw2Id f) [] (raw2CollExpr [] fenv stm)
+
+raw2Decl fenv (DeclN f rawArgs fptype@(TypeTuple _) stm)
+  = TupleDecl False (raw2FPType fptype) (raw2Id f) args (raw2CollExpr env fenv stm)
+  where
+    args = raw2Args rawArgs
+    env  = map mapArg2Pair args
+
+raw2Decl fenv (Decl0 f fptype stm)
+  = Decl False (raw2FPType fptype) (raw2Id f) [] (raw2FAExpr [] fenv stm)
+
+raw2Decl fenv (DeclN f rawArgs fptype stm)
+  = Decl False (raw2FPType fptype) (raw2Id f) args (raw2FAExpr env fenv stm)
   where
     args = raw2Args rawArgs
     env  = map mapArg2Pair args
@@ -68,13 +121,63 @@ raw2BinOp env fenv fae1 fae2 op = AbsPVSLang.BinaryFPOp op fp ae1 ae2
     fp  = lubPVSType (getPVSType ae1) (getPVSType ae2)
 
 realToFP :: PVSTypes.PVSType -> AbsRawPVSLang.Expr -> AbsPVSLang.FAExpr
-realToFP _ (AbsRawPVSLang.Int i) = AbsPVSLang.FInt i
+realToFP _  (AbsRawPVSLang.Int i) = AbsPVSLang.FInt i
 realToFP fp (AbsRawPVSLang.Rat d) = AbsPVSLang.ToFloat fp $ AbsPVSLang.Rat $ rationalizeFP d
 realToFP _ fae = error $ "realToFP: " ++ show fae ++ "is not of type rational."
 
 intToFP :: PVSTypes.PVSType -> AbsRawPVSLang.Expr -> AbsPVSLang.FAExpr
 intToFP _ (AbsRawPVSLang.Int i) = AbsPVSLang.FInt i
 intToFP _ fae = error $ "intToFP: " ++ show fae ++ "is not of type int."
+
+-- raw2RecordExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.CollFAExpr
+-- raw2RecordExpr = undefined
+
+raw2RecordElem :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.RecordElem -> (RecordField, AbsPVSLang.FAExpr)
+raw2RecordElem env fenv (AbsRawPVSLang.RecordElem (AbsRawPVSLang.Id field) expr) = (field, raw2FAExpr env fenv expr)
+
+raw2CollExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.CollFAExpr
+raw2CollExpr env fenv (AbsRawPVSLang.Let letElems stm)
+  = CLet letList (raw2CollExpr newenv fenv stm)
+  where
+    (newenv,letList) = foldl aux_fold (env,[]) letElems
+    aux_fold (accEnv,elems) letElem = (env',elems ++ [newLetElem])
+      where
+        newLetElem = raw2LetElem accEnv fenv letElem
+        env' = (fst3 newLetElem, snd3 newLetElem):accEnv
+
+raw2CollExpr env fenv (AbsRawPVSLang.If be thenSmt elseStm)
+  = CIte (raw2FBExpr env fenv be) (raw2CollExpr env fenv thenSmt)
+                                  (raw2CollExpr env fenv elseStm)
+
+raw2CollExpr env fenv (AbsRawPVSLang.ListIf be stmThen listElsif elseStm)
+  = CListIte ((raw2FBExpr env fenv be,raw2CollExpr env fenv stmThen) : map (raw2CollElsif env fenv) listElsif) (raw2CollExpr env fenv elseStm)
+    where
+      raw2CollElsif env fenv (ElsIf fbexpr stm) = (raw2FBExpr env fenv fbexpr, raw2CollExpr env fenv stm)
+
+raw2CollExpr env fenv (AbsRawPVSLang.RecordExpr recordElems)
+  = AbsPVSLang.RecordExpr $ map (raw2RecordElem env fenv) recordElems
+
+raw2CollExpr env fenv (AbsRawPVSLang.TupleExpr exprs)
+  = AbsPVSLang.TupleExpr $ map (raw2FAExpr env fenv) exprs
+
+raw2CollExpr env fenv (AbsRawPVSLang.ExprId (AbsRawPVSLang.Id i))
+  = case lookup i fenv of
+      Just t@(Tuple _)  -> CollFun False i t []
+      Just t@(Record _) -> CollFun False i t []
+      Just fp -> error $ "Identifier " ++ show i ++ "is not of data collection type."
+      Nothing -> case lookup i env of
+                    Just t@(Tuple  _) -> AbsPVSLang.CollVar t i
+                    Just t@(Record _) -> AbsPVSLang.CollVar t i
+                    Just fp -> error $ "Identifier " ++ show i ++ "is not of data collection type."
+                    Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env
+
+raw2CollExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) actArgs)
+  = CollFun False f fp (map (raw2FAExpr env fenv) actArgs)
+    where
+      fp = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
+                    (lookup f fenv)
+
+raw2CollExpr _ _ fae = error $ "raw2CollExpr: " ++ show fae ++ "is not of type data collection expression."
 
 raw2FBExprStm :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FBExprStm
 raw2FBExprStm env fenv (AbsRawPVSLang.Let letElems stm)
@@ -113,8 +216,6 @@ raw2FBExpr _ _  AbsRawPVSLang.BTrue  = AbsPVSLang.FBTrue
 raw2FBExpr _ _  AbsRawPVSLang.BFalse = AbsPVSLang.FBFalse
 raw2FBExpr _ _  expr = error $ "raw2FBExpr: Boolean expression expected but got " ++ show expr ++ "."
 
-
-
 raw2FAExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FAExpr
 raw2FAExpr _ _ (AbsRawPVSLang.Int n) = AbsPVSLang.FInt n
 
@@ -122,7 +223,9 @@ raw2FAExpr _ _ (AbsRawPVSLang.Rat d) = AbsPVSLang.ToFloat FPDouble $ AbsPVSLang.
 
 raw2FAExpr env fenv (AbsRawPVSLang.ExprId (AbsRawPVSLang.Id i)) =
   case lookup i fenv of
-    Just fp -> AbsPVSLang.FEFun False i fp []
+    Just (Tuple _) -> error $ "Identifier " ++ show i ++ "is a tuple."
+    Just (Record _) -> error $ "Identifier " ++ show i ++ "is a record."
+    Just fp -> AbsPVSLang.FEFun False i ResValue fp []
     Nothing -> case lookup i env of
                   Just fp -> AbsPVSLang.FVar fp i
                   Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env
@@ -198,7 +301,39 @@ raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [fae])
   where
     fp = getPVSType $ raw2FAExpr env fenv fae
 
+raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprId (AbsRawPVSLang.Id listName),idx])
+  | f == "nth"  = AbsPVSLang.FListElem fp listName (raw2FAExpr env fenv idx)
+  where
+    t = fromMaybe (error errorMsg)
+                  (lookup listName env)
+    fp = case t of
+            List t -> t
+            otherwise -> error errorMsg
+    errorMsg = "raw2FAExpr: list " ++ show listName ++ " not found."
 
+raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprId (AbsRawPVSLang.Id funName)
+                                                             ,AbsRawPVSLang.ExprId (AbsRawPVSLang.Id listName)])
+  | f == "map"  = AbsPVSLang.FMap fp funName listName
+  where
+    t = fromMaybe (error errorMsg)
+                  (lookup listName env)
+    fp = case t of
+            List t -> t
+            otherwise -> error errorMsg
+    errorMsg = "raw2FAExpr: list " ++ show listName ++ " not found."
+
+raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprId (AbsRawPVSLang.Id funName)
+                                                             ,AbsRawPVSLang.ExprId (AbsRawPVSLang.Id listName)
+                                                             ,AbsRawPVSLang.Int n
+                                                             ,baseCase])
+  | f == "fold"  = AbsPVSLang.FFold fp funName listName n (raw2FAExpr env fenv baseCase)
+  where
+    t = fromMaybe (error errorMsg)
+                  (lookup listName env)
+    fp = case t of
+            List t -> t
+            otherwise -> error errorMsg
+    errorMsg = "raw2FAExpr: list " ++ show listName ++ " not found."
 
 raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [fae1,fae2])
   | f == "add"  = raw2BinOp env fenv fae1 fae2 Op.AddOp
@@ -226,10 +361,11 @@ raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [fae1,fae2])
     ae2 = raw2FAExpr env fenv fae2
 
 raw2FAExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) actArgs)
-  = AbsPVSLang.FEFun False f fp (map (raw2FAExpr env fenv) actArgs)
-    where
-      fp = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
-                    (lookup f fenv)
+  = case lookup f fenv of
+      Just fp -> AbsPVSLang.FEFun False f ResValue fp (map (raw2FAExpr env fenv) actArgs)
+      Nothing -> case lookup f env of
+                   Just (Array t size) -> FArrayElem t size f (map (raw2FAExpr env fenv) actArgs)
+                   _ -> error $ "raw2FAExpr: identifier " ++ show f ++ " not found."
 
 raw2FAExpr env fenv (AbsRawPVSLang.Let letElems stm)
   = AbsPVSLang.Let letList (raw2FAExpr newenv fenv stm)
@@ -246,6 +382,42 @@ raw2FAExpr env fenv (If bexpr stmThen stmElse) =
 raw2FAExpr env fenv (ListIf bexpr stmThen listElsif stmElse) =
     ListIte ((raw2FBExpr env fenv bexpr,raw2FAExpr env fenv stmThen): map (raw2Elsif env fenv) listElsif) (raw2FAExpr env fenv stmElse)
 
+raw2FAExpr env fenv (TupleIndex (Id tuple) idx) = FTupleElem fp tuple idx
+  where
+    fp = case t of
+           Tuple idxTypes -> idxTypes!!(fromInteger $ idx - 1)
+           _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a tuple type."
+    t = fromMaybe (error $ "raw2FAExpr: tuple " ++ show tuple ++ " not found.")
+                   (lookup tuple env)
+
+raw2FAExpr env fenv (RecordField (Id record) (Id field)) = FRecordElem fp record field
+  where
+    fp = case t of
+           Record fieldTypes -> fromMaybe (error $ "raw2FAExpr: record field " ++ show field ++ " not found.")
+                                          (lookup field fieldTypes)
+           _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a record type."
+    t = fromMaybe (error $ "raw2FAExpr: record " ++ show record ++ " not found.")
+                   (lookup record env)
+
+raw2FAExpr env fenv (TupleFunIndex (Id f) args idx)
+  = FEFun False f (ResTupleIndex idx) fp (map (raw2FAExpr env fenv) args)
+  where
+    fp = case t of
+           Tuple idxTypes -> idxTypes!!(fromInteger $ idx - 1)
+           _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a tuple type."
+    t = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
+                   (lookup f fenv)
+
+raw2FAExpr env fenv (RecordFunField (Id f) args (Id field))
+  = FEFun False f (ResRecordField field) fp (map (raw2FAExpr env fenv) args)
+  where
+    fp = case t of
+           Record fieldTypes -> fromMaybe (error $ "raw2FAExpr: record field " ++ show field ++ " not found.")
+                                          (lookup field fieldTypes)
+           _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a record type."
+    t = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
+                   (lookup f fenv)
+
 raw2FAExpr _ _ For{} = undefined
 
 raw2FAExpr _ _ ae = error $ "raw2FAExpr: artihmetic expression expected but got " ++ show ae ++ "."
@@ -260,28 +432,46 @@ raw2Args (FArgsNoType _) = error "Arguments have no type."
 
 raw2Arg :: AbsRawPVSLang.Arg -> [AbsPVSLang.Arg]
 raw2Arg (FArg xs t)         = map (raw2ArgWithType t) xs
-raw2Arg (FArgSubrange xs _) = map (raw2ArgWithType (Id "integer")) xs
+-- raw2Arg (FArgSubrange xs _) = map (raw2ArgWithType (Id "integer")) xs
 raw2Arg (FArgGuard xs t _)  = map (raw2ArgWithType t) xs
 
-raw2ArgWithType :: AbsRawPVSLang.Id -> AbsRawPVSLang.Id -> AbsPVSLang.Arg
+raw2ArgWithType :: AbsRawPVSLang.Type -> AbsRawPVSLang.Id -> AbsPVSLang.Arg
 raw2ArgWithType t x = AbsPVSLang.Arg (raw2Id x) (raw2FPType t)
 
 raw2Id :: AbsRawPVSLang.Id -> VarName
 raw2Id (AbsRawPVSLang.Id x) = x
 
-raw2FPType :: AbsRawPVSLang.Id -> PVSTypes.PVSType
-raw2FPType (Id "int")            = TInt
-raw2FPType (Id "integer")        = TInt
-raw2FPType (Id "single")         = FPSingle
-raw2FPType (Id "unb_single")     = FPSingle
-raw2FPType (Id "unb_pos_single") = FPDouble
-raw2FPType (Id "unb_nz_single")  = FPDouble
-raw2FPType (Id "double")         = FPDouble
-raw2FPType (Id "unb_double")     = FPDouble
-raw2FPType (Id "unb_pos_double") = FPDouble
-raw2FPType (Id "unb_nz_double")  = FPDouble
-raw2FPType (Id "bool")           = Boolean
+raw2FieldDecls :: AbsRawPVSLang.FieldDecls -> (RecordField,PVSType)
+raw2FieldDecls (FieldDecls (Id field) t) = (field, raw2FPType t)
+
+raw2FPType :: AbsRawPVSLang.Type -> PVSTypes.PVSType
+raw2FPType (TypeSimple (Id "int"))            = TInt
+raw2FPType (TypeSimple (Id "integer"))        = TInt
+raw2FPType (TypeSimple (Id "single"))         = FPSingle
+raw2FPType (TypeSimple (Id "unb_single"))     = FPSingle
+raw2FPType (TypeSimple (Id "unb_pos_single")) = FPDouble
+raw2FPType (TypeSimple (Id "unb_nz_single"))  = FPDouble
+raw2FPType (TypeSimple (Id "double"))         = FPDouble
+raw2FPType (TypeSimple (Id "unb_double"))     = FPDouble
+raw2FPType (TypeSimple (Id "unb_pos_double")) = FPDouble
+raw2FPType (TypeSimple (Id "unb_nz_double"))  = FPDouble
+raw2FPType (TypeSimple (Id "bool"))           = Boolean
+raw2FPType (ParametricTypeBi t a b) = error "Fixed-point numbers not yet supported."
+raw2FPType (TypeBelow e) = TInt
+raw2FPType (TypeRecord fieldDecls) = Record (map raw2FieldDecls fieldDecls)
+raw2FPType (TypeTuple ts) = Tuple (map raw2FPType ts)
+raw2FPType (TypeArray ts t) | (all isIntType ts) && (isNumType t)
+  = Array (raw2FPType t) (Just (ArraySizeInt $ toInteger $ length ts))
+raw2FPType (TypeArray _ _) = error "This generic type of array not yet supported."
+raw2FPType (AbsRawPVSLang.TypeFun typeList retType)  = PVSTypes.TypeFun (map raw2FPType typeList) (raw2FPType retType)
+raw2FPType (TypeFun2 typeList retType) = PVSTypes.TypeFun (map raw2FPType typeList) (raw2FPType retType)
+raw2FPType (TypeList t) = List (raw2FPType t)
 raw2FPType t = error $ "raw2FPType: type " ++ show t ++ " not recognized."
 
+toErrM :: Either String a -> Err a
+toErrM (Left e) = Bad e
+toErrM (Right a) = Ok a
+
 rawparserPVS :: String -> Err AbsRawPVSLang.Program
-rawparserPVS = pProgram . tokens
+rawparserPVS = toErrM . pProgram . tokens
+

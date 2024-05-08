@@ -1,9 +1,9 @@
 sine: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-sine(X: unb_double):unb_double =
+sine(X: double):double =
   X - (X*X*X)/6 + (X*X*X*X*X)/120 - (X*X*X*X*X*X*X)/5040
 
 END sine

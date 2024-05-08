@@ -1,9 +1,9 @@
 turbine1: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-turbine1(V: unb_double | 1 - V /= 0,W: unb_double,R: unb_double | DtoR(Dmul(R,R)) /= 0):unb_double
+turbine1(V: double | 1 - V /= 0,W: double,R: double | DtoR(R*R) /= 0):double
   = 3 + 2 / (R * R) - 0.125 * (3 - 2 * V) * (W * W * R * R) / (1 - V) - 4.5
 
 END turbine1

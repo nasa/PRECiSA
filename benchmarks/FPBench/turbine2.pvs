@@ -1,9 +1,9 @@
 turbine2: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-turbine2(V: unb_double | 1 - V /= 0,W,R:unb_double):unb_double =
+turbine2(V: double | 1 - V /= 0,W,R:unb_double):double =
   6*V - 0.5 * V * (W*W*R*R) / (1-V) - 2.5
 
 END turbine2

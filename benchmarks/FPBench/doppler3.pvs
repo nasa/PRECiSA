@@ -1,11 +1,11 @@
 doppler3: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-dop3(U,V: unb_double,
-     T  : unb_double |
-       (331.4 + (0.6*T) + U) * (331.4 + (0.6*T) + U) /=0):unb_double=
+dop3(U,V: double,
+     T  : double |
+       (331.4 + (0.6*T) + U) * (331.4 + (0.6*T) + U) /=0):double=
   LET T1 = 331.4 + (0.6*T) IN
    (-T1 * V) / ((T1 + U) * (T1 + U))
 

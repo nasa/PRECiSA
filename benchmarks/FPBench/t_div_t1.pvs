@@ -1,8 +1,8 @@
 t_div_t1: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-t_div_t1 (T: unb_double | DtoR(Dadd(T, RtoD(1))) /= 0):unb_double = T / (T + 1)
+t_div_t1 (T: double | DtoR(T+1) /= 0):double = T / (T + 1)
 
 END t_div_t1

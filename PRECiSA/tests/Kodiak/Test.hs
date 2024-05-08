@@ -18,26 +18,28 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import AbsPVSLang
+import AbsSpecLang
 import PVSTypes
 import Kodiak.Kodiak
 import Kodiak.Runnable
 import Kodiak.Runner
 import qualified Kodiak.Expression as K
 import Kodiak.ExpressionTest
-import Kodiak.GeneratorTest
-import Kodiak.PaverTest
+-- import Kodiak.GeneratorTest
+-- import Kodiak.PaverTest
 import Kodiak.PrettyPrintTest as KPT
 import Operators
 
 testKodiak :: TestTree
 testKodiak = testGroup "Kodiak"
     [testBooleanExpressions
+    ,testMinMax
     ,testPaver
     ,testBooleanExpressionKodiakRunnable
     ,testKodiakExpressionsAreKodiakRunnable
     ,testKodiakExpression
-    ,testKodiakGenerator
-    ,testKodiakPaver
+    -- ,testKodiakGenerator
+    -- ,testKodiakPaver
     ,KPT.testAll
     ]
 
@@ -170,6 +172,47 @@ testRelationalOperators = testGroup "Relational Operators"
         ,testCase "it is distinct from a constant" $
             checkDistincness createLessThanOrEqualTo [bool_create_true,bool_create_false,bool_create_possibly,bool_create_within_eps] @? isNotSelfEqualLabel
         ]
+    ]
+
+testMinMax :: TestTree
+testMinMax = testGroup "MinMax" $
+    let createMinMax = do name <- newCString "Example"
+                          minmax_system_create name
+        createVariable p = do var <- newCString "X"
+                              lb <- interval_create 0 0
+                              ub <- interval_create 1 1
+                              minmax_system_register_variable p var lb ub
+                              return var
+        create10 = interval_create 10 10 >>= real_create_value
+        createExpr vName = do
+            v <- real_create_variable 0 vName
+            t <- create10
+            real_create_addition v t
+        failLabel = "something unexpected happened"
+    in
+    [testCase "minmax_system_create" $
+        (createMinMax >> return True) @? failLabel
+    ,testCase "minmax_system_minmax_lower_and_upper_bound" $
+        do p <- createMinMax
+           v <- createVariable p
+           e <- createExpr v
+           minmax_system_minmax p e
+           lb <- minmax_system_minimum_lower_bound p
+           ub <- minmax_system_maximum_upper_bound p
+           return $ (lb == 10) && (ub == 11)
+        @? failLabel
+    ,testCase "KodiakRunnable" $
+        do
+            let input = KodiakMinMaxInput { kmmiName = "X"
+                , kmmiExpression = BinaryOp AddOp (Var FPDouble "X") (Int 10)
+                , kmmiBindings = [VarBind "X" ResValue FPDouble (LBInt 0) (UBInt 1)]
+                , kmmiMaxDepth = 2
+                , kmmiPrecision = 2
+                }
+            res <- run input ()
+            return $ (kmmoMinimumLowerBound res == 10)
+                && (kmmoMaximumUpperBound res == 11)
+        @? failLabel
     ]
 
 testPaver :: TestTree

@@ -19,7 +19,7 @@ import Control.Monad (foldM)
 import Control.Monad.Except (runExcept)
 
 import AbsSpecLang
-import AbsPVSLang (BExpr(..), FBExpr(..))
+import AbsPVSLang (BExpr(..), FBExpr(..),ResultField)
 import AbstractDomain
 import Kodiak.Kodiak
 import Kodiak.Runnable
@@ -27,8 +27,6 @@ import Kodiak.Generator
 import qualified Kodiak.Runnable   as KR
 import qualified Kodiak.Runner     as KR
 import qualified Kodiak.Expression as K
-
-
 
 data SearchParameters = SP { maximumDepth :: C.CUInt, minimumPrecision :: C.CUInt }
 
@@ -58,19 +56,19 @@ instance KR.KodiakRunnable Input () Output where
     paver_save_paving pSys cFilename
     return $ Output outputFile
 
-paveUnstabilityConditions :: [(FunName,K.BExpr)] -> Spec -> SearchParameters -> (String -> String) -> IO [(String,FilePath)]
+paveUnstabilityConditions :: [(FunName,ResultField,K.BExpr)] -> Spec -> SearchParameters -> (String -> String) -> IO [(String,ResultField,FilePath)]
 paveUnstabilityConditions condMap (Spec bindings) searchParams nameGen = mapM paveFunction condMap
   where
     bindingsMap = map (\(SpecBind f b) -> (f,b)) bindings
-    paveFunction (name,bexpr) = labelWith name . (filename) <$> run kodiakInput ()
+    paveFunction (name,field,bexpr) = labelWith name field . (filename) <$> run kodiakInput ()
       where
-        labelWith name' x = (name',x)
+        labelWith name' field' x = (name',field',x)
         kodiakInput = Input { name = nameGen name
-                               , expression = bexpr
-                               , bindings = fromMaybe (error $ "runFunction: var " ++ show name ++ " not found.") (lookup name bindingsMap)
-                               , maxDepth = maximumDepth searchParams
-                               , precision = minimumPrecision searchParams
-                      }
+                            , expression = bexpr
+                            , bindings = fromMaybe (error $ "runFunction: var " ++ show name ++ " not found.") (lookup name bindingsMap)
+                            , maxDepth = maximumDepth searchParams
+                            , precision = minimumPrecision searchParams
+                            }
 
 conds2Kodiak' :: [Conditions] -> Maybe K.BExpr
 conds2Kodiak' = foldM (\b a -> conds2Kodiak a >>= (Just . K.Or b)) K.False

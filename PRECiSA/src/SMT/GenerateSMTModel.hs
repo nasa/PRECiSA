@@ -68,10 +68,10 @@ buildErrAssignConstraints :: Real a => (VarName, a) -> BExpr
 buildErrAssignConstraints (e, roError) = Rel Eq (Var Real e) (Rat $ toRational roError)
 
 generateErrorConstraintInput :: CUInt -> CUInt -> VarBind -> IO (BExpr,(VarName, Double))
-generateErrorConstraintInput  maximumDepth minimumPrecision range@(VarBind x fp _ _) = do
+generateErrorConstraintInput  maximumDepth minimumPrecision range@(VarBind x ResValue fp _ _) = do
     roError <- computeErrorAExpr  maximumDepth minimumPrecision (FVar fp x) [range]
     let nameErrVar = "Err_"++x
-    return (Rel GtE (Var Real nameErrVar) (UnaryOp AbsOp $ BinaryOp SubOp (RealMark x) (Var Real x)), (nameErrVar, roError))
+    return (Rel GtE (Var Real nameErrVar) (UnaryOp AbsOp $ BinaryOp SubOp (RealMark x ResValue) (Var Real x)), (nameErrVar, roError))
 
 generateErrorConstraint :: CUInt -> CUInt -> VarName -> VarName -> FAExpr -> [VarBind] -> IO (BExpr,(VarName, Double))
 generateErrorConstraint maximumDepth minimumPrecision rVar fVar faexpr inputs = do

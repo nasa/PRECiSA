@@ -1,0 +1,57 @@
+tcoa(sz,vz): sz in [0,1000], vz in [400,600]
+
+tcpa(sx,vx,sy,vy): sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2]
+
+taumod(sx,vx,sy,vy,DTHR): sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2], DTHR in [2,3]
+
+horizontal_wcv(sx,sy,vx,vy,DTHR,TTHR): sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2], DTHR in [2,3], TTHR in [2,3]
+
+vertical_WCV(sz,vz,ZTHR,TCOA): sz in [1,2], vz in [1,2], ZTHR in [2,3] ,TCOA in [2,3]
+
+WCV(sx,sy,sz,vx,vy,vz,DTHR,TTHR,ZTHR,TCOA): sx in [1,2], vx in [1,2], sy in [1,2], sz in [1,2], vz in [1,2], vy in [1,2], DTHR in [2,3], TTHR in [2,3], ZTHR in [2,3] ,TCOA in [2,3]
+
+sign(x): x in [1,100]
+
+max_(a, b): a in [1,100], b in [1,100]
+
+min_(a, b): a in [1,100], b in [1,100]
+
+discr(a, b, c): a in [1,100], b in [1,100], c in [1,100]
+
+root_pos(a, b, c): a in [1,100], b in [1,100], c in [1,100]
+
+root_neg(a, b, c): a in [1,100], b in [1,100], c in [1,100]
+
+inner_product(sx, sy, vx, vy): sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2]
+
+cross_product(sx, sy, vx, vy): sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2]
+
+sq(sx, sy): sx in [1,2], sy in [1,2]
+
+proj(sx, vx, t): sx in [1,2], vx in [1,2], t in [1,10]
+
+Delta(sx, sy, vx, vy, D): D in [1,2], sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2]
+
+Theta_D_pos(D, sx, sy, vx, vy): D in [1,2], sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2]
+
+Theta_D_neg(D, sx, sy, vx, vy): D in [1,2], sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2]
+
+Theta_H_pos(sz, nzvz, H): sz in [1,2], nzvz in [1,2], H in [1,2]
+
+Theta_H_neg(sz, nzvz, H): sz in [1,2], nzvz in [1,2], H in [1,2]
+
+horizontal_WCV_taumod_interval(T, sx, sy, vx, vy, TAUMOD, DTHR): T in [1,10], sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2], TAUMOD in [1,2], DTHR in [1,3]
+
+coalt_entry(sz, nzvz, TCOA, ZTHR): sz in [1,2], nzvz in [1,2], TCOA in [2,3], ZTHR in [1,3]
+
+coalt_exit(sz, nzvz, ZTHR): sz in [1,2], nzvz in [1,2], ZTHR in [1,3]
+
+vertical_WCV_entry(B, T, sz, vz, TCOA, ZTHR): B in [1,10], T in [1,10], sz in [1,2], vz in [1,2], TCOA in [2,3], ZTHR in [2,3]
+
+vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR): B in [1,10], T in [1,10], sz in [1,2], vz in [1,2], TCOA in [2,3], ZTHR in [2,3]
+
+WCV_interval(B, T, sx, sy, sz, vx, vy, vz, TAUMOD, TCOA, DTHR, TTHR, ZTHR):
+B in [1,10], T in [1,10], sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2], sz in [1,2], vz in [1,2], TCOA in [2,3], ZTHR in [2,3], TAUMOD in [2,3], DTHR in [2,3], TTHR in [2,3]
+
+WCV_detection(sx, sy, sz, vx, vy, vz, B, T, TAUMOD, TCOA, DTHR, TTHR, ZTHR):
+sx in [1,2], vx in [1,2], sy in [1,2], vy in [1,2], sz in [1,2], vz in [1,2], B in [1,10], T in [1,10], TAUMOD in [1,2], TCOA in [2,3], DTHR in [1,2], TTHR in [1,2], ZTHR in [2,3]

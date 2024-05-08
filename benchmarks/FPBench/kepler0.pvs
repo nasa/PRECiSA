@@ -1,10 +1,9 @@
 kepler0: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-% @fp-error 5.218048215738237e-15 when X1 in [ 0, 1 ], X2 in [ 0, 1 ], X3 in [ 0, 1 ], X4 in [ 0, 1 ], X5 in [ 0, 1 ], X6 in [ 0, 1 ] (p=7, d=14)
-kepler0 (X1,X2,X3,X4,X5,X6: unb_double):unb_double = 
+kepler0 (X1,X2,X3,X4,X5,X6: double):double =
     X2 * X5 + X3 * X6 - X2 * X3 - X5 * X6
                  + X1 * (-X1 + X2 + X3 - X4 + X5 + X6)
 

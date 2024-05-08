@@ -63,20 +63,9 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,renameVarsFBExprStm__tests
    ,renameVarsBExprStm__tests
    ,subExpressions__tests
-   ,initErrFun__tests
    ,unfoldLetIn__tests
    ]
 
-initErrFun__tests = testGroup "initErrFun__tests" $ [
-   initErrFun__test1
-  ,initErrFun__test2
-  ]
-
-initErrFun__test1 = testCase "initErrFun__test1" $
-  initErrFun False [("f", 0, Nothing)] (ErrFun "f" []) @?= Rat 0
-
-initErrFun__test2 = testCase "initErrFun__test1" $
-  initErrFun False [("f", 0, Nothing), ("g", 3, Nothing)] (ErrFun "f" []) @?= Rat 0
 
 subExpressions__tests = testGroup "subExpressions__tests" $ [
   subExpressions__test1
@@ -151,14 +140,14 @@ subExpressions__test8 = testCase "subExpressions Unary Op repetition" $
   [UnaryFPOp NegOp FPDouble (FVar TInt "x"),FVar TInt "x"]
 
 subExpressions__test9 = testCase "subExpressions EFun" $
-  subExpressions (FEFun True "f" TInt [FVar TInt "y"])
+  subExpressions (FEFun True "f" ResValue TInt [FVar TInt "y"])
   `setEquiv`
-  [FEFun True "f" TInt [FVar TInt "y"], FVar TInt "y"]
+  [FEFun True "f" ResValue TInt [FVar TInt "y"], FVar TInt "y"]
 
 subExpressions__test10 = testCase "subExpressions ArrayElem" $
-  subExpressions (FArrayElem TInt (Just $ ArraySizeInt 3) "y" (FVar TInt "x"))
+  subExpressions (FArrayElem TInt (Just $ ArraySizeInt 3) "y" [(FVar TInt "x")])
   `setEquiv`
-  [FArrayElem TInt (Just $ ArraySizeInt 3) "y" (FVar TInt "x")
+  [FArrayElem TInt (Just $ ArraySizeInt 3) "y" [(FVar TInt "x")]
   ,FVar TInt "x"]
 
 subExpressions__test11 = testCase "subExpressions ListIte" $
@@ -222,22 +211,22 @@ renameVar__test4 = testCase "renameVar Var no match" $
   Nothing
 
 renameVar__test5 = testCase "renameVar RealMark" $
-  renameVar [("x","y")] (RealMark "x")
+  renameVar [("x","y")] (RealMark "x" ResValue)
   @?=
-  Just (RealMark "y")
+  Just (RealMark "y" ResValue)
 
 renameVar__test6 = testCase "renameVar RealMark no match" $
-  renameVar [("z","y")] (RealMark "x")
+  renameVar [("z","y")] (RealMark "x" ResValue)
   @?=
   Nothing
 
 renameVar__test7 = testCase "renameVar ErrorMark" $
-  renameVar [("x","y")] (ErrorMark "x" TInt)
+  renameVar [("x","y")] (ErrorMark "x" ResValue TInt)
   @?=
-  Just (ErrorMark "y" TInt)
+  Just (ErrorMark "y" ResValue TInt)
 
 renameVar__test8 = testCase "renameVar ErrorMark no match" $
-  renameVar [("z","y")] (ErrorMark "x" TInt)
+  renameVar [("z","y")] (ErrorMark "x" ResValue TInt)
   @?=
   Nothing
 
@@ -384,24 +373,24 @@ renameVarsAExpr__test8 = testCase "renameVarsAExpr Unary Op no match" $
   (UnaryOp NegOp (Var TInt "x"))
 
 renameVarsAExpr__test9 = testCase "renameVarsAExpr EFun" $
-  renameVarsAExpr [("x","y")] (EFun "f" TInt [Var TInt "x"])
+  renameVarsAExpr [("x","y")] (EFun "f" ResValue TInt [Var TInt "x"])
   @?=
-  EFun "f" TInt [Var TInt "y"]
+  EFun "f" ResValue TInt [Var TInt "y"]
 
 renameVarsAExpr__test10 = testCase "renameVarsAExpr EFun no match" $
-  renameVarsAExpr [("a","y")] (EFun "f" TInt [Var TInt "x"])
+  renameVarsAExpr [("a","y")] (EFun "f" ResValue TInt [Var TInt "x"])
   @?=
-  (EFun "f" TInt [Var TInt "x"])
+  (EFun "f" ResValue TInt [Var TInt "x"])
 
 renameVarsAExpr__test11 = testCase "renameVarsAExpr ArrayElem" $
-  renameVarsAExpr [("x","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" (Var TInt "x"))
+  renameVarsAExpr [("x","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" [(Var TInt "x")])
   @?=
-  ArrayElem TInt (Just $ ArraySizeInt 3) "y" (Var TInt "y")
+  ArrayElem TInt (Just $ ArraySizeInt 3) "y" [(Var TInt "y")]
 
 renameVarsAExpr__test12 = testCase "renameVarsAExpr ArrayElem no match" $
-  renameVarsAExpr [("a","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" (Var TInt "x"))
+  renameVarsAExpr [("a","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" [(Var TInt "x")])
   @?=
-  (ArrayElem TInt (Just $ ArraySizeInt 3) "x" (Var TInt "x"))
+  (ArrayElem TInt (Just $ ArraySizeInt 3) "x" [(Var TInt "x")])
 
 renameVarsAExpr__test13 = testCase "renameVarsAExpr RListIte" $
   renameVarsAExpr [("x","y")] (RListIte [(Rel Eq (Var TInt "x") (Int 4),Var TInt "b")] (Var TInt "x"))
@@ -508,24 +497,24 @@ renameVarsFAExpr__test8 = testCase "renameVar Unary Op no match" $
   (UnaryFPOp NegOp FPDouble (FVar TInt "x"))
 
 renameVarsFAExpr__test9 = testCase "renameVar EFun" $
-  renameVarsFAExpr [("x","y")] (FEFun True "f" TInt [FVar TInt "x"])
+  renameVarsFAExpr [("x","y")] (FEFun True "f" ResValue TInt [FVar TInt "x"])
   @?=
-  FEFun True "f" TInt [FVar TInt "y"]
+  FEFun True "f" ResValue TInt [FVar TInt "y"]
 
 renameVarsFAExpr__test10 = testCase "renameVar EFun no match" $
-  renameVarsFAExpr [("a","y")] (FEFun True "f" TInt [FVar TInt "x"])
+  renameVarsFAExpr [("a","y")] (FEFun True "f" ResValue TInt [FVar TInt "x"])
   @?=
-  (FEFun True "f" TInt [FVar TInt "x"])
+  (FEFun True "f" ResValue TInt [FVar TInt "x"])
 
 renameVarsFAExpr__test11 = testCase "renameVar ArrayElem" $
-  renameVarsFAExpr [("x","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" (FVar TInt "x"))
+  renameVarsFAExpr [("x","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" [(FVar TInt "x")])
   @?=
-  FArrayElem TInt (Just $ ArraySizeInt 3) "y" (FVar TInt "y")
+  FArrayElem TInt (Just $ ArraySizeInt 3) "y" [(FVar TInt "y")]
 
 renameVarsFAExpr__test12 = testCase "renameVar ArrayElem no match" $
-  renameVarsFAExpr [("a","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" (FVar TInt "x"))
+  renameVarsFAExpr [("a","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" [(FVar TInt "x")])
   @?=
-  (FArrayElem TInt (Just $ ArraySizeInt 3) "x" (FVar TInt "x"))
+  (FArrayElem TInt (Just $ ArraySizeInt 3) "x" [(FVar TInt "x")])
 
 renameVarsFAExpr__test13 = testCase "renameVar ListIte" $
   renameVarsFAExpr [("x","y")] (ListIte [(FRel Eq (FVar TInt "x") (FInt 4),FVar TInt "b")] (FVar TInt "x"))
@@ -709,10 +698,10 @@ hasConditionals__tests = testGroup "hasConditionals" $ [
     testGroup "function calls" $ [
       testCase "with if" $
                 let program = [RDecl Real "f" [] (RIte BTrue (Int 1) (Int 2))] in
-                    hasConditionals True program (EFun "f" Real []) @?= True,
+                    hasConditionals True program (EFun "f" ResValue Real []) @?= True,
       testCase "without if" $
                 let program = [RDecl Real "f" [] (Int 2)] in
-                    hasConditionals True program (EFun "f" Real []) @?= False
+                    hasConditionals True program (EFun "f" ResValue Real []) @?= False
     ],
       testCase "variable" $
             hasConditionals True [] (Var TInt "x") @?= False
@@ -723,7 +712,7 @@ testcasesHasConditionals
     (Int 4, False),
     (Rat (toRational (0.1::Double)), False),
     (Var  TInt "x",False),
-    (ArrayElem TInt (Just $ ArraySizeInt 3) "a" (Int 2), False),
+    (ArrayElem TInt (Just $ ArraySizeInt 3) "a" [(Int 2)], False),
     (BinaryOp AddOp (Int 1) (Int 2),False),
     (UnaryOp NegOp (Int 2), False),
     (Min [Int 3], False),
@@ -739,10 +728,10 @@ testcasesHasConditionals
 hasConditionalsBExpr__tests = testGroup "hasConditionalsBExpr" [
     testCase "function call with if" $
       let program = [RDecl Real "f" [] (RIte BTrue (Int 1) (Int 2))] in
-        hasConditionalsBExpr True program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= True,
+        hasConditionalsBExpr True program (RBExpr (Rel Lt (Int 2) (EFun "f" ResValue Real []))) @?= True,
     testCase "function call with no if" $
       let program = [RDecl Real "f" [] (Int 2)] in
-        hasConditionalsBExpr True program (RBExpr (Rel Lt (Int 2) (EFun "f" Real []))) @?= False,
+        hasConditionalsBExpr True program (RBExpr (Rel Lt (Int 2) (EFun "f" ResValue Real []))) @?= False,
     testCase "predicate call with no if" $
       let program = [RPred "f" [] (RBExpr BTrue)] in
         hasConditionalsBExpr True program (RBExpr $ EPred "f" []) @?= False,
@@ -825,10 +814,10 @@ makeFPDeclRecursive__test2 = testCase "makeFPDeclRecursive2" $
   makeFPDeclRecursive (Decl False TInt "f" [] (ForLoop TInt (FInt 0) (FInt 10) (FInt 0) "I" "X"
                                         (BinaryFPOp AddOp TInt (FVar TInt "I") (FVar TInt "X"))))
   @?=
-  (Decl False TInt "f" [] (FEFun False "for_f1" TInt [FInt 0,FInt 0])
+  (Decl False TInt "f" [] (FEFun False "for_f1" ResValue TInt [FInt 0,FInt 0])
   ,
   [Decl False TInt "for_f1" [Arg "I" TInt,Arg "X" TInt] (Ite (FRel Eq (FVar TInt "I") (FInt 10)) (FVar TInt "X")
-          (FEFun False "for_f1" TInt [BinaryFPOp AddOp TInt (FVar TInt "I") (FInt 1)
+          (FEFun False "for_f1" ResValue TInt [BinaryFPOp AddOp TInt (FVar TInt "I") (FInt 1)
                                ,BinaryFPOp AddOp TInt (FVar TInt "I") (FVar TInt "X")]))])
 
 
@@ -885,101 +874,101 @@ simplFAExpr__test5 = testCase "" $
 
 rewriteEquivEExpr_testsIOs =
            [("ErrMulPow2L"
-                ,ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
-                ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
+                ,ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
+                ,ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)
             )
             ,("ErrMulPow2R"
-                ,ErrMulPow2R FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
-                ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
+                ,ErrMulPow2R FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue  FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
+                ,ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)
             )
             ,("ErrAbs"
-                ,ErrUnOp AbsOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
-                ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
+                ,ErrUnOp AbsOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X"  ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
+                ,ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)
             )
             ,("ErrAbs"
-                ,ErrUnOp NegOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
-                ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
+                ,ErrUnOp NegOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
+                ,ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)
             )
             ,("MaxErr"
-                ,MaxErr [ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble),
-                         ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)]
-                ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
+                ,MaxErr [ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble),
+                         ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)]
+                ,ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)
             )
             ,("MaxErr_ErrNeg"
-                ,MaxErr [ErrUnOp NegOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)),
-                         ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)]
-                ,ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)
+                ,MaxErr [ErrUnOp NegOp FPDouble (Int 3) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)),
+                         ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)]
+                ,ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)
             )
             ,("ErrAdd_ErrMulPow2L"
-                ,ErrBinOp AddOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp SubOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                                 (RealMark "K") (ErrorMark "K" FPDouble)
-                ,ErrBinOp AddOp FPDouble (RealMark "Z") (ErrBinOp SubOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) (RealMark "K") (ErrorMark "K" FPDouble)
+                ,ErrBinOp AddOp FPDouble (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp SubOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y"  ResValue FPDouble)))
+                                 (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
+                ,ErrBinOp AddOp FPDouble (RealMark "Z" ResValue) (ErrBinOp SubOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)) (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
             )
             ,("ErrAdd_ErrMulPow2L"
-                ,ErrBinOp AddOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp SubOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))) (RealMark "K") (ErrorMark "K" FPDouble)
-                ,ErrBinOp AddOp FPDouble (RealMark "Z") (ErrBinOp SubOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) (RealMark "K") (ErrorMark "K" FPDouble)
+                ,ErrBinOp AddOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp SubOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))) (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
+                ,ErrBinOp AddOp FPDouble (RealMark "Z" ResValue) (ErrBinOp SubOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)) (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
             )
             ,("ErrSub_ErrMulPow2L"
-                ,ErrBinOp SubOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                                 (RealMark "K") (ErrorMark "K" FPDouble)
-                ,ErrBinOp SubOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) (RealMark "K") (ErrorMark "K" FPDouble)
+                ,ErrBinOp SubOp FPDouble (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                                 (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
+                ,ErrBinOp SubOp FPDouble (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)) (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
             )
             ,("ErrMul_ErrMulPow2L"
-                ,ErrBinOp MulOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                                 (RealMark "K") (ErrorMark "K" FPDouble)
-                ,ErrBinOp MulOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) (RealMark "K") (ErrorMark "K" FPDouble)
+                ,ErrBinOp MulOp FPDouble (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                                 (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
+                ,ErrBinOp MulOp FPDouble (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)) (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
             )
             ,("ErrDiv_ErrMulPow2L"
-                ,ErrBinOp DivOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                                                (RealMark "K") (ErrorMark "K" FPDouble)
-                ,ErrBinOp DivOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)) (RealMark "K") (ErrorMark "K" FPDouble)
+                ,ErrBinOp DivOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                                                 (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
+                ,ErrBinOp DivOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))  (RealMark "K" ResValue) (ErrorMark "K" ResValue FPDouble)
             )
             ,("ErrFloor_ErrMulPow2L"
-                ,ErrUnOp FloorOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp FloorOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp FloorOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp FloorOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrFloor0_ErrMulPow2L"
-                ,ErrFloorNoRound FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrFloorNoRound FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrFloorNoRound FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrFloorNoRound FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrSqrt_ErrMulPow2L"
-                ,ErrUnOp SqrtOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp SqrtOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp SqrtOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp SqrtOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrSin_ErrMulPow2L"
-                ,ErrUnOp SinOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp SinOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp SinOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp SinOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrCos_ErrMulPow2L"
-                ,ErrUnOp CosOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp CosOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp CosOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp CosOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrTan_ErrMulPow2L"
-                ,ErrUnOp TanOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp TanOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp TanOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp TanOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrAsin_ErrMulPow2L"
-                ,ErrUnOp AsinOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AsinOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp AsinOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp AsinOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrAcos_ErrMulPow2L"
-                ,ErrUnOp AcosOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AcosOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp AcosOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp AcosOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrAtan_ErrMulPow2L"
-                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
+                ,ErrUnOp AtanOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp AtanOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
             ,("ErrAtanT_ErrMulPow2L"
-                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp AtanOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp AtanOp FPDouble  (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp AtanOp FPDouble  (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrLn_ErrMulPow2L"
-                ,ErrUnOp LnOp FPDouble (RealMark "Z") (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble)))
-                ,ErrUnOp LnOp FPDouble (RealMark "Z") (ErrBinOp AddOp FPDouble (RealMark "X") (ErrorMark "X" FPDouble) (RealMark "Y") (ErrorMark "Y" FPDouble))
+                ,ErrUnOp LnOp FPDouble (RealMark "Z" ResValue) (ErrMulPow2L FPDouble 2 (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble)))
+                ,ErrUnOp LnOp FPDouble (RealMark "Z" ResValue) (ErrBinOp AddOp FPDouble (RealMark "X" ResValue) (ErrorMark "X" ResValue FPDouble) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPDouble))
             )
             ,("ErrExpo_ErrMulPow2L"
-                ,ErrUnOp ExpoOp FPSingle (RealMark "Z") (ErrMulPow2L FPSingle 2 (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)))
-                ,ErrUnOp ExpoOp FPSingle (RealMark "Z") (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle))
+                ,ErrUnOp ExpoOp FPSingle  (RealMark "Z" ResValue) (ErrMulPow2L FPSingle 2 (ErrBinOp AddOp FPSingle (RealMark "X" ResValue) (ErrorMark "X" ResValue FPSingle) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPSingle)))
+                ,ErrUnOp ExpoOp FPSingle (RealMark "Z" ResValue) (ErrBinOp AddOp FPSingle (RealMark "X" ResValue) (ErrorMark "X"  ResValue FPSingle) (RealMark "Y"ResValue ) (ErrorMark "Y" ResValue FPSingle))
             )
             ]
 
@@ -988,13 +977,13 @@ equivEExpr__tests = testGroup "equivEExpr tests" $  map (\(msg, ee1, ee2, o) -> 
 
 equivEExpr_testsIOs =
             [("ErrMulPow2L_Add"
-                ,ErrMulPow2L FPSingle 2 (ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle))
-                ,ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)
+                ,ErrMulPow2L FPSingle 2 (ErrBinOp AddOp FPSingle (RealMark "X" ResValue) (ErrorMark "X" ResValue FPSingle)  (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPSingle))
+                ,ErrBinOp AddOp FPSingle (RealMark "X" ResValue) (ErrorMark "X" ResValue FPSingle) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPSingle)
                 ,True
             )
             ,("ErrMul_Add"
-                ,ErrBinOp MulOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)
-                ,ErrBinOp AddOp FPSingle (RealMark "X") (ErrorMark "X" FPSingle) (RealMark "Y") (ErrorMark "Y" FPSingle)
+                ,ErrBinOp MulOp FPSingle (RealMark "X" ResValue) (ErrorMark "X" ResValue FPSingle) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPSingle)
+                ,ErrBinOp AddOp FPSingle (RealMark "X" ResValue) (ErrorMark "X" ResValue FPSingle) (RealMark "Y" ResValue) (ErrorMark "Y" ResValue FPSingle)
                 ,False
             )
             ]
@@ -1104,10 +1093,10 @@ initErrorMark__tests = testGroup "initErrorMark tests"
   ]
 
 initErrorMark__test1 = testCase "initErrorMark of E(x_int) is 0" $
-    initErrorMark (ErrorMark "x" TInt) @?= Just (Int 0)
+    initErrorMark (ErrorMark "x" ResValue TInt) @?= Just (Int 0)
 
 initErrorMark__test2 = testCase "initErrorMark of E(x_double) is half ulp R(x)" $
-    initErrorMark (ErrorMark "x" FPDouble)  @?= Just (HalfUlp (RealMark "x") FPDouble)
+    initErrorMark (ErrorMark "x" ResValue FPDouble)  @?= Just (HalfUlp (RealMark "x" ResValue) FPDouble)
 
 initErrorMark__test3 = testCase "initErrorMark of y+x is Nothing" $
     initErrorMark (BinaryOp AddOp (Var Real "y") (Var Real "x")) @?= Nothing
@@ -1125,19 +1114,19 @@ initAExpr__tests = testGroup "initAExpr tests"
   ]
 
 initAExpr__test1 = testCase "initAExpr of E(x_int) is 0" $
-    initAExpr (ErrorMark "x" TInt) @?= (Int 0)
+    initAExpr (ErrorMark "x" ResValue TInt) @?= (Int 0)
 
 initAExpr__test2 = testCase "initAExpr of E(x_double) is half_ulp(R(x))" $
-    initAExpr (ErrorMark "x" FPDouble)  @?= (HalfUlp (RealMark "x") FPDouble)
+    initAExpr (ErrorMark "x" ResValue FPDouble)  @?= (HalfUlp (RealMark "x" ResValue) FPDouble)
 
 initAExpr__test3 = testCase "initAExpr of y+x is y+x" $
     initAExpr (BinaryOp AddOp (Var Real "y") (Var Real "x")) @?= (BinaryOp AddOp (Var Real "y") (Var Real "x"))
 
 initAExpr__test4 = testCase "initAExpr of E(x_int)+x is half_ulp(R(x))+x" $
-    initAExpr (BinaryOp AddOp (ErrorMark "x" FPDouble) (Var Real "x")) @?= (BinaryOp AddOp (HalfUlp (RealMark "x") FPDouble) (Var Real "x"))
+    initAExpr (BinaryOp AddOp (ErrorMark "x" ResValue FPDouble) (Var Real "x")) @?= (BinaryOp AddOp (HalfUlp (RealMark "x" ResValue) FPDouble) (Var Real "x"))
 
 initAExpr__test5 = testCase "initAExpr of StoR(RtoS(E(x)) is StoR(RtoS(half_ulp(R(x)))" $
-    initAExpr (FromFloat FPSingle (ToFloat FPSingle(ErrorMark "x" FPDouble))) @?= FromFloat FPSingle (ToFloat FPSingle(HalfUlp (RealMark "x") FPDouble))
+    initAExpr (FromFloat FPSingle (ToFloat FPSingle(ErrorMark "x" ResValue FPDouble))) @?= FromFloat FPSingle (ToFloat FPSingle(HalfUlp (RealMark "x" ResValue) FPDouble))
 
 
 initBExpr__tests = testGroup "initBExpr tests"
@@ -1148,14 +1137,14 @@ initBExpr__tests = testGroup "initBExpr tests"
   ]
 
 initBExpr__test1 = testCase "initBExpr of E(x_int) < 6 is 0 < 6" $
-    initBExpr (Rel Lt (ErrorMark "x" TInt) (Int 6)) @?= Rel Lt (Int 0) (Int 6)
+    initBExpr (Rel Lt (ErrorMark "x" ResValue TInt) (Int 6)) @?= Rel Lt (Int 0) (Int 6)
 
 initBExpr__test2 = testCase "initBExpr of E(x_double) < 5 is half ulp R(x) < 5" $
-    initBExpr (Rel Gt (ErrorMark "x" FPDouble) (Int 5))  @?= Rel Gt (HalfUlp (RealMark "x") FPDouble) (Int 5)
+    initBExpr (Rel Gt (ErrorMark "x" ResValue FPDouble) (Int 5))  @?= Rel Gt (HalfUlp (RealMark "x" ResValue) FPDouble) (Int 5)
 
 initBExpr__test3 = testCase "initBExpr of y+x < 9 and E(x_double) < 5 is y+x and half ulp R(x) < 5" $
-    initBExpr (And (Rel Lt (BinaryOp AddOp (Var Real "y") (Var Real "x")) (Int 9)) (Rel Gt (ErrorMark "x" FPDouble) (Int 5)))
-          @?= (And (Rel Lt (BinaryOp AddOp (Var Real "y") (Var Real "x")) (Int 9)) (Rel Gt (HalfUlp (RealMark "x") FPDouble) (Int 5)))
+    initBExpr (And (Rel Lt (BinaryOp AddOp (Var Real "y") (Var Real "x")) (Int 9)) (Rel Gt (ErrorMark "x" ResValue FPDouble) (Int 5)))
+          @?= (And (Rel Lt (BinaryOp AddOp (Var Real "y") (Var Real "x")) (Int 9)) (Rel Gt (HalfUlp (RealMark "x" ResValue) FPDouble) (Int 5)))
 
 initBExpr__test4 = testCase "initBExpr of E(x_int) is 0" $
     initBExpr BTrue @?= BTrue
@@ -1174,31 +1163,31 @@ funCallListFAExpr__test1 = testCase "funCallList of 8 is []" $
   funCallListFAExpr (FInt 8) @?= []
 
 funCallListFAExpr__test2 = testCase "funCallList of f() is [f()]" $
-  funCallListFAExpr (FEFun False "f" FPDouble []) @?= [FEFun False "f" FPDouble []]
+  funCallListFAExpr (FEFun False "f" ResValue FPDouble []) @?= [FEFun False "f" ResValue FPDouble []]
 
 funCallListFAExpr__test3 = testCase "funCallList of f()+g(5) is [f(),g(5)]" $
-  funCallListFAExpr (BinaryFPOp AddOp FPDouble (FEFun False "f" FPDouble []) (FEFun False "g" FPDouble [FInt 5]))
+  funCallListFAExpr (BinaryFPOp AddOp FPDouble (FEFun False "f" ResValue FPDouble []) (FEFun False "g" ResValue FPDouble [FInt 5]))
   @?=
-  [FEFun False "f" FPDouble [],FEFun False "g" FPDouble [FInt 5]]
+  [FEFun False "f" ResValue FPDouble [],FEFun False "g" ResValue FPDouble [FInt 5]]
 
 funCallListFAExpr__test4 = testCase "funCallList of f()+g(5) is [f(),g(5)]" $
-  funCallListFAExpr (BinaryFPOp AddOp FPDouble (FEFun False "f" FPDouble []) (FEFun False "g" FPDouble [FInt 5]))
+  funCallListFAExpr (BinaryFPOp AddOp FPDouble (FEFun False "f" ResValue FPDouble []) (FEFun False "g" ResValue FPDouble [FInt 5]))
   @?=
-  [FEFun False "f" FPDouble [],FEFun False "g" FPDouble [FInt 5]]
+  [FEFun False "f" ResValue FPDouble [],FEFun False "g" ResValue FPDouble [FInt 5]]
 
 funCallListFAExpr__test5 = testCase "funCallList of f(g(5)) is [f(g(5)), g(5)]" $
-  funCallListFAExpr (FEFun False "f" FPDouble [FEFun False "g" FPDouble [FInt 5]])
+  funCallListFAExpr (FEFun False "f" ResValue FPDouble [FEFun False "g" ResValue FPDouble [FInt 5]])
   @?=
-  [FEFun False "f" FPDouble [FEFun False "g" FPDouble [FInt 5]]
-  ,FEFun False "g" FPDouble [FInt 5]]
+  [FEFun False "f" ResValue FPDouble [FEFun False "g" ResValue FPDouble [FInt 5]]
+  ,FEFun False "g" ResValue FPDouble [FInt 5]]
 
 funCallListFAExpr__test6 = testCase "funCallList of 0 is []" $
   funCallListFAExpr (ToFloat FPDouble (Int 9)) @?= []
 
 funCallListFAExpr__test7 = testCase "funCallList of if(f(X)<0) then 1 else 2 is [f(X)]" $
-  funCallListFAExpr (Ite (FRel Lt (FEFun False "f" FPDouble []) (FInt 0)) (FInt 1) (FInt 2))
+  funCallListFAExpr (Ite (FRel Lt (FEFun False "f" ResValue FPDouble []) (FInt 0)) (FInt 1) (FInt 2))
   @?=
-  [FEFun False "f" FPDouble []]
+  [FEFun False "f" ResValue FPDouble []]
 
 funCallListFBExpr__tests = testGroup "funCallListFBExpr tests"
   [funCallListFBExpr__test1
@@ -1207,21 +1196,21 @@ funCallListFBExpr__tests = testGroup "funCallListFBExpr tests"
   ]
 
 funCallListFBExpr__test1 = testCase "funCallList of f()<8 is [f()]" $
-    funCallListFBExpr (FRel Lt (FEFun False "f" FPDouble []) (FInt 8))
+    funCallListFBExpr (FRel Lt (FEFun False "f" ResValue FPDouble []) (FInt 8))
     @?=
-    [FEFun False "f" FPDouble []]
+    [FEFun False "f" ResValue FPDouble []]
 
 funCallListFBExpr__test2 = testCase "funCallList of f()>g(5) is [f(),g(5)]" $
-    funCallListFBExpr (FRel Gt (FEFun False "f" FPDouble [])
-                               (FEFun False "g" FPDouble [FInt 5]))
+    funCallListFBExpr (FRel Gt (FEFun False "f" ResValue FPDouble [])
+                               (FEFun False "g" ResValue FPDouble [FInt 5]))
     @?=
-    [FEFun False "f" FPDouble [],FEFun False "g" FPDouble [FInt 5]]
+    [FEFun False "f" ResValue FPDouble [],FEFun False "g" ResValue FPDouble [FInt 5]]
 
 funCallListFBExpr__test3 = testCase "funCallList of f()<8 and f()>g(5) is [f(),g(5)]" $
-    funCallListFBExpr (FAnd (FRel Lt (FEFun False "f" FPDouble []) (FInt 8))
-                            (FRel Gt (FEFun False "f" FPDouble []) (FEFun False "g" FPDouble [FInt 5])))
+    funCallListFBExpr (FAnd (FRel Lt (FEFun False "f" ResValue FPDouble []) (FInt 8))
+                            (FRel Gt (FEFun False "f" ResValue FPDouble []) (FEFun False "g" ResValue FPDouble [FInt 5])))
     @?=
-    [FEFun False "f" FPDouble [],FEFun False "g" FPDouble [FInt 5]]
+    [FEFun False "f" ResValue FPDouble [],FEFun False "g" ResValue FPDouble [FInt 5]]
 
 
 funCallListAExpr__tests = testGroup "funCallListAExpr tests"
@@ -1237,29 +1226,29 @@ funCallListAExpr__test1 = testCase "funCallList of 8 is []" $
     funCallListAExpr (Int 8) @?= []
 
 funCallListAExpr__test2 = testCase "funCallList of f() is [f()]" $
-    funCallListAExpr (EFun "f" Real []) @?= [EFun "f" Real []]
+    funCallListAExpr (EFun "f" ResValue Real []) @?= [EFun "f" ResValue Real []]
 
 funCallListAExpr__test3 = testCase "funCallList of f()+g(5) is [f(),g(5)]" $
-    funCallListAExpr (BinaryOp AddOp (EFun "f" Real []) (EFun "g" Real [Int 5]))
+    funCallListAExpr (BinaryOp AddOp (EFun "f" ResValue Real []) (EFun "g" ResValue Real [Int 5]))
     @?=
-    [EFun "f" Real [],EFun "g" Real [Int 5]]
+    [EFun "f" ResValue Real [],EFun "g" ResValue Real [Int 5]]
 
 funCallListAExpr__test4 = testCase "funCallList of f()+g(5) is [f(),g(5)]" $
-    funCallListAExpr (BinaryOp AddOp (EFun "f" Real []) (EFun "g" Real [Int 5]))
+    funCallListAExpr (BinaryOp AddOp (EFun "f" ResValue Real []) (EFun "g" ResValue Real [Int 5]))
     @?=
-    [EFun "f" Real [],EFun "g" Real [Int 5]]
+    [EFun "f" ResValue Real [],EFun "g" ResValue Real [Int 5]]
 
 funCallListAExpr__test5 = testCase "funCallList of f(g(5)) is [f(g(5)), g(5)]" $
-    funCallListAExpr (EFun "f" Real [EFun "g" Real [Int 5]])
+    funCallListAExpr (EFun "f" ResValue Real [EFun "g" ResValue Real [Int 5]])
     @?=
-    [EFun "f" Real [EFun "g" Real [Int 5]],EFun "g" Real [Int 5]]
+    [EFun "f" ResValue Real [EFun "g" ResValue Real [Int 5]],EFun "g" ResValue Real [Int 5]]
 
 funCallListAExpr__test6 = testCase "funCallList of f(g(5)) is [f(g(5)), g(5)]" $
-    funCallListAExpr (EFun "f" Real [EFun "g" Real [EFun "h" Real [Int 7]]])
+    funCallListAExpr (EFun "f" ResValue Real [EFun "g" ResValue Real [EFun "h" ResValue Real [Int 7]]])
     @?=
-    [EFun "f" Real [EFun "g" Real [EFun "h" Real [Int 7]]]
-    ,EFun "g" Real [EFun "h" Real [Int 7]]
-    ,EFun "h" Real [Int 7]]
+    [EFun "f" ResValue Real [EFun "g" ResValue Real [EFun "h" ResValue Real [Int 7]]]
+    ,EFun "g" ResValue Real [EFun "h" ResValue Real [Int 7]]
+    ,EFun "h" ResValue Real [Int 7]]
 
 funCallListBExpr__tests = testGroup "funCallListBExpr tests"
   [funCallListBExpr__test1
@@ -1268,17 +1257,17 @@ funCallListBExpr__tests = testGroup "funCallListBExpr tests"
   ]
 
 funCallListBExpr__test1 = testCase "funCallList of f()<8 is [f()]" $
-    funCallListBExpr (Rel Lt (EFun "f" Real []) (Int 8)) @?= [EFun "f" Real []]
+    funCallListBExpr (Rel Lt (EFun "f" ResValue Real []) (Int 8)) @?= [EFun "f" ResValue Real []]
 
 funCallListBExpr__test2 = testCase "funCallList of f()>g(5) is [f(),g(5)]" $
-    funCallListBExpr (Rel Gt (EFun "f" Real []) (EFun "g" Real [Int 5]))
+    funCallListBExpr (Rel Gt (EFun "f" ResValue Real []) (EFun "g" ResValue Real [Int 5]))
     @?=
-    [EFun "f" Real [],EFun "g" Real [Int 5]]
+    [EFun "f" ResValue Real [],EFun "g" ResValue Real [Int 5]]
 
 funCallListBExpr__test3 = testCase "funCallList of f()<8 and f()>g(5) is [f(),g(5)]" $
-    funCallListBExpr (And (Rel Lt (EFun "f" Real []) (Int 8)) (Rel Gt (EFun "f" Real []) (EFun "g" Real [Int 5])))
+    funCallListBExpr (And (Rel Lt (EFun "f" ResValue Real []) (Int 8)) (Rel Gt (EFun "f" ResValue Real []) (EFun "g" ResValue Real [Int 5])))
     @?=
-    [EFun "f" Real [],EFun "g" Real [Int 5]]
+    [EFun "f" ResValue Real [],EFun "g" ResValue Real [Int 5]]
 
 
 
@@ -1332,10 +1321,10 @@ noRoundOffErrorInAExpr__test11 = testCase "StoD(0.1) has round-off error" $
     noRoundOffErrorInAExpr (TypeCast FPSingle FPDouble (FCnst FPDouble (fromDouble2Rat 0.1))) @?= False
 
 noRoundOffErrorInAExpr__test12 = testCase "int fun with no args has no round-off error" $
-    noRoundOffErrorInAExpr (FEFun False "f" TInt []) @?= True
+    noRoundOffErrorInAExpr (FEFun False "f" ResValue TInt []) @?= True
 
 noRoundOffErrorInAExpr__test13 = testCase "int fun has no round-off error" $
-    noRoundOffErrorInAExpr (FEFun False "f" TInt [FCnst FPDouble (fromDouble2Rat 0.1)]) @?= True
+    noRoundOffErrorInAExpr (FEFun False "f" ResValue TInt [FCnst FPDouble (fromDouble2Rat 0.1)]) @?= True
 
 varList__tests = testGroup "varList tests"
   [varList__test1
@@ -1381,7 +1370,7 @@ varList__test6 = testCase "varList of min[(0.1 + x)*x, y, z] is [Var x, Var y, V
 
 varList__test7 = testCase "varList of  floor(x)/f(y,z) is [Var x, Var y, Var z]" $
     varList (BinaryFPOp DivOp FPDouble (UnaryFPOp FloorOp FPDouble (FVar FPDouble "x"))
-                                       (FEFun False "f" FPDouble [(FVar FPDouble "x"),(FVar FPDouble "z")]))
+                                       (FEFun False "f" ResValue FPDouble [(FVar FPDouble "x"),(FVar FPDouble "z")]))
     @?=
     [FVar FPDouble "x", FVar FPDouble "z"]
 
@@ -1414,60 +1403,60 @@ equivModuloIndex__tests = testGroup "equivModuloIndex tests"
   ]
 
 equivModuloIndex__test1 = testCase "v(3) size 8 double not equiv v(4) size 5 double" $
-   equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 8) "v" (FInt 3))
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4))
+   equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 8) "v" [(FInt 3)])
+                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)])
                     @?=
                     False
 
 equivModuloIndex__test2 = testCase "" $
-   equivModuloIndex (FArrayElem FPSingle (Just $ ArraySizeInt 8) "v" (FInt 3))
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4))
+   equivModuloIndex (FArrayElem FPSingle (Just $ ArraySizeInt 8) "v" [(FInt 3)])
+                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)])
                     @?=
                     False
 
 equivModuloIndex__test3 = testCase "v(3) equiv v(4)" $
-   equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 3))
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4))
+   equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)])
+                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)])
                     @?=
                     True
 
 equivModuloIndex__test4 = testCase "sin(v(3)) equiv sin(v(4))" $
-   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 3)))
-                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4)))
+   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
+                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)]))
                     @?=
                     True
 
 equivModuloIndex__test5 = testCase "v(3) not equiv v(4)" $
-   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 3)))
-                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 8) "v" (FInt 4)))
+   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
+                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 8) "v" [(FInt 4)]))
                     @?=
                     False
 
 equivModuloIndex__test6 = testCase "w(3)+v(3) equiv w(3)+v(4)" $
-   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" (FInt 3))
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 3)))
-                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" (FInt 3))
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4)))
+   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)])
+                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
+                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)])
+                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)]))
                     @?=
                     True
 
 equivModuloIndex__test7 = testCase "w(3)+v(3) not equiv t(3)+v(4)" $
-   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" (FInt 3))
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 3)))
-                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "t" (FInt 3))
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" (FInt 4)))
+   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)])
+                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
+                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "t" [(FInt 3)])
+                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)]))
                     @?=
                     False
 
 equivModuloIndex__test8 = testCase "w(3)+v(3) equiv w(3)+v(4)" $
-   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" (FInt 3)))
-                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" (FInt 6)))
+   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)]))
+                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 6)]))
                     @?=
                     True
 
 equivModuloIndex__test9 = testCase "w(3)+v(3) not equiv t(3)+v(4)" $
-   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" (FInt 3)))
-                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "t" (FInt 3)))
+   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)]))
+                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "t" [(FInt 3)]))
                     @?=
                     False
 
@@ -1514,9 +1503,9 @@ unfoldLetIn__test7 = testCase "unfoldLetIn__test7" $
 unfoldLetIn__test8 = testCase "unfoldLetIn__test8" $
   unfoldLetIn (Let [("z", FPDouble, FInt 6)]
     (BinaryFPOp AddOp FPDouble (FVar FPDouble "z") (Let [("x", FPDouble, FInt 3),("y", FPDouble, FInt 4)]
-    (Ite (FRel Lt (FEFun False "f" FPDouble []) (FVar FPDouble "z")) (FVar FPDouble "x") (FVar FPDouble "y")))))
+    (Ite (FRel Lt (FEFun False "f" ResValue FPDouble []) (FVar FPDouble "z")) (FVar FPDouble "x") (FVar FPDouble "y")))))
     @?= BinaryFPOp AddOp FPDouble (FInt 6)
-        (Ite (FRel Lt (FEFun False "f" FPDouble []) (FInt 6)) (FInt 3) (FInt 4))
+        (Ite (FRel Lt (FEFun False "f" ResValue FPDouble []) (FInt 6)) (FInt 3) (FInt 4))
 
 unfoldForLoop__tests = testGroup "unfoldForLoop tests"
   [unfoldForLoop__test1
@@ -1583,7 +1572,7 @@ isArithExpr__test3 = testCase "2 + (if false then 2 else 1) is not an arithmetic
     @?= False
 
 isArithExpr__test4 = testCase "f(2) + (-1) is an arithmetic expression" $
-    isArithExpr (BinaryFPOp AddOp FPDouble (FEFun False "f" FPDouble [FInt 2]) (UnaryFPOp NegOp FPDouble (FInt 1)))
+    isArithExpr (BinaryFPOp AddOp FPDouble (FEFun False "f" ResValue FPDouble [FInt 2]) (UnaryFPOp NegOp FPDouble (FInt 1)))
     @?= True
 
 isArithExpr__test5 = testCase "x + (-1) is an arithmetic expression" $
@@ -1695,7 +1684,7 @@ predCallListFBExprStmWithCond__tests = testGroup "predCallListFBExprStmWithCond 
 
 predCallListFBExprStmWithCond__test1  = testCase "" $
   predCallListFBExprStmWithCond [RDecl Real "f" [Arg "X" Real] (BinaryOp AddOp (Var Real "X") (BinaryOp MulOp (Var Real "X") (Int 2)))
-  ,RPred "g" [Arg "X" Real] (RBLet [LetElem {letVar = "y", letType = Real, letExpr = EFun "f" Real [Var Real "X"]}] (RBIte (Rel Gt (Var Real "y") (Int 0)) (RBExpr BTrue) (RBExpr BFalse)))] (BExpr $ FEPred False Original "g" [])
+  ,RPred "g" [Arg "X" Real] (RBLet [LetElem {letVar = "y", letType = Real, letExpr = EFun "f" ResValue Real [Var Real "X"]}] (RBIte (Rel Gt (Var Real "y") (Int 0)) (RBExpr BTrue) (RBExpr BFalse)))] (BExpr $ FEPred False Original "g" [])
   @?=
   [(FEPred False Original "g" [])]
 

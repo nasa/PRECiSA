@@ -164,14 +164,14 @@ raw2AExpr env    _ (AbsRawRealPVSLang.Var (AbsRawRealPVSLang.Id x)) = AbsPVSLang
 raw2AExpr env fenv (FCallN (AbsRawRealPVSLang.Id f) actArgs) =
   case lookup f fenv of
     Just Boolean -> error "raw2AExpr: Numerical function expected."
-    Just fp -> AbsPVSLang.EFun f fp (map (raw2AExpr env fenv) actArgs)
+    Just fp -> AbsPVSLang.EFun f ResValue fp (map (raw2AExpr env fenv) actArgs)
     Nothing -> case lookup f env of
-                  Just (Array fp size) -> AbsPVSLang.ArrayElem fp size f idx
+                  Just (Array fp size) -> AbsPVSLang.ArrayElem fp size f (map (raw2AExpr env fenv) actArgs)
                   _  -> error $ "raw2FAExpr: something went wrong "++ show f ++ " is not an array or function."
-  where
-   idx = case actArgs of
-           [i] -> raw2AExpr env fenv i
-           _   -> error "raw2FAExpr: index should be unique."
+  -- where
+  --  idx = case actArgs of
+  --          [i] -> raw2AExpr env fenv i
+  --          _   -> error "raw2FAExpr: index should be unique."
 raw2AExpr _ _ Pi1           = error "Constant Pi not supported, use, for instance, 3.14"
 raw2AExpr _ _ Pi2           = error "Constant Pi not supported, use, for instance, 3.14"
 raw2AExpr _ _ ae = error $ "Something went wrong: arithmetic expression expected but got " ++ show ae ++ "."
