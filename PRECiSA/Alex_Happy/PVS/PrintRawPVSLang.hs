@@ -172,6 +172,15 @@ instance Print [AbsRawPVSLang.RecordElem] where
   prt _ [x] = concatD [prt 0 x]
   prt _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
+instance Print AbsRawPVSLang.LambdaKeyWord where
+  prt i = \case
+    AbsRawPVSLang.LambdaWord1 -> prPrec i 0 (concatD [doc (showString "LAMBDA")])
+    AbsRawPVSLang.LambdaWord2 -> prPrec i 0 (concatD [doc (showString "lambda")])
+
+instance Print AbsRawPVSLang.LambdaExpr where
+  prt i = \case
+    AbsRawPVSLang.Lambda lambdakeyword id_1 expr1 expr2 id_2 type_ expr3 -> prPrec i 0 (concatD [prt 0 lambdakeyword, doc (showString "("), prt 0 id_1, doc (showString ":"), doc (showString "SUBRANGE"), doc (showString "("), prt 0 expr1, doc (showString ","), prt 0 expr2, doc (showString ")"), doc (showString ","), prt 0 id_2, doc (showString ":"), prt 0 type_, doc (showString ")"), doc (showString ":"), prt 0 expr3])
+
 instance Print [AbsRawPVSLang.Expr] where
   prt _ [] = concatD []
   prt _ [x] = concatD [prt 0 x]
@@ -193,11 +202,13 @@ instance Print AbsRawPVSLang.Expr where
     AbsRawPVSLang.ExprSub expr1 expr2 -> prPrec i 5 (concatD [prt 5 expr1, doc (showString "-"), prt 6 expr2])
     AbsRawPVSLang.ExprMul expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "*"), prt 7 expr2])
     AbsRawPVSLang.ExprDiv expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "/"), prt 7 expr2])
+    AbsRawPVSLang.With expr1 expr2 expr3 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "WITH"), doc (showString "["), prt 0 expr2, doc (showString ":="), prt 0 expr3, doc (showString "]")])
     AbsRawPVSLang.ExprNeg expr -> prPrec i 7 (concatD [doc (showString "-"), prt 8 expr])
     AbsRawPVSLang.ExprPow expr1 expr2 -> prPrec i 8 (concatD [prt 9 expr1, doc (showString "^"), prt 8 expr2])
     AbsRawPVSLang.If expr1 expr2 expr3 -> prPrec i 9 (concatD [doc (showString "IF"), prt 0 expr1, doc (showString "THEN"), prt 0 expr2, doc (showString "ELSE"), prt 0 expr3, doc (showString "ENDIF")])
     AbsRawPVSLang.ListIf expr1 expr2 elsifs expr3 -> prPrec i 9 (concatD [doc (showString "IF"), prt 0 expr1, doc (showString "THEN"), prt 0 expr2, prt 0 elsifs, doc (showString "ELSE"), prt 0 expr3, doc (showString "ENDIF")])
-    AbsRawPVSLang.For n1 n2 expr id_ -> prPrec i 9 (concatD [doc (showString "for"), doc (showString "("), prt 0 n1, doc (showString ","), prt 0 n2, doc (showString ","), prt 0 expr, doc (showString ","), prt 0 id_, doc (showString ")")])
+    AbsRawPVSLang.For expr1 expr2 expr3 lambdaexpr -> prPrec i 9 (concatD [doc (showString "for"), doc (showString "("), prt 0 expr1, doc (showString ","), prt 0 expr2, doc (showString ","), prt 0 expr3, doc (showString ","), prt 0 lambdaexpr, doc (showString ")")])
+    AbsRawPVSLang.ForDown expr1 expr2 expr3 lambdaexpr -> prPrec i 9 (concatD [doc (showString "for_down"), doc (showString "("), prt 0 expr1, doc (showString ","), prt 0 expr2, doc (showString ","), prt 0 expr3, doc (showString ","), prt 0 lambdaexpr, doc (showString ")")])
     AbsRawPVSLang.TupleIndex id_ n -> prPrec i 10 (concatD [prt 0 id_, doc (showString "`"), prt 0 n])
     AbsRawPVSLang.RecordField id_1 id_2 -> prPrec i 10 (concatD [prt 0 id_1, doc (showString "`"), prt 0 id_2])
     AbsRawPVSLang.TupleFunIndex id_ exprs n -> prPrec i 10 (concatD [prt 0 id_, doc (showString "("), prt 0 exprs, doc (showString ")"), doc (showString "`"), prt 0 n])

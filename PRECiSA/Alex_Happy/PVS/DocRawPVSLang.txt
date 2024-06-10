@@ -33,17 +33,18 @@ The reserved words used in RawPVSLang are the following:
   | ``AND`` | ``ARRAY`` | ``BEGIN`` | ``ELSE``
   | ``ELSIF`` | ``END`` | ``ENDIF`` | ``FALSE``
   | ``FUNCTION`` | ``IF`` | ``IMPORTING`` | ``IN``
-  | ``LET`` | ``NOT`` | ``OR`` | ``THEN``
-  | ``THEORY`` | ``TRUE`` | ``below`` | ``for``
-  | ``list`` |  |  |
+  | ``LAMBDA`` | ``LET`` | ``NOT`` | ``OR``
+  | ``SUBRANGE`` | ``THEN`` | ``THEORY`` | ``TRUE``
+  | ``WITH`` | ``below`` | ``for`` | ``for_down``
+  | ``lambda`` | ``list`` |  |
 
 The symbols used in RawPVSLang are the following:
   | , | = | : | :=
   | ( | ) | /= | <
   | <= | > | >= | +
-  | - | * | / | ^
-  | ` | (# | #) | [#
-  | #] | [ | ] | ->
+  | - | * | / | [
+  | ] | ^ | ` | (#
+  | #) | [# | #] | ->
   | | |  |  |
 
 ===Comments===
@@ -67,6 +68,9 @@ All other symbols are terminals.
   | //RecordElem// | -> | //Id// ``:=`` //Expr//
   | //[RecordElem]// | -> | //RecordElem//
   |  |  **|**  | //RecordElem// ``,`` //[RecordElem]//
+  | //LambdaKeyWord// | -> | ``LAMBDA``
+  |  |  **|**  | ``lambda``
+  | //LambdaExpr// | -> | //LambdaKeyWord// ``(`` //Id// ``:`` ``SUBRANGE`` ``(`` //Expr// ``,`` //Expr// ``)`` ``,`` //Id// ``:`` //Type// ``)`` ``:`` //Expr//
   | //[Expr]// | -> | //Expr//
   |  |  **|**  | //Expr// ``,`` //[Expr]//
   | //Expr// | -> | //Expr1//
@@ -90,6 +94,7 @@ All other symbols are terminals.
   | //Expr6// | -> | //Expr7//
   |  |  **|**  | //Expr6// ``*`` //Expr7//
   |  |  **|**  | //Expr6// ``/`` //Expr7//
+  |  |  **|**  | //Expr6// ``WITH`` ``[`` //Expr// ``:=`` //Expr// ``]``
   | //Expr7// | -> | //Expr8//
   |  |  **|**  | ``-`` //Expr8//
   | //Expr8// | -> | //Expr9//
@@ -97,7 +102,8 @@ All other symbols are terminals.
   | //Expr9// | -> | //Expr10//
   |  |  **|**  | ``IF`` //Expr// ``THEN`` //Expr// ``ELSE`` //Expr// ``ENDIF``
   |  |  **|**  | ``IF`` //Expr// ``THEN`` //Expr// //[ElsIf]// ``ELSE`` //Expr// ``ENDIF``
-  |  |  **|**  | ``for`` ``(`` //Integer// ``,`` //Integer// ``,`` //Expr// ``,`` //Id// ``)``
+  |  |  **|**  | ``for`` ``(`` //Expr// ``,`` //Expr// ``,`` //Expr// ``,`` //LambdaExpr// ``)``
+  |  |  **|**  | ``for_down`` ``(`` //Expr// ``,`` //Expr// ``,`` //Expr// ``,`` //LambdaExpr// ``)``
   | //Expr10// | -> | //Expr11//
   |  |  **|**  | //Id// ````` //Integer//
   |  |  **|**  | //Id// ````` //Id//

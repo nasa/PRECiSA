@@ -28,7 +28,7 @@ $u = [. \n]          -- universal: any character
 
 -- Symbols and non-identifier-like reserved words
 
-@rsyms = \, | \= | \: | \: \= | \( | \) | \/ \= | \< | \< \= | \> | \> \= | \+ | \- | \* | \/ | \^ | \` | \( \# | \# \) | \[ \# | \# \] | \[ | \] | \- \> | \|
+@rsyms = \, | \= | \: | \: \= | \( | \) | \/ \= | \< | \< \= | \> | \> \= | \+ | \- | \* | \/ | \[ | \] | \^ | \` | \( \# | \# \) | \[ \# | \# \] | \- \> | \|
 
 :-
 
@@ -161,28 +161,34 @@ eitherResIdent tv s = treeFind resWords
 -- | The keywords and symbols of the language organized as binary search tree.
 resWords :: BTree
 resWords =
-  b "ELSIF" 24
-    (b "/=" 12
-       (b "*" 6
-          (b "(" 3 (b "#]" 2 (b "#)" 1 N N) N) (b ")" 5 (b "(#" 4 N N) N))
-          (b "-" 9 (b "," 8 (b "+" 7 N N) N) (b "/" 11 (b "->" 10 N N) N)))
-       (b ">" 18
-          (b "<" 15
-             (b ":=" 14 (b ":" 13 N N) N) (b "=" 17 (b "<=" 16 N N) N))
-          (b "ARRAY" 21
-             (b "AND" 20 (b ">=" 19 N N) N)
-             (b "ELSE" 23 (b "BEGIN" 22 N N) N))))
-    (b "THEORY" 36
-       (b "IMPORTING" 30
-          (b "FALSE" 27
-             (b "ENDIF" 26 (b "END" 25 N N) N)
-             (b "IF" 29 (b "FUNCTION" 28 N N) N))
-          (b "NOT" 33
-             (b "LET" 32 (b "IN" 31 N N) N) (b "THEN" 35 (b "OR" 34 N N) N)))
-       (b "`" 42
-          (b "[#" 39
-             (b "[" 38 (b "TRUE" 37 N N) N) (b "^" 41 (b "]" 40 N N) N))
-          (b "list" 45 (b "for" 44 (b "below" 43 N N) N) (b "|" 46 N N))))
+  b "ENDIF" 26
+    (b ":" 13
+       (b "+" 7
+          (b "(#" 4
+             (b "#]" 2 (b "#)" 1 N N) (b "(" 3 N N)) (b "*" 6 (b ")" 5 N N) N))
+          (b "->" 10 (b "-" 9 (b "," 8 N N) N) (b "/=" 12 (b "/" 11 N N) N)))
+       (b "AND" 20
+          (b "=" 17
+             (b "<" 15 (b ":=" 14 N N) (b "<=" 16 N N))
+             (b ">=" 19 (b ">" 18 N N) N))
+          (b "ELSE" 23
+             (b "BEGIN" 22 (b "ARRAY" 21 N N) N)
+             (b "END" 25 (b "ELSIF" 24 N N) N))))
+    (b "TRUE" 39
+       (b "LET" 33
+          (b "IMPORTING" 30
+             (b "FUNCTION" 28 (b "FALSE" 27 N N) (b "IF" 29 N N))
+             (b "LAMBDA" 32 (b "IN" 31 N N) N))
+          (b "SUBRANGE" 36
+             (b "OR" 35 (b "NOT" 34 N N) N)
+             (b "THEORY" 38 (b "THEN" 37 N N) N)))
+       (b "below" 46
+          (b "]" 43
+             (b "[" 41 (b "WITH" 40 N N) (b "[#" 42 N N))
+             (b "`" 45 (b "^" 44 N N) N))
+          (b "lambda" 49
+             (b "for_down" 48 (b "for" 47 N N) N)
+             (b "|" 51 (b "list" 50 N N) N))))
   where
   b s n = B bs (TS bs n)
     where

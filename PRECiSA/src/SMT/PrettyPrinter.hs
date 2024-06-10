@@ -14,7 +14,6 @@ import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
 import PPExt
-import PVSTypes
 import Prelude hiding ((<>))
 import qualified Common.ShowRational as Rat
 import Operators

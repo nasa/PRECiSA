@@ -23,7 +23,6 @@ import Kodiak.Runner
 import Numeric
 import Prelude hiding ((<>))
 import PPExt
-import PVSTypes
 import Debug.Trace
 
 genFpProgFile :: PVSType -> String -> Program -> Doc
@@ -40,8 +39,8 @@ genFpProgFile fp progFileName prog =
   $$
   text ("END " ++ progFileName)
     where
-      importFPTheory FPSingle = text "IMPORTING axm_bnd@ieee754_single"
-      importFPTheory FPDouble = text "IMPORTING axm_bnd@ieee754_double"
+      importFPTheory FPSingle = text "IMPORTING float_bounded_axiomatic@ieee754_single"
+      importFPTheory FPDouble = text "IMPORTING float_bounded_axiomatic@ieee754_double"
       importFPTheory _ = emptyDoc
 
 genCertFile :: String -> String -> String -> Program -> Interpretation -> Doc
@@ -54,9 +53,9 @@ genCertFile inputFileName certFileName realFileName prog sem =
   $$
   text ("IMPORTING PRECiSA@strategies")
   $$
-  text ("IMPORTING axm_bnd@aerr_ulp__double")
+  text ("IMPORTING float_bounded_axiomatic@aerr_ulp__double")
   $$
-  text ("IMPORTING axm_bnd@aerr_ulp__single")
+  text ("IMPORTING float_bounded_axiomatic@aerr_ulp__single")
   $$
   text ("IMPORTING " ++ inputFileName)
   $$
@@ -241,9 +240,30 @@ printCerts interp decls = Map.foldrWithKey printCertsFun emptyDoc interp
                                         (findInDecls f decls)
 
 printLemmasAndProofs :: String -> String -> ResultField -> [Arg] -> FAExpr -> ACebS -> PVSType -> Int -> Doc
-printLemmasAndProofs _ _ _ _ _ [] _ _ = emptyDoc
+printLemmasAndProofs f _ _ args _ [] _ n
+  = text f <> text "_error"
+    <> argsDoc
+    <>  text ": nonneg_real"
+    <+> text "=" <+>
+         (if n==1 then text f <> text "_0_error" <> actArgsDoc
+          else text "max" <> parens (hsep (punctuate comma $ map errFunDoc [0..(n-1)])))
+    <> text "\n"
+    where
+      prRealInt  (Arg x _) = text "r_" <> text x
+      prErrorInt (Arg x _) = text "e_" <> text x
+      argsDoc = parens (hsep (punctuate comma $ map prErrorInt args)
+        <>  text ": nonneg_real" <> comma
+        <+> hsep (punctuate comma $ map prRealInt args)
+        <>  text ": real")
+      actArgsDoc = parens (hsep (punctuate comma $ map prErrorInt args)
+        <> comma
+        <+> hsep (punctuate comma $ map prRealInt args))
+      errFunDoc m = text f <> text "_" <> int m <> text "_error" <> argsDoc
+
 printLemmasAndProofs f fReal field args stm (aceb:acebs) fp n
-  = prPvsLemma f fReal field args aceb fp n (listFPGuardsFAExpr stm)
+  = prErrorDef f fReal field args aceb fp n
+    $$
+    prPvsLemma f fReal field args aceb fp n (listFPGuardsFAExpr stm)
     $$
     prPvsProof f n
     $$
@@ -257,15 +277,39 @@ prPvsProof f n =
     $$ text "\n"
 
 prIsFinite :: FAExpr -> Doc
-prIsFinite ae | getPVSType ae == FPSingle = text "finite?" <> parens (prettyDoc ae)
-              | getPVSType ae == FPDouble = text "finite?" <> parens (prettyDoc ae)
-              | getPVSType ae == TInt = text "int_in_range?" <> parens (prettyDoc ae)
+prIsFinite ae | getPVSType ae == FPSingle = text "finite?_single" <> parens (prettyDoc ae)
+              | getPVSType ae == FPDouble = text "finite?_double" <> parens (prettyDoc ae)
+              | getPVSType ae == TInt = text "int_in_range?_double" <> parens (prettyDoc ae)
               | otherwise = error $ "prIsFinite: " ++ show ae ++ " is not a floating-point or integer expression."
 
-prIsFiniteHp :: [FAExpr] -> Doc
-prIsFiniteHp [] = error ""
-prIsFiniteHp isFiniteCheckList = hsep (punctuate (text " AND") (map prIsFinite isFiniteCheckList))
+prIsFiniteHp :: [FAExpr] -> [(VarName, FAExpr)] -> Doc
+prIsFiniteHp [] _ = emptyDoc
+prIsFiniteHp isFiniteCheckList localVars = prLocalVars localVars isFiniteListDoc
+  where
+    isFiniteListDoc = hsep (punctuate (text " AND") (map prIsFinite isFiniteCheckList))
 
+prLocalVars :: [(VarName, FAExpr)] -> Doc -> Doc
+prLocalVars [] doc = doc
+prLocalVars locVarList doc =
+  text "LET"
+  <+> vcat (punctuate comma (map
+       (\(varName, letExpr) -> text varName <> text "=" <> prettyDoc letExpr) locVarList))
+        $$ text "IN" <+> parens (doc)
+
+prErrorDef :: String -> String -> ResultField -> [Arg] -> ACeb -> PVSType -> Int -> Doc
+prErrorDef f fReal field args aceb fp n  =
+  text f <> text "_" <> int n <> text "_error"
+                     <+> parens (hsep (punctuate comma $ map prErrorInt args)
+                     <>  text ": nonneg_real" <> comma
+                     <+> hsep (punctuate comma $ map prRealInt args)
+                     <>  text ": real")
+                     <>  text ": nonneg_real"
+                     <+> text "=" <+> prettyError (fromMaybe (error "prPvsLemma: unexpected argument.") err)
+  $$ text "\n"
+  where
+    prRealInt  (Arg x _) = text "r_" <> text x
+    prErrorInt (Arg x _) = text "e_" <> text x
+    ACeb {conds = c, fpExprs = fpes, eExpr = err, cFlow = cflow} = aceb
 
 prPvsLemma :: String -> String -> ResultField -> [Arg] -> ACeb -> PVSType -> Int -> [FAExpr] -> Doc
 prPvsLemma f fReal field args aceb fp n fpGuards =
@@ -276,8 +320,8 @@ prPvsLemma f fReal field args aceb fp n fpGuards =
                     <>  text ": real" <> comma
                     <+> hsep (punctuate comma $ map prettyDoc args)
                     <> text ")" <> text ":"
-  $$ prIsFiniteHp (concatMap subExpressions (fDeclRes $ fpExprs aceb))
-  <+> text "AND"
+  $$ prIsFiniteHp isFiniteExprs locVars
+  $$ text "AND"
   $$ prPvsArgsSymb args
   $$ (if isTrueCondition c then empty else text "AND" <+> parens (prettyDoc c))
   $$ text "IMPLIES"
@@ -287,9 +331,14 @@ prPvsLemma f fReal field args aceb fp n fpGuards =
      <+> printNameWithField (text fReal <> text "("
      <> hsep (punctuate comma $ map (prettyDoc . realVar . arg2var) args) <> text ")") field
      <> text ")"
-     <+> text "<=" <+> prettyError (fromMaybe (error "prPvsLemma: unexpected argument.") err)
+     <+> text "<=" <+> text f <> text "_" <> int n <> text "_error"
+    <> parens (hsep (punctuate comma $ map prErrorInt args)
+                <> comma
+                <+> hsep (punctuate comma $ map prRealInt args))
   $$ text "\n"
   where
+    isFiniteExprs = concatMap subExpressions (fDeclRes $ fpExprs aceb)
+    locVars = concatMap localVars (fDeclRes $ fpExprs aceb)
     prRealInt  (Arg x _) = text "r_" <> text x
     prErrorInt (Arg x _) = text "e_" <> text x
     ACeb {conds = c, fpExprs = fpes, eExpr = err, cFlow = cflow} = aceb
@@ -392,8 +441,8 @@ f2r fp doc = case fp of
   FPDouble -> text "DtoR" <> parens (doc)
   TInt -> doc
   Boolean -> doc
-  Array FPSingle _ -> text "StoR" <> parens (doc)
-  Array FPDouble _ -> text "DtoR" <> parens (doc)
+  Array _ FPSingle -> text "StoR" <> parens (doc)
+  Array _ FPDouble -> text "DtoR" <> parens (doc)
   Array _ _ -> doc
   List  FPSingle -> text "StoR" <> parens (doc)
   List  FPDouble -> text "DtoR" <> parens (doc)
@@ -427,8 +476,8 @@ genExprCertFile fp inputFileName fpFileName fileName printTranProgPairs =
   $$
   text ("\nEND " ++ fileName)
   where
-    ieeeFormalization FPDouble = text "axm_bnd@ieee754_double"
-    ieeeFormalization FPSingle = text "axm_bnd@ieee754_single"
+    ieeeFormalization FPDouble = text "float_bounded_axiomatic@ieee754_double"
+    ieeeFormalization FPSingle = text "float_bounded_axiomatic@ieee754_single"
     ieeeFormalization t = error $ "genExprCertFile: PVS type " ++ show t ++ " not supported."
 
 prIsFiniteHpExpr :: [FAExpr] -> Doc

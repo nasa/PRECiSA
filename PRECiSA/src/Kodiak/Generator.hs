@@ -18,7 +18,6 @@ module Kodiak.Generator where
 import Control.Applicative (liftA2)
 import Control.Monad.Except
 
-import qualified PVSTypes          as PVS
 import qualified AbsPVSLang        as PVS
 import           Kodiak.Expression (AExpr,BExpr)
 import qualified Kodiak.Expression as K

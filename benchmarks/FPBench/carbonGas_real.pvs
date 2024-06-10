@@ -11,6 +11,6 @@ IN LET A:real=(401 / 1000)
 IN LET B:real=(427 / 10000000)
 IN LET N:real=1000
 IN LET P:real=35000000
-IN (((P + ((A * (N / V)) * (N / V))) * (V - (N * B))) - (K * (N * T)))
+IN (((P + ((A * (N / r_V)) * (N / r_V))) * (r_V - (N * B))) - (K * (N * T)))
 
 END carbonGas_real

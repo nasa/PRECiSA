@@ -19,7 +19,6 @@ import AbstractDomain
 import AbstractSemantics
 import Common.ControlFlow
 import Common.DecisionPath
-import PVSTypes
 import Kodiak.Kodiak
 import Kodiak.Runnable
 import Kodiak.Runner

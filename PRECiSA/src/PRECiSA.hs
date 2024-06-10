@@ -31,7 +31,6 @@ import qualified Data.Map as Map
 import ErrM
 import FPCore.FPCorePrinter
 import FunctionCallErrorAbstraction
-import PVSTypes
 import Options
 import PPExt
 import Kodiak.Runner
@@ -55,14 +54,12 @@ main = parseOptions >>= parseAndAnalyze
 initDpsToNone :: Decl -> (FunName, [LDecisionPath])
 initDpsToNone (Decl _ _ f _ _) = (f,[])
 initDpsToNone (Pred _ _ f _ _) = (f,[])
-initDpsToNone (RecordDecl _ _ f _ _) = (f,[])
-initDpsToNone (TupleDecl _ _ f _ _) = (f,[])
+initDpsToNone (CollDecl _ _ f _ _) = (f,[])
 
 initDpsToAll :: Decl -> (FunName, [LDecisionPath])
 initDpsToAll (Decl _ _ f _ _) = (f,[root])
 initDpsToAll (Pred _ _ f _ _) = (f,[root])
-initDpsToAll (RecordDecl _ _ f _ _) = (f,[root])
-initDpsToAll (TupleDecl _ _ f _ _) = (f,[root])
+initDpsToAll (CollDecl _ _ f _ _) = (f,[root])
 
 renderPVS :: Doc -> String
 renderPVS = renderStyle Style{mode = LeftMode, lineLength = 80, ribbonsPerLine = 2.0}
@@ -292,114 +289,3 @@ computeAllErrorsInKodiakMap unfoldFunCalls decls config interp spec@(Spec specBi
                        kiMaxDepth  = KP.maximumDepth searchParams,
                        kiPrecision = KP.minimumPrecision searchParams
                      }
-
--- computeAllErrorsInKodiak ::
---      Bool
---   -> Interpretation
---   -> Spec
---   -> KP.SearchParameters
---   -> IO [(String
---           ,PVSType
---           ,[Arg]
---           ,[(ResultField, [(Conditions
---                            ,LDecisionPath
---                            ,ControlFlow
---                            ,KodiakResult
---                            ,AExpr
---                            ,[FAExpr]
---                            ,[AExpr])])])]
--- computeAllErrorsInKodiak sta interp spec@(Spec specBinds) searchParams = computeErrorFunInKodiak functionNames []
---   where
---     declInterps = Map.filter isNumericalInterp interp
---     functionNames = Map.keys declInterps
---     functionBindingsMap = map (\(SpecBind f b) -> (f,b)) specBinds
-
---     computeErrorFunInKodiak [] _ = return []
---     computeErrorFunInKodiak (fname:fs) funErrors = do
---       fOutput <- runFunction fname funErrors
---       let funErrorBounds = map summarizeFunError $ getKodiakResult fOutput
---       rest <- computeErrorFunInKodiak fs (funErrorBounds ++ funErrors)
---       return $ fOutput:rest
-
---     runFunction fname funErrors = do
---       let funInfo = fromMaybe errorMsg $ Map.lookup fname interp
---       let fprec = snd4 $ funInfo
---       let args = trd4 $ funInfo
---       let fSem = frt4 funInfo
---       let fields = Map.keys fSem
---       results <- mapM (runFunField fname fSem funErrors) fields
---       return (fname, fprec, args, results)
---       where
---         errorMsg = error $ "computeAllErrorsInKodiak: function " ++ fname ++ " not found."
-
-    -- runFunField fname funSem funErrors field = do
-    --   let funErrExprs = fromMaybe errorMsgField (Map.lookup field funSem)
-    --   let functionErrorExpressionsMap = map  aceb2PathFlowErrorTuple funErrExprs
-    --   fieldResults <- mapM runErrorExpression functionErrorExpressionsMap
-    --   return (field, fieldResults)
-    --   where
-    --     errorMsgField = error $ "runFunction: field " ++ show field ++ " for function " ++ show fname ++ " not found in input bound specification."
-    --     aceb2PathFlowErrorTuple aceb = (conds aceb, decisionPath aceb, cFlow aceb,
-    --            fromJust $ eExpr aceb, fDeclRes $ fpExprs aceb, rDeclRes $ rExprs aceb)
-    --     runErrorExpression (conditions :: Conditions,path :: LDecisionPath, flow, err, fpes, res) = do
-    --       --
-    --       ki <- kodiakInput
-    --       result <- run ki ()
-    --       return (conditions, path, flow, result, initAExpr err, fpes, res)
-    --         where
-    --           kodiakInput = do
-    --                           errExpr <- (replaceFunCallErr interp emptyEnv spec fname) $ simplAExpr $ initAExpr err
-    --                           putStrLn $ "computeAllErrorsInKodiak errExpr = " ++ show errExpr
-    --                           return $ KI { kiName = fname,
-    --                              kiExpression = errExpr,
-    --                              kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
-    --                                                   (lookup fname functionBindingsMap),
-    --                              kiMaxDepth  = KP.maximumDepth searchParams,
-    --                              kiPrecision = KP.minimumPrecision searchParams
-    --                            }
-
-
-
--- computeAllErrorsInKodiak sta interp (Spec specBinds) searchParams = computeErrorFunInKodiak functionNames []
---   where
---     declInterps = Map.filter isNumericalInterp interp
---     functionNames = Map.map fst declInterps
-
---     computeErrorFunInKodiak [] _ = return []
---     computeErrorFunInKodiak (fname:fs) funErrors = do
---       fOutput <- runFunction fname funErrors
---       let funErrorBounds = summarizeFunError $ getKodiakResult fOutput
---       rest <- computeErrorFunInKodiak fs (funErrorBounds:funErrors)
---       return $ fOutput:rest
-
---     functionBindingsMap = map (\(SpecBind f b) -> (f,b)) specBinds
---     functionErrorExpressionsMap = Map.map toPathFlowErrorTuple declInterps
---       where
---         toPathFlowErrorTuple (f,(_,fp,args,acebs)) = (f,map (\x -> (fp,args,aceb2PathFlowErrorTuple x)) acebs)
---           where
---             aceb2PathFlowErrorTuple aceb = (conds aceb, decisionPath aceb, cFlow aceb,
---               fromJust $ eExpr aceb, fDeclRes $ fpExprs aceb, rDeclRes $ rExprs aceb)
-
---     runFunction fname funErrors = do
---       let funErrExprs = fromMaybe errorMsg (lookup fname functionErrorExpressionsMap)
---       if null funErrExprs
---         then
---           error errorMsg
---         else do
---           let fprec= fst3 $ head funErrExprs
---           let args = snd3 $ head funErrExprs
---           results <- mapM runErrorExpression (map trd3 funErrExprs)
---           return (fname, fprec, args, results)
---       where
---         errorMsg = error $ "runFunction: function " ++ show fname ++ " not found in input bound specification."
---         runErrorExpression (conditions :: Conditions,path :: LDecisionPath, flow, err, fpes, res) = do
---           result <- run kodiakInput ()
---           return (conditions, path, flow, result, initAExpr err, fpes, res)
---             where
---               kodiakInput = KI { kiName = fname,
---                                  kiExpression = (initErrFun sta funErrors) $ simplAExpr $ initAExpr err,
---                                  kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
---                                                       (lookup fname functionBindingsMap),
---                                  kiMaxDepth  = KP.maximumDepth searchParams,
---                                  kiPrecision = KP.minimumPrecision searchParams
---                                }

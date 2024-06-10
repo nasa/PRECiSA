@@ -13,7 +13,6 @@ module FreshVariables where
 import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
-import PVSTypes
 import Control.Monad.State
 import Data.List(find,zip4)
 import Data.Maybe(mapMaybe,fromMaybe)

@@ -1,9 +1,0 @@
-f: THEORY
-BEGIN
-IMPORTING float@aerr754dp
-
-% @fp-function
-f(x: unb_double):unb_double = 
-  (x + 1)^3 - x^3
-
-END f

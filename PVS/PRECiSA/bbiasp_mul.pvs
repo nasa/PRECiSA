@@ -2,7 +2,7 @@ bbiasp_mul: THEORY
 BEGIN
 
   importing interval_ulp_sp
-  importing axm_bnd@aerr_ulp__single
+  importing float_bounded_axiomatic@aerr_ulp__single
 
   R1,E1,R2,E2: VAR Interval
 
@@ -13,7 +13,7 @@ BEGIN
 	          Add(
 		    Add(Add(Mult(Abs(R1),Abs(R2)),Mult(Abs(R1),E2)), Mult(E1,Abs(R2))),
 		    Mult(E1,E2))
-		 ),   
+		 ),
 		 [|2|]))
     ELSE EmptyInterval
     ENDIF
@@ -39,7 +39,7 @@ BEGIN
 			   pre1to4d(NonNeg?),
 			   aeboundsp_mul_safe ))
 
-  
+
   %|- AEB_MUL_fundmental_j : PROOF
   %|- (prove-fundamental-judgement)
   %|- QED AEB_MUL_fundmental_j
@@ -83,7 +83,7 @@ BEGIN
 
   %|-   AEB_MUL_P2L_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
-  %|- QED   AEB_MUL_P2L_inclusion_j 
+  %|- QED   AEB_MUL_P2L_inclusion_j
   AEB_MUL_P2L_inclusion_j: JUDGEMENT
     aeboundsp_mul_p2l_ia(n)
     HAS_TYPE (Inclusion?( NonNeg?,
@@ -113,7 +113,7 @@ BEGIN
 
   %|-   AEB_MUL_P2R_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
-  %|- QED   AEB_MUL_P2R_inclusion_j 
+  %|- QED   AEB_MUL_P2R_inclusion_j
   AEB_MUL_P2R_inclusion_j: JUDGEMENT
     aeboundsp_mul_p2r_ia(n)
     HAS_TYPE (Inclusion?( NonNeg?,

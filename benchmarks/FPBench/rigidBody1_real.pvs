@@ -5,6 +5,6 @@ BEGIN
 IMPORTING rigidBody1
 
 rigidBody1_real(r_X1: real, r_X2: real, r_X3: real): real  =
-((((-(X1) * X2) - ((2 * X2) * X3)) - X1) - X3)
+((((-(r_X1) * r_X2) - ((2 * r_X2) * r_X3)) - r_X1) - r_X3)
 
 END rigidBody1_real

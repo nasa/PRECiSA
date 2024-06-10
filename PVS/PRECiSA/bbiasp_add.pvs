@@ -2,7 +2,7 @@ bbiasp_add: theory
 begin
 
   importing interval_ulp_sp
-  importing axm_bnd@aerr_ulp__single
+  importing float_bounded_axiomatic@aerr_ulp__single
 
   R1,E1,R2,E2: var Interval
 
@@ -22,7 +22,7 @@ begin
 
   %|-   AEB_ADD_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
-  %|- QED   AEB_ADD_inclusion_j 
+  %|- QED   AEB_ADD_inclusion_j
   AEB_ADD_inclusion_j: judgement
     aeboundsp_add_ia
     has_type (Inclusion4?( Any?,

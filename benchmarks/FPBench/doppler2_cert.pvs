@@ -3,8 +3,8 @@
 doppler2_cert: THEORY
 BEGIN
 IMPORTING PRECiSA@strategies
-IMPORTING axm_bnd@aerr_ulp__double
-IMPORTING axm_bnd@aerr_ulp__single
+IMPORTING float_bounded_axiomatic@aerr_ulp__double
+IMPORTING float_bounded_axiomatic@aerr_ulp__single
 IMPORTING doppler2
 IMPORTING doppler2_real
 
@@ -12,21 +12,28 @@ IMPORTING doppler2_real
 %|- (precisa-gen-cert-tcc)
 %|- QED
 
+dop2_0_error (e_U, e_V, e_T: nonneg_real, r_U, r_V, r_T: real): nonneg_real = LET T1:real=((1657 / 5) + ((3 / 5) * r_T)),
+Err_T1:real=aerr_ulp_dp_add((1657 / 5), (1 / 43980465111040), ((3 / 5) * r_T), aerr_ulp_dp_mul((3 / 5), (1 / 45035996273704960), r_T, e_T))
+IN aerr_ulp_dp_div((-(T1) * r_V), aerr_ulp_dp_mul(-(T1), aerr_ulp_dp_neg(T1, Err_T1), r_V, e_V), ((T1 + r_U) * (T1 + r_U)), aerr_ulp_dp_mul((T1 + r_U), aerr_ulp_dp_add(T1, Err_T1, r_U, e_U), (T1 + r_U), aerr_ulp_dp_add(T1, Err_T1, r_U, e_U)))
+
+
 dop2_0 : LEMMA
 FORALL(e_U, e_V, e_T: nonneg_real, r_U, r_V, r_T: real, U: double, V: double, T: double):
-finite?(T) AND finite?(T1) AND finite?(U) AND finite?(V) AND finite?(RtoD((3 / 5))) AND finite?(RtoD((1657 / 5))) AND finite?(Dadd(T1, U)) AND finite?(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T))) AND finite?(Dmul(RtoD((3 / 5)), T)) AND finite?(Dmul(Dadd(T1, U), Dadd(T1, U))) AND finite?(Dmul(Dneg(T1), V)) AND finite?(Ddiv(Dmul(Dneg(T1), V), Dmul(Dadd(T1, U), Dadd(T1, U)))) AND finite?(Dneg(T1)) AND finite?(LET T1:double=Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T))
-IN Ddiv(Dmul(Dneg(T1), V), Dmul(Dadd(T1, U), Dadd(T1, U)))) AND
+LET T1=Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T))
+IN (finite?_double(T) AND finite?_double(T1) AND finite?_double(U) AND finite?_double(V) AND finite?_double(RtoD((3 / 5))) AND finite?_double(RtoD((1657 / 5))) AND finite?_double(Dadd(T1, U)) AND finite?_double(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T))) AND finite?_double(Dmul(RtoD((3 / 5)), T)) AND finite?_double(Dmul(Dadd(T1, U), Dadd(T1, U))) AND finite?_double(Dmul(Dneg(T1), V)) AND finite?_double(Ddiv(Dmul(Dneg(T1), V), Dmul(Dadd(T1, U), Dadd(T1, U)))) AND finite?_double(Dneg(T1)) AND finite?_double(LET T1:double=Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T))
+IN Ddiv(Dmul(Dneg(T1), V), Dmul(Dadd(T1, U), Dadd(T1, U)))))
+AND
 abs(DtoR(U) - r_U)<=e_U AND abs(DtoR(V) - r_V)<=e_V AND abs(DtoR(T) - r_T)<=e_T
-AND (((TRUE AND (((((1657 / 5) + ((3 / 5) * T)) + r_U) * (((1657 / 5) + ((3 / 5) * T)) + r_U)) /= 0)) AND (TRUE AND (Dmul(Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U), Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U)) /= ItoD(0)))))
+AND (((TRUE AND (((((1657 / 5) + ((3 / 5) * r_T)) + r_U) * (((1657 / 5) + ((3 / 5) * r_T)) + r_U)) /= 0)) AND (TRUE AND (Dmul(Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U), Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U)) /= ItoD(0)))))
 IMPLIES
-abs(DtoR(dop2(U, V, T)) - dop2_real(r_U, r_V, r_T)) <= LET T1:real=((1657 / 5) + ((3 / 5) * r_T)),
-Err_T1:real=aerr_ulp_dp_add((1657 / 5), (1 / 43980465111040), ((3 / 5) * r_T), aerr_ulp_dp_mul((3 / 5), (1 / 45035996273704960), r_T, e_T))
-IN aerr_ulp_dp_div((-(r_T1) * r_V), aerr_ulp_dp_mul(-(r_T1), aerr_ulp_dp_neg(r_T1, Err_T1), r_V, e_V), ((r_T1 + r_U) * (r_T1 + r_U)), aerr_ulp_dp_mul((r_T1 + r_U), aerr_ulp_dp_add(r_T1, Err_T1, r_U, e_U), (r_T1 + r_U), aerr_ulp_dp_add(r_T1, Err_T1, r_U, e_U)))
+abs(DtoR(dop2(U, V, T)) - dop2_real(r_U, r_V, r_T)) <= dop2_0_error(e_U, e_V, e_T, r_U, r_V, r_T)
 
 
 %|- dop2_0: PROOF
 %|- (precisa)
 %|- QED
 
+
+dop2_error(e_U, e_V, e_T: nonneg_real, r_U, r_V, r_T: real): nonneg_real = dop2_0_error(e_U, e_V, e_T, r_U, r_V, r_T)
 
 END doppler2_cert

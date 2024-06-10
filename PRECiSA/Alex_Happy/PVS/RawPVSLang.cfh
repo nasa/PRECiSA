@@ -18,6 +18,11 @@ separator nonempty LetElem "," ;
 RecordElem.  RecordElem ::= Id ":=" Expr;
 separator nonempty RecordElem "," ;
 
+LambdaWord1.  LambdaKeyWord ::= "LAMBDA" ;
+LambdaWord2.  LambdaKeyWord ::= "lambda" ;
+
+Lambda. LambdaExpr ::= LambdaKeyWord "(" Id ":" "SUBRANGE" "(" Expr "," Expr ")" "," Id ":" Type ")" ":" Expr ;
+
 separator nonempty Expr "," ;
 coercions   Expr 11 ;
 
@@ -42,6 +47,7 @@ ExprSub.      Expr5 ::= Expr5 "-" Expr6 ;
 
 ExprMul.      Expr6 ::= Expr6 "*" Expr7 ;
 ExprDiv.      Expr6 ::= Expr6 "/" Expr7 ;
+With.         Expr6 ::= Expr6 "WITH" "[" Expr ":=" Expr "]";
 
 ExprNeg.      Expr7 ::= "-" Expr8 ;
 
@@ -49,7 +55,9 @@ ExprPow.      Expr8 ::= Expr9 "^" Expr8 ;
 
 If.          Expr9 ::= "IF" Expr "THEN" Expr "ELSE" Expr "ENDIF" ;
 ListIf.      Expr9 ::= "IF" Expr "THEN" Expr [ElsIf] "ELSE" Expr "ENDIF" ;
-For.         Expr9 ::= "for" "(" Integer "," Integer "," Expr "," Id ")";
+For.         Expr9 ::= "for" "(" Expr "," Expr "," Expr "," LambdaExpr ")";
+ForDown.     Expr9 ::= "for_down" "(" Expr "," Expr "," Expr "," LambdaExpr ")";
+
 
 TupleIndex.     Expr10 ::= Id "`" Integer ;
 RecordField.    Expr10 ::= Id "`" Id ;

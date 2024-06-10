@@ -19,6 +19,12 @@ data LetElem = LetElem Id Expr | LetElemType Id Type Expr
 data RecordElem = RecordElem Id Expr
   deriving (C.Eq, C.Ord, C.Show, C.Read)
 
+data LambdaKeyWord = LambdaWord1 | LambdaWord2
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
+data LambdaExpr = Lambda LambdaKeyWord Id Expr Expr Id Type Expr
+  deriving (C.Eq, C.Ord, C.Show, C.Read)
+
 data Expr
     = Let [LetElem] Expr
     | Or Expr Expr
@@ -34,11 +40,13 @@ data Expr
     | ExprSub Expr Expr
     | ExprMul Expr Expr
     | ExprDiv Expr Expr
+    | With Expr Expr Expr
     | ExprNeg Expr
     | ExprPow Expr Expr
     | If Expr Expr Expr
     | ListIf Expr Expr [ElsIf] Expr
-    | For Integer Integer Expr Id
+    | For Expr Expr Expr LambdaExpr
+    | ForDown Expr Expr Expr LambdaExpr
     | TupleIndex Id Integer
     | RecordField Id Id
     | TupleFunIndex Id [Expr] Integer

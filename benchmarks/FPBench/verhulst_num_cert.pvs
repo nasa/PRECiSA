@@ -16,7 +16,7 @@ IMPORTING PRECiSA@strategies
 verhulst_c_0 : LEMMA
 FORALL(r_X: real, X: double):
 abs(DtoR(X) - r_X)<=ulp_dp(r_X)/2
-AND (((TRUE AND ((2 < (ieee754dp_prec - Fexp(X))) AND ((1 + (r_X / (111 / 100))) /= 0))) AND (TRUE AND (((111 / 100) /= ItoD(0)) AND (Dadd(1, Ddiv(X, (111 / 100))) /= ItoD(0)))))) AND
+AND (((TRUE AND ((2 < (ieee754_double_precision - Fexp(X))) AND ((1 + (r_X / (111 / 100))) /= 0))) AND (TRUE AND (((111 / 100) /= ItoD(0)) AND (Dadd(1, Ddiv(X, (111 / 100))) /= ItoD(0)))))) AND
 r_X ## [|0.1,0.3|]
 IMPLIES
 abs(DtoR(verhulst(X)) - verhulst_real(r_X)) <= 8500809603312907 / 20282409603651670423947251286016

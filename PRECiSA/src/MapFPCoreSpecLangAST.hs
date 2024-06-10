@@ -5,11 +5,10 @@ import Data.Ratio
 import Parser.ParRawSpecLang
 import Parser.LexRawSpecLang
 import AbsFPCoreLang
-import AbsPVSLang (ResultField(..))
+import AbsPVSLang (ResultField(..),PVSType(..))
 import AbsSpecLang
 import ErrM
 import Data.Maybe
-import PVSTypes
 
 
 fpcore2Spec :: FPCore -> Spec

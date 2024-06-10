@@ -54,21 +54,26 @@ import LexRawPVSLang
   'IF'        { PT _ (TS _ 29) }
   'IMPORTING' { PT _ (TS _ 30) }
   'IN'        { PT _ (TS _ 31) }
-  'LET'       { PT _ (TS _ 32) }
-  'NOT'       { PT _ (TS _ 33) }
-  'OR'        { PT _ (TS _ 34) }
-  'THEN'      { PT _ (TS _ 35) }
-  'THEORY'    { PT _ (TS _ 36) }
-  'TRUE'      { PT _ (TS _ 37) }
-  '['         { PT _ (TS _ 38) }
-  '[#'        { PT _ (TS _ 39) }
-  ']'         { PT _ (TS _ 40) }
-  '^'         { PT _ (TS _ 41) }
-  '`'         { PT _ (TS _ 42) }
-  'below'     { PT _ (TS _ 43) }
-  'for'       { PT _ (TS _ 44) }
-  'list'      { PT _ (TS _ 45) }
-  '|'         { PT _ (TS _ 46) }
+  'LAMBDA'    { PT _ (TS _ 32) }
+  'LET'       { PT _ (TS _ 33) }
+  'NOT'       { PT _ (TS _ 34) }
+  'OR'        { PT _ (TS _ 35) }
+  'SUBRANGE'  { PT _ (TS _ 36) }
+  'THEN'      { PT _ (TS _ 37) }
+  'THEORY'    { PT _ (TS _ 38) }
+  'TRUE'      { PT _ (TS _ 39) }
+  'WITH'      { PT _ (TS _ 40) }
+  '['         { PT _ (TS _ 41) }
+  '[#'        { PT _ (TS _ 42) }
+  ']'         { PT _ (TS _ 43) }
+  '^'         { PT _ (TS _ 44) }
+  '`'         { PT _ (TS _ 45) }
+  'below'     { PT _ (TS _ 46) }
+  'for'       { PT _ (TS _ 47) }
+  'for_down'  { PT _ (TS _ 48) }
+  'lambda'    { PT _ (TS _ 49) }
+  'list'      { PT _ (TS _ 50) }
+  '|'         { PT _ (TS _ 51) }
   L_doubl     { PT _ (TD $$)   }
   L_integ     { PT _ (TI $$)   }
   L_Id        { PT _ (T_Id $$) }
@@ -110,6 +115,15 @@ ListRecordElem
   : RecordElem { (:[]) $1 }
   | RecordElem ',' ListRecordElem { (:) $1 $3 }
 
+LambdaKeyWord :: { AbsRawPVSLang.LambdaKeyWord }
+LambdaKeyWord
+  : 'LAMBDA' { AbsRawPVSLang.LambdaWord1 }
+  | 'lambda' { AbsRawPVSLang.LambdaWord2 }
+
+LambdaExpr :: { AbsRawPVSLang.LambdaExpr }
+LambdaExpr
+  : LambdaKeyWord '(' Id ':' 'SUBRANGE' '(' Expr ',' Expr ')' ',' Id ':' Type ')' ':' Expr { AbsRawPVSLang.Lambda $1 $3 $7 $9 $12 $14 $17 }
+
 ListExpr :: { [AbsRawPVSLang.Expr] }
 ListExpr : Expr { (:[]) $1 } | Expr ',' ListExpr { (:) $1 $3 }
 
@@ -149,6 +163,7 @@ Expr6
   : Expr7 { $1 }
   | Expr6 '*' Expr7 { AbsRawPVSLang.ExprMul $1 $3 }
   | Expr6 '/' Expr7 { AbsRawPVSLang.ExprDiv $1 $3 }
+  | Expr6 'WITH' '[' Expr ':=' Expr ']' { AbsRawPVSLang.With $1 $4 $6 }
 
 Expr7 :: { AbsRawPVSLang.Expr }
 Expr7 : Expr8 { $1 } | '-' Expr8 { AbsRawPVSLang.ExprNeg $2 }
@@ -162,7 +177,8 @@ Expr9
   : Expr10 { $1 }
   | 'IF' Expr 'THEN' Expr 'ELSE' Expr 'ENDIF' { AbsRawPVSLang.If $2 $4 $6 }
   | 'IF' Expr 'THEN' Expr ListElsIf 'ELSE' Expr 'ENDIF' { AbsRawPVSLang.ListIf $2 $4 $5 $7 }
-  | 'for' '(' Integer ',' Integer ',' Expr ',' Id ')' { AbsRawPVSLang.For $3 $5 $7 $9 }
+  | 'for' '(' Expr ',' Expr ',' Expr ',' LambdaExpr ')' { AbsRawPVSLang.For $3 $5 $7 $9 }
+  | 'for_down' '(' Expr ',' Expr ',' Expr ',' LambdaExpr ')' { AbsRawPVSLang.ForDown $3 $5 $7 $9 }
 
 Expr10 :: { AbsRawPVSLang.Expr }
 Expr10

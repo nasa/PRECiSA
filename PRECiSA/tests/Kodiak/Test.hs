@@ -19,7 +19,6 @@ import Test.Tasty.HUnit
 
 import AbsPVSLang
 import AbsSpecLang
-import PVSTypes
 import Kodiak.Kodiak
 import Kodiak.Runnable
 import Kodiak.Runner

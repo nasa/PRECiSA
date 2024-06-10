@@ -1,6 +1,6 @@
 cabal-version:       3.0
 name:                precisa
-version:             4.0.3
+version:             4.0.4
 synopsis:            PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
 homepage:            https://nasa.github.io/precisa
 author:              Laura Titolo, Marco A. Feliu
@@ -41,7 +41,6 @@ library
     AbsFPCoreLang
     AbsPVSLang
     AbsRawPVSLang
-    AbsRawRealPVSLang
     AbsRawSpecLang
     AbsSpecLang
     AbstractDomain
@@ -53,7 +52,6 @@ library
     ErrM
     FPCore.FPCorePrinter
     FreshVariables
-    PVSTypes
     Json
     Kodiak.Expression
     Kodiak.Generator
@@ -73,12 +71,10 @@ library
     Parser.LexDecisionPaths
     Parser.LexFPCoreLang
     Parser.LexRawPVSLang
-    Parser.LexRawRealPVSLang
     Parser.LexRawSpecLang
     Parser.ParDecisionPaths
     Parser.ParFPCoreLang
     Parser.ParRawPVSLang
-    Parser.ParRawRealPVSLang
     Parser.ParRawSpecLang
     Parser.Parser
     PPExt

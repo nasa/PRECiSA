@@ -16,7 +16,6 @@ import AbsPVSLang
 import AbsSpecLang
 import Data.Key (mapWithKeyM)
 import PPExt
-import PVSTypes
 import SMT.PrettyPrinter
 import SMT.GenerateSMTModel
 import Text.Printf (printf)

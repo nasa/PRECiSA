@@ -4,7 +4,7 @@ BEGIN
   importing interval_arith@more_interval_props
   importing more_real_props
   importing interval_ulp_sp
-  importing axm_bnd@aerr_ulp__single
+  importing float_bounded_axiomatic@aerr_ulp__single
   importing interval_arith@interval_lnexp
   importing interval_arith@interval_props
 

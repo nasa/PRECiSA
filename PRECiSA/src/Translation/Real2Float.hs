@@ -11,7 +11,6 @@
 module Translation.Real2Float where
 
 import AbsPVSLang
-import PVSTypes
 import Operators
 import Utils(isInt)
 import Common.TypesUtils
@@ -19,12 +18,19 @@ import Data.Maybe (fromMaybe)
 
 type NormBoolExpr = Bool
 
+real2fpType :: PVSType -> PVSType -> PVSType
+real2fpType _ TInt  = TInt
+real2fpType _ (Below n) = Below n
+real2fpType _ Boolean  = Boolean
+real2fpType fp (Array ts t) = Array (map (real2fpType fp) ts) (real2fpType fp t)
+real2fpType fp (List t) = List (real2fpType fp t)
+real2fpType fp (Tuple ts) = Tuple (map (real2fpType fp) ts)
+real2fpType fp (Record fs) = Record (map (\(fieldName, t) -> (fieldName, real2fpType fp t)) fs)
+real2fpType fp (TypeFun ts t) = TypeFun (map (real2fpType fp) ts) (real2fpType fp t)
+real2fpType fp _ = fp
+
 real2fpArg :: PVSType -> Arg -> Arg
-real2fpArg  _ (Arg x TInt) = Arg x TInt
-real2fpArg fp (Arg x Real) = Arg x fp
-real2fpArg _  (Arg x (Array TInt size)) = Arg x (Array TInt size)
-real2fpArg fp (Arg x (Array Real size)) = Arg x (Array fp size)
-real2fpArg _  (Arg _ t) = error $ "real2fpArg not defined for " ++ show t
+real2fpArg  fp (Arg x t) = Arg x (real2fpType fp t)
 
 real2fpProg :: NormBoolExpr -> PVSType -> RProgram -> Program
 real2fpProg normBE fp prog = map (real2fpDecl normBE fp prog) prog
@@ -33,10 +39,58 @@ real2fpDecl :: NormBoolExpr -> PVSType -> RProgram -> RDecl -> Decl
 real2fpDecl normBE fp prog (RDecl retType f xs stm)
   | retType == TInt = Decl True TInt f (map (real2fpArg fp) xs)
                                        (real2fpAexpr normBE True fp prog stm)
-  | otherwise       = Decl True fp   f (map (real2fpArg fp) xs)
+  | otherwise       = Decl True (real2fpType fp retType) f (map (real2fpArg fp) xs)
                                        (real2fpAexpr normBE False fp prog stm)
-real2fpDecl normBE fp prog (RPred f xs expr) = Pred True Original f (map (real2fpArg fp) xs)
-                                                             (real2fpBexprStm normBE fp prog expr)
+real2fpDecl normBE fp prog (RCollDecl retType f xs stm)
+  = CollDecl True (real2fpType fp retType) f (map (real2fpArg fp) xs)
+                                       (real2fpCollAexpr normBE fp prog stm)
+real2fpDecl normBE fp prog (RPred f xs expr)
+  = Pred True Original f (map (real2fpArg fp) xs)
+                         (real2fpBexprStm normBE fp prog expr)
+
+real2letElem :: NormBoolExpr -> PVSType -> RProgram -> LetElem -> FLetElem
+real2letElem normBE fp prog letElem | t == TInt || isIntAExpr ae = (x, TInt, real2fpAexpr normBE True fp prog ae)
+                                    | otherwise                  = (x, fp,   real2fpAexpr normBE False fp prog ae)
+  where
+    t  = letType letElem
+    ae = letExpr letElem
+    x  = letVar  letElem
+
+real2fpCollAexpr :: NormBoolExpr -> PVSType -> RProgram -> CollAExpr -> CollFAExpr
+real2fpCollAexpr normBE fp prog (RCLet letElems cExpr)
+  = CLet (map (real2letElem normBE fp prog) letElems) (real2fpCollAexpr normBE fp prog cExpr)
+real2fpCollAexpr normBE fp prog (RCIte be thenExpr elseExpr)
+  = CIte (real2fpBexpr normBE False fp prog be)
+         (real2fpCollAexpr normBE fp prog thenExpr)
+         (real2fpCollAexpr normBE fp prog elseExpr)
+real2fpCollAexpr normBE fp prog (RCListIte listThen elseExpr)
+  = CListIte (map real2fpItePair listThen)
+             (real2fpCollAexpr normBE fp prog elseExpr)
+  where
+    real2fpItePair (fbe, stm) = (real2fpBexpr normBE False fp prog fbe
+                                ,real2fpCollAexpr normBE fp prog stm)
+real2fpCollAexpr normBE fp prog (RRecordExpr recordExprs)
+  = RecordExpr (map real2recordExpr recordExprs)
+  where
+    real2recordExpr (fieldName, Left expr) = (fieldName, Left $ real2fpAexpr normBE False fp prog expr)
+    real2recordExpr (fieldName, Right expr) = (fieldName, Right$ real2fpBexpr normBE False fp prog expr)
+real2fpCollAexpr normBE fp prog (RTupleExpr exprs)
+  = TupleExpr (map real2tupleExpr exprs)
+  where
+    real2tupleExpr (Left expr)  = Left $ real2fpAexpr normBE False fp prog expr
+    real2tupleExpr (Right expr) = Right $ real2fpBexpr normBE False fp prog expr
+real2fpCollAexpr normBE fp prog (RArrayUpdate aexpr idx newValue)
+  = ArrayUpdate (real2fpCollAexpr normBE fp prog aexpr)
+                (real2fpAexpr normBE True TInt prog idx)
+                (real2fpAexpr normBE True fp prog newValue)
+real2fpCollAexpr normBE fp prog (RArrayUpdate aexpr idx newValue)
+  = ArrayUpdate (real2fpCollAexpr normBE fp prog aexpr)
+                (real2fpAexpr normBE True TInt prog idx)
+                (real2fpAexpr normBE True fp prog newValue)
+real2fpCollAexpr normBE fp prog (RCollFun funName funType args)
+  = CollFun True funName (real2fpType fp funType) (map (real2fpAexpr normBE False fp prog) args)
+real2fpCollAexpr normBE fp prog (RCollVar t x)
+  = CollVar (real2fpType fp t) x
 
 real2fpBexprStm :: NormBoolExpr -> PVSType -> RProgram -> BExprStm -> FBExprStm
 real2fpBexprStm normBE fp prog (RBLet letElems stm) = BLet (map (real2letElem normBE fp prog) letElems)
@@ -50,13 +104,6 @@ real2fpBexprStm normBE fp prog (RBListIte listThen elseStm) =  BListIte (map rea
     real2fpItePair (fbe, stm) = (real2fpBexpr normBE False fp prog fbe, real2fpBexprStm normBE fp prog stm)
 real2fpBexprStm normBE fp prog (RBExpr be) = BExpr (real2fpBexpr normBE False fp prog be)
 
-real2letElem :: NormBoolExpr -> PVSType -> RProgram -> LetElem -> FLetElem
-real2letElem normBE fp prog letElem | t == TInt || isIntAExpr ae = (x, TInt, real2fpAexpr normBE True fp prog ae)
-                             | otherwise                  = (x, fp,   real2fpAexpr normBE False fp prog ae)
-  where
-    t  = letType letElem
-    ae = letExpr letElem
-    x  = letVar  letElem
 
 real2fpBexpr :: NormBoolExpr -> Bool -> PVSType -> RProgram -> BExpr -> FBExpr
 real2fpBexpr _ _ _ _ BTrue  = FBTrue
@@ -118,10 +165,10 @@ real2fpAexpr _ _    TInt  _ (Var TInt x) = FVar TInt x
 real2fpAexpr _ True _     _ (Var TInt x) = FVar TInt x
 real2fpAexpr _ _    fp    _ (Var _    x) = FVar fp   x
 real2fpAexpr _ _    fp    _ (RealMark x ResValue) = FVar fp   x
-real2fpAexpr normBE _    TInt  prog (ArrayElem TInt size v idxs)
-  = FArrayElem TInt size v (map (real2fpAexpr normBE True TInt prog) idxs)
-real2fpAexpr normBE True fp prog (ArrayElem _    size v idxs)
-  = FArrayElem fp size v (map (real2fpAexpr normBE True TInt prog) idxs)
+real2fpAexpr normBE _    TInt  prog (ArrayElem TInt v idxs)
+  = FArrayElem TInt v (map (real2fpAexpr normBE True TInt prog) idxs)
+real2fpAexpr normBE True fp prog (ArrayElem _    v idxs)
+  = FArrayElem fp v (map (real2fpAexpr normBE True TInt prog) idxs)
 real2fpAexpr _ _    fp    _ (FromFloat fp' ae) = ToFloat fp (FromFloat fp' ae)
 real2fpAexpr normBE isCast fp prog (EFun f field TInt args) = FEFun True f field TInt $
   if null prog
@@ -153,12 +200,11 @@ real2fpAexpr normBE isCast fp prog (RListIte thenList stmElse) = ListIte (map re
                                                              (real2fpAexpr normBE isCast fp prog stmElse)
   where
     real2fpItePair (fbe, stm) = (real2fpBexpr normBE isCast fp prog fbe, real2fpAexpr normBE isCast fp prog stm)
-real2fpAexpr normBE isCast fp prog (RForLoop retType startIdx endIdx initValueAcc idx acc forBody) =
-  ForLoop retType (real2fpAexpr normBE isCast fp prog startIdx)
-                             (real2fpAexpr normBE isCast fp prog endIdx)
-                             (real2fpAexpr normBE isCast fp prog initValueAcc)
-                             idx acc
-                             (real2fpAexpr normBE isCast fp prog forBody)
+real2fpAexpr normBE isCast fp prog (RForLoop retType idx startIdx endIdx acc initValueAcc forBody) =
+  ForLoop retType idx (real2fpAexpr normBE isCast fp prog startIdx)
+                      (real2fpAexpr normBE isCast fp prog endIdx)
+                  acc (real2fpAexpr normBE isCast fp prog initValueAcc)
+                      (real2fpAexpr normBE isCast fp prog forBody)
 real2fpAexpr _ _ _  _ RUnstWarning               = UnstWarning
 real2fpAexpr _ _ _ _ ae = error $ "real2fpAexpr not defined for " ++ show ae
 

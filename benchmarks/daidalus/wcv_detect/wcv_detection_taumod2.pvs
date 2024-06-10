@@ -130,14 +130,14 @@ IMPORTING float@ieee754_double
 
 
 
-    vertical_WCV_entry(B, T, sz, vz, TCOA, ZTHR: double): double =
-    IF vz /= 0 THEN
-          IF T - coalt_entry(sz, vz, TCOA, ZTHR) < 0 OR coalt_exit(sz, vz, ZTHR) - B < 0 THEN T
-            ELSE max_(B, coalt_entry(sz, vz, TCOA, ZTHR))
-            ENDIF
-    ELSIF abs(sz) - ZTHR <= 0 THEN B
-    ELSE T
-    ENDIF
+    % vertical_WCV_entry(B, T, sz, vz, TCOA, ZTHR: double): double =
+    % IF vz /= 0 THEN
+    %       IF T - coalt_entry(sz, vz, TCOA, ZTHR) < 0 OR coalt_exit(sz, vz, ZTHR) - B < 0 THEN T
+    %         ELSE max_(B, coalt_entry(sz, vz, TCOA, ZTHR))
+    %         ENDIF
+    % ELSIF abs(sz) - ZTHR <= 0 THEN B
+    % ELSE T
+    % ENDIF
 
 
     % vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR: double): double =

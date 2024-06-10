@@ -14,7 +14,6 @@ import AbstractSemantics
 import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
-import PVSTypes
 import Control.Monad.State
 import Data.List(find,zip4)
 import Data.Maybe(mapMaybe,fromMaybe)
@@ -89,7 +88,7 @@ computeErrorAExpr maximumDepth minimumPrecision ae varBind = maximumUpperBound <
                       ,assumeTestStability = False
                       ,mergeUnstables = True
                       ,unfoldFunCalls = False }
-    sem = map initErrAceb $ stmSem ae emptyInterpretation emptyEnv semConf root []
+    sem = map initErrAceb $ stmSem ae emptyInterpretation emptyEnv (localVarsNames ae) semConf root []
     errorExpr = MaxErr (map (fromMaybe (error "computeErrorAExpr: unexpected argument.") . eExpr) sem)
     kodiakInput = KI { kiName = ""
                      , kiExpression = errorExpr

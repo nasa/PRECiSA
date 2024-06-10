@@ -13,7 +13,6 @@ module AbsPVSLangTest where
 import Test.Tasty
 import Test.Tasty.HUnit
 import AbsPVSLang
-import PVSTypes
 import Operators
 import Common.TypesUtils
 import UtilsTest (fromDouble2Rat)
@@ -145,9 +144,9 @@ subExpressions__test9 = testCase "subExpressions EFun" $
   [FEFun True "f" ResValue TInt [FVar TInt "y"], FVar TInt "y"]
 
 subExpressions__test10 = testCase "subExpressions ArrayElem" $
-  subExpressions (FArrayElem TInt (Just $ ArraySizeInt 3) "y" [(FVar TInt "x")])
+  subExpressions (FArrayElem TInt "y" [(FVar TInt "x")])
   `setEquiv`
-  [FArrayElem TInt (Just $ ArraySizeInt 3) "y" [(FVar TInt "x")]
+  [FArrayElem TInt "y" [(FVar TInt "x")]
   ,FVar TInt "x"]
 
 subExpressions__test11 = testCase "subExpressions ListIte" $
@@ -383,14 +382,14 @@ renameVarsAExpr__test10 = testCase "renameVarsAExpr EFun no match" $
   (EFun "f" ResValue TInt [Var TInt "x"])
 
 renameVarsAExpr__test11 = testCase "renameVarsAExpr ArrayElem" $
-  renameVarsAExpr [("x","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" [(Var TInt "x")])
+  renameVarsAExpr [("x","y")] (ArrayElem TInt "x" [(Var TInt "x")])
   @?=
-  ArrayElem TInt (Just $ ArraySizeInt 3) "y" [(Var TInt "y")]
+  ArrayElem TInt "y" [(Var TInt "y")]
 
 renameVarsAExpr__test12 = testCase "renameVarsAExpr ArrayElem no match" $
-  renameVarsAExpr [("a","y")] (ArrayElem TInt (Just $ ArraySizeInt 3) "x" [(Var TInt "x")])
+  renameVarsAExpr [("a","y")] (ArrayElem TInt "x" [(Var TInt "x")])
   @?=
-  (ArrayElem TInt (Just $ ArraySizeInt 3) "x" [(Var TInt "x")])
+  (ArrayElem TInt "x" [(Var TInt "x")])
 
 renameVarsAExpr__test13 = testCase "renameVarsAExpr RListIte" $
   renameVarsAExpr [("x","y")] (RListIte [(Rel Eq (Var TInt "x") (Int 4),Var TInt "b")] (Var TInt "x"))
@@ -507,14 +506,14 @@ renameVarsFAExpr__test10 = testCase "renameVar EFun no match" $
   (FEFun True "f" ResValue TInt [FVar TInt "x"])
 
 renameVarsFAExpr__test11 = testCase "renameVar ArrayElem" $
-  renameVarsFAExpr [("x","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" [(FVar TInt "x")])
+  renameVarsFAExpr [("x","y")] (FArrayElem TInt "x" [(FVar TInt "x")])
   @?=
-  FArrayElem TInt (Just $ ArraySizeInt 3) "y" [(FVar TInt "y")]
+  FArrayElem TInt "y" [(FVar TInt "y")]
 
 renameVarsFAExpr__test12 = testCase "renameVar ArrayElem no match" $
-  renameVarsFAExpr [("a","y")] (FArrayElem TInt (Just $ ArraySizeInt 3) "x" [(FVar TInt "x")])
+  renameVarsFAExpr [("a","y")] (FArrayElem TInt "x" [(FVar TInt "x")])
   @?=
-  (FArrayElem TInt (Just $ ArraySizeInt 3) "x" [(FVar TInt "x")])
+  (FArrayElem TInt "x" [(FVar TInt "x")])
 
 renameVarsFAExpr__test13 = testCase "renameVar ListIte" $
   renameVarsFAExpr [("x","y")] (ListIte [(FRel Eq (FVar TInt "x") (FInt 4),FVar TInt "b")] (FVar TInt "x"))
@@ -712,7 +711,7 @@ testcasesHasConditionals
     (Int 4, False),
     (Rat (toRational (0.1::Double)), False),
     (Var  TInt "x",False),
-    (ArrayElem TInt (Just $ ArraySizeInt 3) "a" [(Int 2)], False),
+    (ArrayElem TInt "a" [(Int 2)], False),
     (BinaryOp AddOp (Int 1) (Int 2),False),
     (UnaryOp NegOp (Int 2), False),
     (Min [Int 3], False),
@@ -722,7 +721,7 @@ testcasesHasConditionals
     (RLet [(LetElem "x" Real (Rat $ toRational (0.2::Double)))] (RIte BTrue (Rat $ toRational (0.2::Double)) (Var Real "x")), True),
     (RIte BTrue (Int 1) (Int 2), True),
     (RListIte [(BTrue, Int 1)] (Int 2), True),
-    (RForLoop Real (Int 1) (Int 3) (Int 0) "x" "acc" (Int 4), False)
+    (RForLoop Real  "x" (Int 1) (Int 3) "acc"  (Int 0) (Int 4), False)
     ]
 
 hasConditionalsBExpr__tests = testGroup "hasConditionalsBExpr" [
@@ -811,7 +810,7 @@ makeFPDeclRecursive__test1 = testCase "makeFPDeclRecursive1" $
   (Decl False TInt "f" [] (FInt 2), [])
 
 makeFPDeclRecursive__test2 = testCase "makeFPDeclRecursive2" $
-  makeFPDeclRecursive (Decl False TInt "f" [] (ForLoop TInt (FInt 0) (FInt 10) (FInt 0) "I" "X"
+  makeFPDeclRecursive (Decl False TInt "f" [] (ForLoop TInt "I" (FInt 0) (FInt 10) "X" (FInt 0)
                                         (BinaryFPOp AddOp TInt (FVar TInt "I") (FVar TInt "X"))))
   @?=
   (Decl False TInt "f" [] (FEFun False "for_f1" ResValue TInt [FInt 0,FInt 0])
@@ -1392,7 +1391,6 @@ varList__test12 = testCase "varList of a RtoD(DtoR(x + y)) is [x,y]" $
 
 equivModuloIndex__tests = testGroup "equivModuloIndex tests"
   [equivModuloIndex__test1
-  ,equivModuloIndex__test2
   ,equivModuloIndex__test3
   ,equivModuloIndex__test4
   ,equivModuloIndex__test5
@@ -1402,61 +1400,55 @@ equivModuloIndex__tests = testGroup "equivModuloIndex tests"
   ,equivModuloIndex__test9
   ]
 
-equivModuloIndex__test1 = testCase "v(3) size 8 double not equiv v(4) size 5 double" $
-   equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 8) "v" [(FInt 3)])
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)])
+equivModuloIndex__test1 = testCase "v(3) double equiv v(4) double" $
+   equivModuloIndex (FArrayElem FPDouble "v" [(FInt 3)])
+                    (FArrayElem FPDouble "v" [(FInt 4)])
                     @?=
-                    False
-
-equivModuloIndex__test2 = testCase "" $
-   equivModuloIndex (FArrayElem FPSingle (Just $ ArraySizeInt 8) "v" [(FInt 3)])
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)])
-                    @?=
-                    False
+                    True
 
 equivModuloIndex__test3 = testCase "v(3) equiv v(4)" $
-   equivModuloIndex (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)])
-                    (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)])
+   equivModuloIndex (FArrayElem FPDouble "v" [(FInt 3)])
+                    (FArrayElem FPDouble "v" [(FInt 4)])
                     @?=
                     True
 
 equivModuloIndex__test4 = testCase "sin(v(3)) equiv sin(v(4))" $
-   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
-                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)]))
+   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble "v" [(FInt 3)]))
+                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble "v" [(FInt 4)]))
                     @?=
                     True
 
-equivModuloIndex__test5 = testCase "v(3) not equiv v(4)" $
-   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
-                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 8) "v" [(FInt 4)]))
+equivModuloIndex__test5 = testCase "v(3) equiv v(4)" $
+   equivModuloIndex (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble "v" [(FInt 3)]))
+                    (UnaryFPOp SinOp FPDouble (FArrayElem FPDouble "v" [(FInt 4)]))
                     @?=
-                    False
+                    True
 
 equivModuloIndex__test6 = testCase "w(3)+v(3) equiv w(3)+v(4)" $
-   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)])
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
-                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)])
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)]))
+   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble "w" [(FInt 3)])
+                                               (FArrayElem FPDouble "v" [(FInt 3)]))
+                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble "w" [(FInt 3)])
+                                               (FArrayElem FPDouble "v" [(FInt 4)]))
                     @?=
                     True
 
 equivModuloIndex__test7 = testCase "w(3)+v(3) not equiv t(3)+v(4)" $
-   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)])
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 3)]))
-                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble (Just $ ArraySizeInt 5) "t" [(FInt 3)])
-                                               (FArrayElem FPDouble (Just $ ArraySizeInt 5) "v" [(FInt 4)]))
+   equivModuloIndex (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble "w" [(FInt 3)])
+                                               (FArrayElem FPDouble "v" [(FInt 3)]))
+                    (BinaryFPOp AddOp FPDouble (FArrayElem FPDouble "t" [(FInt 3)])
+                                               (FArrayElem FPDouble "v" [(FInt 4)]))
                     @?=
                     False
 
 equivModuloIndex__test8 = testCase "w(3)+v(3) equiv w(3)+v(4)" $
-   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)]))
-                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 6)]))
+   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble "w" [(FInt 3)]))
+                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble "w" [(FInt 6)]))
                     @?=
                     True
 
 equivModuloIndex__test9 = testCase "w(3)+v(3) not equiv t(3)+v(4)" $
-   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "w" [(FInt 3)]))
-                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble (Just $ ArraySizeInt 5) "t" [(FInt 3)]))
+   equivModuloIndex (TypeCast FPDouble FPSingle (FArrayElem FPDouble "w" [(FInt 3)]))
+                    (TypeCast FPDouble FPSingle (FArrayElem FPDouble "t" [(FInt 3)]))
                     @?=
                     False
 

@@ -5,6 +5,6 @@ BEGIN
 IMPORTING turbine1
 
 turbine1_real(r_V: real, r_W: real, r_R: real): real  =
-(((3 + (2 / (R * R))) - ((((1 / 8) * (3 - (2 * V))) * (((W * W) * R) * R)) / (1 - V))) - (9 / 2))
+(((3 + (2 / (r_R * r_R))) - ((((1 / 8) * (3 - (2 * r_V))) * (((r_W * r_W) * r_R) * r_R)) / (1 - r_V))) - (9 / 2))
 
 END turbine1_real

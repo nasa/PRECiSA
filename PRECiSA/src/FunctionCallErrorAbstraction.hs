@@ -34,7 +34,6 @@ import Common.TypesUtils
 import Common.ControlFlow
 import Common.DecisionPath
 import Foreign.C
-import PVSTypes
 import Operators
 import Translation.Float2Real
 import Translation.Real2Float
@@ -52,7 +51,7 @@ roundOffError :: SemanticConfiguration
         -> IO Double
 roundOffError config maximumDepth minimumPrecision varBinds interp env ae =
   do
-    let aeSem = stmSem ae interp env config (LDP []) []
+    let aeSem = stmSem ae interp env (localVarsNames ae) config (LDP []) []
     let aeSemMergedACeb = mergeACebFold aeSem
     let acebAExpr = initErrAceb aeSemMergedACeb
     let errExpr = simplAExpr $ initAExpr $ fromMaybe (error "roError: unexpected argument.") $
@@ -108,7 +107,7 @@ replaceFunCallErr :: Bool
                   -> [VarBind]
                   -> AExpr
                   -> IO AExpr
-replaceFunCallErr withError config interp env locVars callerFunBinds e@(ErrFun fun fp field funargs) =
+replaceFunCallErr withError config interp env locVars callerFunBinds e@(ErrFun fun fp field funargs rargs argErrs) =
   do
     let fpargs = map (addLocVarsFAExpr locVars) funargs
     fpargsEnclosures <- mapM (faexprEnclosure config interp env 2 7 callerFunBinds) fpargs
@@ -176,8 +175,8 @@ replaceFunCallErr withError config interp env locVars callerFunBinds (BinaryOp o
                 <*> replaceFunCallErr withError config interp env locVars callerFunBinds ae2
 replaceFunCallErr withError config interp env locVars callerFunBinds (UnaryOp op ae)
   = UnaryOp op <$> replaceFunCallErr withError config interp env locVars callerFunBinds ae
-replaceFunCallErr withError config interp env locVars callerFunBinds (ArrayElem t size v aes)
-  = ArrayElem t size v <$> mapM (replaceFunCallErr withError config interp env locVars callerFunBinds) aes
+replaceFunCallErr withError config interp env locVars callerFunBinds (ArrayElem t v aes)
+  = ArrayElem t v <$> mapM (replaceFunCallErr withError config interp env locVars callerFunBinds) aes
 replaceFunCallErr withError config interp env locVars callerFunBinds (ListElem t x ae)
   = ListElem t x <$> replaceFunCallErr withError config interp env locVars callerFunBinds ae
 replaceFunCallErr withError config interp env locVars callerFunBinds (Min aes)
@@ -200,13 +199,13 @@ replaceFunCallErr withError config interp env locVars callerFunBinds (RListIte t
       replaceFunCallErrSnd (be,ae) = do
         ae' <- replaceFunCallErr withError config interp env locVars callerFunBinds ae
         return (be,ae')
-replaceFunCallErr withError config interp env locVars callerFunBinds (RForLoop t idxInit idxEnd accInit idx acc body)
+replaceFunCallErr withError config interp env locVars callerFunBinds (RForLoop t idx idxInit idxEnd acc accInit body)
   = do
       idxInit' <- replaceFunCallErr withError config interp env locVars callerFunBinds idxInit
       idxEnd' <- replaceFunCallErr withError config interp env locVars callerFunBinds idxEnd
       accInit' <- replaceFunCallErr withError config interp env locVars callerFunBinds accInit
       body' <- replaceFunCallErr withError config interp env locVars callerFunBinds body
-      return $ RForLoop t idxInit' idxEnd' accInit' idx acc body'
+      return $ RForLoop t idx idxInit' idxEnd' acc accInit' body'
 replaceFunCallErr withError config interp env locVars callerFunBinds (ErrFma t ae1 ee1 ae2 ee2 ae3 ee3)
   = ErrFma t <$> replaceFunCallErr withError config interp env locVars callerFunBinds ae1
              <*> replaceFunCallErr withError config interp env locVars callerFunBinds ee1

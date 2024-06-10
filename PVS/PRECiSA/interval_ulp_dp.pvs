@@ -1,7 +1,7 @@
 interval_ulp_dp: theory
 begin
 
-  importing axm_bnd@ieee754_double_base
+  importing float_bounded_axiomatic@ieee754_double_base
   importing interval_ulp[double, safe_proj_double, RtoD, min_ulp_double, ulp_double]
 
   Ulp_dp(I:Interval): Interval =

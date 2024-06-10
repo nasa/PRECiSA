@@ -32,6 +32,15 @@ transRecordElem :: AbsRawPVSLang.RecordElem -> Result
 transRecordElem x = case x of
   AbsRawPVSLang.RecordElem id expr -> failure x
 
+transLambdaKeyWord :: AbsRawPVSLang.LambdaKeyWord -> Result
+transLambdaKeyWord x = case x of
+  AbsRawPVSLang.LambdaWord1 -> failure x
+  AbsRawPVSLang.LambdaWord2 -> failure x
+
+transLambdaExpr :: AbsRawPVSLang.LambdaExpr -> Result
+transLambdaExpr x = case x of
+  AbsRawPVSLang.Lambda lambdakeyword id1 expr1 expr2 id2 type_ expr3 -> failure x
+
 transExpr :: AbsRawPVSLang.Expr -> Result
 transExpr x = case x of
   AbsRawPVSLang.Let letelems expr -> failure x
@@ -48,11 +57,13 @@ transExpr x = case x of
   AbsRawPVSLang.ExprSub expr1 expr2 -> failure x
   AbsRawPVSLang.ExprMul expr1 expr2 -> failure x
   AbsRawPVSLang.ExprDiv expr1 expr2 -> failure x
+  AbsRawPVSLang.With expr1 expr2 expr3 -> failure x
   AbsRawPVSLang.ExprNeg expr -> failure x
   AbsRawPVSLang.ExprPow expr1 expr2 -> failure x
   AbsRawPVSLang.If expr1 expr2 expr3 -> failure x
   AbsRawPVSLang.ListIf expr1 expr2 elsifs expr3 -> failure x
-  AbsRawPVSLang.For integer1 integer2 expr id -> failure x
+  AbsRawPVSLang.For expr1 expr2 expr3 lambdaexpr -> failure x
+  AbsRawPVSLang.ForDown expr1 expr2 expr3 lambdaexpr -> failure x
   AbsRawPVSLang.TupleIndex id integer -> failure x
   AbsRawPVSLang.RecordField id1 id2 -> failure x
   AbsRawPVSLang.TupleFunIndex id exprs integer -> failure x

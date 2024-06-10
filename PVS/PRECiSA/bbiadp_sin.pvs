@@ -2,7 +2,7 @@ bbiadp_sin: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-  	        axm_bnd@aerr_ulp__double,
+  	        float_bounded_axiomatic@aerr_ulp__double,
 	          interval_arith@interval_trig
 
   R,E: VAR Interval

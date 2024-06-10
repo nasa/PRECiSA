@@ -3,7 +3,7 @@ BEGIN
 
   importing bbiaXp_div
   importing interval_ulp_dp
-  importing axm_bnd@aerr_ulp__double
+  importing float_bounded_axiomatic@aerr_ulp__double
 
   R1,E1,R2,E2: VAR Interval
 

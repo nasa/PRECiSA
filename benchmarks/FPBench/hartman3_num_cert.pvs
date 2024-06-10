@@ -16,7 +16,7 @@ IMPORTING PRECiSA@strategies
 hartman3_c_0 : LEMMA
 FORALL(r_X1, r_X2, r_X3: real, X1: double, X2: double, X3: double):
 abs(DtoR(X1) - r_X1)<=ulp_dp(r_X1)/2 AND abs(DtoR(X2) - r_X2)<=ulp_dp(r_X2)/2 AND abs(DtoR(X3) - r_X3)<=ulp_dp(r_X3)/2
-AND (((TRUE AND (0 < (ieee754dp_prec - Fexp(Dexp(Dneg(Dadd(Dadd(Dmul(Dmul(3, Dsub(X1, RtoD((3689 / 10000)))), Dsub(X1, RtoD((3689 / 10000)))), Dmul(Dmul(10, Dsub(X2, RtoD((117 / 1000)))), Dsub(X2, RtoD((117 / 1000))))), Dmul(Dmul(30, Dsub(X3, RtoD((2673 / 10000)))), Dsub(X3, RtoD((2673 / 10000))))))))))) AND (TRUE AND TRUE))) AND
+AND (((TRUE AND (0 < (ieee754_double_precision - Fexp(Dexp(Dneg(Dadd(Dadd(Dmul(Dmul(3, Dsub(X1, RtoD((3689 / 10000)))), Dsub(X1, RtoD((3689 / 10000)))), Dmul(Dmul(10, Dsub(X2, RtoD((117 / 1000)))), Dsub(X2, RtoD((117 / 1000))))), Dmul(Dmul(30, Dsub(X3, RtoD((2673 / 10000)))), Dsub(X3, RtoD((2673 / 10000))))))))))) AND (TRUE AND TRUE))) AND
 r_X1 ## [|0,1|] AND  r_X2 ## [|0,1|] AND  r_X3 ## [|0,1|]
 IMPLIES
 abs(DtoR(hartman3(X1, X2, X3)) - hartman3_real(r_X1, r_X2, r_X3)) <= 7376282345292425 / 316912650057057350374175801344

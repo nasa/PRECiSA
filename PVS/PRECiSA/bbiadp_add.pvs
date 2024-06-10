@@ -2,7 +2,7 @@ bbiadp_add: theory
 begin
 
   importing interval_ulp_dp
-  importing axm_bnd@aerr_ulp__double
+  importing float_bounded_axiomatic@aerr_ulp__double
 
   R1,E1,R2,E2: VAR Interval
 
@@ -22,7 +22,7 @@ begin
 
   %|-   AEB_ADD_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
-  %|- QED   AEB_ADD_inclusion_j 
+  %|- QED   AEB_ADD_inclusion_j
   AEB_ADD_inclusion_j: judgement
     aebounddp_add_ia
     has_type (Inclusion4?( Any?,

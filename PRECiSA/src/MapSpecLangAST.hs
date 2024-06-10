@@ -18,7 +18,6 @@ import AbsSpecLang
 import AbsPVSLang
 import ErrM
 import Data.Maybe
-import PVSTypes
 
 toErrM :: Either String a -> Err a
 toErrM (Left e) = Bad e

@@ -16,7 +16,6 @@ import Kodiak.Kodiak
 import Kodiak.Runnable
 import AbsPVSLang
 import AbsSpecLang
-import PVSTypes
 import Numeric (fromRat)
 import Control.Exception (throw,AssertionFailed(..))
 import Control.Monad ((>=>),foldM)

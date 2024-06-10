@@ -68,7 +68,7 @@ build-kodiak: checkout-submodules build-filib
 		mkdir kodiak; \
 		cd kodiak; \
 		FILIB_ROOT=$(BUILD_FOLDER)/filibsrc cmake $(KODIAK_PATH); \
-		cmake --build . -- KodiakDynamic -j$(JOBS); \
+		cmake --build . --target KodiakDynamic -- -j$(JOBS); \
 	)
 
 print-kodiak-library-dir: build-kodiak

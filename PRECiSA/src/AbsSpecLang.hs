@@ -10,12 +10,11 @@
 
 module AbsSpecLang where
 
-import PVSTypes
 import Text.Printf
 import PPExt
 import Prelude hiding ((<>))
 import Data.Scientific
-import AbsPVSLang (ResultField(..))
+import AbsPVSLang (ResultField(..), PVSType(..))
 
 data LBound
     = LBInt Integer

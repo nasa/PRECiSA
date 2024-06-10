@@ -5,6 +5,6 @@ BEGIN
 IMPORTING sphere
 
 sphere_real(r_R: real, r_X: real, r_Lat: real, r_Lon: real): real  =
-(X + (R * (sin(Lat) * cos(Lon))))
+(r_X + (r_R * (sin(r_Lat) * cos(r_Lon))))
 
 END sphere_real

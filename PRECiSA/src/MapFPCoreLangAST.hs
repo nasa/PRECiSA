@@ -17,15 +17,14 @@ import Common.TypesUtils
 import Data.Maybe(fromMaybe)
 import Data.Ratio
 import ErrM
-import PVSTypes
 import Numeric
 import qualified Operators as Op
 import Parser.ParFPCoreLang
 import Parser.LexFPCoreLang
 import Utils (fst3,snd3)
 
-type VarTypeEnv = [(String, PVSTypes.PVSType)]
-type FunTypeEnv = [(String, PVSTypes.PVSType)]
+type VarTypeEnv = [(String, PVSType)]
+type FunTypeEnv = [(String, PVSType)]
 
 fpcore2Prog :: AbsFPCoreLang.FPCore -> AbsPVSLang.Program
 fpcore2Prog (AbsFPCoreLang.FProgram  (Symbol name) args props expr) = [fpcore2Decl [(name, FPDouble)] name args expr]
@@ -49,7 +48,7 @@ fpcore2Arg (ASymDim symbol _) = [fpcoreSym2Arg symbol]
 fpcore2Arg (AProp _ symbol _) = [fpcoreSym2Arg symbol]
 
 fpcoreSym2Arg :: AbsFPCoreLang.Symbol -> AbsPVSLang.Arg
-fpcoreSym2Arg (Symbol s) = AbsPVSLang.Arg s FPDouble 
+fpcoreSym2Arg (Symbol s) = AbsPVSLang.Arg s FPDouble
 
 -- While, For, Tensor, not fully supported yet.
 fpcore2FAExpr :: VarTypeEnv -> FunTypeEnv -> AbsFPCoreLang.Expr -> AbsPVSLang.FAExpr
@@ -81,19 +80,19 @@ fpcore2LetElem env fenv (AbsFPCoreLang.SymExPair (Symbol sym) ex) = (sym, FPDoub
 
 -- TODO: Implementation
 fpcoreOpCall2Expr :: VarTypeEnv -> FunTypeEnv -> AbsFPCoreLang.Operation -> [AbsFPCoreLang.Expr] -> AbsPVSLang.FAExpr
-fpcoreOpCall2Expr env fenv PlusOp [ex1, ex2] = 
+fpcoreOpCall2Expr env fenv PlusOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.AddOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
-fpcoreOpCall2Expr env fenv MinusOp [ex1, ex2] = 
+fpcoreOpCall2Expr env fenv MinusOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.SubOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
-fpcoreOpCall2Expr env fenv MinusOp [fae] = 
+fpcoreOpCall2Expr env fenv MinusOp [fae] =
   AbsPVSLang.UnaryFPOp Op.NegOp  FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv MulOp [ex1, ex2] = 
+fpcoreOpCall2Expr env fenv MulOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.MulOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
-fpcoreOpCall2Expr env fenv DivOp [ex1, ex2] = 
+fpcoreOpCall2Expr env fenv DivOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.DivOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
 fpcoreOpCall2Expr env fenv FabsOp [fae] =
   AbsPVSLang.UnaryFPOp Op.AbsOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv FmaOp [ex1, ex2, ex3] = 
+fpcoreOpCall2Expr env fenv FmaOp [ex1, ex2, ex3] =
   FFma FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2) (fpcore2FAExpr env fenv ex3)
 fpcoreOpCall2Expr env fenv ExpOp [fae] =
   AbsPVSLang.UnaryFPOp Op.ExpoOp  FPDouble (fpcore2FAExpr env fenv fae)
@@ -104,7 +103,7 @@ fpcoreOpCall2Expr env fenv LogOp [fae] =
 fpcoreOpCall2Expr env fenv Log10Op [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv Log2Op [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv Log1pOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv PowOp [ex1, ex2] = 
+fpcoreOpCall2Expr env fenv PowOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.PowOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
 fpcoreOpCall2Expr env fenv SqrtOp [fae] =
   AbsPVSLang.UnaryFPOp Op.SqrtOp   FPDouble (fpcore2FAExpr env fenv fae)
@@ -116,11 +115,11 @@ fpcoreOpCall2Expr env fenv CosOp [fae] =
   AbsPVSLang.UnaryFPOp Op.CosOp   FPDouble (fpcore2FAExpr env fenv fae)
 fpcoreOpCall2Expr env fenv TanOp [fae] =
   AbsPVSLang.UnaryFPOp Op.TanOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv AsinOp [fae] = 
+fpcoreOpCall2Expr env fenv AsinOp [fae] =
   AbsPVSLang.UnaryFPOp Op.AsinOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv AcosOp [fae] = 
+fpcoreOpCall2Expr env fenv AcosOp [fae] =
   AbsPVSLang.UnaryFPOp Op.AcosOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv AtanOp [fae] = 
+fpcoreOpCall2Expr env fenv AtanOp [fae] =
   AbsPVSLang.UnaryFPOp Op.AtanOp   FPDouble (fpcore2FAExpr env fenv fae)
 fpcoreOpCall2Expr env fenv Atan2Op [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv SinhOp [ex1, ex2] = error $ "Not yet implemented"
@@ -136,12 +135,12 @@ fpcoreOpCall2Expr env fenv LgammaOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv CeilOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv FloorOp [fae] =
   AbsPVSLang.UnaryFPOp Op.FloorOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv FmodOp [ex1, ex2] = 
+fpcoreOpCall2Expr env fenv FmodOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.ModOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
 fpcoreOpCall2Expr env fenv RemainderOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv FmaxOp faes =
   FMax $ map (fpcore2FAExpr env fenv) faes
-fpcoreOpCall2Expr env fenv FminOp faes = 
+fpcoreOpCall2Expr env fenv FminOp faes =
   FMin $ map (fpcore2FAExpr env fenv) faes
 fpcoreOpCall2Expr env fenv FdimOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv CopysignOp [ex1, ex2] = error $ "Not yet implemented"

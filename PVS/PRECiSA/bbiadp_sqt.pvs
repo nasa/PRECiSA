@@ -2,7 +2,7 @@ bbiadp_sqt: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-  	        axm_bnd@aerr_ulp__double,
+  	        float_bounded_axiomatic@aerr_ulp__double,
 	          interval_arith@interval_sqrt
 
   R,E: VAR Interval
@@ -37,7 +37,7 @@ BEGIN
 %|- AEB_SQT_inclusion_j : PROOF
 %|- (then
 %|-  (install-rewrites :rewrites
-%|-   ("aeb_sqt_pre2" "axm_bnd@ieee754_sqt.sqrt"))
+%|-   ("aeb_sqt_pre2" "float_bounded_axiomatic@ieee754_sqt.sqrt"))
 %|-  (branch (prove-inclusion-judgement) ((grind))))
 %|- QED AEB_SQT_inclusion_j
 

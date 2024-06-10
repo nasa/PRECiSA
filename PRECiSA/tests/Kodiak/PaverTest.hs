@@ -16,7 +16,6 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import AbsSpecLang
-import PVSTypes
 import qualified Kodiak.Runnable   as KR
 import qualified Kodiak.Expression as K
 import Kodiak.Paver

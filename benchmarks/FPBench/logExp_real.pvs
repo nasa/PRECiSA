@@ -5,6 +5,6 @@ BEGIN
 IMPORTING logExp
 
 logExp_real(r_X: real): real  =
-ln((1 + exp(X)))
+ln((1 + exp(r_X)))
 
 END logExp_real

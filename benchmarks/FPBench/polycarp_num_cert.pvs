@@ -16,7 +16,7 @@ IMPORTING PRECiSA@strategies
 polycarp_c_0 : LEMMA
 FORALL(r_P_i_x, r_P_i_y, r_S_x, r_S_y, r_BUFF: real, P_i_x: double, P_i_y: double, S_x: double, S_y: double, BUFF: double):
 abs(DtoR(P_i_x) - r_P_i_x)<=ulp_dp(r_P_i_x)/2 AND abs(DtoR(P_i_y) - r_P_i_y)<=ulp_dp(r_P_i_y)/2 AND abs(DtoR(S_x) - r_S_x)<=ulp_dp(r_S_x)/2 AND abs(DtoR(S_y) - r_S_y)<=ulp_dp(r_S_y)/2 AND abs(DtoR(BUFF) - r_BUFF)<=ulp_dp(r_BUFF)/2
-AND (((((P_i_y >= (S_y - BUFF)) AND (abs((P_i_x - S_x)) < BUFF)) AND (1 < (ieee754dp_prec - Fexp(BUFF)))) AND (((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF)) AND TRUE)) OR ((NOT(((P_i_y >= (S_y - BUFF)) AND (abs((P_i_x - S_x)) < BUFF))) AND TRUE) AND (NOT(((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF))) AND TRUE))) AND
+AND (((((r_P_i_y >= (r_S_y - r_BUFF)) AND (abs((r_P_i_x - r_S_x)) < r_BUFF)) AND (1 < (ieee754_double_precision - Fexp(BUFF)))) AND (((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF)) AND TRUE)) OR ((NOT(((r_P_i_y >= (r_S_y - r_BUFF)) AND (abs((r_P_i_x - r_S_x)) < r_BUFF))) AND TRUE) AND (NOT(((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF))) AND TRUE))) AND
 r_P_i_x ## [|1,10|] AND  r_P_i_y ## [|1,10|] AND  r_S_x ## [|1,10|] AND  r_S_y ## [|1,10|] AND  r_BUFF ## [|0.1,0.3|]
 IMPLIES
 abs(DtoR(polycarp(P_i_x, P_i_y, S_x, S_y, BUFF)) - polycarp_real(r_P_i_x, r_P_i_y, r_S_x, r_S_y, r_BUFF)) <= 33 / 18014398509481984
@@ -28,7 +28,7 @@ abs(DtoR(polycarp(P_i_x, P_i_y, S_x, S_y, BUFF)) - polycarp_real(r_P_i_x, r_P_i_
 polycarp_c_1 : LEMMA
 FORALL(r_P_i_x, r_P_i_y, r_S_x, r_S_y, r_BUFF: real, P_i_x: double, P_i_y: double, S_x: double, S_y: double, BUFF: double):
 abs(DtoR(P_i_x) - r_P_i_x)<=ulp_dp(r_P_i_x)/2 AND abs(DtoR(P_i_y) - r_P_i_y)<=ulp_dp(r_P_i_y)/2 AND abs(DtoR(S_x) - r_S_x)<=ulp_dp(r_S_x)/2 AND abs(DtoR(S_y) - r_S_y)<=ulp_dp(r_S_y)/2 AND abs(DtoR(BUFF) - r_BUFF)<=ulp_dp(r_BUFF)/2
-AND (((((P_i_y >= (S_y - BUFF)) AND (abs((P_i_x - S_x)) < BUFF)) AND (1 < (ieee754dp_prec - Fexp(BUFF)))) AND (NOT(((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF))) AND TRUE)) OR ((NOT(((P_i_y >= (S_y - BUFF)) AND (abs((P_i_x - S_x)) < BUFF))) AND (1 < (ieee754dp_prec - Fexp(BUFF)))) AND (((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF)) AND TRUE))) AND
+AND (((((r_P_i_y >= (r_S_y - r_BUFF)) AND (abs((r_P_i_x - r_S_x)) < r_BUFF)) AND (1 < (ieee754_double_precision - Fexp(BUFF)))) AND (NOT(((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF))) AND TRUE)) OR ((NOT(((r_P_i_y >= (r_S_y - r_BUFF)) AND (abs((r_P_i_x - r_S_x)) < r_BUFF))) AND (1 < (ieee754_double_precision - Fexp(BUFF)))) AND (((P_i_y >= Dsub(S_y, BUFF)) AND (Dabs(Dsub(P_i_x, S_x)) < BUFF)) AND TRUE))) AND
 r_P_i_x ## [|1,10|] AND  r_P_i_y ## [|1,10|] AND  r_S_x ## [|1,10|] AND  r_S_y ## [|1,10|] AND  r_BUFF ## [|0.1,0.3|]
 IMPLIES
 abs(DtoR(polycarp(P_i_x, P_i_y, S_x, S_y, BUFF)) - polycarp_real(r_P_i_x, r_P_i_y, r_S_x, r_S_y, r_BUFF)) <= 1351079888211153 / 2251799813685248

@@ -5,9 +5,9 @@ BEGIN
 IMPORTING azimuth
 
 azimuth_real(r_Lat1: real, r_Lon1: real, r_Lat2: real, r_Lon2: real): real  =
-LET DLon:real=(Lon2 - Lon1)
-IN LET Y:real=(cos(Lat2) * sin(DLon))
-IN LET X:real=((cos(Lat1) * sin(Lat2)) - (sin(Lat1) * (cos(Lat2) * cos(DLon))))
+LET DLon:real=(r_Lon2 - r_Lon1)
+IN LET Y:real=(cos(r_Lat2) * sin(DLon))
+IN LET X:real=((cos(r_Lat1) * sin(r_Lat2)) - (sin(r_Lat1) * (cos(r_Lat2) * cos(DLon))))
 IN atan((Y / X))
 
 END azimuth_real

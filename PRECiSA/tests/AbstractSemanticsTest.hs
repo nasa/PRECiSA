@@ -20,7 +20,6 @@ import Test.Tasty.HUnit
 import AbsPVSLang
 import AbstractDomain
 import AbstractSemantics hiding (functionSemantics)
-import PVSTypes
 import Operators
 import Data.Set (fromList)
 

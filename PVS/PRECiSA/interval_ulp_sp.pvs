@@ -1,7 +1,7 @@
 interval_ulp_sp: theory
 begin
 
-  importing axm_bnd@ieee754_single_base
+  importing float_bounded_axiomatic@ieee754_single_base
   importing interval_ulp[single, safe_proj_single, RtoS, min_ulp_single, ulp_single]
 
   x: var real

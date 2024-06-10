@@ -16,7 +16,6 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import AbsPVSLang
 import AbstractDomain
-import PVSTypes
 import Operators
 
 testAbstractDomain = testGroup "AbstractDomain"

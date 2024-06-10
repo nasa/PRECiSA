@@ -16,7 +16,7 @@ IMPORTING PRECiSA@strategies
 dop3_c_0 : LEMMA
 FORALL(r_U, r_V, r_T: real, U: double, V: double, T: double):
 abs(DtoR(U) - r_U)<=ulp_dp(r_U)/2 AND abs(DtoR(V) - r_V)<=ulp_dp(r_V)/2 AND abs(DtoR(T) - r_T)<=ulp_dp(r_T)/2
-AND (((TRUE AND (((((1657 / 5) + ((3 / 5) * T)) + r_U) * (((1657 / 5) + ((3 / 5) * T)) + r_U)) /= 0)) AND (TRUE AND (Dmul(Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U), Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U)) /= ItoD(0))))) AND
+AND (((TRUE AND (((((1657 / 5) + ((3 / 5) * r_T)) + r_U) * (((1657 / 5) + ((3 / 5) * r_T)) + r_U)) /= 0)) AND (TRUE AND (Dmul(Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U), Dadd(Dadd(RtoD((1657 / 5)), Dmul(RtoD((3 / 5)), T)), U)) /= ItoD(0))))) AND
 r_U ## [|-30,120|] AND  r_V ## [|320,20300|] AND  r_T ## [|-50,30|]
 IMPLIES
 abs(DtoR(dop3(U, V, T)) - dop3_real(r_U, r_V, r_T)) <= 2416838425323181 / 19807040628566084398385987584

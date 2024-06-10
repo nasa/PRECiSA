@@ -5,6 +5,6 @@ BEGIN
 IMPORTING kepler1
 
 kepler1_real(r_X1: real, r_X2: real, r_X3: real, r_X4: real): real  =
-((((((((X1 * X4) * (((-(X1) + X2) + X3) - X4)) + (X2 * (((X1 - X2) + X3) + X4))) + (X3 * (((X1 + X2) - X3) + X4))) - ((X2 * X3) * X4)) - (X1 * X3)) - (X1 * X2)) - X4)
+((((((((r_X1 * r_X4) * (((-(r_X1) + r_X2) + r_X3) - r_X4)) + (r_X2 * (((r_X1 - r_X2) + r_X3) + r_X4))) + (r_X3 * (((r_X1 + r_X2) - r_X3) + r_X4))) - ((r_X2 * r_X3) * r_X4)) - (r_X1 * r_X3)) - (r_X1 * r_X2)) - r_X4)
 
 END kepler1_real

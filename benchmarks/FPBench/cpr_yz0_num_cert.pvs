@@ -16,7 +16,7 @@ IMPORTING PRECiSA@strategies
 yz0_c_0 : LEMMA
 FORALL(r_Lat: real, Lat: double):
 abs(DtoR(Lat) - r_Lat)<=ulp_dp(r_Lat)/2
-AND (((TRUE AND (17 < (ieee754dp_prec - Fexp(Ddiv(Dsub(Lat, Dmul(Idiv(360, 60), Dfloor(Ddiv(Lat, Idiv(360, 60))))), Idiv(360, 60)))))) AND (TRUE AND TRUE))) AND
+AND (((TRUE AND (17 < (ieee754_double_precision - Fexp(Ddiv(Dsub(Lat, Dmul(Idiv(360, 60), Dfloor(Ddiv(Lat, Idiv(360, 60))))), Idiv(360, 60)))))) AND (TRUE AND TRUE))) AND
 r_Lat ## [|-90,90|]
 IMPLIES
 abs(DtoR(yz0(Lat)) - yz0_real(r_Lat)) <= 562954248388611 / 4294967296

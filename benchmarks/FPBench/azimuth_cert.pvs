@@ -3,8 +3,8 @@
 azimuth_cert: THEORY
 BEGIN
 IMPORTING PRECiSA@strategies
-IMPORTING axm_bnd@aerr_ulp__double
-IMPORTING axm_bnd@aerr_ulp__single
+IMPORTING float_bounded_axiomatic@aerr_ulp__double
+IMPORTING float_bounded_axiomatic@aerr_ulp__single
 IMPORTING azimuth
 IMPORTING azimuth_real
 
@@ -12,30 +12,39 @@ IMPORTING azimuth_real
 %|- (precisa-gen-cert-tcc)
 %|- QED
 
+azimuth_0_error (e_Lat1, e_Lon1, e_Lat2, e_Lon2: nonneg_real, r_Lat1, r_Lon1, r_Lat2, r_Lon2: real): nonneg_real = LET DLon:real=(r_Lon2 - r_Lon1),
+Err_DLon:real=aerr_ulp_dp_sub(r_Lon2, e_Lon2, r_Lon1, e_Lon1)
+IN LET Y:real=(cos(r_Lat2) * sin(DLon)),
+Err_Y:real=aerr_ulp_dp_mul(cos(r_Lat2), aerr_ulp_dp_cos(r_Lat2, e_Lat2), sin(DLon), aerr_ulp_dp_sin(DLon, Err_DLon))
+IN LET X:real=((cos(r_Lat1) * sin(r_Lat2)) - (sin(r_Lat1) * (cos(r_Lat2) * cos(DLon)))),
+Err_X:real=aerr_ulp_dp_sub((cos(r_Lat1) * sin(r_Lat2)), aerr_ulp_dp_mul(cos(r_Lat1), aerr_ulp_dp_cos(r_Lat1, e_Lat1), sin(r_Lat2), aerr_ulp_dp_sin(r_Lat2, e_Lat2)), (sin(r_Lat1) * (cos(r_Lat2) * cos(DLon))), aerr_ulp_dp_mul(sin(r_Lat1), aerr_ulp_dp_sin(r_Lat1, e_Lat1), (cos(r_Lat2) * cos(DLon)), aerr_ulp_dp_mul(cos(r_Lat2), aerr_ulp_dp_cos(r_Lat2, e_Lat2), cos(DLon), aerr_ulp_dp_cos(DLon, Err_DLon))))
+IN aerr_ulp_dp_atn(div_safe(Y, X), aerr_ulp_dp_div(Y, Err_Y, X, Err_X))
+
+
 azimuth_0 : LEMMA
 FORALL(e_Lat1, e_Lon1, e_Lat2, e_Lon2: nonneg_real, r_Lat1, r_Lon1, r_Lat2, r_Lon2: real, Lat1: double, Lon1: double, Lat2: double, Lon2: double):
-finite?(DLon) AND finite?(Lat1) AND finite?(Lat2) AND finite?(Lon1) AND finite?(Lon2) AND finite?(X) AND finite?(Y) AND finite?(Dsub(Lon2, Lon1)) AND finite?(Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon))))) AND finite?(Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon)))) AND finite?(Dmul(Dcos(Lat1), Dsin(Lat2))) AND finite?(Dmul(Dcos(Lat2), Dsin(DLon))) AND finite?(Dmul(Dcos(Lat2), Dcos(DLon))) AND finite?(Ddiv(Y, X)) AND finite?(Dsin(DLon)) AND finite?(Dsin(Lat1)) AND finite?(Dsin(Lat2)) AND finite?(Dcos(DLon)) AND finite?(Dcos(Lat1)) AND finite?(Dcos(Lat2)) AND finite?(Datan(Ddiv(Y, X))) AND finite?(LET DLon:double=Dsub(Lon2, Lon1)
+LET DLon=Dsub(Lon2, Lon1),
+Y=Dmul(Dcos(Lat2), Dsin(DLon)),
+X=Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon))))
+IN (finite?_double(DLon) AND finite?_double(Lat1) AND finite?_double(Lat2) AND finite?_double(Lon1) AND finite?_double(Lon2) AND finite?_double(X) AND finite?_double(Y) AND finite?_double(Dsub(Lon2, Lon1)) AND finite?_double(Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon))))) AND finite?_double(Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon)))) AND finite?_double(Dmul(Dcos(Lat1), Dsin(Lat2))) AND finite?_double(Dmul(Dcos(Lat2), Dsin(DLon))) AND finite?_double(Dmul(Dcos(Lat2), Dcos(DLon))) AND finite?_double(Ddiv(Y, X)) AND finite?_double(Dsin(DLon)) AND finite?_double(Dsin(Lat1)) AND finite?_double(Dsin(Lat2)) AND finite?_double(Dcos(DLon)) AND finite?_double(Dcos(Lat1)) AND finite?_double(Dcos(Lat2)) AND finite?_double(Datan(Ddiv(Y, X))) AND finite?_double(LET DLon:double=Dsub(Lon2, Lon1)
 IN LET Y:double=Dmul(Dcos(Lat2), Dsin(DLon))
 IN LET X:double=Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon))))
-IN Datan(Ddiv(Y, X))) AND finite?(LET X:double=Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon))))
-IN Datan(Ddiv(Y, X))) AND finite?(LET Y:double=Dmul(Dcos(Lat2), Dsin(DLon))
+IN Datan(Ddiv(Y, X))) AND finite?_double(LET X:double=Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon))))
+IN Datan(Ddiv(Y, X))) AND finite?_double(LET Y:double=Dmul(Dcos(Lat2), Dsin(DLon))
 IN LET X:double=Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(DLon))))
-IN Datan(Ddiv(Y, X))) AND
+IN Datan(Ddiv(Y, X))))
+AND
 abs(DtoR(Lat1) - r_Lat1)<=e_Lat1 AND abs(DtoR(Lon1) - r_Lon1)<=e_Lon1 AND abs(DtoR(Lat2) - r_Lat2)<=e_Lat2 AND abs(DtoR(Lon2) - r_Lon2)<=e_Lon2
-AND (((TRUE AND (((cos(Lat1) * sin(Lat2)) - (sin(Lat1) * (cos(Lat2) * cos((Lon2 - Lon1))))) /= 0)) AND (TRUE AND (Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(Dsub(Lon2, Lon1))))) /= ItoD(0)))))
+AND (((TRUE AND (((cos(r_Lat1) * sin(r_Lat2)) - (sin(r_Lat1) * (cos(r_Lat2) * cos((r_Lon2 - r_Lon1))))) /= 0)) AND (TRUE AND (Dsub(Dmul(Dcos(Lat1), Dsin(Lat2)), Dmul(Dsin(Lat1), Dmul(Dcos(Lat2), Dcos(Dsub(Lon2, Lon1))))) /= ItoD(0)))))
 IMPLIES
-abs(DtoR(azimuth(Lat1, Lon1, Lat2, Lon2)) - azimuth_real(r_Lat1, r_Lon1, r_Lat2, r_Lon2)) <= LET DLon:real=(r_Lon2 - r_Lon1),
-Err_DLon:real=aerr_ulp_dp_sub(r_Lon2, e_Lon2, r_Lon1, e_Lon1)
-IN LET Y:real=(cos(r_Lat2) * sin(r_DLon)),
-Err_Y:real=aerr_ulp_dp_mul(cos(r_Lat2), aerr_ulp_dp_cos(r_Lat2, e_Lat2), sin(r_DLon), aerr_ulp_dp_sin(r_DLon, Err_DLon))
-IN LET X:real=((cos(r_Lat1) * sin(r_Lat2)) - (sin(r_Lat1) * (cos(r_Lat2) * cos(r_DLon)))),
-Err_X:real=aerr_ulp_dp_sub((cos(r_Lat1) * sin(r_Lat2)), aerr_ulp_dp_mul(cos(r_Lat1), aerr_ulp_dp_cos(r_Lat1, e_Lat1), sin(r_Lat2), aerr_ulp_dp_sin(r_Lat2, e_Lat2)), (sin(r_Lat1) * (cos(r_Lat2) * cos(r_DLon))), aerr_ulp_dp_mul(sin(r_Lat1), aerr_ulp_dp_sin(r_Lat1, e_Lat1), (cos(r_Lat2) * cos(r_DLon)), aerr_ulp_dp_mul(cos(r_Lat2), aerr_ulp_dp_cos(r_Lat2, e_Lat2), cos(r_DLon), aerr_ulp_dp_cos(r_DLon, Err_DLon))))
-IN aerr_ulp_dp_atn(div_safe(r_Y, r_X), aerr_ulp_dp_div(r_Y, Err_Y, r_X, Err_X))
+abs(DtoR(azimuth(Lat1, Lon1, Lat2, Lon2)) - azimuth_real(r_Lat1, r_Lon1, r_Lat2, r_Lon2)) <= azimuth_0_error(e_Lat1, e_Lon1, e_Lat2, e_Lon2, r_Lat1, r_Lon1, r_Lat2, r_Lon2)
 
 
 %|- azimuth_0: PROOF
 %|- (precisa)
 %|- QED
 
+
+azimuth_error(e_Lat1, e_Lon1, e_Lat2, e_Lon2: nonneg_real, r_Lat1, r_Lon1, r_Lat2, r_Lon2: real): nonneg_real = azimuth_0_error(e_Lat1, e_Lon1, e_Lat2, e_Lon2, r_Lat1, r_Lon1, r_Lat2, r_Lon2)
 
 END azimuth_cert

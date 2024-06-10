@@ -5,6 +5,6 @@ BEGIN
 IMPORTING verhulst
 
 verhulst_real(r_X: real): real  =
-((4 * X) / (1 + (X / (111 / 100))))
+((4 * r_X) / (1 + (r_X / (111 / 100))))
 
 END verhulst_real

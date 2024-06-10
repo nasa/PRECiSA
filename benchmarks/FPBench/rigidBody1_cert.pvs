@@ -3,8 +3,8 @@
 rigidBody1_cert: THEORY
 BEGIN
 IMPORTING PRECiSA@strategies
-IMPORTING axm_bnd@aerr_ulp__double
-IMPORTING axm_bnd@aerr_ulp__single
+IMPORTING float_bounded_axiomatic@aerr_ulp__double
+IMPORTING float_bounded_axiomatic@aerr_ulp__single
 IMPORTING rigidBody1
 IMPORTING rigidBody1_real
 
@@ -12,18 +12,24 @@ IMPORTING rigidBody1_real
 %|- (precisa-gen-cert-tcc)
 %|- QED
 
+rigidBody1_0_error (e_X1, e_X2, e_X3: nonneg_real, r_X1, r_X2, r_X3: real): nonneg_real = aerr_ulp_dp_sub((((-(r_X1) * r_X2) - ((2 * r_X2) * r_X3)) - r_X1), aerr_ulp_dp_sub(((-(r_X1) * r_X2) - ((2 * r_X2) * r_X3)), aerr_ulp_dp_sub((-(r_X1) * r_X2), aerr_ulp_dp_mul(-(r_X1), aerr_ulp_dp_neg(r_X1, e_X1), r_X2, e_X2), ((2 * r_X2) * r_X3), aerr_ulp_dp_mul((2 * r_X2), aerr_ulp_dp_mul_p2l((1:: nat), e_X2), r_X3, e_X3)), r_X1, e_X1), r_X3, e_X3)
+
+
 rigidBody1_0 : LEMMA
 FORALL(e_X1, e_X2, e_X3: nonneg_real, r_X1, r_X2, r_X3: real, X1: double, X2: double, X3: double):
-int_in_range?(2) AND finite?(X1) AND finite?(X2) AND finite?(X3) AND finite?(Dsub(Dsub(Dsub(Dmul(Dneg(X1), X2), Dmul(Dmul(2, X2), X3)), X1), X3)) AND finite?(Dsub(Dsub(Dmul(Dneg(X1), X2), Dmul(Dmul(2, X2), X3)), X1)) AND finite?(Dsub(Dmul(Dneg(X1), X2), Dmul(Dmul(2, X2), X3))) AND finite?(Dmul(2, X2)) AND finite?(Dmul(Dmul(2, X2), X3)) AND finite?(Dmul(Dneg(X1), X2)) AND finite?(Dneg(X1)) AND
+int_in_range?_double(2) AND finite?_double(X1) AND finite?_double(X2) AND finite?_double(X3) AND finite?_double(Dsub(Dsub(Dsub(Dmul(Dneg(X1), X2), Dmul(Dmul(2, X2), X3)), X1), X3)) AND finite?_double(Dsub(Dsub(Dmul(Dneg(X1), X2), Dmul(Dmul(2, X2), X3)), X1)) AND finite?_double(Dsub(Dmul(Dneg(X1), X2), Dmul(Dmul(2, X2), X3))) AND finite?_double(Dmul(2, X2)) AND finite?_double(Dmul(Dmul(2, X2), X3)) AND finite?_double(Dmul(Dneg(X1), X2)) AND finite?_double(Dneg(X1))
+AND
 abs(DtoR(X1) - r_X1)<=e_X1 AND abs(DtoR(X2) - r_X2)<=e_X2 AND abs(DtoR(X3) - r_X3)<=e_X3
-AND (((TRUE AND (1 < (ieee754dp_prec - Fexp(X2)))) AND (TRUE AND TRUE)))
+AND (((TRUE AND (1 < (ieee754_double_precision - Fexp(X2)))) AND (TRUE AND TRUE)))
 IMPLIES
-abs(DtoR(rigidBody1(X1, X2, X3)) - rigidBody1_real(r_X1, r_X2, r_X3)) <= aerr_ulp_dp_sub((((-(r_X1) * r_X2) - ((2 * r_X2) * r_X3)) - r_X1), aerr_ulp_dp_sub(((-(r_X1) * r_X2) - ((2 * r_X2) * r_X3)), aerr_ulp_dp_sub((-(r_X1) * r_X2), aerr_ulp_dp_mul(-(r_X1), aerr_ulp_dp_neg(r_X1, e_X1), r_X2, e_X2), ((2 * r_X2) * r_X3), aerr_ulp_dp_mul((2 * r_X2), aerr_ulp_dp_mul_p2l(1, e_X2), r_X3, e_X3)), r_X1, e_X1), r_X3, e_X3)
+abs(DtoR(rigidBody1(X1, X2, X3)) - rigidBody1_real(r_X1, r_X2, r_X3)) <= rigidBody1_0_error(e_X1, e_X2, e_X3, r_X1, r_X2, r_X3)
 
 
 %|- rigidBody1_0: PROOF
 %|- (precisa)
 %|- QED
 
+
+rigidBody1_error(e_X1, e_X2, e_X3: nonneg_real, r_X1, r_X2, r_X3: real): nonneg_real = rigidBody1_0_error(e_X1, e_X2, e_X3, r_X1, r_X2, r_X3)
 
 END rigidBody1_cert

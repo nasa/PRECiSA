@@ -5,6 +5,6 @@ BEGIN
 IMPORTING cpr_yz0
 
 yz0_real(r_Lat: real): real  =
-floor(((((Lat - ((360 / 60) * floor((Lat / (360 / 60))))) / (360 / 60)) * 131072) + (1 / 2)))
+floor(((((r_Lat - ((360 / 60) * floor((r_Lat / (360 / 60))))) / (360 / 60)) * 131072) + (1 / 2)))
 
 END cpr_yz0_real
