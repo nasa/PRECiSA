@@ -2,8 +2,8 @@
  * @module ProcessWorker
  * @author Paolo Masci
  * @date 2019.11.06
- * @copyright 
- * Copyright 2019 United States Government as represented by the Administrator 
+ * @copyright
+ * Copyright 2019 United States Government as represented by the Administrator
  * of the National Aeronautics and Space Administration. All Rights Reserved.
  *
  * Disclaimers
@@ -44,17 +44,23 @@ import * as fsUtils from './common/fsUtils';
 import { DEFAULT_DEPTH, DEFAULT_PRECISION, formatMessage, precisaInputDataToString } from "./common/precisaUtils";
 import { Connection } from "vscode-languageserver";
 
+export interface PrecisaJsonResult {
+    function: string,
+    stableError: number,
+    unstableError?: number
+};
+
 /**
  * PRECiSA process worker, executes precisa with given args
  * Example invocations
- * ./precisa analyze ../benchmarks/analysis/FPBench/carbonGas.pvs ../benchmarks/analysis/FPBench/carbonGas.input
- * ./precisa analyze --paving --json ../benchmarks/analysis/FPBench/carbonGas.pvs ../benchmarks/analysis/FPBench/carbonGas.input`
+ * ./precisa ../benchmarks/analysis/FPBench/carbonGas.pvs ../benchmarks/analysis/FPBench/carbonGas.input
+ * ./precisa --paving --json ../benchmarks/analysis/FPBench/carbonGas.pvs ../benchmarks/analysis/FPBench/carbonGas.input`
  */
 export async function execPrecisa (req: PrecisaAnalysisRequest, config: { precisaPath: string, kodiakPath: string }, opt?: { paving?: boolean, connection?: Connection }): Promise<string | null> {
     opt = opt || {};
-    const options: string = opt.paving ? "--paving" : "";
+    const options: string = opt.paving ? "--paving" : "--json";
     const precisa: string = path.join(config?.precisaPath, 'precisa');
-    
+
     // create temporary files in a dedicated folder under the temp dir
     const folderName: string = path.join(os.tmpdir(), `${new Date().getTime()}`);
     await fsUtils.createFolder(folderName);
@@ -76,7 +82,7 @@ export async function execPrecisa (req: PrecisaAnalysisRequest, config: { precis
     // compose command for executing precisa
     const depth: number = req?.options?.depth >= 1 ? Math.floor(req.options.depth) : DEFAULT_DEPTH;
     const precision: number = req?.options?.precision >= 1 ? Math.floor(req.options.precision) : DEFAULT_PRECISION;
-    const cmd: string = `export LD_LIBRARY_PATH=${LD_LIBRARY_PATH} && ${precisa} analyze ${fnamePvs} ${fnameInput} -d ${depth} -p ${precision} ${options}`;
+    const cmd: string = `export LD_LIBRARY_PATH=${LD_LIBRARY_PATH} && ${precisa} ${fnamePvs} ${fnameInput} -d ${depth} -p ${precision} ${options}`;
     console.log(cmd);
 
     // wait for results
@@ -84,7 +90,6 @@ export async function execPrecisa (req: PrecisaAnalysisRequest, config: { precis
         // execute precisa
         const ans: Buffer = execSync(cmd);
         const res: string = ans?.toLocaleString() || "";
-        console.log(res);
         return res;
     } catch (precisa_error) {
         const msg: string = precisa_error.stderr?.toLocaleString();

@@ -1,7 +1,7 @@
 {
 	"name": "vscode-precisa",
 	"description": "Integrates PRECiSA into Visual Studio Code",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"author": "Paolo Masci",
 	"displayName": "PRECiSA",
 	"license": "NASA-1.3",

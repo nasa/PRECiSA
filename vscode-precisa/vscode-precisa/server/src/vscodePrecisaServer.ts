@@ -49,7 +49,7 @@ import {
 	PrecisaSaveResultsRequest, PrecisaSaveResultsResponse, PrecisaServerCommands, SensitivityAnalysisResponse, StartPrecisaRequest
 } from './common/precisa';
 import { PrecisaCodeLensProvider } from './providers/precisaCodeLensProvider';
-import { DEFAULT_DEPTH, DEFAULT_PRECISION, formatMessage, precisaInputDataToString } from './common/precisaUtils';
+import { precisaInputDataToString } from './common/precisaUtils';
 import { paving2Json, PavingData } from './common/paverUtils';
 import { execPrecisa } from './processWorker';
 
@@ -63,9 +63,22 @@ export interface Settings {
 /**
  * Diagnostic info
  */
- export declare interface PrecisaDiagnostic extends Diagnostic {
+export declare interface PrecisaDiagnostic extends Diagnostic {
     unstableErrorBound?: string,
     errorBound?: string
+};
+
+/**
+ * Precisa results
+ */
+export declare interface PrecisaResult {
+	certFile: string,
+	numCertFile: string,
+	results: {
+		function: string,
+		unstableError?: string,
+		stableError?: string
+	}[]
 };
 
 /**
@@ -319,55 +332,64 @@ export class VSCodePrecisaServer {
 		if (req) {
             const msg: string = await execPrecisa(req, { precisaPath: this.precisaPath, kodiakPath: this.kodiakPath }, { connection: this.connection });
             if (msg) {
-				// process results
-				let match: RegExpMatchArray = /\bstable\s+paths\s*:\s*(.*)/g.exec(msg);
-				const errorBound: string = (match && match.length > 1) ?  Number.parseFloat(match[1]).toExponential() : msg;
-				const errorBoundInfo: MarkupContent = {
-					kind: "markdown",
-					value: errorBound
-				};
-				match = /\bunstable\s*paths\s*:\s*(.*)/g.exec(msg);
-				const unstableErrorBound: string = (match && match.length > 1) ? Number.parseFloat(match[1]).toExponential() : null;
+				console.log(msg);
+				try {
+					const jsonRes: PrecisaResult = JSON.parse(msg);
+			
+					if (jsonRes?.results?.length > 0) {
+						// process results
+						// let match: RegExpMatchArray = /\bstable\s+paths\s*:\s*(.*)/g.exec(msg);
+						const errorBound: string = jsonRes.results[0].stableError;//(match && match.length > 1) ?  Number.parseFloat(match[1]).toExponential() : msg;
+						const errorBoundInfo: MarkupContent = {
+							kind: "markdown",
+							value: errorBound
+						};
+						// match = /\bunstable\s*paths\s*:\s*(.*)/g.exec(msg);
+						const unstableErrorBound: string = jsonRes.results[0].unstableError; //(match && match.length > 1) ? Number.parseFloat(match[1]).toExponential() : null;
 
-				match = /Numeric lemmas and proofs in: (.*)/g.exec(msg);
-				const numeric_certificate_file: string = (match && match.length > 1) ? match[1] : null;
-				const numericProofFile: DiagnosticRelatedInformation = {
-					location: {
-						uri: `file://${numeric_certificate_file}`,
-						range: {
-							start: { line: 5, character: 0 },
-							end: { line: 6, character: 0 }
-						}
-					},
-					message: "Certificate file (numeric proofs)"
-				};
-				match = /Symbolic lemmas and proofs in: (.*)/g.exec(msg);
-				const symbolic_certificate_file: string = (match && match.length > 1) ? match[1] : null;
-				const symbolicProofFile: DiagnosticRelatedInformation = {
-					location: {
-						uri: `file://${symbolic_certificate_file}`,
-						range: {
-							start: { line: 2, character: 0 },
-							end: { line: 3, character: 0 }
-						}
-					},
-					message: "Certificate file (symbolic proofs)"
-				};
-				const fun: string = precisaInputDataToString({ formula: req.formula, input: req.input });
-				const res: PrecisaDiagnostic = {
-					severity: DiagnosticSeverity.Information,
-					range: {
-						start: { line: req.position.line, character: 2 },
-						end: { line: req.position.line, character: 100 },
-					},
-					message: Number.parseFloat(errorBoundInfo?.value).toExponential(),
-					source: `Round-Off Error for ${fun}`,
-					// use diagnostic-related array to point to the pvs proof files
-					relatedInformation: [ numericProofFile, symbolicProofFile ],
-					errorBound,
-					unstableErrorBound
-				};
-                return res;
+						// match = /Numeric lemmas and proofs in: (.*)/g.exec(msg);
+						const numeric_certificate_file: string = jsonRes.numCertFile;//(match && match.length > 1) ? match[1] : null;
+						const numericProofFile: DiagnosticRelatedInformation = {
+							location: {
+								uri: `file://${numeric_certificate_file}`,
+								range: {
+									start: { line: 5, character: 0 },
+									end: { line: 6, character: 0 }
+								}
+							},
+							message: "Certificate file (numeric proofs)"
+						};
+						// match = /Symbolic lemmas and proofs in: (.*)/g.exec(msg);
+						const symbolic_certificate_file: string = jsonRes.certFile;//(match && match.length > 1) ? match[1] : null;
+						const symbolicProofFile: DiagnosticRelatedInformation = {
+							location: {
+								uri: `file://${symbolic_certificate_file}`,
+								range: {
+									start: { line: 2, character: 0 },
+									end: { line: 3, character: 0 }
+								}
+							},
+							message: "Certificate file (symbolic proofs)"
+						};
+						const fun: string = precisaInputDataToString({ formula: req.formula, input: req.input });
+						const res: PrecisaDiagnostic = {
+							severity: DiagnosticSeverity.Information,
+							range: {
+								start: { line: req.position.line, character: 2 },
+								end: { line: req.position.line, character: 100 },
+							},
+							message: Number.parseFloat(errorBoundInfo?.value).toExponential(),
+							source: `Round-Off Error for ${fun}`,
+							// use diagnostic-related array to point to the pvs proof files
+							relatedInformation: [ numericProofFile, symbolicProofFile ],
+							errorBound,
+							unstableErrorBound
+						};
+						return res;
+					}
+				} catch (err) {
+					console.log("[vscode-precisa] ** Error: Unable to parse JSON result **", err);
+				}
 			}
 		}
 		return null;
