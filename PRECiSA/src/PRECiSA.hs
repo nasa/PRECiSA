@@ -141,7 +141,7 @@ parseAndAnalyze
 
   pavingFiles <- if withPaving
     then do
-      let unstableCondInterp = concat $ Map.elems $ Map.mapWithKey (\ fun (_,_,_,sem) -> Map.elems $ Map.mapWithKey (\ field semField -> (fun, field, map conds semField)) sem ) unfoldedPgmSem
+      let unstableCondInterp = concat $ Map.elems $ Map.mapWithKey (\ fun (_,_,_,sem) -> Map.elems $ Map.mapWithKey (\ field semField -> (fun, field, map conds (filter isUnstable semField))) sem ) unfoldedPgmSem
       let kodiakFunConds = map (\(f,field,conditions) -> (f, field, fromMaybe (error "kodiakFunConds") (KP.conds2Kodiak' conditions))) unstableCondInterp
       KP.paveUnstabilityConditions kodiakFunConds spec searchParams (generatePavingFilename (filePath++inputFileName))
     else
