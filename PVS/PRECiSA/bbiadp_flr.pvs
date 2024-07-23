@@ -1,7 +1,7 @@
 bbiadp_flr: THEORY
 BEGIN
 
-  importing axm_bnd@aerr_ulp__double
+  importing float_bounded_axiomatic@aerr_ulp__double
   importing interval_arith@interval_expr
 
   R,E: VAR Interval
@@ -30,11 +30,11 @@ BEGIN
   %|- AEB_FLR_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
   %|- QED   AEB_FLR_inclusion_j
-  
+
   AEB_FLR_fundmental_j: JUDGEMENT
     aebounddp_flr_ia
     HAS_TYPE (Fundamental2?(Any?,pre1to2b(NonNeg?)))
-    
+
   %|- AEB_FLR_fundmental_j : PROOF
   %|- (prove-fundamental-judgement)
   %|- QED AEB_FLR_fundmental_j

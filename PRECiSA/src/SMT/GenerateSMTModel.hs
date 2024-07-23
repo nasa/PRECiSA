@@ -14,7 +14,6 @@ import AbstractSemantics
 import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
-import PVSTypes
 import Control.Monad.State
 import Data.List(find,zip4)
 import Data.Maybe(mapMaybe,fromMaybe)
@@ -68,10 +67,10 @@ buildErrAssignConstraints :: Real a => (VarName, a) -> BExpr
 buildErrAssignConstraints (e, roError) = Rel Eq (Var Real e) (Rat $ toRational roError)
 
 generateErrorConstraintInput :: CUInt -> CUInt -> VarBind -> IO (BExpr,(VarName, Double))
-generateErrorConstraintInput  maximumDepth minimumPrecision range@(VarBind x fp _ _) = do
+generateErrorConstraintInput  maximumDepth minimumPrecision range@(VarBind x ResValue fp _ _) = do
     roError <- computeErrorAExpr  maximumDepth minimumPrecision (FVar fp x) [range]
     let nameErrVar = "Err_"++x
-    return (Rel GtE (Var Real nameErrVar) (UnaryOp AbsOp $ BinaryOp SubOp (RealMark x) (Var Real x)), (nameErrVar, roError))
+    return (Rel GtE (Var Real nameErrVar) (UnaryOp AbsOp $ BinaryOp SubOp (RealMark x ResValue) (Var Real x)), (nameErrVar, roError))
 
 generateErrorConstraint :: CUInt -> CUInt -> VarName -> VarName -> FAExpr -> [VarBind] -> IO (BExpr,(VarName, Double))
 generateErrorConstraint maximumDepth minimumPrecision rVar fVar faexpr inputs = do
@@ -89,7 +88,7 @@ computeErrorAExpr maximumDepth minimumPrecision ae varBind = maximumUpperBound <
                       ,assumeTestStability = False
                       ,mergeUnstables = True
                       ,unfoldFunCalls = False }
-    sem = map initErrAceb $ stmSem ae emptyInterpretation emptyEnv semConf root []
+    sem = map initErrAceb $ stmSem ae emptyInterpretation emptyEnv (localVarsNames ae) semConf root []
     errorExpr = MaxErr (map (fromMaybe (error "computeErrorAExpr: unexpected argument.") . eExpr) sem)
     kodiakInput = KI { kiName = ""
                      , kiExpression = errorExpr

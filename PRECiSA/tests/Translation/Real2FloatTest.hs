@@ -12,7 +12,6 @@ module Translation.Real2FloatTest where
 
 import AbsPVSLang
 import Common.TypesUtils
-import PVSTypes
 import Operators
 import Translation.Real2Float
 import Test.Tasty

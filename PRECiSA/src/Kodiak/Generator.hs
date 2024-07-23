@@ -18,11 +18,11 @@ module Kodiak.Generator where
 import Control.Applicative (liftA2)
 import Control.Monad.Except
 
-import qualified PVSTypes          as PVS
 import qualified AbsPVSLang        as PVS
 import           Kodiak.Expression (AExpr,BExpr)
 import qualified Kodiak.Expression as K
 import Operators
+import Kodiak.Runnable (cVarName)
 
 class KodiakType a
 
@@ -58,7 +58,7 @@ pvsAExpr2Kodiak e
                               PVS.Real -> return $ K.Var v
                               _ -> throwError $ NonSupportedExpr e
 
-    | PVS.RealMark v   <- e = return $ K.Var v
+    | PVS.RealMark v field <- e = return $ K.Var (cVarName v field)
 
     -- Binary operators:
 

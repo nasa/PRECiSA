@@ -1,0 +1,194 @@
+wcv_detection_taumod: THEORY
+BEGIN
+IMPORTING float@ieee754_double
+
+    %IMPORTING wcv
+    %%%%%%%%%%%%%%%%%% begin wcv file %%%%%%%%%%%%%%%%%%%%%%%
+    tcoa(sz,vz:double): double = IF (sz*vz < 0) THEN -(sz/vz)
+                       ELSE -1
+		       ENDIF
+
+    tcpa(sx,vx,sy,vy:double) : double =
+    IF (vx*vx + vy*vy /=0) THEN
+    -(sx*vx + sy*vy)/(vx*vx + vy*vy)
+    ELSE 0
+    ENDIF
+
+    taumod(sx,vx,sy,vy,DTHR:double) : double =
+    IF (sx*vx)+(sy*vy) < 0
+    THEN (DTHR*DTHR - (sx*sx + sy*sy))/(sx*vx + sy*vy)
+    ELSE -1
+    ENDIF
+
+    horizontal_wcv(sx,sy,vx,vy, DTHR,TTHR:double): bool =
+    LET tc = tcpa(sx,vx,sy,vy),
+        tm = taumod(sx,vx,sy,vy,DTHR) IN
+    (sx*sx) + (sy*sy) - DTHR*DTHR <= 0
+    OR
+    (((sx+tc*vx)*(sx+tc*vx) + (sy+tc*vy)*(sy+tc*vy)) - DTHR * DTHR <= 0  AND
+    0 <= tm AND tm - TTHR <= 0)
+
+    vertical_WCV(sz,vz,ZTHR,TCOA:double): bool =
+    abs(sz) - ZTHR <= 0 OR
+    (0 <= tcoa(sz,vz) AND tcoa(sz,vz) - TCOA <= 0)
+
+    WCV(sx,sy,sz,vx,vy,vz,DTHR,TTHR,ZTHR,TCOA:double): bool =
+    horizontal_wcv(sx,sy,vx,vy,DTHR,TTHR)
+    AND
+    vertical_WCV(sz,vz,ZTHR,TCOA)
+
+    %  %%%%%%%%%%%%%%%%%% end wcv file %%%%%%%%%%%%%%%%%%%%%%%%
+
+    sign(x:double): int = IF x >= 0 THEN 1 ELSE -1 ENDIF
+
+    % get max between 2 values
+    max_(a, b: double): double = IF a - b < 0 THEN b ELSE a ENDIF
+
+    % get max between 2 values
+    min_(a, b: double): double = IF a - b > 0 THEN b ELSE a ENDIF
+
+    % uncomment this to type check this file
+    % sqrt(nnx: double): {nnz : double | nnz*nnz = nnx}
+
+    discr(a, b, c: double) : double = b*b - 4*a*c
+
+    % root of quadratic equation using + sign
+    root_pos(a, b, c: double): double =
+        IF b*b - 4*a*c >= 0 AND a /= 0 THEN
+            (-b + sqrt(abs(b*b - 4*a*c))) / (2*a)
+        ELSE 0 ENDIF
+
+    % root of quadratic equation using - sign
+    root_neg(a, b, c: double): double =
+        IF b*b - 4*a*c >= 0 AND a /= 0 THEN
+            (-b - sqrt(abs(b*b - 4*a*c))) / (2*a)
+        ELSE 0 ENDIF
+
+
+    % inner product between vectors (sx, sy) and (vx, vy)
+    inner_product(sx, sy, vx, vy: double): double =
+        sx*vx + sy*vy
+
+    % cross product between vectors (sx, sy) and (vx, vy)
+    cross_product(sx, sy, vx, vy: double): double =
+        sx*vy - sy*vx
+
+    % squared norm of vector (sx, sy)
+    sq(sx, sy: double): double =
+        inner_product(sx, sy, sx, sy)
+
+    % ULM 1D projection
+    proj(sx, vx, t: double): double =
+        sx + vx * t
+
+    Delta(sx, sy, vx, vy, D: double): double =
+        D*D*sq(vx, vy) - cross_product(sx, sy, vx, vy)*cross_product(sx, sy, vx, vy)
+
+    % Theta D using root with + sign
+    Theta_D_pos(D, sx, sy, vx, vy: double): double =
+        root_pos(sq(vx, vy),2*inner_product(sx, sy, vx, vy),sq(sx, sy) - D*D)
+
+    % Theta D using root with - sign
+    Theta_D_neg(D, sx, sy, vx, vy: double): double =
+        root_neg(sq(vx, vy),2*inner_product(sx, sy, vx, vy),sq(sx, sy) - D*D)
+
+    % Theta H using + sign
+    Theta_H_pos(sz, nzvz, H: double): double =
+        (sign(nzvz)*H-sz)/nzvz
+
+    % Theta H using - sign
+    Theta_H_neg(sz, nzvz, H: double): double =
+        (-sign(nzvz)*H-sz)/nzvz
+
+
+    horizontal_WCV_taumod_interval(T, sx, sy, vx, vy, TAUMOD, DTHR: double): bool =
+    LET a = sq(vx, vy),
+        b = 2 * inner_product(sx, sy, vx, vy) + TAUMOD * sq(vx, vy),
+        c = sq(sx, sy) + TAUMOD * inner_product(sx, sy, vx, vy) - DTHR*DTHR,
+        theta_d_pos = Theta_D_pos(DTHR, sx, sy, vx, vy) IN
+        LET root_neg_var = root_neg(a, b, c) IN
+            IF a /= 0 AND sq(sx, sy) - DTHR*DTHR <= 0 THEN
+                0 <= min_(T, theta_d_pos)
+            ELSIF sq(sx, sy) - DTHR*DTHR <= 0 THEN
+                TRUE
+            ELSIF inner_product(sx, sy, vx, vy) >= 0 OR discr(a, b, c) < 0 THEN  FALSE
+            ELSIF Delta(sx, sy, vx, vy, DTHR) >= 0 AND root_neg_var - T  <= 0 THEN
+                max_(0, root_neg_var) - min_(T, theta_d_pos) <= 0
+            ELSE FALSE
+            ENDIF
+
+
+    coalt_entry(sz, nzvz, TCOA, ZTHR: double): double =
+            IF ZTHR - abs(nzvz)*TCOA <= 0 THEN
+                Theta_H_neg(sz, nzvz, abs(nzvz)*TCOA)
+            ELSE
+                Theta_H_neg(sz, nzvz, ZTHR)
+            ENDIF
+
+    coalt_exit(sz, nzvz, ZTHR: double): double =
+        Theta_H_pos(sz, nzvz, ZTHR)
+
+
+
+    % vertical_WCV_entry(B, T, sz, vz, TCOA, ZTHR: double): double =
+    % IF vz /= 0 THEN
+    %       IF T - coalt_entry(sz, vz, TCOA, ZTHR) < 0 OR coalt_exit(sz, vz, ZTHR) - B < 0 THEN T
+    %         ELSE max_(B, coalt_entry(sz, vz, TCOA, ZTHR))
+    %         ENDIF
+    % ELSIF abs(sz) - ZTHR <= 0 THEN B
+    % ELSE T
+    % ENDIF
+
+
+    % vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR: double): double =
+    % IF vz /= 0 THEN
+    %      IF T - coalt_entry(sz, vz, TCOA, ZTHR) < 0 OR coalt_exit(sz, vz, ZTHR) - B < 0 THEN B - T
+    %         ELSE min_(T, coalt_exit(sz, vz, ZTHR)) - max_(B, coalt_entry(sz, vz, TCOA, ZTHR))
+    %         ENDIF
+    % ELSIF abs(sz) - ZTHR <= 0 THEN T - B
+    % ELSE B - T
+    % ENDIF
+
+
+    % WCV_interval(B, T, sx, sy, sz, vx, vy, vz, TAUMOD, TCOA, DTHR, TTHR, ZTHR :double): bool =
+    %   LET vexit_minus_ventry = vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR),
+    %       ventry = vertical_WCV_entry(B, T, sz, vz, TCOA, ZTHR) IN
+    %   LET proj_x = sx + vx * ventry,
+    %       proj_y = sy + vy * ventry IN
+    %   IF vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR) < 0 THEN
+    %     FALSE
+    %   ELSIF vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR) > 0 THEN
+    %     horizontal_WCV_taumod_interval(vexit_minus_ventry, proj_x, proj_y, vx, vy, TAUMOD, DTHR)
+    %   ELSIF horizontal_wcv(proj_x, proj_y, vx, vy, DTHR, TTHR) THEN
+    %     TRUE
+    %   ELSE FALSE
+    %   ENDIF
+
+    % % WCV_interval(B, T, sx, sy, sz, vx, vy, vz, TAUMOD, TCOA, DTHR, TTHR, ZTHR :double): bool =
+    % % %   LET vexit_minus_ventry = vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR) IN
+    % % %       ventry = vertical_WCV_entry(B, T, sz, vz, TCOA, ZTHR) IN
+    % % %   LET proj_x = sx + vx * ventry,
+    % % %       proj_y = sy + vy * ventry IN
+    % %   IF vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR) < 0 THEN
+    % %     FALSE
+    % %   ELSIF vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR) > 0 THEN
+    % %     % TRUE
+    % %     horizontal_WCV_taumod_interval(vertical_WCV_exit_minus_entry(B, T, sz, vz, TCOA, ZTHR), B, B, vx, vy, TAUMOD, DTHR)
+    % %   ELSIF horizontal_wcv(B, B, vx, vy, DTHR, TTHR) THEN
+    % %     TRUE
+    % %   ELSE FALSE
+    % %   ENDIF
+
+    % WCV_detection(sx, sy, sz, vx, vy, vz, B, T, TAUMOD, TCOA, DTHR, TTHR, ZTHR: double): bool =
+    %     LET proj_x = sx + vx * B,
+    %         proj_y = sy + vy * B,
+    %         proj_z = sz + vz * B
+    %     IN  IF B - T /= 0 THEN
+    %             IF (T - B) <= 0 THEN FALSE
+    %             ELSE  WCV_interval(B, T, sx, sy, sz, vx, vy, vz, TAUMOD, TCOA, DTHR, TTHR, ZTHR)
+    %             ENDIF
+    %         ELSE
+    %             WCV(proj_x, proj_y, proj_z, vx ,vy ,vz , DTHR, TAUMOD, ZTHR, TCOA)
+    %         ENDIF
+
+ END wcv_detection_taumod

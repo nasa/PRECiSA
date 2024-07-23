@@ -22,6 +22,7 @@ import AbsPVSLangTest
 import Translation.Real2FloatTest
 import MapRealPVSLangASTTest
 import MapFPCoreLangASTTest
+import FunctionCallErrorAbstractionTest
 
 main :: IO ()
 main = defaultMain unitTests
@@ -32,6 +33,7 @@ unitTests = testGroup "Unit tests"
   ,testAbstractSemantics
   ,testAbstractDomain
   ,testCommon
+  ,testFunctionCallErrorAbstraction
   ,testUtils
   ,testKodiak
   ,testSMT

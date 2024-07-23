@@ -15,6 +15,8 @@ module Json where
 
 import GHC.Generics
 import Data.Aeson
+import Data.ByteString.Lazy.Internal
+import AbsPVSLang (ResultField(..))
 
 data AnalysisResultFun = AnalysisResultFun {
     function :: String,
@@ -34,26 +36,30 @@ instance FromJSON AnalysisResultFun
 
 instance ToJSON AnalysisResult
   where
-    toEncoding (AnalysisResult results certFile numCertFile) =
-      pairs ("results" .= results <> "certFile" .= certFile <> "numCertFile" .= numCertFile)
+    toEncoding (AnalysisResult res certFileName numCertFileName) =
+      pairs ("results" .= res <> "certFile" .= certFileName <> "numCertFile" .= numCertFileName)
 
 instance FromJSON AnalysisResult
 
-
-
-toAnalysisResultFun :: (String, Double, Maybe Double) -> AnalysisResultFun
-toAnalysisResultFun (funName, stableErr, unstableErr) =
-  AnalysisResultFun { function = funName,
+toAnalysisResultFun :: (String, ResultField, Double, Maybe Double) -> AnalysisResultFun
+toAnalysisResultFun (funName, fieldName, stableErr, unstableErr) =
+  AnalysisResultFun { function = funName ++ printFieldName fieldName,
                       stableError = stableErr,
                       unstableError = unstableErr
                     }
+  where
+    printFieldName ResValue = ""
+    printFieldName (ResRecordField recField) = recField
+    printFieldName (ResTupleIndex tupleIdx) = show tupleIdx
 
-toAnalysisResult :: [(String, Double, Maybe Double)] -> String -> String -> AnalysisResult
-toAnalysisResult results certFile certFileName =
+toAnalysisResult :: [(String, ResultField, Double, Maybe Double)] -> String -> String -> AnalysisResult
+toAnalysisResult res certFileName numCertFileName =
   AnalysisResult {
-    results = map toAnalysisResultFun results,
-    certFile = certFile,
-    numCertFile = certFileName
+    results = map toAnalysisResultFun res,
+    certFile = certFileName,
+    numCertFile = numCertFileName
   }
--- toJSONAnalysisResults :: [(String, Double, Maybe Double)] -> String -> String ->
-toJSONAnalysisResults results certFile certFileName  = encode $ toAnalysisResult results certFile certFileName
+
+toJSONAnalysisResults :: [(String, ResultField, Double, Maybe Double)]
+                               -> String -> String -> Data.ByteString.Lazy.Internal.ByteString
+toJSONAnalysisResults res certFileName numCertFileName  = encode $ toAnalysisResult res certFileName numCertFileName

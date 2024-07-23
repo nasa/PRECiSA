@@ -2,7 +2,7 @@ bbiasp_cos: THEORY
 BEGIN
 
   IMPORTING interval_ulp_sp,
-  	        axm_bnd@aerr_ulp__single,
+  	        float_bounded_axiomatic@aerr_ulp__single,
 	          interval_arith@interval_trig
 
   R,E: VAR Interval

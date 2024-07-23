@@ -6,7 +6,6 @@ import Test.Tasty.HUnit
 import AbsFPCoreLang
 import AbsPVSLang
 import MapFPCoreLangAST
-import PVSTypes
 
 testMapFPCoreLangAST = testGroup "MapFPCoreLangAST"
   [ fpcore2FAExpr__tests

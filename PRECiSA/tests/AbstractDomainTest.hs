@@ -16,7 +16,6 @@ import Test.Tasty
 import Test.Tasty.HUnit
 import AbsPVSLang
 import AbstractDomain
-import PVSTypes
 import Operators
 
 testAbstractDomain = testGroup "AbstractDomain"
@@ -510,7 +509,7 @@ initErrAceb__test2 = testCase "init an integer error mark is (Int 0)" $
                              ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
         rExprs = RDeclRes [Int 2],
         fpExprs = FDeclRes [FInt 2],
-        eExpr  = Just $  ErrorMark "x" TInt,
+        eExpr  = Just $ ErrorMark "x" ResValue TInt,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }
@@ -527,7 +526,7 @@ initErrAceb__test3 = testCase "init an integer error mark is (Int 0)" $
                              ,fpCond = FRel Lt (FInt 0) (FInt 1)}],
         rExprs = RDeclRes [Int 2],
         fpExprs = FDeclRes [FInt 2],
-        eExpr  = Just $ ErrorMark "x" TInt,
+        eExpr  = Just $ ErrorMark "x" ResValue TInt,
         decisionPath = root ~> 1 ~> 0 ~> 0,
         cFlow  = Stable
         }

@@ -1,9 +1,9 @@
 rigidBody1: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-rigidBody1(X1,X2,X3: unb_double):unb_double = 
+rigidBody1(X1,X2,X3: double):double =
   ((((-X1 * X2) - (2 * X2 * X3)) - X1) - X3)
 
 END rigidBody1

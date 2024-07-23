@@ -2,7 +2,7 @@ bbiadp_exp: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-  	        axm_bnd@aerr_ulp__double,
+  	        float_bounded_axiomatic@aerr_ulp__double,
 	          interval_arith@interval_lnexp
 
   R,E: VAR Interval
@@ -26,7 +26,7 @@ BEGIN
 
   %|-   AEB_EXP_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
-  %|- QED   AEB_EXP_inclusion_j 
+  %|- QED   AEB_EXP_inclusion_j
   AEB_EXP_inclusion_j: JUDGEMENT
     aebounddp_exp_ia(n)
     HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aebounddp_exp_safe))

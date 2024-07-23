@@ -23,7 +23,6 @@ data Options = Options
    , optFunctionCalls        :: Bool
    , optMaxDepth             :: Int
    , optPrecision            :: Int
-   , optMaxNumLemma          :: Int
    , optAssumeStability      :: Bool
    , jsonOutput              :: Bool
    , optSMTOptimization      :: Bool
@@ -57,10 +56,6 @@ optionsParser =
           (  long "print-fpcore"
           <> help "Print program as FPCore."
           )
-        -- <*> switch
-        --   (  long "improve-accuracy"
-        --   <> help "Use an optimized version of the round-off error expressions that models special cases such as the Sterbenz exact subtraction and the exact floor operation. This option may increase the analysis time."
-        --   )
         <*> switch
           (  long "paving"
           <> help "Generate a paving of the regions of unstability"
@@ -84,13 +79,6 @@ optionsParser =
           <> showDefault
           <> value 14
           <> metavar "BB_PREC" )
-        <*> option auto
-          (  long "max-lemmas"
-          <> short 'l'
-          <> help "Maximum number of lemmas"
-          <> showDefault
-          <> value 50
-          <> metavar "MAX_N_LEMMAS" )
         <*> switch
           (  long "assume-stability"
           <> short 's'

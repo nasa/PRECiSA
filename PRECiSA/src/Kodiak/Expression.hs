@@ -11,20 +11,18 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
 
 module Kodiak.Expression (
-    module Kodiak.Expression,
-    module PVSTypes
+    module Kodiak.Expression
 ) where
 
-import PVSTypes
 import Kodiak.Kodiak
 import Kodiak.Runnable
 import Kodiak.Runner hiding (runBExpr)
 import Common.TypesUtils
 import Control.Exception (throw,AssertionFailed(..),assert)
--- import Data.Bits.Floating (nextUp,nextDown)
 import Numeric.IEEE
 import Foreign.C
 import Prelude hiding (True,False,LT,GT)
+import AbsPVSLang (PVSType(..))
 
 data AExpr
     = Cnst Rational

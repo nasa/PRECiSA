@@ -48,19 +48,19 @@ type ACebS = [ACeb]
 
 rDeclRes :: RResult -> [AExpr]
 rDeclRes (RDeclRes exprs) = exprs
-rDeclRes (RPredRes exprs) = error "rDeclRes: argument is not a declaration."
+rDeclRes (RPredRes _) = error "rDeclRes: argument is not a declaration."
 
 rPredRes :: RResult -> [BExprStm]
 rPredRes (RPredRes exprs) = exprs
-rPredRes (RDeclRes exprs) = error "rPredRes: argument is not a predicate."
+rPredRes (RDeclRes _) = error "rPredRes: argument is not a predicate."
 
 fDeclRes :: FResult -> [FAExpr]
 fDeclRes (FDeclRes exprs) = exprs
-fDeclRes (FPredRes exprs) = error "fDeclRes: argument is not a declaration."
+fDeclRes (FPredRes _) = error "fDeclRes: argument is not a declaration."
 
 fPredRes :: FResult -> [FBExprStm]
 fPredRes (FPredRes exprs) = exprs
-fPredRes (FDeclRes exprs) = error "fPredRes: argument is not a predicate."
+fPredRes (FDeclRes _) = error "fPredRes: argument is not a predicate."
 
 trueCond :: Condition
 trueCond = Cond {realPathCond = BTrue
@@ -76,7 +76,6 @@ toCond (rpc, fpc, rc, fc) = Cond {realPathCond = rpc
 
 trueConds :: Conditions
 trueConds = Conds [trueCond]
-
 
 uncond :: Conditions -> [Condition]
 uncond (Conds c) = c
@@ -206,8 +205,8 @@ instance PPExt ACeb where
         <+> text "flow =" <+> prettyDoc c
         <+> text "decisionPath =" <+> (text . show) dp
     where
-      prettyResult (RDeclRes re) =  prettyList re
-      prettyResult (RPredRes re) =  prettyList re
+      prettyResult (RDeclRes rExpr) =  prettyList rExpr
+      prettyResult (RPredRes rExpr) =  prettyList rExpr
       prettyMaybe (Just e) = prettyDoc e
       prettyMaybe Nothing = text "Nothing"
 
@@ -216,7 +215,7 @@ localVarsFResult (FDeclRes exprs) = concatMap localVars exprs
 localVarsFResult (FPredRes exprs) = concatMap localVarsBExprStm exprs
 
 renameVarsConds :: VarSubs -> Conditions -> Conditions
-renameVarsConds subs (Conds conds) = Conds $ map renameVarsCond conds
+renameVarsConds subs (Conds cs) = Conds $ map renameVarsCond cs
   where
     renameVarsCond cond = cond {
       realPathCond = renameVarsBExpr  subs (realPathCond cond),

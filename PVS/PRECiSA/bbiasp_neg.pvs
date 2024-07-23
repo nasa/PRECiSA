@@ -2,7 +2,7 @@ bbiasp_neg: THEORY
 BEGIN
 
   IMPORTING interval_ulp_sp,
-            axm_bnd@aerr_ulp__single
+            float_bounded_axiomatic@aerr_ulp__single
 
   R,E: VAR Interval
 

@@ -282,7 +282,7 @@ function show_plot (opt) {
 function show_paving_ok (divName) {
     $("#" + divName).html(''
     + '<figure class="text-center">'
-    + '<blockquote class="blockquote">'
+    + '<blockquote class="blockquote" style="background:transparent;">'
     + '<p>Paving results indicate all Ok!</p>'
     + '</blockquote>'
     + '<figcaption class="blockquote-footer">'

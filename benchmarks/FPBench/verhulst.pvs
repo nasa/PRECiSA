@@ -1,9 +1,9 @@
 verhulst: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-verhulst(X: unb_double | 1 + (X/1.11) /= 0):unb_double =
+verhulst(X: double | 1 + (X/1.11) /= 0):double =
   (4 * X)/(1 + (X/1.11))
 END verhulst
 

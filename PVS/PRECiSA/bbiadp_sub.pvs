@@ -2,7 +2,7 @@ bbiadp_sub: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-  	        axm_bnd@aerr_ulp__double
+  	        float_bounded_axiomatic@aerr_ulp__double
 
   R1,E1,R2,E2: VAR Interval
 
@@ -23,7 +23,7 @@ BEGIN
 
   %|- AEB_SUB_inclusion_j : PROOF
   %|- (branch (prove-inclusion-judgement) ((grind)))
-  %|- QED   AEB_SUB_inclusion_j 
+  %|- QED   AEB_SUB_inclusion_j
   AEB_SUB_inclusion_j: JUDGEMENT
     aebounddp_sub_ia
     HAS_TYPE (Inclusion4?( Any?,

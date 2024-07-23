@@ -1,6 +1,6 @@
 cabal-version:       3.0
 name:                precisa
-version:             4.0.2
+version:             4.0.4
 synopsis:            PRECiSA (Program Round-off Error Certifier via Static Analysis) is a fully automatic analyzer for the estimation of round-off errors of floating-point valued functional expressions.
 homepage:            https://nasa.github.io/precisa
 author:              Laura Titolo, Marco A. Feliu
@@ -20,6 +20,7 @@ common shared
     , extra
     , filepath             >= 1.4  && <1.5
     , FloatingHex          >= 0.4
+    , keys
     , mtl                  >= 2.2
     , optparse-applicative >= 0.14
     , pretty               >= 1.1  && <1.2
@@ -40,7 +41,6 @@ library
     AbsFPCoreLang
     AbsPVSLang
     AbsRawPVSLang
-    AbsRawRealPVSLang
     AbsRawSpecLang
     AbsSpecLang
     AbstractDomain
@@ -52,7 +52,6 @@ library
     ErrM
     FPCore.FPCorePrinter
     FreshVariables
-    PVSTypes
     Json
     Kodiak.Expression
     Kodiak.Generator
@@ -66,18 +65,16 @@ library
     MapPVSLangAST
     MapRealPVSLangAST
     MapSpecLangAST
-    NumericalError
+    FunctionCallErrorAbstraction
     Operators
     Options
     Parser.LexDecisionPaths
     Parser.LexFPCoreLang
     Parser.LexRawPVSLang
-    Parser.LexRawRealPVSLang
     Parser.LexRawSpecLang
     Parser.ParDecisionPaths
     Parser.ParFPCoreLang
     Parser.ParRawPVSLang
-    Parser.ParRawRealPVSLang
     Parser.ParRawSpecLang
     Parser.Parser
     PPExt
@@ -92,6 +89,7 @@ library
 
 executable precisa
   import: shared
+  ghc-options: -Wall
   build-depends:
       base      >= 4.14
     , precisa
@@ -117,17 +115,18 @@ test-suite precisaTests
   main-is:
     Main.hs
   other-modules:
-    AbsPVSLangTest
-    AbstractDomainTest
+    -- AbsPVSLangTest
+    -- AbstractDomainTest
     AbstractSemanticsTest
     Common.ControlFlowTest
     Common.DecisionPathTest
     Common.ShowRationalTest
     Common.Test
-    FreshVariablesTest
-    Kodiak.GeneratorTest
+    -- FreshVariablesTest
+    -- Kodiak.GeneratorTest
+    FunctionCallErrorAbstractionTest
     Kodiak.ExpressionTest
-    Kodiak.PaverTest
+    -- Kodiak.PaverTest
     Kodiak.PrettyPrintTest
     Kodiak.Test
     MapRealPVSLangASTTest

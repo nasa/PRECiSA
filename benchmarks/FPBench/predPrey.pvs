@@ -1,9 +1,9 @@
 predPrey: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-predatorPrey(X: unb_double | DtoR(Dadd(RtoD(1), Dmul(Ddiv(X, RtoD(1.11)), Ddiv(X, RtoD(1.11))))) /= 0):unb_double =
+predatorPrey(X: double | (1 + ((X/1.11) * (X/1.11))) /= 0):double =
   (4 * X * X) / (1 + (X/1.11) * (X / 1.11))
 
 END predPrey

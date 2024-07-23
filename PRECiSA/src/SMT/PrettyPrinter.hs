@@ -14,14 +14,18 @@ import AbstractDomain
 import AbsPVSLang
 import AbsSpecLang
 import PPExt
-import PVSTypes
 import Prelude hiding ((<>))
 import qualified Common.ShowRational as Rat
 import Operators
 import Common.TypesUtils
 
-baseRVarName:: String
-baseRVarName  = "Real_"
+baseVarName :: String -> ResultField -> String
+baseVarName x ResValue = x
+baseVarName x (ResRecordField field) = x ++ "_" ++ field
+baseVarName x (ResTupleIndex idx) =  x ++ "_" ++show idx
+
+baseRVarName :: String -> ResultField -> String
+baseRVarName x field = "Real_" ++ baseRVarName x field
 
 prettySMTVarId :: VarName -> Doc
 prettySMTVarId var = text var <> text "[real]"
@@ -39,20 +43,21 @@ prettySMTVarBinds :: [VarBind] -> Doc
 prettySMTVarBinds varBinds = hsep $ punctuate comma (map prettySMTVarBind varBinds)
 
 prettySMTVarBind :: VarBind -> Doc
-prettySMTVarBind (VarBind var fp LInf UInf) =
-    text var <> text "[" <> prettySMTPVSType fp <> text "]"
-prettySMTVarBind (VarBind var fp lb ub) =
-    text var <> text "[" <> prettySMTPVSType fp <> text "] ="
+prettySMTVarBind (VarBind var field fp LInf UInf) =
+  text (baseVarName var field) <> text "[" <> prettySMTPVSType fp <> text "]"
+
+prettySMTVarBind (VarBind var field fp lb ub) =
+  text (baseVarName var field)  <> text "[" <> prettySMTPVSType fp <> text "] ="
     <+> text "["<> prettySMTLBound lb <> semi <> prettySMTUBound ub <> text "]"
 
 prettySMTVarBindsReal :: [VarBind] -> Doc
 prettySMTVarBindsReal varBinds = hsep $ punctuate comma (map prettySMTVarBindReal varBinds)
 
 prettySMTVarBindReal :: VarBind -> Doc
-prettySMTVarBindReal (VarBind var _ LInf UInf) =
-    text baseRVarName <> text var <> text "[real]"
-prettySMTVarBindReal (VarBind var _ lb ub) =
-    text baseRVarName <> text var <> text "[real] ="
+prettySMTVarBindReal (VarBind var field _ LInf UInf)
+  = text (baseRVarName var field) <> text "[real]"
+prettySMTVarBindReal (VarBind var field _ lb ub)
+  = text (baseRVarName var field) <> text "[real] ="
     <+> text "["<> prettySMTLBound lb <> semi <> prettySMTUBound ub <> text "]"
 
 prettySMTUBound :: UBound -> Doc
@@ -156,7 +161,7 @@ prettySMTaexpr :: AExpr -> Doc
 prettySMTaexpr (Rat d) = prettySMTRat d
 prettySMTaexpr (Var _ x) = text x
 prettySMTaexpr (Int i) = integer i <> text ".0"
-prettySMTaexpr (RealMark x) = text $ baseRVarName ++ x
+prettySMTaexpr (RealMark x field) = text $ baseRVarName x field
 
 prettySMTaexpr (BinaryOp AddOp ae1 ae2) = prettySMTaexpr ae1 <+> text "+" <+> prettySMTaexpr ae2
 prettySMTaexpr (BinaryOp SubOp ae1 ae2) = prettySMTaexpr ae1 <+> text "-" <+> prettySMTaexpr ae2

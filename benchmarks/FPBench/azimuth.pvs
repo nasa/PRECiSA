@@ -1,13 +1,13 @@
 azimuth: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-azimuth(Lat1,Lon1,Lat2: unb_double,Lon2: unb_double
-  | (cos(Lat1) * sin(Lat2)) - (sin(Lat1) * cos(Lat2) * cos(Lon2-Lon1)) /= 0):unb_double = 
+azimuth(Lat1,Lon1,Lat2: double,Lon2: double
+  | (cos(Lat1) * sin(Lat2)) - (sin(Lat1) * cos(Lat2) * cos(Lon2-Lon1)) /= 0):unb_double =
   LET DLon = Lon2 - Lon1 IN
   LET Y = cos(Lat2) *  sin(DLon) IN
   LET X = (cos(Lat1) * sin(Lat2)) - (sin(Lat1) * (cos(Lat2) * cos(DLon))) IN
   atan(Y/X)
 
-END azimuth  
+END azimuth

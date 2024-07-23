@@ -1,15 +1,15 @@
 carbonGas: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-carbonGas (V: unb_double | DtoR(V) /= 0):unb_double =
+carbonGas (V: double | DtoR(V) /= 0):double =
 LET K = 0.000000000000000000000013806503 IN
 LET T = 300 IN
-LET A = 0.401 IN 
+LET A = 0.401 IN
 LET B = 0.0000427 IN
-LET N = 1000 IN 
+LET N = 1000 IN
 LET P = 35000000 IN
-(P + A * (N/V) * (N/V)) * (V - N * B) - (K * N * T)
+(P + A * (N/V) * (N/V)) * (V - N * B) - (K * (N * T))
 
 END carbonGas

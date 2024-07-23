@@ -2,7 +2,7 @@ bbiadp_atn: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-  	        axm_bnd@aerr_ulp__double,
+  	        float_bounded_axiomatic@aerr_ulp__double,
 	          interval_arith@interval_trig
 
   R,E: VAR Interval
@@ -25,7 +25,7 @@ BEGIN
 
   %|-   AEB_ATN_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
-  %|- QED   AEB_ATN_inclusion_j 
+  %|- QED   AEB_ATN_inclusion_j
   AEB_ATN_inclusion_j: JUDGEMENT
     aebounddp_atn_ia(n)
     HAS_TYPE (Inclusion2?(Any?,pre1to2b(NonNeg?),aebounddp_atn_safe))

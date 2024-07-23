@@ -2,7 +2,7 @@ bbiadp_neg: THEORY
 BEGIN
 
   IMPORTING interval_ulp_dp,
-            axm_bnd@aerr_ulp__double
+            float_bounded_axiomatic@aerr_ulp__double
 
   R,E: VAR Interval
 

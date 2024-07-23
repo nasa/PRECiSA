@@ -1,9 +1,9 @@
 sphere: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-sphere(R,X,Lat,Lon: unb_double):unb_double = 
+sphere(R,X,Lat,Lon: double):double =
   X + R * (sin(Lat) * cos(Lon))
   % X + R * sin(Lat) * cos(Lon) worst round-off error
 

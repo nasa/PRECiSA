@@ -2,7 +2,7 @@ bbiadp_cos: THEORY
 BEGIN
 
   importing interval_ulp_dp
-  importing axm_bnd@aerr_ulp__double
+  importing float_bounded_axiomatic@aerr_ulp__double
   importing interval_arith@interval_trig
 
   R,E: VAR Interval

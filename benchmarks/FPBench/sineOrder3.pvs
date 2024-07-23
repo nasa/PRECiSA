@@ -1,8 +1,8 @@
 sineOrder3: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-sineOrder3(Z: unb_double):unb_double = 0.954929658551372 * Z -  0.12900613773279798*Z*Z*Z
+sineOrder3(Z: double):double = 0.954929658551372 * Z -  0.12900613773279798*Z*Z*Z
 
 END sineOrder3

@@ -1,10 +1,10 @@
 
 jet: THEORY
 BEGIN
-IMPORTING floaT@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-jet(X1: unb_double,X2: unb_double | X1*X1 + 1 /= 0):unb_double =
+jet(X1: double,X2: double | X1*X1 + 1 /= 0):double =
     LET T = (3*X1*X1 + 2*X2 - X1)
     IN
     X1 + ((2*X1*(T/(X1*X1 + 1))*

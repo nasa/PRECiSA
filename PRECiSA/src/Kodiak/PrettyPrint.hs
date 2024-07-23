@@ -18,6 +18,7 @@ import Data.Ratio (numerator,denominator)
 import Foreign.C.Types (CInt)
 import Prelude hiding((<>))
 import Text.PrettyPrint
+import AbsPVSLang (PVSType(..))
 
 prettyAExpr :: AExpr -> Doc
 prettyAExpr e

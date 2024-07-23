@@ -1,7 +1,7 @@
 bbiasp_flr: THEORY
 BEGIN
 
-  importing axm_bnd@aerr_ulp__single
+  importing float_bounded_axiomatic@aerr_ulp__single
   importing interval_arith@interval_expr
 
   R,E: VAR Interval
@@ -29,7 +29,7 @@ BEGIN
 
   %|- AEB_FLR_inclusion_j : PROOF
   %|- (prove-inclusion-judgement)
-  %|- QED   AEB_FLR_inclusion_j 
+  %|- QED   AEB_FLR_inclusion_j
 
   AEB_FLR_fundmental_j: JUDGEMENT
     aeboundsp_flr_ia

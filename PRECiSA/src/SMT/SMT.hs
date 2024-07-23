@@ -14,8 +14,8 @@ import AbstractDomain
 import AbstractSemantics
 import AbsPVSLang
 import AbsSpecLang
+import Data.Key (mapWithKeyM)
 import PPExt
-import PVSTypes
 import SMT.PrettyPrinter
 import SMT.GenerateSMTModel
 import Text.Printf (printf)
@@ -33,12 +33,27 @@ import Common.TypesUtils (VarName)
 import Foreign.C
 
 filterUnsatCebs :: CUInt -> CUInt -> FilePath -> Interpretation -> Spec -> IO Interpretation
-filterUnsatCebs maximumDepth minimumPrecision path interp spec = mapM (checkSat maximumDepth minimumPrecision path spec) interp
+filterUnsatCebs maximumDepth minimumPrecision path interp spec
+  = mapWithKeyM (checkSat maximumDepth minimumPrecision path spec) interp
 
-checkSat :: CUInt -> CUInt -> FilePath -> Spec -> FunctionInterpretation -> IO FunctionInterpretation
-checkSat maximumDepth minimumPrecision path (Spec spec) (fun, (isTrans,a,b,acebs)) =
-  do satUnstableACEBs <- acebsM'
-     return (fun, (isTrans,a,b,stableACEBs ++ satUnstableACEBs))
+-- checkSat :: CUInt -> CUInt -> FilePath -> Spec -> FunName -> FunctionInterpretation -> IO FunctionInterpretation
+-- checkSat maximumDepth minimumPrecision path (Spec spec) fun (isTrans,a,b,acebs) =
+--   do satUnstableACEBs <- acebsM'
+--      return (isTrans,a,b,stableACEBs ++ satUnstableACEBs)
+--   where
+--     acebsM' = catMaybes <$> zipWithM (checkCebSat maximumDepth minimumPrecision path fun varBinds) unstableACEBs [0,1..]
+--     (stableACEBs,unstableACEBs) = List.partition isStable acebs
+--     varBinds = fromMaybe (error $ "checkSat: function " ++ show fun ++ " not found.") (findInSpec fun spec)
+
+checkSat :: CUInt -> CUInt -> FilePath -> Spec -> FunName -> FunctionInterpretation -> IO FunctionInterpretation
+checkSat maximumDepth minimumPrecision path (Spec spec) fun (isTrans,a,b,sem) = do
+  checkedSem <- mapM (checkSatACebS maximumDepth minimumPrecision path (Spec spec) fun) sem
+  return (isTrans,a,b,checkedSem)
+
+checkSatACebS :: CUInt -> CUInt -> FilePath -> Spec -> FunName -> ACebS -> IO ACebS
+checkSatACebS maximumDepth minimumPrecision path (Spec spec) fun acebs = do
+  satUnstableACEBs <- acebsM'
+  return $ stableACEBs ++ satUnstableACEBs
   where
     acebsM' = catMaybes <$> zipWithM (checkCebSat maximumDepth minimumPrecision path fun varBinds) unstableACEBs [0,1..]
     (stableACEBs,unstableACEBs) = List.partition isStable acebs

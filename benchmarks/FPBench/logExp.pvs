@@ -1,9 +1,9 @@
 logExp: THEORY
 BEGIN
-IMPORTING float@aerr754dp
+IMPORTING float@ieee754_double
 
 % @fp-function
-logExp (X: unb_double | DtoR(Dadd(RtoD(1), Dexp(X))) > 0):unb_double =
-   Dln(Dadd(RtoD(1),Dexp(X)))
+logExp (X: double | DtoR(1 + Dexp(X)) > 0):double =
+   Dln(1 + Dexp(X))
 
 END logExp

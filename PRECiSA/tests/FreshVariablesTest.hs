@@ -13,7 +13,6 @@ module FreshVariablesTest where
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import PVSTypes
 import Control.Monad.State hiding (state)
 import Operators
 import AbsPVSLang
