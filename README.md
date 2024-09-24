@@ -213,19 +213,23 @@ $ proveit -sc num_cert_example.pvs
 ## Contact information
 If you have any question or problem, please contact:
 
-* [Laura Titolo](mailto:laura.titolo@nasa.gov) (for PRECiSA)
-* [Mariano Moscato](mailto:mariano.m.moscato@nasa.gov) (for PVS)
+* [Mariano Moscato](mailto:mariano.m.moscato@nasa.gov)
+* [César Muñoz](mailto:cesar.a.munoz@nasa.gov)
 * [Marco A. Feliu](mailto:marco.feliu@nasa.gov) (for Kodiak and installation issues)
 * [Paolo Masci](mailto:paolo.m.masci@nasa.gov) (for VSCode-PRECiSA)
-* [César Muñoz](mailto:cesar.a.munoz@nasa.gov) (for PRECiSA at NASA)
 
-## Additional Contributors
+## Contributors
 
-* Rocco Salvia, University of Utah (at time of contribution)
+* [Laura Titolo](https://lauratitolo.github.io/), NASA/AMA at the time of contribution
+* Rocco Salvia, University of Utah (at the time of contribution)
 * Caleb Chan, University of Washington
 * Nikson Bernardes Fernandes Ferreira, University of Brasilia
+* Anthony Dario, University of Oregon
 
 ## Related Publications
+
+- Laura Titolo, Mariano M. Moscato, Marco A. Feliú, Paolo Masci, César A. Muñoz:
+Rigorous Floating-Point Round-Off Error Analysis in PRECiSA 4.0. FM 2024
 
 - Rocco Salvia, Laura Titolo, Marco A. Feliú, Mariano M. Moscato, César A. Muñoz, Zvonimir Rakamaric:
   A Mixed Real and Floating-Point Solver. NFM 2019
@@ -239,6 +243,8 @@ If you have any question or problem, please contact:
 - Mariano M. Moscato, Laura Titolo, Aaron Dutle, César A. Muñoz:
   Automatic Estimation of Verified Floating-Point Round-Off Errors via Static Analysis. SAFECOMP 2017
 
+## Logo
+The PRECiSA logo was designed by Silvia Chittaro.
 
 ## License and Copyright Notice
 
