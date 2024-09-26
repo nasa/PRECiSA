@@ -25,6 +25,7 @@ import Common.TypesUtils
 import Control.Monad.State
 import Data.Either
 import Data.Maybe
+import Data.Function (fix)
 import Numeric.IEEE
 
 type FunName = String
