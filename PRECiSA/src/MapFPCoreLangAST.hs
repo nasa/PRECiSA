@@ -13,11 +13,8 @@ where
 
 import AbsFPCoreLang
 import AbsPVSLang
-import Common.TypesUtils
-import Data.Maybe(fromMaybe)
 import Data.Ratio
 import ErrM
-import Numeric
 import qualified Operators as Op
 import Parser.ParFPCoreLang
 import Parser.LexFPCoreLang
@@ -27,8 +24,8 @@ type VarTypeEnv = [(String, PVSType)]
 type FunTypeEnv = [(String, PVSType)]
 
 fpcore2Prog :: AbsFPCoreLang.FPCore -> AbsPVSLang.Program
-fpcore2Prog (AbsFPCoreLang.FProgram  (Symbol name) args props expr) = [fpcore2Decl [(name, FPDouble)] name args expr]
-fpcore2Prog (AbsFPCoreLang.FProgramSymbless args props expr) = [fpcore2Decl [("f", FPDouble)] "f" args expr]
+fpcore2Prog (AbsFPCoreLang.FProgram  (Symbol name) args _props expr) = [fpcore2Decl [(name, FPDouble)] name args expr]
+fpcore2Prog (AbsFPCoreLang.FProgramSymbless args _props expr) = [fpcore2Decl [("f", FPDouble)] "f" args expr]
 
 -- Every FPCore program maps to one PVS declaration.
 fpcore2Decl :: FunTypeEnv -> String -> [AbsFPCoreLang.Argument] -> AbsFPCoreLang.Expr -> AbsPVSLang.Decl
@@ -39,7 +36,7 @@ fpcore2Decl fenv name fpcArgs fpcExpr = Decl False FPDouble name args expr
     expr = fpcore2FAExpr env fenv fpcExpr
 
 fpcore2Args :: [AbsFPCoreLang.Argument] -> [AbsPVSLang.Arg]
-fpcore2Args fpcargs = concatMap fpcore2Arg fpcargs
+fpcore2Args = concatMap fpcore2Arg
 
 -- Right now we ignore dimension and properties
 fpcore2Arg :: AbsFPCoreLang.Argument -> [AbsPVSLang.Arg]
@@ -52,9 +49,9 @@ fpcoreSym2Arg (Symbol s) = AbsPVSLang.Arg s FPDouble
 
 -- While, For, Tensor, not fully supported yet.
 fpcore2FAExpr :: VarTypeEnv -> FunTypeEnv -> AbsFPCoreLang.Expr -> AbsPVSLang.FAExpr
-fpcore2FAExpr env fenv (ExNum n) = fpcoreNum2Expr n
-fpcore2FAExpr env fenv (ExConst c) = fpcoreConst2Expr c
-fpcore2FAExpr env fenv (ExSym (Symbol s)) = FVar FPDouble s
+fpcore2FAExpr   _    _ (ExNum n) = fpcoreNum2Expr n
+fpcore2FAExpr   _    _ (ExConst c) = fpcoreConst2Expr c
+fpcore2FAExpr   _    _ (ExSym (Symbol s)) = FVar FPDouble s
 fpcore2FAExpr env fenv (ExOp op ex1 exl) = fpcoreOpCall2Expr env fenv op (ex1 : exl)
 fpcore2FAExpr env fenv (ExIf ex1 ex2 ex3) = Ite (fpcore2FBExpr env fenv ex1) (fpcore2FAExpr env fenv ex2) (fpcore2FAExpr env fenv ex3)
 fpcore2FAExpr env fenv (ExLet letElems stm) -- Should bind simultaneously but not sure if it does
@@ -67,13 +64,14 @@ fpcore2FAExpr env fenv (ExLet letElems stm) -- Should bind simultaneously but no
         env' = (fst3 newLetElem, snd3 newLetElem):accEnv
 
 fpcore2FAExpr env fenv (ExLetStar letElems stm) -- TODO: Currently has same behavior as regular let
-  = process env fenv letElems stm
+  = process letElems
   where
-    process env fenv [(SymExPair (Symbol name) e)] stm = Let [(name, FPDouble, fpcore2FAExpr env fenv e)] (fpcore2FAExpr env fenv stm)
-    process env fenv ((SymExPair (Symbol name) e):lelems) stm = Let [(name, FPDouble, fpcore2FAExpr env fenv e)] (process env fenv lelems stm)
+    process [SymExPair (Symbol name) e] = Let [(name, FPDouble, fpcore2FAExpr env fenv e)] (fpcore2FAExpr env fenv stm)
+    process ((SymExPair (Symbol name) e):lelems) = Let [(name, FPDouble, fpcore2FAExpr env fenv e)] (process lelems)
+    process x = error $ "[fpcore2FAExpr.process] Unhandled case: " ++ show x
 -- = fpcore2LetStar2FAExpr env fenv letElems stm
 
-fpcore2FAExpr _ _ _ = error $ "unsupported expression"
+fpcore2FAExpr _ _ _ = error "unsupported expression"
 
 fpcore2LetElem :: VarTypeEnv -> FunTypeEnv -> AbsFPCoreLang.SymEx -> AbsPVSLang.FLetElem
 fpcore2LetElem env fenv (AbsFPCoreLang.SymExPair (Symbol sym) ex) = (sym, FPDouble, fpcore2FAExpr env fenv ex)
@@ -96,19 +94,12 @@ fpcoreOpCall2Expr env fenv FmaOp [ex1, ex2, ex3] =
   FFma FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2) (fpcore2FAExpr env fenv ex3)
 fpcoreOpCall2Expr env fenv ExpOp [fae] =
   AbsPVSLang.UnaryFPOp Op.ExpoOp  FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv Exp2Op [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv Expm1Op [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv LogOp [fae] =
   AbsPVSLang.UnaryFPOp Op.LnOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv Log10Op [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv Log2Op [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv Log1pOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv PowOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.PowOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
 fpcoreOpCall2Expr env fenv SqrtOp [fae] =
   AbsPVSLang.UnaryFPOp Op.SqrtOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv CbrtOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv HypotOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv SinOp [fae] =
   AbsPVSLang.UnaryFPOp Op.SinOp   FPDouble (fpcore2FAExpr env fenv fae)
 fpcoreOpCall2Expr env fenv CosOp [fae] =
@@ -121,96 +112,80 @@ fpcoreOpCall2Expr env fenv AcosOp [fae] =
   AbsPVSLang.UnaryFPOp Op.AcosOp   FPDouble (fpcore2FAExpr env fenv fae)
 fpcoreOpCall2Expr env fenv AtanOp [fae] =
   AbsPVSLang.UnaryFPOp Op.AtanOp   FPDouble (fpcore2FAExpr env fenv fae)
-fpcoreOpCall2Expr env fenv Atan2Op [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv SinhOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv CoshOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv TanhOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv AsinhOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv AcoshOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv AtanhOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv ErfOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv ErfcOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv TgammaOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv LgammaOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv CeilOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv FloorOp [fae] =
   AbsPVSLang.UnaryFPOp Op.FloorOp   FPDouble (fpcore2FAExpr env fenv fae)
 fpcoreOpCall2Expr env fenv FmodOp [ex1, ex2] =
   AbsPVSLang.BinaryFPOp Op.ModOp FPDouble (fpcore2FAExpr env fenv ex1) (fpcore2FAExpr env fenv ex2)
-fpcoreOpCall2Expr env fenv RemainderOp [ex1, ex2] = error $ "Not yet implemented"
 fpcoreOpCall2Expr env fenv FmaxOp faes =
   FMax $ map (fpcore2FAExpr env fenv) faes
 fpcoreOpCall2Expr env fenv FminOp faes =
   FMin $ map (fpcore2FAExpr env fenv) faes
-fpcoreOpCall2Expr env fenv FdimOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv CopysignOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv TruncOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv RoundOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr env fenv NearbyintOp [ex1, ex2] = error $ "Not yet implemented"
-fpcoreOpCall2Expr _ _ _ _ = error $ "Illegal cast from boolean operation to arithmetic"
+fpcoreOpCall2Expr _ _ x args = error $ "[fpcoreOpCall2Expr] Illegal cast from boolean operation to arithmetic or not yet implemented: " ++ show x ++ " with args: " ++ show args
 
 -- TODO: Implementation
 fpcoreOpCall2BExpr :: VarTypeEnv -> FunTypeEnv -> AbsFPCoreLang.Operation -> [AbsFPCoreLang.Expr] -> AbsPVSLang.FBExpr
-fpcoreOpCall2BExpr env fenv LTOp faes = process env fenv faes
+fpcoreOpCall2BExpr env fenv LTOp faes = process faes
   where
-    process env fenv [fae1,fae2]      = AbsPVSLang.FRel Op.Lt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
-    process env fenv (fae1:fae2:faes) = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.Lt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process env fenv (fae2:faes))
-fpcoreOpCall2BExpr env fenv GTOp faes = process env fenv faes
+    process [fae1,fae2]      = AbsPVSLang.FRel Op.Lt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
+    process (fae1:fae2:faes') = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.Lt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process (fae2:faes'))
+    process x = error $ "[fpcoreOpCall2BExpr.process] Unhandled case: " ++ show x
+fpcoreOpCall2BExpr env fenv GTOp faes = process faes
   where
-    process env fenv [fae1,fae2]      = AbsPVSLang.FRel Op.Gt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
-    process env fenv (fae1:fae2:faes) = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.Gt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process env fenv (fae2:faes))
-fpcoreOpCall2BExpr env fenv LTEOp faes = process env fenv faes
+    process [fae1,fae2]      = AbsPVSLang.FRel Op.Gt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
+    process (fae1:fae2:faes') = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.Gt  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process (fae2:faes'))
+    process x = error $ "[fpcoreOpCall2BExpr.process] Unhandled case: " ++ show x
+fpcoreOpCall2BExpr env fenv LTEOp faes = process faes
   where
-    process env fenv [fae1,fae2]      = AbsPVSLang.FRel Op.LtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
-    process env fenv (fae1:fae2:faes) = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.LtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process env fenv (fae2:faes))
-fpcoreOpCall2BExpr env fenv GTEOp faes = process env fenv faes
+    process [fae1,fae2]      = AbsPVSLang.FRel Op.LtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
+    process (fae1:fae2:faes') = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.LtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process (fae2:faes'))
+    process x = error $ "[fpcoreOpCall2BExpr.process] Unhandled case: " ++ show x
+fpcoreOpCall2BExpr env fenv GTEOp faes = process faes
   where
-    process env fenv [fae1,fae2]      = AbsPVSLang.FRel Op.GtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
-    process env fenv (fae1:fae2:faes) = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.GtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process env fenv (fae2:faes))
-fpcoreOpCall2BExpr env fenv EqualOp faes = process env fenv faes
+    process [fae1,fae2]      = AbsPVSLang.FRel Op.GtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
+    process (fae1:fae2:faes') = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.GtE  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process (fae2:faes'))
+    process x = error $ "[fpcoreOpCall2BExpr.process] Unhandled case: " ++ show x
+fpcoreOpCall2BExpr env fenv EqualOp faes = process faes
   where
-    process env fenv [fae1,fae2]      = AbsPVSLang.FRel Op.Eq (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
-    process env fenv (fae1:fae2:faes) = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.Eq (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process env fenv (fae2:faes))
+    process [fae1,fae2]      = AbsPVSLang.FRel Op.Eq (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
+    process (fae1:fae2:faes') = AbsPVSLang.FAnd (AbsPVSLang.FRel Op.Eq (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)) (process (fae2:faes'))
+    process x = error $ "[fpcoreOpCall2BExpr.process] Unhandled case: " ++ show x
 fpcoreOpCall2BExpr env fenv NEqualOp [fae1, fae2] = AbsPVSLang.FRel Op.Neq  (fpcore2FAExpr env fenv fae1) (fpcore2FAExpr env fenv fae2)
-fpcoreOpCall2BExpr env fenv AndOp fbes = process env fenv fbes
+fpcoreOpCall2BExpr env fenv AndOp fbes = process fbes
   where
-    process env fenv [fbe1,fbe2]      = AbsPVSLang.FAnd (fpcore2FBExpr env fenv fbe1) (fpcore2FBExpr env fenv fbe2)
-    process env fenv (fbe:fbes) = AbsPVSLang.FAnd (fpcore2FBExpr env fenv fbe) (process env fenv fbes)
-fpcoreOpCall2BExpr env fenv OrOp fbes = process env fenv fbes
+    process [fbe1,fbe2]      = AbsPVSLang.FAnd (fpcore2FBExpr env fenv fbe1) (fpcore2FBExpr env fenv fbe2)
+    process (fbe:fbes') = AbsPVSLang.FAnd (fpcore2FBExpr env fenv fbe) (process fbes')
+    process x = error $ "[fpcoreOpCall2BExpr.process] Unhandled case: " ++ show x
+fpcoreOpCall2BExpr env fenv OrOp fbes = process fbes
   where
-    process env fenv [fbe1,fbe2]      = AbsPVSLang.FOr (fpcore2FBExpr env fenv fbe1) (fpcore2FBExpr env fenv fbe2)
-    process env fenv (fbe:fbes) = AbsPVSLang.FOr (fpcore2FBExpr env fenv fbe) (process env fenv fbes)
+    process [fbe1,fbe2]      = AbsPVSLang.FOr (fpcore2FBExpr env fenv fbe1) (fpcore2FBExpr env fenv fbe2)
+    process (fbe:fbes') = AbsPVSLang.FOr (fpcore2FBExpr env fenv fbe) (process fbes')
+    process x = error $ "[fpcoreOpCall2BExpr.process] Unhandled case: " ++ show x
 fpcoreOpCall2BExpr env fenv NotOp [fbe] = AbsPVSLang.FNot  (fpcore2FBExpr env fenv fbe)
-fpcoreOpCall2BExpr env fenv IsfiniteOp [fae1, fae2] = error $ "Not yet implemented"
-fpcoreOpCall2BExpr env fenv IsinfOp [fae1, fae2] = error $ "Not yet implemented"
-fpcoreOpCall2BExpr env fenv IsnanOp [fae1, fae2] = error $ "Not yet implemented"
-fpcoreOpCall2BExpr env fenv IsnormalOp [fae1, fae2] = error $ "Not yet implemented"
-fpcoreOpCall2BExpr env fenv SignbitOp [fae1, fae2] = error $ "Not yet implemented"
-fpcoreOpCall2BExpr _ _ _ _ = error $ "Illegal cast from arithmetic operation to boolean"
+fpcoreOpCall2BExpr _ _ x _ = error $ "[fpcoreOpCall2BExpr] Illegal cast from arithmetic operation to boolean or not yet implemented: " ++ show x
 
 -- TODO: Implementation
 fpcoreConst2Expr :: AbsFPCoreLang.Constant -> AbsPVSLang.FAExpr
-fpcoreConst2Expr EConst = error $ "EConst Not yet implemented"
-fpcoreConst2Expr LOG2EConst = error $ "LOG2EConst Not yet implemented"
-fpcoreConst2Expr LOG10EConst = error $ "LOG10EConst Not yet implemented"
-fpcoreConst2Expr LN2Const = error $ "LN2Const Not yet implemented"
-fpcoreConst2Expr LN10Const = error $ "LN10Const Not yet implemented"
-fpcoreConst2Expr PIConst = error $ "PIConst Not yet implemented"
-fpcoreConst2Expr PI_2Const = error $ "PI_2Const Not yet implemented"
-fpcoreConst2Expr PI_4Const = error $ "PI_4Const Not yet implemented"
-fpcoreConst2Expr M_1_PIConst = error $ "M_1_PIConst Not yet implemented"
-fpcoreConst2Expr M_2_PIConst = error $ "M_2_PIConst Not yet implemented"
-fpcoreConst2Expr M_2_SQRTPIConst = error $ "M_2_SQRTPIConst Not yet implemented"
-fpcoreConst2Expr SQRT2Const = error $ "SQRT2Const Not yet implemented"
-fpcoreConst2Expr SQRT1_2Const = error $ "SQRT1_2Const Not yet implemented"
-fpcoreConst2Expr INFINITYConst = error $ "INFINITYConst Not yet implemented"
-fpcoreConst2Expr NANConst = error $ "NANConst Not yet implemented"
-fpcoreConst2Expr _ = error $ "Illegal cast from boolean constant to arithmetic"
+fpcoreConst2Expr EConst = error "EConst Not yet implemented"
+fpcoreConst2Expr LOG2EConst = error "LOG2EConst Not yet implemented"
+fpcoreConst2Expr LOG10EConst = error "LOG10EConst Not yet implemented"
+fpcoreConst2Expr LN2Const = error "LN2Const Not yet implemented"
+fpcoreConst2Expr LN10Const = error "LN10Const Not yet implemented"
+fpcoreConst2Expr PIConst = error "PIConst Not yet implemented"
+fpcoreConst2Expr PI_2Const = error "PI_2Const Not yet implemented"
+fpcoreConst2Expr PI_4Const = error "PI_4Const Not yet implemented"
+fpcoreConst2Expr M_1_PIConst = error "M_1_PIConst Not yet implemented"
+fpcoreConst2Expr M_2_PIConst = error "M_2_PIConst Not yet implemented"
+fpcoreConst2Expr M_2_SQRTPIConst = error "M_2_SQRTPIConst Not yet implemented"
+fpcoreConst2Expr SQRT2Const = error "SQRT2Const Not yet implemented"
+fpcoreConst2Expr SQRT1_2Const = error "SQRT1_2Const Not yet implemented"
+fpcoreConst2Expr INFINITYConst = error "INFINITYConst Not yet implemented"
+fpcoreConst2Expr NANConst = error "NANConst Not yet implemented"
+fpcoreConst2Expr _ = error "Illegal cast from boolean constant to arithmetic"
 
 fpcoreConst2BExpr :: AbsFPCoreLang.Constant -> AbsPVSLang.FBExpr
 fpcoreConst2BExpr TRUEConst = AbsPVSLang.FBTrue
 fpcoreConst2BExpr FALSEConst = AbsPVSLang.FBFalse
-fpcoreConst2BExpr _ = error $ "Illegal cast from arithmetic constant to boolean"
+fpcoreConst2BExpr _ = error "Illegal cast from arithmetic constant to boolean"
 
 -- TODO: Implementation
 fpcoreNum2Expr :: AbsFPCoreLang.Number -> AbsPVSLang.FAExpr
@@ -219,17 +194,17 @@ fpcoreNum2Expr (NRat (Rational s)) = FCnst FPDouble (read (map parseRat s) :: Da
     parseRat '/' = '%'
     parseRat c   = c
 fpcoreNum2Expr (NDecNum (DecNum s)) = FCnst FPDouble (toRational (read s :: Double))
-fpcoreNum2Expr _ = error $ "Not yet implemented"
+fpcoreNum2Expr _ = error "Not yet implemented"
 
 -- TODO: Implementation
 fpcoreNum2Double :: AbsFPCoreLang.Number -> Double
-fpcoreNum2Double _ = error $ "Not yet implemented"
+fpcoreNum2Double _ = error "Not yet implemented"
 
 -- TODO: Implementation
 fpcore2FBExpr :: VarTypeEnv -> FunTypeEnv -> AbsFPCoreLang.Expr -> AbsPVSLang.FBExpr
 fpcore2FBExpr env fenv (ExOp op ex1 exl) = fpcoreOpCall2BExpr env fenv op (ex1 : exl)
 -- fpcore2FBExpr env fenv (ExIf ex1 ex2 ex3) = BIte (fpcore2FBExpr env fenv ex1) (fpcore2FBExpr env fenv ex2) (fpcore2FBExpr env fenv ex3)
-fpcore2FBExpr _ _ _ = error $ "unsupported expression"
+fpcore2FBExpr _ _ _ = error "unsupported expression"
 
 either2Err :: Either String a -> Err a
 either2Err (Left s) = Bad s

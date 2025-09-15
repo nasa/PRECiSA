@@ -85,11 +85,11 @@ library
     Translation.Float2Real
     Translation.Real2Float
     Utils
-  ghc-options:
+  ghc-options: -Wall -Werror
 
 executable precisa
   import: shared
-  ghc-options: -Wall
+  ghc-options: -Wall -Werror
   build-depends:
       base      >= 4.14
     , precisa
@@ -115,8 +115,8 @@ test-suite precisaTests
   main-is:
     Main.hs
   other-modules:
-    -- AbsPVSLangTest
-    -- AbstractDomainTest
+    AbsPVSLangTest
+    AbstractDomainTest
     AbstractSemanticsTest
     Common.ControlFlowTest
     Common.DecisionPathTest

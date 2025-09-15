@@ -32,7 +32,7 @@ data SMTmodel = SMT [(VarName, PVSType)] [VarName] Conditions
 genSMTConstraints :: CUInt -> CUInt -> Conditions -> [VarBind] -> IO (Conditions, BExpr, [VarName], [(VarName, PVSType)], [VarName])
 genSMTConstraints maximumDepth minimumPrecision (Conds cs) inputs = do
     (errorConstraints, newErrVars) <- generateErrorConstraints maximumDepth minimumPrecision aexprMap fpexprMap inputs
-    return (Conds $ newCond, errorConstraints, newRVars, newFPVars, newErrVars)
+    return (Conds newCond, errorConstraints, newRVars, newFPVars, newErrVars)
     where
         aexprMap  = snd finalRState
         newRVars  = map fst (snd finalRState)
@@ -71,6 +71,7 @@ generateErrorConstraintInput  maximumDepth minimumPrecision range@(VarBind x Res
     roError <- computeErrorAExpr  maximumDepth minimumPrecision (FVar fp x) [range]
     let nameErrVar = "Err_"++x
     return (Rel GtE (Var Real nameErrVar) (UnaryOp AbsOp $ BinaryOp SubOp (RealMark x ResValue) (Var Real x)), (nameErrVar, roError))
+generateErrorConstraintInput _ _ x = error $ "[generateErrorConstraintInput] Unhandled case: " ++ show x
 
 generateErrorConstraint :: CUInt -> CUInt -> VarName -> VarName -> FAExpr -> [VarBind] -> IO (BExpr,(VarName, Double))
 generateErrorConstraint maximumDepth minimumPrecision rVar fVar faexpr inputs = do

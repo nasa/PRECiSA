@@ -14,6 +14,7 @@ import AbsPVSLang
 import Operators
 import Utils(isInt)
 import Common.TypesUtils
+import Data.Bifunctor (second)
 import Data.Maybe (fromMaybe)
 
 type NormBoolExpr = Bool
@@ -25,7 +26,7 @@ real2fpType _ Boolean  = Boolean
 real2fpType fp (Array ts t) = Array (map (real2fpType fp) ts) (real2fpType fp t)
 real2fpType fp (List t) = List (real2fpType fp t)
 real2fpType fp (Tuple ts) = Tuple (map (real2fpType fp) ts)
-real2fpType fp (Record fs) = Record (map (\(fieldName, t) -> (fieldName, real2fpType fp t)) fs)
+real2fpType fp (Record fs) = Record (map (second (real2fpType fp)) fs)
 real2fpType fp (TypeFun ts t) = TypeFun (map (real2fpType fp) ts) (real2fpType fp t)
 real2fpType fp _ = fp
 
@@ -83,14 +84,11 @@ real2fpCollAexpr normBE fp prog (RArrayUpdate aexpr idx newValue)
   = ArrayUpdate (real2fpCollAexpr normBE fp prog aexpr)
                 (real2fpAexpr normBE True TInt prog idx)
                 (real2fpAexpr normBE True fp prog newValue)
-real2fpCollAexpr normBE fp prog (RArrayUpdate aexpr idx newValue)
-  = ArrayUpdate (real2fpCollAexpr normBE fp prog aexpr)
-                (real2fpAexpr normBE True TInt prog idx)
-                (real2fpAexpr normBE True fp prog newValue)
 real2fpCollAexpr normBE fp prog (RCollFun funName funType args)
   = CollFun True funName (real2fpType fp funType) (map (real2fpAexpr normBE False fp prog) args)
-real2fpCollAexpr normBE fp prog (RCollVar t x)
+real2fpCollAexpr _ fp _ (RCollVar t x)
   = CollVar (real2fpType fp t) x
+real2fpCollAexpr _ _ _ x = error $ "[real2fpCollAexpr] Unhandled case: " ++ show x
 
 real2fpBexprStm :: NormBoolExpr -> PVSType -> RProgram -> BExprStm -> FBExprStm
 real2fpBexprStm normBE fp prog (RBLet letElems stm) = BLet (map (real2letElem normBE fp prog) letElems)
@@ -149,7 +147,7 @@ real2fpRel True fp prog rel ae1 ae2
   | isIntAExpr ae2 && not (isIntAExpr ae1)
     = FRel rel (BinaryFPOp SubOp fp (real2fpAexpr True False fp prog ae1)
                                     (TypeCast TInt fp (real2fpAexpr True True fp prog ae2))) (FInt 0)
-  | (isZeroAExpr ae1 || isZeroAExpr ae2) = FRel rel (real2fpAexpr True False fp prog ae1)
+  | isZeroAExpr ae1 || isZeroAExpr ae2 = FRel rel (real2fpAexpr True False fp prog ae1)
                                (real2fpAexpr True False fp prog ae2)
   | otherwise = FRel rel (BinaryFPOp SubOp fp (real2fpAexpr True False fp prog ae1)
                                               (real2fpAexpr True False fp prog ae2)) (FInt 0)
@@ -173,14 +171,14 @@ real2fpAexpr _ _    fp    _ (FromFloat fp' ae) = ToFloat fp (FromFloat fp' ae)
 real2fpAexpr normBE isCast fp prog (EFun f field TInt args) = FEFun True f field TInt $
   if null prog
     then map (real2fpAexpr normBE isCast fp prog) args
-    else (real2fpActArgs normBE isCast fp prog formArgs args)
+    else real2fpActArgs normBE isCast fp prog formArgs args
   where
     formArgs = realDeclArgs $ fromMaybe (error $ "real2fpAexpr: function " ++ f ++ " not found in program.")
                             (findInRealProg f prog)
 real2fpAexpr normBE isCast fp prog (EFun f field _ args)    = FEFun True f field fp $
   if null prog
     then map (real2fpAexpr normBE isCast fp prog) args
-    else (real2fpActArgs normBE isCast fp prog formArgs args)
+    else real2fpActArgs normBE isCast fp prog formArgs args
   where
     formArgs = realDeclArgs $ fromMaybe (error $ "real2fpAexpr: function " ++ f ++ " not found in program.")
                             (findInRealProg f prog)
@@ -211,11 +209,11 @@ real2fpAexpr _ _ _ _ ae = error $ "real2fpAexpr not defined for " ++ show ae
 real2fpActArgs :: NormBoolExpr -> Bool -> PVSType -> RProgram -> [Arg] -> [AExpr] -> [FAExpr]
 real2fpActArgs _ _ _ _ [] [] = []
 real2fpActArgs normBE isCast fp prog ((Arg x TInt):formArgs) (expr:actArgs)
-  | isIntAExpr expr = (real2fpAexpr normBE isCast TInt prog expr):(real2fpActArgs normBE isCast fp prog formArgs actArgs)
+  | isIntAExpr expr = real2fpAexpr normBE isCast TInt prog expr:real2fpActArgs normBE isCast fp prog formArgs actArgs
   | otherwise = error $ "real2fpActArgs: type mismatch. Argument "
                         ++ x ++ " is of type integer, but expression"
                         ++ show expr ++ " is not."
 real2fpActArgs normBE isCast fp prog ((Arg _ _):formArgs) (expr:actArgs)
-  | isIntAExpr expr = ((TypeCast TInt fp (real2fpAexpr normBE True fp prog expr)):real2fpActArgs normBE isCast fp prog formArgs actArgs)
-  | otherwise       = ((real2fpAexpr normBE isCast fp prog expr):real2fpActArgs normBE isCast fp prog formArgs actArgs)
-real2fpActArgs _ _ _ _ _ _ = error $ "real2fpActArgs: argument list size mismatch."
+  | isIntAExpr expr = TypeCast TInt fp (real2fpAexpr normBE True fp prog expr):real2fpActArgs normBE isCast fp prog formArgs actArgs
+  | otherwise       = real2fpAexpr normBE isCast fp prog expr:real2fpActArgs normBE isCast fp prog formArgs actArgs
+real2fpActArgs _ _ _ _ _ _ = error "real2fpActArgs: argument list size mismatch."

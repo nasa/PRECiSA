@@ -8,15 +8,14 @@
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Kodiak.Generator where
 
-import Control.Applicative (liftA2)
 import Control.Monad.Except
+import Data.Functor((<&>))
 
 import qualified AbsPVSLang        as PVS
 import           Kodiak.Expression (AExpr,BExpr)
@@ -102,7 +101,7 @@ pvsAExpr2Kodiak e
 
     -- Integer operators:
 
-    | PVS.BinaryOp ModOp _ _     <- e = (K.Cnst . toRational) <$> evalRI e
+    | PVS.BinaryOp ModOp _ _     <- e = K.Cnst . toRational <$> evalRI e
 
     | otherwise = throwError $ NonSupportedExpr e
 
@@ -128,7 +127,7 @@ pvsBExpr2Kodiak e
 
     -- Boolean operators:
 
-    | PVS.Not e'  <- e = pvsBExpr2Kodiak e' >>= (return . K.Not)
+    | PVS.Not e'  <- e = pvsBExpr2Kodiak e' <&> K.Not
 
     | PVS.And l r <- e = recBinary pvsBExpr2Kodiak K.And l r
 
@@ -230,7 +229,7 @@ pvsFAExpr2Kodiak e
 
     -- Integer operators:
 
-    | PVS.BinaryFPOp _ PVS.TInt _ _     <- e = (K.Cnst . toRational) <$> evalFI e
+    | PVS.BinaryFPOp _ PVS.TInt _ _     <- e = K.Cnst . toRational <$> evalFI e
 
     | otherwise = throwError $ NonSupportedExpr e
 

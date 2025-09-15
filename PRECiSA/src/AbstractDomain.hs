@@ -104,11 +104,11 @@ simplifyConditions (Conds cs) = removeTrueConds $ Conds (map simplifyCondition c
 removeTrueConds :: Conditions -> Conditions
 removeTrueConds (Conds cs) = Conds $ if null res then [trueCond] else res
   where
-    res = filter (\a -> a /= trueCond) cs
+    res = filter (/= trueCond) cs
 
 isFalseCond :: Condition -> Bool
-isFalseCond cond = isBExprEquivFalse (And (realPathCond cond)(realCond cond))
-                || isFBExprEquivFalse (FAnd (fpPathCond cond)(fpCond cond))
+isFalseCond cond = isBExprEquivFalse (And (realPathCond cond) (realCond cond))
+                || isFBExprEquivFalse (FAnd (fpPathCond cond) (fpCond cond))
 
 
 mergeConds :: Conditions -> Conditions -> Conditions
@@ -190,7 +190,7 @@ ppCond cond = prettyDoc (And (realPathCond cond) (realCond cond))
              prettyDoc (FAnd (fpPathCond cond) (fpCond cond))
 
 isTrueCondition :: Conditions -> Bool
-isTrueCondition (Conds cs) = foldl1 (&&) (map isTrueCond cs)
+isTrueCondition (Conds cs) = all isTrueCond cs
 
 isTrueCond :: Condition -> Bool
 isTrueCond cond = simplifyCondition cond == trueCond

@@ -10,7 +10,7 @@
 
 module PVSCert where
 
-import AbsPVSLang
+import AbsPVSLang hiding (fpGuardList,letExpr,varName)
 import AbsSpecLang
 import AbstractSemantics
 import AbstractDomain
@@ -23,7 +23,6 @@ import Kodiak.Runner
 import Numeric
 import Prelude hiding ((<>))
 import PPExt
-import Debug.Trace
 
 genFpProgFile :: PVSType -> String -> Program -> Doc
 genFpProgFile fp progFileName prog =
@@ -51,11 +50,11 @@ genCertFile inputFileName certFileName realFileName prog sem =
   $$
   text "BEGIN"
   $$
-  text ("IMPORTING PRECiSA@strategies")
+  text "IMPORTING PRECiSA@strategies"
   $$
-  text ("IMPORTING float_bounded_axiomatic@aerr_ulp__double")
+  text "IMPORTING float_bounded_axiomatic@aerr_ulp__double"
   $$
-  text ("IMPORTING float_bounded_axiomatic@aerr_ulp__single")
+  text "IMPORTING float_bounded_axiomatic@aerr_ulp__single"
   $$
   text ("IMPORTING " ++ inputFileName)
   $$
@@ -106,11 +105,11 @@ genNumCertFile certFileName numCertFileName kodiakResult decls (Spec specBinds) 
   $$
   text ("IMPORTING " ++ certFileName)
   $$
-  text ("IMPORTING PRECiSA@bbiasp")
+  text "IMPORTING PRECiSA@bbiasp"
   $$
-  text ("IMPORTING PRECiSA@bbiadp")
+  text "IMPORTING PRECiSA@bbiadp"
   $$
-  text ("IMPORTING PRECiSA@strategies \n")
+  text "IMPORTING PRECiSA@strategies \n"
   $$
   text "%|- *_TCC* : PROOF"
   $$
@@ -156,17 +155,17 @@ printNumCertsField f t args ((field,res):res') decls spec maxBBDepth prec isTran
   where
     fp = case t of
       Tuple ts -> case field of
-                      ResTupleIndex idx -> ts!!(fromInteger $ idx - 1)
+                      ResTupleIndex idx -> ts !! fromInteger (idx - 1)
                       _ -> error $ "printCertsField: " ++ show field ++ " is not a valid tuple index."
       Record ts -> case field of
-                      ResRecordField field -> fromMaybe (error $ "printCertsField: field " ++ show field ++ " not found.")
-                                              $ lookup field ts
+                      ResRecordField rField -> fromMaybe (error $ "printCertsField: field " ++ show rField ++ " not found.")
+                                              $ lookup rField ts
                       _ -> error $ "printCertsField: " ++ show field ++ " is not a valid record field."
       _ -> t
     fpGuardList = case findInDecls f decls of
-                     Just (_,_,body@(AExprBody ae)) -> listFPGuards body
-                     Just (_,_,body@(CExprBody ae)) -> listFPGuards body
-                     Just (_,_,(BExprBody _)) -> error $ "printNumCerts: function " ++ f ++ " is of type Boolean."
+                     Just (_,_,body@(AExprBody _ae)) -> listFPGuards body
+                     Just (_,_,body@(CExprBody _ae)) -> listFPGuards body
+                     Just (_,_,BExprBody _) -> error $ "printNumCerts: function " ++ f ++ " is of type Boolean."
                      Nothing -> error $ "printNumCerts: function " ++ f ++ " not found."
     ranges = fromMaybe (error $ "printNumCerts: function " ++ show f ++ " not found.") (findInSpec f spec)
     fFP   = if isTran then f ++ "_fp" else f
@@ -220,11 +219,11 @@ printCertsField f isTrans t stm args field cset certDocField
   where
     fp = case t of
       Tuple ts -> case field of
-                      ResTupleIndex idx -> ts!!(fromInteger $ idx - 1)
+                      ResTupleIndex idx -> ts !! fromInteger (idx - 1)
                       _ -> error $ "printCertsField: " ++ show field ++ " is not a valid tuple index."
       Record ts -> case field of
-                      ResRecordField field -> fromMaybe (error $ "printCertsField: field " ++ show field ++ " not found.")
-                                              $ lookup field ts
+                      ResRecordField rField -> fromMaybe (error $ "printCertsField: field " ++ show rField ++ " not found.")
+                                              $ lookup rField ts
                       _ -> error $ "printCertsField: " ++ show field ++ " is not a valid record field."
       _ -> t
     fFP   = if isTrans then f ++ "_fp" else f
@@ -233,11 +232,10 @@ printCertsField f isTrans t stm args field cset certDocField
 printCerts :: Interpretation -> Program -> Doc
 printCerts interp decls = Map.foldrWithKey printCertsFun emptyDoc interp
   where
-    printCertsFun f (isTrans,Boolean, args, sem) certDoc = certDoc
-    printCertsFun f (isTrans,t, args, sem) certDoc = Map.foldrWithKey (printCertsField f isTrans t stm args) certDoc sem
-      where
-        (_,_,AExprBody stm) = fromMaybe (error $ "printCerts: function " ++ show f ++ " not found.")
-                                        (findInDecls f decls)
+    printCertsFun _ (_,Boolean, _, _) certDoc = certDoc
+    printCertsFun f (isTrans,t, args, sem) certDoc = case findInDecls f decls of
+      Just (_,_,AExprBody stm) -> Map.foldrWithKey (printCertsField f isTrans t stm args) certDoc sem
+      _ -> error $ "printCerts: function " ++ show f ++ " not found."
 
 printLemmasAndProofs :: String -> String -> ResultField -> [Arg] -> FAExpr -> ACebS -> PVSType -> Int -> Doc
 printLemmasAndProofs f _ _ args _ [] _ n
@@ -284,7 +282,7 @@ prIsFinite ae | getPVSType ae == FPSingle = text "finite?_single" <> parens (pre
 
 prIsFiniteHp :: [FAExpr] -> [(VarName, FAExpr)] -> Doc
 prIsFiniteHp [] _ = emptyDoc
-prIsFiniteHp isFiniteCheckList localVars = prLocalVars localVars isFiniteListDoc
+prIsFiniteHp isFiniteCheckList localVars' = prLocalVars localVars' isFiniteListDoc
   where
     isFiniteListDoc = hsep (punctuate (text " AND") (map prIsFinite isFiniteCheckList))
 
@@ -294,10 +292,10 @@ prLocalVars locVarList doc =
   text "LET"
   <+> vcat (punctuate comma (map
        (\(varName, letExpr) -> text varName <> text "=" <> prettyDoc letExpr) locVarList))
-        $$ text "IN" <+> parens (doc)
+        $$ text "IN" <+> parens doc
 
 prErrorDef :: String -> String -> ResultField -> [Arg] -> ACeb -> PVSType -> Int -> Doc
-prErrorDef f fReal field args aceb fp n  =
+prErrorDef f _fReal _field args aceb _fp n  =
   text f <> text "_" <> int n <> text "_error"
                      <+> parens (hsep (punctuate comma $ map prErrorInt args)
                      <>  text ": nonneg_real" <> comma
@@ -309,10 +307,10 @@ prErrorDef f fReal field args aceb fp n  =
   where
     prRealInt  (Arg x _) = text "r_" <> text x
     prErrorInt (Arg x _) = text "e_" <> text x
-    ACeb {conds = c, fpExprs = fpes, eExpr = err, cFlow = cflow} = aceb
+    ACeb {eExpr = err} = aceb
 
 prPvsLemma :: String -> String -> ResultField -> [Arg] -> ACeb -> PVSType -> Int -> [FAExpr] -> Doc
-prPvsLemma f fReal field args aceb fp n fpGuards =
+prPvsLemma f fReal field args aceb fp n _fpGuards =
   text f <> text "_" <> int n <+> text ": LEMMA"
   $$ text "FORALL(" <>  hsep (punctuate comma $ map prErrorInt args)
                     <>  text ": nonneg_real" <> comma
@@ -341,7 +339,7 @@ prPvsLemma f fReal field args aceb fp n fpGuards =
     locVars = concatMap localVars (fDeclRes $ fpExprs aceb)
     prRealInt  (Arg x _) = text "r_" <> text x
     prErrorInt (Arg x _) = text "e_" <> text x
-    ACeb {conds = c, fpExprs = fpes, eExpr = err, cFlow = cflow} = aceb
+    ACeb {conds = c} = aceb
 
 prInfoLemma :: ControlFlow -> [FAExpr] -> [AExpr] -> Doc
 prInfoLemma cflow fpes reales = text "% Floating-Point Results:"<+> hsep (punctuate comma $ map prettyDoc fpes)
@@ -368,7 +366,7 @@ prPvsNumLemma :: Doc
                 -> Maybe AExpr
                 -> [FAExpr]
                 -> Doc
-prPvsNumLemma nameLemma f fReal field args cond roundOffError ranges fp symbError fpGuards =
+prPvsNumLemma nameLemma f fReal field args cond roundOffError ranges fp symbError _fpGuards =
   nameLemma <+> text ": LEMMA"
   $$ text "FORALL(" <>  hsep (punctuate comma $ map (prettyDoc . realVar . arg2var) args)
                     <>  text ": real" <> comma
@@ -395,9 +393,10 @@ prPvsArgsSymb :: [Arg] -> Doc
 prPvsArgsSymb arguments = hsep $ punctuate (text " AND") $ map prPVSVarIdSymb arguments
 
 prPVSVarIdSymb :: Arg -> Doc
-prPVSVarIdSymb (Arg x (Tuple ts)) = vcat $ map (prPVSVarIdSymb . tuple2Arg) (zip ts [1..])
+prPVSVarIdSymb (Arg x (Tuple ts)) = vcat $ zipWith (curry (prPVSVarIdSymb . tuple2Arg)) ts indexes
   where
     tuple2Arg (idxType, idx) = Arg (x ++ "_" ++ show idx) idxType
+    indexes = [1..] :: [Int]
 prPVSVarIdSymb (Arg x (Record fs)) = vcat $ map (prPVSVarIdSymb . record2Arg) fs
   where
     record2Arg (field,fieldType) = Arg (x ++ "_" ++ field) fieldType
@@ -406,14 +405,15 @@ prPVSVarIdSymb (Arg x t) = text "abs(" <> f2r t (text x)
                                <> text "<=" <> text "e_" <> text x
 
 prPvsArgs :: [Arg] -> Doc
-prPvsArgs arguments = hsep $ punctuate (text " AND") $ map ((uncurry prPVSVarId) . mapArg2Pair) arguments
+prPvsArgs arguments = hsep $ punctuate (text " AND") $ map (uncurry prPVSVarId . mapArg2Pair) arguments
 
 prPVSVarId :: VarName -> PVSType -> Doc
-prPVSVarId x (TypeFun ts t) = empty
-prPVSVarId x (Tuple ts) = vcat $ map ((uncurry prPVSVarId) . tuple2Arg) (zip ts [1..])
+prPVSVarId _ (TypeFun _ _) = empty
+prPVSVarId x (Tuple ts) = vcat $ zipWith (curry (uncurry prPVSVarId . tuple2Arg)) ts indexes
   where
     tuple2Arg (idxType, idx) = (x ++ "_" ++ show idx, idxType)
-prPVSVarId x (Record fs) = vcat $ map ((uncurry prPVSVarId) . record2Arg) fs
+    indexes = [1..] :: [Int]
+prPVSVarId x (Record fs) = vcat $ map (uncurry prPVSVarId . record2Arg) fs
   where
     record2Arg (field,fieldType) = (x ++ "_" ++ field, fieldType)
 prPVSVarId x TInt = text "abs("<> text x <+> text "-" <+> text "r_" <> text x <> text ")" <> text "<= 0"
@@ -437,15 +437,15 @@ prettyNumError roundOffError = text $ showFFloat Nothing roundOffError "" -- (ne
 
 f2r :: PVSType -> Doc -> Doc
 f2r fp doc = case fp of
-  FPSingle -> text "StoR" <> parens (doc)
-  FPDouble -> text "DtoR" <> parens (doc)
+  FPSingle -> text "StoR" <> parens doc
+  FPDouble -> text "DtoR" <> parens doc
   TInt -> doc
   Boolean -> doc
-  Array _ FPSingle -> text "StoR" <> parens (doc)
-  Array _ FPDouble -> text "DtoR" <> parens (doc)
+  Array _ FPSingle -> text "StoR" <> parens doc
+  Array _ FPDouble -> text "DtoR" <> parens doc
   Array _ _ -> doc
-  List  FPSingle -> text "StoR" <> parens (doc)
-  List  FPDouble -> text "DtoR" <> parens (doc)
+  List  FPSingle -> text "StoR" <> parens doc
+  List  FPDouble -> text "DtoR" <> parens doc
   List  _ -> doc
   TypeFun _ _ -> doc
   t -> error $ "f2r: something went wrong, f2r not defined for " ++ show t
@@ -539,9 +539,10 @@ printVarErrBound fp var@(FVar _ _) = text "abs(" <> f2r fp (prettyDoc var)
 printVarErrBound _ ae = error $ "printVarErrBound: case " ++ show ae ++ " not expected."
 
 printExprFunCert :: Int -> Int -> PVSType -> (Decl, [(VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind])]) -> Doc
-printExprFunCert maxDepth minPrec fp (Decl _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1, 2 ..]
-printExprFunCert maxDepth minPrec _ (Pred _ TauMinus _ _ _, _) = emptyDoc
-printExprFunCert maxDepth minPrec fp (Pred _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1, 2 ..]
+printExprFunCert maxDepth minPrec fp (Decl _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1 :: Int, 2 ..]
+printExprFunCert        _       _ _ (Pred _ TauMinus _ _ _, _) = emptyDoc
+printExprFunCert maxDepth minPrec fp (Pred _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1 :: Int, 2 ..]
+printExprFunCert _ _ _ x = error $ "[printExprFunCert] Unhandled case: " ++ show x
 
 printExprCert' :: Int -> Int -> PVSType -> String -> (VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind]) -> Int -> Doc
 printExprCert' maxDepth minPrec fp f (_,fae, ae, be, symbErr, numErr, faeVarList, realVarList, errVarList,varBinds) n =
@@ -551,5 +552,3 @@ printExprCert' maxDepth minPrec fp f (_,fae, ae, be, symbErr, numErr, faeVarList
   where
     varBindsRestricted = filter (isVarInList (map fvarName faeVarList)) varBinds
     isVarInList vars (VarBind x _ _ _ _) = x `elem` vars
-
-

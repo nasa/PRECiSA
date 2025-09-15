@@ -22,7 +22,7 @@ data Err a = Ok a | Bad String
   deriving (Read, Show, Eq, Ord)
 
 instance Monad Err where
-  return      = Ok
+  return      = pure
   Ok a  >>= f = f a
   Bad s >>= _ = Bad s
 

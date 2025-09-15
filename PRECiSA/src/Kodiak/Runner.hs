@@ -19,6 +19,7 @@ import AbsSpecLang
 import Numeric (fromRat)
 import Control.Exception (throw,AssertionFailed(..))
 import Control.Monad ((>=>),foldM)
+import Data.Functor ((<&>))
 import Data.Maybe(fromMaybe)
 import Foreign.C
 import Operators
@@ -33,7 +34,7 @@ data KodiakInput = KI { kiName :: String,
 variableMapFromBinds :: [VarBind] -> VariableMap
 variableMapFromBinds binds = VMap $ zip variableNames [(0::CUInt)..]
   where
-    variableNames = map (\(VarBind s field _ _ _) -> (cVarName s field)) binds
+    variableNames = map (\(VarBind s field _ _ _) -> cVarName s field) binds
 
 data KodiakResult = KR { maximumLowerBound :: Double,
                          maximumUpperBound :: Double
@@ -58,8 +59,8 @@ instance KodiakRunnable KodiakInput () KodiakResult where
       pExpr <- run errorExpr variableMap
       minmax_system_maximize pSys pExpr
       -- minmax_system_print pSys
-      lb <- minmax_system_maximum_lower_bound pSys >>= fmap (fromRational . toRational) . return
-      ub <- minmax_system_maximum_upper_bound pSys >>= fmap (fromRational . toRational) . return
+      lb <- minmax_system_maximum_lower_bound pSys <&> (fromRational . toRational)
+      ub <- minmax_system_maximum_upper_bound pSys <&> (fromRational . toRational)
       return $ KR { maximumLowerBound = lb,
                     maximumUpperBound = ub }
 
@@ -97,8 +98,8 @@ instance KodiakRunnable KodiakMinMaxInput () KodiakMinMaxResult where
       mapM_ (`run` pSys) varRanges
       pExpr <- run errorExpr variableMap
       minmax_system_minmax pSys pExpr
-      lb <- minmax_system_minimum_lower_bound pSys >>= fmap (fromRational . toRational) . return
-      ub <- minmax_system_maximum_upper_bound pSys >>= fmap (fromRational . toRational) . return
+      lb <- minmax_system_minimum_lower_bound pSys <&> (fromRational . toRational)
+      ub <- minmax_system_maximum_upper_bound pSys <&> (fromRational . toRational)
       return $ KodiakMinMaxResult { kmmoMinimumLowerBound = lb, kmmoMaximumUpperBound = ub }
 
 lookup' :: String -> VariableMap -> CUInt
@@ -166,8 +167,8 @@ instance KodiakRunnable AExpr VariableMap PReal where
             then error ("Invalid Interval [" ++ show lb ++ "," ++ show ub ++ "]")
             else interval_create lblb ubub >>= real_create_value
           where
-            (lblb,lbub) = rat2interval lb
-            (ublb,ubub) = rat2interval ub
+            (lblb,_) = rat2interval lb
+            (_,ubub) = rat2interval ub
         run' (Var _ x)              vmap = run' (RealMark x ResValue) vmap
         run' (ListElem _ x _)       vmap = run' (RealMark x ResValue) vmap
         run' (TupleElem _ x idx)    vmap = run' (RealMark x (ResTupleIndex idx)) vmap
@@ -175,7 +176,7 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (RealMark x field) vmap = case lookup (cVarName x field) vmap of
                                   Just pVar -> return pVar
                                   Nothing -> createKodiakLocalVariable x
-        run' (ErrorMark _ _ _) _ = throw (AssertionFailed "ErrorMark should not be used") >> return undefined
+        run' (ErrorMark {}) _ = throw (AssertionFailed "ErrorMark should not be used") >> return undefined
         run' (RLet defs body) vmap = run' body vmap >>= \pBody -> foldM f pBody (reverse defs)
             where
                 f pBody (LetElem{letVar = name, letExpr = expr}) =

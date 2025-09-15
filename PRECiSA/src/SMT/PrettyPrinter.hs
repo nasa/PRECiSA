@@ -174,5 +174,3 @@ prettySMTaexpr (FromFloat _ (FVar _  x)) = text x
 prettySMTaexpr (FromFloat _ (FInt    i)) = integer i <> text ".0"
 prettySMTaexpr (FromFloat _ (FCnst _ d)) = prettySMTRat d
 prettySMTaexpr ae = error $ "prettySMTaexpr: " ++ show ae ++ "not supported yet."
-
-

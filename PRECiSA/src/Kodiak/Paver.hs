@@ -37,7 +37,7 @@ data Input = Input { name       :: String
                    , precision  :: C.CUInt
                    }
 
-data Output = Output { filename :: FilePath } deriving (Eq,Show)
+newtype Output = Output { filename :: FilePath } deriving (Eq,Show)
 
 type FunName = String
 
@@ -49,7 +49,7 @@ instance KR.KodiakRunnable Input () Output where
     paver_set_maxdepth pSys maxDepth
     paver_set_precision pSys (negate (fromInteger $ toInteger precision))
     pExpr <- KR.run expression variableMap
-    mapM_ (flip KR.run pSys) bindings
+    mapM_ (`KR.run` pSys) bindings
     paver_pave pSys pExpr
     let outputFile = name
     cFilename <- C.newCString outputFile
@@ -60,7 +60,7 @@ paveUnstabilityConditions :: [(FunName,ResultField,K.BExpr)] -> Spec -> SearchPa
 paveUnstabilityConditions condMap (Spec bindings) searchParams nameGen = mapM paveFunction condMap
   where
     bindingsMap = map (\(SpecBind f b) -> (f,b)) bindings
-    paveFunction (name,field,bexpr) = labelWith name field . (filename) <$> run kodiakInput ()
+    paveFunction (name,field,bexpr) = labelWith name field . filename <$> run kodiakInput ()
       where
         labelWith name' field' x = (name',field',x)
         kodiakInput = Input { name = nameGen name

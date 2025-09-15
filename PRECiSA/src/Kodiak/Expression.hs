@@ -52,10 +52,10 @@ runAExpr :: AExpr -> VariableMap -> IO PReal
 runAExpr e vmap@(VMap vMap)
     | Cnst r  <- e = do
         let dr = fromRational r :: CDouble
-        pint <- if (toRational dr == r)
+        pint <- if toRational dr == r
             then interval_create dr dr
             else let rdr = toRational dr in
-                if (rdr > r)
+                if rdr > r
                 then do let lb = succIEEE dr
                         assert (toRational lb < rdr) $
                             interval_create lb dr

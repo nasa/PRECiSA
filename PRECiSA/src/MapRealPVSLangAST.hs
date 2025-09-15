@@ -19,7 +19,7 @@ import ErrM
 import qualified Operators as Op
 import Parser.ParRawPVSLang
 import Parser.LexRawPVSLang
-import MapPVSLangAST(isBExpr,raw2FPType,isNumType,isIntType,isRecordType,isTupleType,toErrM,retTypeFun,raw2Args)
+import MapPVSLangAST(isBExpr,raw2FPType,toErrM,retTypeFun,raw2Args)
 
 type VarTypeEnv = [(String, PVSType)]
 type FunTypeEnv = [(String, PVSType)]
@@ -88,7 +88,7 @@ raw2BElsif env fenv (ElsIf fbexpr stm) = (raw2BExpr env fenv fbexpr, raw2BExprSt
 
 raw2LetElem :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.LetElem -> AbsPVSLang.LetElem
 raw2LetElem env fenv (AbsRawPVSLang.LetElem x rawExpr)
-  | (isIntAExpr expr) = AbsPVSLang.LetElem {letVar = raw2Id x, letType = TInt, letExpr = expr}
+  | isIntAExpr expr = AbsPVSLang.LetElem {letVar = raw2Id x, letType = TInt, letExpr = expr}
   | otherwise         = AbsPVSLang.LetElem {letVar = raw2Id x, letType = Real, letExpr = expr}
   where
     expr = raw2AExpr env fenv rawExpr
@@ -108,7 +108,7 @@ raw2RecordElem env fenv (AbsRawPVSLang.RecordElem (AbsRawPVSLang.Id field) expr)
   | isBExpr expr = (field, Right $ raw2BExpr env fenv expr)
   | otherwise    = (field, Left  $ raw2AExpr env fenv expr)
 
-raw2TupleExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> (Either AbsPVSLang.AExpr AbsPVSLang.BExpr)
+raw2TupleExpr :: VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> Either AbsPVSLang.AExpr AbsPVSLang.BExpr
 raw2TupleExpr env fenv expr | isBExpr expr = Right $ raw2BExpr env fenv expr
                             | otherwise    = Left  $ raw2AExpr env fenv expr
 
@@ -130,9 +130,9 @@ raw2RCollExpr env fenv (AbsRawPVSLang.If be thenSmt elseStm)
                                   (raw2RCollExpr env fenv elseStm)
 
 raw2RCollExpr env fenv (AbsRawPVSLang.ListIf be stmThen listElsif elseStm)
-  = RCListIte ((raw2BExpr env fenv be,raw2RCollExpr env fenv stmThen) : map (raw2CollElsif env fenv) listElsif) (raw2RCollExpr env fenv elseStm)
+  = RCListIte ((raw2BExpr env fenv be,raw2RCollExpr env fenv stmThen) : map raw2CollElsif listElsif) (raw2RCollExpr env fenv elseStm)
     where
-      raw2CollElsif env fenv (ElsIf fbexpr stm) = (raw2BExpr env fenv fbexpr, raw2RCollExpr env fenv stm)
+      raw2CollElsif (ElsIf fbexpr stm) = (raw2BExpr env fenv fbexpr, raw2RCollExpr env fenv stm)
 
 raw2RCollExpr env fenv (AbsRawPVSLang.RecordExpr recordElems)
   = AbsPVSLang.RRecordExpr $ map (raw2RecordElem env fenv) recordElems
@@ -145,12 +145,12 @@ raw2RCollExpr env fenv (AbsRawPVSLang.ExprId (AbsRawPVSLang.Id i))
       Just t@(Tuple _)  -> RCollFun i t []
       Just t@(Record _) -> RCollFun i t []
       Just t@(Array _ _) -> RCollFun i t []
-      Just fp -> error $ "Identifier " ++ show i ++ "is not of data collection type."
+      Just _  -> error $ "Identifier " ++ show i ++ "is not of data collection type."
       Nothing -> case lookup i env of
                     Just t@(Tuple  _) -> AbsPVSLang.RCollVar t i
                     Just t@(Record _) -> AbsPVSLang.RCollVar t i
                     Just t@(Array _ _) -> AbsPVSLang.RCollVar t i
-                    Just fp -> error $ "Identifier " ++ show i ++ "is not of data collection type."
+                    Just _  -> error $ "Identifier " ++ show i ++ "is not of data collection type."
                     Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env
 
 raw2RCollExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) actArgs)
@@ -202,19 +202,19 @@ raw2AExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprI
     t = fromMaybe (error errorMsg)
                   (lookup listName env)
     fp = case t of
-            List t -> t
-            otherwise -> error errorMsg
+            List t' -> t'
+            _       -> error errorMsg
     errorMsg = "raw2AExpr: list " ++ show listName ++ " not found."
 
-raw2AExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprId (AbsRawPVSLang.Id funName)
+raw2AExpr env _ (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprId (AbsRawPVSLang.Id funName)
                                                              ,AbsRawPVSLang.ExprId (AbsRawPVSLang.Id listName)])
   | f == "map"  = AbsPVSLang.RMap fp funName listName
   where
     t = fromMaybe (error errorMsg)
                   (lookup listName env)
     fp = case t of
-            List t -> t
-            otherwise -> error errorMsg
+            List t' -> t'
+            _       -> error errorMsg
     errorMsg = "raw2AExpr: list " ++ show listName ++ " not found."
 
 raw2AExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprId (AbsRawPVSLang.Id funName)
@@ -226,8 +226,8 @@ raw2AExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [AbsRawPVSLang.ExprI
     t = fromMaybe (error errorMsg)
                   (lookup listName env)
     fp = case t of
-            List t -> t
-            otherwise -> error errorMsg
+            List t' -> t'
+            _       -> error errorMsg
     errorMsg = "raw2AExpr: list " ++ show listName ++ " not found."
 
 raw2AExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [fae1,fae2])
@@ -236,26 +236,23 @@ raw2AExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) [fae1,fae2])
   | f == "mul"  = raw2BinOp env fenv fae1 fae2 Op.MulOp
   | f == "div"  = raw2BinOp env fenv fae1 fae2 Op.DivOp
   | f == "mod"  = raw2BinOp env fenv fae1 fae2 Op.ModOp
-  where
-    ae1 = raw2AExpr env fenv fae1
-    ae2 = raw2AExpr env fenv fae2
 
 raw2AExpr env fenv (AbsRawPVSLang.Call (AbsRawPVSLang.Id f) actArgs)
   = case lookup f fenv of
       Just fp -> AbsPVSLang.EFun f ResValue fp (map (raw2AExpr env fenv) actArgs)
       Nothing -> case lookup f env of
-                   Just (Array argsType t) -> ArrayElem t f (map (raw2AExpr env fenv) actArgs)
+                   Just (Array _ t) -> ArrayElem t f (map (raw2AExpr env fenv) actArgs)
                    _ -> error $ "raw2AExpr: identifier " ++ show f ++ " not found."
 
-raw2AExpr env fenv (TupleIndex (Id tuple) idx) = TupleElem fp tuple idx
+raw2AExpr env _ (TupleIndex (Id tuple) idx) = TupleElem fp tuple idx
   where
     fp = case t of
-           Tuple idxTypes -> idxTypes!!(fromInteger $ idx - 1)
+           Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
            _ -> error $ "raw2AExpr: " ++ show t ++ "is not a tuple type."
     t = fromMaybe (error $ "raw2AExpr: tuple " ++ show tuple ++ " not found.")
                    (lookup tuple env)
 
-raw2AExpr env fenv (RecordField (Id record) (Id field)) = AbsPVSLang.RecordElem fp record field
+raw2AExpr env _ (RecordField (Id record) (Id field)) = AbsPVSLang.RecordElem fp record field
   where
     fp = case t of
            Record fieldTypes -> fromMaybe (error $ "raw2AExpr: record field " ++ show field ++ " not found.")
@@ -268,7 +265,7 @@ raw2AExpr env fenv (TupleFunIndex (Id f) args idx)
   = EFun f (ResTupleIndex idx) fp (map (raw2AExpr env fenv) args)
   where
     fp = case t of
-           Tuple idxTypes -> idxTypes!!(fromInteger $ idx - 1)
+           Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
            _ -> error $ "raw2AExpr: " ++ show t ++ "is not a tuple type."
     t = fromMaybe (error $ "raw2AExpr: function " ++ show f ++ " not found.")
                    (lookup f fenv)
@@ -292,7 +289,7 @@ raw2AExpr env fenv (AbsRawPVSLang.Let letElems stm)
         newLetElem = raw2LetElem accEnv fenv letElem
         env' = (letVar newLetElem, letType newLetElem):accEnv
 
-raw2AExpr env fenv (AbsRawPVSLang.For idxInit idxEnd initValueAcc (Lambda _ idx subRangeLb subRangeUb acc accType body))
+raw2AExpr env fenv (AbsRawPVSLang.For idxInit idxEnd initValueAcc (Lambda _ idx _subRangeLb _subRangeUb acc accType body))
   = RForLoop t idxName
              (raw2AExpr env fenv idxInit)
              (raw2AExpr env fenv idxEnd)
@@ -303,9 +300,6 @@ raw2AExpr env fenv (AbsRawPVSLang.For idxInit idxEnd initValueAcc (Lambda _ idx 
     idxName = raw2Id idx
     accName = raw2Id acc
     t = raw2FPType accType
-
-raw2AExpr env fenv (AbsRawPVSLang.For idxInit idxEnd initValueAcc body) =
-  error $ "raw2AExpr: for loops with body " ++ "not supported. Try writing it as a Lambda expression."
 
 raw2AExpr env fenv (AbsRawPVSLang.If be thenSmt elseStm)  = RIte (raw2BExpr env fenv be) (raw2AExpr env fenv thenSmt) (raw2AExpr env fenv elseStm)
 

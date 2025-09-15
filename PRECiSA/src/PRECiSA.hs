@@ -25,7 +25,7 @@ import AbstractSemantics
 import AbstractDomain
 import Common.DecisionPath
 import Common.ControlFlow
-import Control.Monad.Except
+import Control.Monad (when)
 import Data.Maybe (fromMaybe,fromJust)
 import qualified Data.Map as Map
 import ErrM
@@ -44,8 +44,7 @@ import System.Directory
 import System.FilePath
 import Translation.Float2Real
 import qualified Json as JSON
-import Data.ByteString.Lazy (hPutStr)
-import System.IO (stdout)
+import qualified Data.ByteString.Lazy as BS
 import Utils(snd4,trd4,frt4)
 
 main :: IO ()
@@ -94,7 +93,7 @@ parseAndAnalyze
             then
               parseFileToFPCoreSpec fileprog
             else
-              error $ "Cannot parse FPCore as spec unless also parsed as program"
+              error "Cannot parse FPCore as spec unless also parsed as program"
           else do
             errparseSpec <- parseFileToSpec decls filespec
             errify fail errparseSpec
@@ -135,9 +134,8 @@ parseAndAnalyze
   let numCertificate = renderPVS $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
   writeFile numCertFile numCertificate
 
-  if printfpcore
-  then do putStrLn $ renderPVS $ fpcprintProgram decls spec
-  else return ()
+  when printfpcore $ do
+    putStrLn $ renderPVS $ fpcprintProgram decls spec
 
   pavingFiles <- if withPaving
     then do
@@ -150,7 +148,7 @@ parseAndAnalyze
   if jsonOut
   then do
     let jsonRes = JSON.toJSONAnalysisResults resultSummary certFile numCertFile
-    hPutStr stdout jsonRes
+    BS.putStr jsonRes
   else do
     putStrLn "**************************************************************************"
     putStrLn "********************************* PRECiSA ********************************"
@@ -193,7 +191,7 @@ getKodiakResult (f,_,_,funSem) = map getKodiakErrorField funSem
     getKodiakError (_,_,cf,err,_,_,_) = (cf,err)
 
 summarizeAllErrors :: [(String, ResultField, [(ControlFlow, KodiakResult)])] -> [(String,ResultField, Double, Maybe Double)]
-summarizeAllErrors errorMap = map summarizeFunError errorMap
+summarizeAllErrors = map summarizeFunError
 
 summarizeFunError :: (String, ResultField, [(ControlFlow, KodiakResult)]) -> (String, ResultField, Double, Maybe Double)
 summarizeFunError (f, field, results) =
@@ -208,13 +206,13 @@ printAllErrors = mapM_ printFunction
   where
     printFunction (f,field,stableErr, unstableErr) = do
       putStrLn $ "Function " ++ f ++ printField field
-      putStrLn $ "|real - floating-point| <= " ++ render (prettyNumError $ stableErr)
+      putStrLn $ "|real - floating-point| <= " ++ render (prettyNumError stableErr)
       case unstableErr of
         Nothing -> return ()
         Just divergence -> do
           putStrLn ""
           putStrLn "There are unstable conditionals leading to divergent real and floating-point control-flows."
-          putStrLn $ "divergence <= " ++ render (prettyNumError $ divergence)
+          putStrLn $ "divergence <= " ++ render (prettyNumError divergence)
       putStrLn ""
       putStrLn "**************************************************************************"
 
@@ -241,7 +239,7 @@ computeAllErrorsInKodiakMap ::
                           ,AExpr
                           ,[FAExpr]
                           ,[AExpr])])])]
-computeAllErrorsInKodiakMap unfoldFunCalls decls config interp spec@(Spec specBinds) searchParams = mapM runFunction functionNames
+computeAllErrorsInKodiakMap unfoldFunCalls' decls config interp (Spec specBinds) searchParams = mapM runFunction functionNames
   where
     declInterps = Map.filter isNumericalInterp interp
     functionNames = Map.keys declInterps
@@ -249,8 +247,8 @@ computeAllErrorsInKodiakMap unfoldFunCalls decls config interp spec@(Spec specBi
 
     runFunction fname = do
       let funInfo = fromMaybe errorMsg $ Map.lookup fname interp
-      let fprec = snd4 $ funInfo
-      let args = trd4 $ funInfo
+      let fprec = snd4 funInfo
+      let args = trd4 funInfo
       let fSem = frt4 funInfo
       let fields = Map.keys fSem
       results <- mapM (runFunField fname fSem) fields
@@ -276,12 +274,13 @@ computeAllErrorsInKodiakMap unfoldFunCalls decls config interp spec@(Spec specBi
               where
                 kodiakInput = do
                   let binds = fromJust $ findInSpec fname specBinds
-                  errExpr <- if unfoldFunCalls
+                  errExpr <- if unfoldFunCalls'
                              then return $ simplAExpr $ initAExpr err
-                             else do
-                                let (_,_,(AExprBody funBody)) = fromMaybe (error $ "Function " ++ fname ++ " not found.") $ findInDecls fname decls
-                                let locVars = localVarsWithType funBody
-                                (replaceFunCallErr True config interp emptyEnv locVars binds) $ simplAExpr $ initAExpr err
+                             else case findInDecls fname decls of
+                               Just (_,_,AExprBody funBody) -> do
+                                 let locVars = localVarsWithType funBody
+                                 replaceFunCallErr True config interp emptyEnv locVars binds $ simplAExpr $ initAExpr err
+                               _ -> error $ "[computeAllErrorsInKodiakMap.runFunField] Function " ++ fname ++ " not found."
                   return $ KI { kiName = fname,
                        kiExpression = errExpr,
                        kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")

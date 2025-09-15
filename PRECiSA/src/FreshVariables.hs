@@ -12,18 +12,10 @@ module FreshVariables where
 
 import AbstractDomain
 import AbsPVSLang
-import AbsSpecLang
 import Control.Monad.State
-import Data.List(find,zip4)
-import Data.Maybe(mapMaybe,fromMaybe)
-import Kodiak.Runnable
-import Kodiak.Runner
-import Common.DecisionPath
-import Utils
-import Translation.Float2Real
+import Data.List(find)
 import Operators
 import Common.TypesUtils
-import Foreign.C
 
 type ReplaceFPState = State (Int,[(VarName, FAExpr, PVSType)])
 type ReplaceRState  = State (Int,[(VarName,  AExpr)])
@@ -50,11 +42,11 @@ replaceFreshVarInBExpr BFalse = return BFalse
 replaceFreshVarInBExpr (Or be1 be2) = do
     be1' <- replaceFreshVarInBExpr be1
     be2' <- replaceFreshVarInBExpr be2
-    return $ uncurry Or (be1',be2')
+    return $ Or be1' be2'
 replaceFreshVarInBExpr (And be1 be2) = do
     be1' <- replaceFreshVarInBExpr be1
     be2' <- replaceFreshVarInBExpr be2
-    return $ uncurry And (be1',be2')
+    return $ And be1' be2'
 replaceFreshVarInBExpr (Not be) = do
     be' <- replaceFreshVarInBExpr be
     return $ Not be'
@@ -71,7 +63,7 @@ replaceFreshVarInAExpr ae@(Int _) = return ae
 replaceFreshVarInAExpr ae@(Rat _) = return ae
 replaceFreshVarInAExpr ae@(Var _ _) = return ae
 replaceFreshVarInAExpr ae@(RealMark _ _) = return ae
-replaceFreshVarInAExpr ae@(ErrorMark _ _ _) = return ae
+replaceFreshVarInAExpr ae@(ErrorMark {}) = return ae
 replaceFreshVarInAExpr ae@(FromFloat _ (FVar _ _)) = return ae
 replaceFreshVarInAExpr ae@(FromFloat _ (FInt _))   = return ae
 replaceFreshVarInAExpr ae@(UnaryOp NegOp (Int _))   = return ae
@@ -97,11 +89,11 @@ replaceFreshVarInFBExpr v@(BStructVar _) = return v
 replaceFreshVarInFBExpr (FOr be1 be2) = do
     be1' <- replaceFreshVarInFBExpr be1
     be2' <- replaceFreshVarInFBExpr be2
-    return $ uncurry FOr (be1',be2')
+    return $ FOr be1' be2'
 replaceFreshVarInFBExpr (FAnd be1 be2) = do
     be1' <- replaceFreshVarInFBExpr be1
     be2' <- replaceFreshVarInFBExpr be2
-    return $ uncurry FAnd (be1',be2')
+    return $ FAnd be1' be2'
 replaceFreshVarInFBExpr (FNot be) = do
     be' <- replaceFreshVarInFBExpr be
     return $ FNot be'

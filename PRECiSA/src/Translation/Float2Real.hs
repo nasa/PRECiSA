@@ -16,12 +16,12 @@ module Translation.Float2Real
   )
 where
 
-import AbsPVSLang
+import AbsPVSLang hiding (localVars)
 import Operators
+import Data.Bifunctor (bimap)
 import Data.Function (fix)
 import Common.TypesUtils (VarName)
 import Utils (fst3)
-import Debug.Trace
 
 fp2realVarName :: VarName -> VarName
 fp2realVarName x = "r_"++x
@@ -51,7 +51,7 @@ faeColl2real (CLet letElems expr)
 faeColl2real (CIte be thenExpr elseExpr)
   = RCIte (fbe2be be) (faeColl2real thenExpr) (faeColl2real elseExpr)
 faeColl2real (CListIte thenExprs elseExpr)
-  = RCListIte (map (\(be,expr) -> (fbe2be be,faeColl2real expr)) thenExprs) (faeColl2real elseExpr)
+  = RCListIte (map (bimap fbe2be faeColl2real) thenExprs) (faeColl2real elseExpr)
 faeColl2real (RecordExpr fieldExprs)
   = RRecordExpr (map fae2realRecord fieldExprs)
   where
@@ -64,6 +64,7 @@ faeColl2real (TupleExpr exprs)
     fae2Tuple (Right expr) = Right $ fbe2be expr
 faeColl2real (CollFun _ f t args) = RCollFun f (fp2realType t) (map fae2real args)
 faeColl2real (CollVar t x) = RCollVar (fp2realType t) x
+faeColl2real x = error $ "[faeColl2real] Unhandled case: " ++ show x
 
 beStm2beStm :: FBExprStm -> BExprStm
 beStm2beStm (BLet letElems beStm) = RBLet (map fp2letElem letElems) (beStm2beStm beStm)
@@ -93,15 +94,15 @@ fae2real = fae2real_aux []
 
 fae2real_aux :: [VarName] -> FAExpr -> AExpr
 fae2real_aux localVars (FVar t x) =
-  if elem x localVars then Var newType x else RealMark x ResValue
+  if x `elem` localVars then Var newType x else RealMark x ResValue
   where
     newType = if t == TInt then TInt else Real
-fae2real_aux localVars (FInt n) = Int n
-fae2real_aux localVars (FCnst fp n) = FromFloat fp (FCnst fp n)
-fae2real_aux localVars (FInterval _ lb ub) = Interval lb ub
+fae2real_aux _ (FInt n) = Int n
+fae2real_aux _ (FCnst fp n) = FromFloat fp (FCnst fp n)
+fae2real_aux _ (FInterval _ lb ub) = Interval lb ub
 fae2real_aux localVars (TypeCast _ _ ae) = fae2real_aux localVars ae
-fae2real_aux localVars (ToFloat  _     ae) = ae
-fae2real_aux localVars (FMap  fp fun l) = RMap (fp2realType fp) fun l
+fae2real_aux _ (ToFloat  _     ae) = ae
+fae2real_aux _ (FMap  fp fun l) = RMap (fp2realType fp) fun l
 fae2real_aux localVars (FFold fp fun l n ae) = RFold (fp2realType fp) fun l n (fae2real_aux localVars ae)
 fae2real_aux localVars (UnaryFPOp  op _ ae1)     = UnaryOp  op (fae2real_aux localVars ae1)
 fae2real_aux localVars (BinaryFPOp op _ ae1 ae2) = BinaryOp op (fae2real_aux localVars ae1) (fae2real_aux localVars ae2)
@@ -113,14 +114,14 @@ fae2real_aux localVars (FEFun _ f' field _ args)  = EFun f' field Real (map (fae
 fae2real_aux localVars (FMin as) = Min (map (fae2real_aux localVars) as)
 fae2real_aux localVars (FMax as) = Max (map (fae2real_aux localVars) as)
 fae2real_aux localVars (FArrayElem fp v idxs) = ArrayElem (fp2realType fp) v (map (fae2real_aux localVars) idxs)
-fae2real_aux localVars (FTupleElem t x idx) = TupleElem (fp2realType t) x idx
-fae2real_aux localVars (FRecordElem t x field) = RecordElem (fp2realType t) x field
+fae2real_aux _ (FTupleElem t x idx) = TupleElem (fp2realType t) x idx
+fae2real_aux _ (FRecordElem t x field) = RecordElem (fp2realType t) x field
 fae2real_aux localVars (FListElem t x expr) = ListElem t x (fae2real_aux localVars expr)
-fae2real_aux localVars UnstWarning        = RUnstWarning
+fae2real_aux _ UnstWarning        = RUnstWarning
 fae2real_aux localVars (Let letElems stm) = RLet (map fp2realLetElem letElems) (fae2real_aux localVars' stm)
   where
     fp2realLetElem (x,t,fae) = LetElem {letVar = x, letType = fp2realType t, letExpr = fae2real_aux localVars' fae}
-    localVars' = localVars ++ (map fst3 letElems)
+    localVars' = localVars ++ map fst3 letElems
 fae2real_aux localVars (Ite fbe stm1 stm2) = RIte (fbe2be fbe) (fae2real_aux localVars stm1)
                                                                (fae2real_aux localVars stm2)
 fae2real_aux localVars (ListIte thenList stmElse) = RListIte (map fp2realItePair thenList)

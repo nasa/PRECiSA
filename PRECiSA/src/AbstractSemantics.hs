@@ -28,7 +28,6 @@ import qualified Data.Map as Map
 import Data.Either
 import Translation.Float2Real
 import Translation.Real2Float
-import Debug.Trace
 
 data SemanticConfiguration = SemConf {
     assumeTestStability :: Bool,
@@ -51,6 +50,7 @@ type Interpretation = Map.Map FunName FunctionInterpretation
 
 type CollACebS = Map.Map ResultField ACebS
 
+emptyInterp :: Interpretation
 emptyInterp = Map.empty
 
 envVars :: Env a -> [VarName]
@@ -120,7 +120,7 @@ emptyInterpretation :: Interpretation
 emptyInterpretation = Map.empty
 
 equivInterp :: Interpretation -> Interpretation -> Bool
-equivInterp interp1 interp2 = (Map.map aux interp1) == (Map.map aux interp2)
+equivInterp interp1 interp2 = Map.map aux interp1 == Map.map aux interp2
   where
     aux (isTrans, fp, vars , acebs) = (isTrans, fp, vars, Map.map Set.fromList acebs)
 
@@ -165,16 +165,10 @@ botInterp = foldr insertEmptySem Map.empty
     insertEmptySem (CollDecl isTrans t funName args _) interp
       = Map.insert funName (isTrans, t, args, botSem t) interp
       where
-        botSem (Record fieldList) = foldr insertEmptySemField Map.empty (map fst fieldList)
+        botSem (Record fieldList) = foldr (insertEmptySemField . fst) Map.empty fieldList
           where
-            insertEmptySemField fieldName m = Map.insert (ResRecordField fieldName) [] m
+            insertEmptySemField fieldName = Map.insert (ResRecordField fieldName) []
         botSem _ = error "insertEmptySem: type mismatch for CollDecl."
-
-    insertEmptySem (CollDecl isTrans t funName args _) interp
-      = Map.insert funName (isTrans, t, args, botSem t) interp
-      where
-        botSem (Tuple indexes) = Map.fromList (zip (map ResTupleIndex [1..]) (map (const []) indexes))
-        botSem _ = error "insertEmptySem: type mismatch for Tuple Decl."
 
         -- botSem (Tuple idxList) = Map.fromList (zip (map ResTupleIndex [1..]) (map (const []) idxList))
         -- botSem (Record fieldList) = foldr insertEmptySemField Map.empty (map fst fieldList)
@@ -268,7 +262,7 @@ declSem (CollDecl _ (Record recordFields) fun _ stm) interp decPaths semConf
   = foldr addRecFieldInterp interp recordFields
   where
     dps = fromMaybe (error $ "declSem: function " ++ fun ++ " not found.") (lookup fun decPaths)
-    addRecFieldInterp recField interpretation = addDeclInterp fun field sem interpretation
+    addRecFieldInterp recField = addDeclInterp fun field sem
       where
         field = ResRecordField $ fst recField
         sem = fromMaybe errMsg $ Map.lookup field $ stmCollSem stm interp emptyEnv semConf root dps
@@ -278,11 +272,12 @@ declSem (CollDecl _ (Tuple tupleIdxs) fun _ stm) interp decPaths semConf
   = foldr addRecFieldInterp interp (take (length tupleIdxs) [1..])
     where
       dps = fromMaybe (error $ "declSem: function " ++ fun ++ " not found.") (lookup fun decPaths)
-      addRecFieldInterp fieldIdx interpretation = addDeclInterp fun idx sem interpretation
+      addRecFieldInterp fieldIdx = addDeclInterp fun idx sem
         where
           idx = ResTupleIndex fieldIdx
           sem = fromMaybe errMsg $  Map.lookup idx $ stmCollSem stm interp emptyEnv semConf root dps
           errMsg = error $ "declSem: Field " ++ show idx ++ " not found."
+declSem x _ _ _ = error $ "[declSem] Unhandled case: " ++ show x
 
 -- refactor this with lookup function
 -- addDeclInterp :: FunName -> ACebS -> Interpretation -> Interpretation
@@ -307,10 +302,10 @@ declSem (CollDecl _ (Tuple tupleIdxs) fun _ stm) interp decPaths semConf
 --         ACeb{ eExpr = ee} = aceb
 
 addDeclInterp :: FunName -> ResultField -> ACebS -> Interpretation -> Interpretation
-addDeclInterp fun field sem interp = Map.alter updateInterp fun interp
+addDeclInterp fun field sem = Map.alter updateInterp fun
   where
     updateInterp Nothing = error $ "addDeclInterp: function " ++ show fun ++ " not found."
-    updateInterp (Just (isTrans, fp, args, sem)) = Just (isTrans, fp, args, Map.alter updateSem field sem)
+    updateInterp (Just (isTrans, fp, args, sem')) = Just (isTrans, fp, args, Map.alter updateSem field sem')
     updateSem Nothing = error $ "addDeclInterp: field " ++ show field ++ " for function " ++ show fun ++ " not found."
     updateSem (Just cebs) = Just $ if hasInfiniteError cebs
                                    then replaceInfFun sem
@@ -418,7 +413,7 @@ condDenomNotZero fp ceb1 ceb2 =
               ,realCond = simplBExprFix $ And (And (realCond cond1) (realCond cond2))
                                               (Rel  Neq  r2  (Int 0))
               ,fpCond = simplFBExprFix $ FAnd (FAnd (fpCond cond1) (fpCond cond2))
-                                              (if (isIntFAExpr a2)
+                                              (if isIntFAExpr a2
                                                then FRel Neq a2 (FInt 0)
                                                else FRel Neq a2 (TypeCast TInt fp (FInt 0)))}
         | cond1 <- uncond (conds ceb1),
@@ -463,7 +458,7 @@ conditionBinOp       _  _ ceb1 ceb2 =
 
 semUnOp :: SemanticConfiguration -> Operators.UnOp -> PVSType -> [ACeb] -> LDecisionPath -> [ACeb]
 semUnOp config op fp semOp1 dp =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
     filterCondFalse $ map makeCeb semOp1
   where
     makeCeb ceb1 = ACeb {
@@ -477,7 +472,7 @@ semUnOp config op fp semOp1 dp =
 
 semBinOp :: SemanticConfiguration -> Operators.BinOp -> PVSType -> [ACeb] -> [ACeb] -> LDecisionPath -> [ACeb]
 semBinOp config op fp semOp1 semOp2 dp =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
     filterCondFalse $ map makeCeb (combos [semOp1,semOp2])
   where
     makeCeb [ceb1, ceb2] = ACeb {
@@ -499,8 +494,8 @@ isDecPathOfInterestACeb :: [LDecisionPath] -> ACeb -> Bool
 isDecPathOfInterestACeb dps ACeb{ decisionPath = dp } = isDecPathOfInterest dps dp
 
 notSubDecPathOfInterest :: [LDecisionPath] -> LDecisionPath -> Bool
-notSubDecPathOfInterest dps dp = (not $ isDecPathOfInterest dps (dp ~> 0)) &&
-                                 (not $ isDecPathOfInterest dps (dp ~> 1))
+notSubDecPathOfInterest dps dp = not (isDecPathOfInterest dps (dp ~> 0)) &&
+                                 not (isDecPathOfInterest dps (dp ~> 1))
 
 stableCasesIteSem :: [LDecisionPath]
                   -> ACebS
@@ -552,10 +547,9 @@ semCollIte sta mu dps semThen semElse fbe = Map.mapWithKey semIteField semThen
     errMsg fieldName = error $ "semCollIte: Field " ++ show fieldName ++ " not found."
 
 semCollIteList :: Bool -> Bool -> [LDecisionPath] -> [(FBExpr,CollACebS)] -> CollACebS -> CollACebS
-semCollIteList sta mu dps listSemThen semElse = Map.mapWithKey semIteListField semElse
+semCollIteList sta mu dps listSemThen = Map.mapWithKey semIteListField
   where
-    semIteListField field semFieldElse
-      = semIteList sta mu dps (listSemFieldThen field) semFieldElse
+    semIteListField field = semIteList sta mu dps (listSemFieldThen field)
     listSemFieldThen fieldName
       = map (\(be,sem) -> (be, fromMaybe (errMsg fieldName) $ Map.lookup fieldName sem)) listSemThen
     errMsg fieldName = error $ "semCollIte: Field " ++ show fieldName ++ " not found."
@@ -608,19 +602,19 @@ semIteList sta mu dps listSemThen semElse | sta = stableCases
     mergedUnstableCase = if null unstableCases then Nothing else Just $ mergeACebFold unstableCases
 
 replaceLetVarsFresh :: Env ACebS -> [Arg] -> ACebS -> ACebS
-replaceLetVarsFresh env formArgs funSem = map replaceLetVarsFresh' funSem
+replaceLetVarsFresh env formArgs = map replaceLetVarsFresh'
   where
     replaceLetVarsFresh' aceb =
       aceb {
         conds   = renameVarsConds subs (conds aceb),
         rExprs  = renameVarsRResult subs (rExprs aceb),
         fpExprs = renameVarsFResult subs (fpExprs aceb),
-        eExpr   = maybe Nothing (Just . renameVarsAExpr subs) (eExpr aceb)
+        eExpr   = fmap (renameVarsAExpr subs) (eExpr aceb)
       }
       where
-        subs = buildLetInSubs ((envVars env) ++ (map argName formArgs)) (fpExprs aceb)
-        buildLetInSubs vars exprs =  (map ((buildLetInPair vars (0 :: Integer)) . fst) (localVarsFResult exprs))
-        buildLetInPair vars n x = if elem (x ++ "__" ++ show n) vars
+        subs = buildLetInSubs (envVars env ++ map argName formArgs) (fpExprs aceb)
+        buildLetInSubs vars exprs =  map (buildLetInPair vars (0 :: Integer) . fst) (localVarsFResult exprs)
+        buildLetInPair vars n x = if x ++ "__" ++ show n `elem` vars
                                   then buildLetInPair vars (n + 1) x
                                   else (x,x ++ "__" ++ show n)
 
@@ -667,7 +661,7 @@ bexprStmSem (BLet (letElem:rest) stm) interp env config dp dps
     realLetElem re = LetElem {letVar  = var
                           ,letType = if typeFLetElem letElem == TInt then TInt else Real
                           ,letExpr = re}
-    newStm = if null rest then stm else (BLet rest stm)
+    newStm = if null rest then stm else BLet rest stm
 
 bexprStmSem (BIte fbe stmThen stmElse) interp env config@SemConf{ assumeTestStability = sta
                                                                 , mergeUnstables = mu } dp dps =
@@ -806,11 +800,11 @@ stmCollSem (CLet (letElem:rest) stm) interp env config dp dps
     errorLetElem ceb = LetElem {letVar  = errVarName var
                                ,letType = Real
                                ,letExpr = fromMaybe (error "stmSem let: unexpected argument") $ eExpr ceb}
-    newStm = if null rest then stm else (CLet rest stm)
+    newStm = if null rest then stm else CLet rest stm
 
 stmCollSem (CLet (letElem:rest) stm) interp env config dp dps = stmCollSem newStm interp newEnv config dp dps
   where
-    newStm = varBindLetCollFAExpr [letElem] (if null rest then stm else (CLet rest stm))
+    newStm = varBindLetCollFAExpr [letElem] (if null rest then stm else CLet rest stm)
     newEnv = addLetElem2Env interp config dp dps env letElem
 
 stmCollSem (CIte fbe stm1 stm2) interp env config@SemConf{assumeTestStability = sta, mergeUnstables = mu} dp dps
@@ -832,16 +826,16 @@ stmCollSem (CListIte listThen stmElse) interp env config@SemConf{assumeTestStabi
 stmCollSem (RecordExpr fieldList) interp env config dp dps = Map.fromList $ map aux (filter (isLeft . snd) fieldList)
   where
     aux (field, Left expr)  = (ResRecordField field, stmSem expr interp env (localVarsNames expr) config dp dps)
-    -- aux (field, Right expr) = error $ "stmCollSem: Boolean fields not supported yet"
+    aux x = error $ "[stmCollSem.aux] Unhandled case: " ++ show x
 
 stmCollSem (TupleExpr exprList) interp env config dp dps
   = Map.fromList $ zip (map ResTupleIndex [1..]) (map (\ expr -> stmSem expr interp env (localVarsNames expr) config dp dps) (lefts exprList))
 
-stmCollSem (ArrayUpdate _ _ _) interp env config dp dps = error "stmCollSem: niy for ArrayUpdate"
+stmCollSem (ArrayUpdate {}) _ _ _ _ _ = error "stmCollSem: niy for ArrayUpdate"
 
-stmCollSem (ArrayCollUpdate _ _ _) interp env config dp dps = error "stmCollSem: niy for ArrayCollUpdate"
+stmCollSem (ArrayCollUpdate {}) _ _ _ _ _ = error "stmCollSem: niy for ArrayCollUpdate"
 
-stmCollSem (CollFun isTrans f t actArgs) interp env config dp dps
+stmCollSem (CollFun _isTrans f _t actArgs) interp env config dp dps
   = case Map.lookup f interp of
     Just (_, _, formArgs, funSem) -> Map.mapWithKey (funSemField formArgs) funSem
     Nothing -> error ("Function " ++ f ++ " not found.")
@@ -867,7 +861,7 @@ stmCollSem (CollFun isTrans f t actArgs) interp env config dp dps
       --          } ]
     argSem = map (\arg -> stmSem arg interp env (localVarsNames arg) config dp dps) actArgs
 
-stmCollSem (CollVar t x) interp env config dp dps = undefined
+stmCollSem (CollVar _t _x) _interp _env _config _dp _dps = undefined
 
 stmSem :: FAExpr
        -> Interpretation
@@ -946,7 +940,7 @@ stmSem (TypeCast _ toType (FCnst fromType n)) _ _ _ _ dp _ =
               _ -> error "fpSem: unexpected type."
 
 stmSem (TypeCast fp1 fp2 a) interp env locVars config dp dps =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
   filterCondFalse $ map makeCebCast (stmSem a interp env locVars config dp dps)
     where
       makeCebCast :: ACeb -> ACeb
@@ -960,7 +954,7 @@ stmSem (TypeCast fp1 fp2 a) interp env locVars config dp dps =
 stmSem (FVar fp x) _ env locVars _ dp _ =
   fromMaybe
     [ACeb{conds = trueConds,
-          rExprs = RDeclRes [if elem x locVars then Var Real x else RealMark x ResValue],
+          rExprs = RDeclRes [if x `elem` locVars then Var Real x else RealMark x ResValue],
           fpExprs = FDeclRes [FVar fp x],
           eExpr = Just $ if fp == TInt then ErrRat 0 else ErrorMark x ResValue fp,
           decisionPath = dp, cFlow = Stable}]
@@ -969,13 +963,13 @@ stmSem (FVar fp x) _ env locVars _ dp _ =
 stmSem (FArrayElem fp x _) _ env locVars _ dp _ =
   fromMaybe
     [ACeb{conds = trueConds,
-          rExprs  = RDeclRes [if elem x locVars then Var Real x else RealMark x ResValue],
+          rExprs  = RDeclRes [if x `elem` locVars then Var Real x else RealMark x ResValue],
           fpExprs = FDeclRes [FVar fp x],
           eExpr = Just $ if fp == TInt then ErrRat 0 else ErrorMark x ResValue fp,
           decisionPath = dp, cFlow = Stable}]
     (Map.lookup (x,ResValue) env)
 
-stmSem (FTupleElem t x idx) interp env locVars config dp dps =
+stmSem (FTupleElem t x idx) _interp env _locVars _config dp _dps =
   fromMaybe
     [ACeb{conds = trueConds,
           rExprs  = RDeclRes [RealMark x (ResTupleIndex idx)],
@@ -984,7 +978,7 @@ stmSem (FTupleElem t x idx) interp env locVars config dp dps =
           decisionPath = dp, cFlow = Stable}]
     (Map.lookup (x,ResTupleIndex idx) env)
 
-stmSem (FRecordElem t x field) interp env locVars config dp dps =
+stmSem (FRecordElem t x field) _interp env _locVars _config dp _dps =
   fromMaybe
     [ACeb{conds = trueConds,
           rExprs  = RDeclRes [RealMark x (ResRecordField field)],
@@ -993,7 +987,7 @@ stmSem (FRecordElem t x field) interp env locVars config dp dps =
           decisionPath = dp, cFlow = Stable}]
     (Map.lookup (x,ResRecordField field) env)
 
-stmSem (FListElem fp x idx) interp env locVars config dp dps =
+stmSem (FListElem fp x idx) _interp env _locVars _config dp _dps =
   fromMaybe
     [ACeb{conds = trueConds,
           rExprs = RDeclRes [ListElem (fp2realType fp) x (fae2real idx)],
@@ -1007,7 +1001,7 @@ stmSem fexpr@(FEFun _ f field fp actArgs) interp env locVars config dp dps =
     Just (_, _, formArgs, funSem) ->
       case Map.lookup field funSem of
         Just acebs ->
-          if (unfoldFunCalls config)
+          if unfoldFunCalls config
           then semEFun f field formArgs actArgs
                  (combos argSem)
                  (replaceLetVarsFresh env formArgs acebs)
@@ -1027,23 +1021,23 @@ stmSem fexpr@(FEFun _ f field fp actArgs) interp env locVars config dp dps =
     argsErrs = map (\arg -> MaxErr $ map errorExpr (stmSem arg interp env (localVarsNames arg) config dp dps)) actArgs
     errorExpr = fromMaybe (error "computeErrorAExpr: unexpected argument.") . eExpr
 
-stmSem fexpr@(FMap fp f l) interp env locVars config dp dps
+stmSem (FMap fp f l) interp env _ config dp dps
   = stmSem (FEFun False f ResValue fp [FVar fp l]) interp env [] config dp dps
 
 -- foldr --
-stmSem fexpr@(FFold fp f l n ae0) interp env locVars config dp dps
+stmSem (FFold fp f l n ae0) interp env locVars config dp dps
   = stmSem unfoldedFold interp env locVars config dp dps
   where
     unfoldedFold = foldr buildFun ae0 (replicate (fromIntegral n) (FVar fp l))
-    buildFun listElem ae = FEFun False f ResValue fp [FVar fp l, ae]
+    buildFun _listElem ae = FEFun False f ResValue fp [FVar fp l, ae]
 
 stmSem (BinaryFPOp MulOp TInt a1 a2) interp env locVars config dp dps =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
   filterCondFalse $ semBinOp config MulOp TInt (stmSem a1 interp env locVars config dp dps)
                                                (stmSem a2 interp env locVars config dp dps) dp
 
 stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env locVars config dp dps =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
   case pow2Mul ae of
       Just (Left  (pow2, a)) -> filterCondFalse $ map (semMulPow2  True) (combos [stmSem pow2 interp env locVars config dp dps, stmSem a    interp env locVars config dp dps])
       Just (Right (pow2, a)) -> filterCondFalse $ map (semMulPow2 False) (combos [stmSem a interp env locVars config dp dps, stmSem pow2 interp env locVars config dp dps])
@@ -1091,12 +1085,12 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env locVars config dp dps =
     semMulPow2 _ cebs = error $ "semMulPow2: something went wrong\n ceb1 = " ++ show cebs ++ "\n"
 
 stmSem (BinaryFPOp SubOp TInt a1 a2) interp env locVars config dp dps =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
   filterCondFalse $ semBinOp config SubOp TInt (stmSem a1 interp env locVars config dp dps)
                                                (stmSem a2 interp env locVars config dp dps) dp
 
 stmSem (BinaryFPOp SubOp fp a1 a2) interp env locVars config dp dps =
-  if (improveError config)
+  if improveError config
   then
     filterCondFalse $ concatMap semSubImproved (combos [stmSem a1 interp env locVars config dp dps
                                                        ,stmSem a2 interp env locVars config dp dps])
@@ -1144,14 +1138,14 @@ stmSem (BinaryFPOp SubOp fp a1 a2) interp env locVars config dp dps =
             decisionPath = dp,
             cFlow  = mergeControlFlow (cFlow ceb1) (cFlow ceb2)
         }]
-    semSubImproved _ = error $ "stmSem SubOp: something went wrong, perhaps the semantics of the operands is empty."
+    semSubImproved _ = error "stmSem SubOp: something went wrong, perhaps the semantics of the operands is empty."
 
 stmSem (BinaryFPOp op fp a1 a2) interp env locVars config dp dps =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
   semBinOp config op fp (stmSem a1 interp env locVars config dp dps) (stmSem a2 interp env locVars config dp dps) dp
 
 stmSem (UnaryFPOp FloorOp TInt a) interp env locVars config dp dps =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
   filterCondFalse $ map makeCeb (stmSem a interp env locVars config dp dps)
   where
     makeCeb ceb1 =
@@ -1164,7 +1158,7 @@ stmSem (UnaryFPOp FloorOp TInt a) interp env locVars config dp dps =
         cFlow  = cFlow ceb1}
 
 stmSem (UnaryFPOp FloorOp fp a) interp env locVars config dp dps =
-  if (improveError config)
+  if improveError config
   then filterCondFalse $ concatMap makeCeb semOperand
   else semUnOp config FloorOp fp semOperand dp
   where
@@ -1209,7 +1203,7 @@ stmSem (UnaryFPOp op fp a) interp env locVars config dp dps =
   semUnOp config op fp (stmSem a interp env locVars config dp dps) dp
 
 stmSem (FFma fp a1 a2 a3) interp env locVars config dp dps =
-  (if (improveError config) then id else collapseSem) $
+  (if improveError config then id else collapseSem) $
   filterCondFalse $ map semFma (combos [stmSem a1 interp env locVars config dp dps
                                        ,stmSem a2 interp env locVars config dp dps
                                        ,stmSem a3 interp env locVars config dp dps])
@@ -1283,11 +1277,11 @@ stmSem (Let (letElem:rest) stm) interp env locVars config dp dps
     errorLetElem ceb = LetElem {letVar  = errVarName var
                                ,letType = Real
                                ,letExpr = fromMaybe (error "stmSem let: unexpected argument") $ eExpr ceb}
-    newStm = if null rest then stm else (Let rest stm)
+    newStm = if null rest then stm else Let rest stm
 
 stmSem (Let (letElem:rest) stm) interp env locVars config dp dps = stmSem newStm interp newEnv locVars config dp dps
   where
-    newStm = varBindLetFAExpr [letElem] (if null rest then stm else (Let rest stm))
+    newStm = varBindLetFAExpr [letElem] (if null rest then stm else Let rest stm)
     newEnv = addLetElem2Env interp config dp dps env letElem
 
 stmSem (Ite fbe stm1 stm2) interp env locVars config@SemConf{ assumeTestStability = sta, mergeUnstables = mu } dp dps =
@@ -1325,8 +1319,8 @@ stmSem forloop@(ForLoop _ _ (ToFloat _ (Int _)) (ToFloat _ (Int _)) _ _ forBody)
             cFlow  = Stable
         }]
 
-stmSem (ForLoop _ _ _ _ _ _ _) _ _ _ _ _ _ =
-  error $ "stmSem: generic for loop not suported yet."
+stmSem (ForLoop {}) _ _ _ _ _ _ =
+  error "stmSem: generic for loop not suported yet."
 
 stmSem fae _ _ _ _ _ _ = error $ "stmSem: niy for " ++ show fae
 
@@ -1371,8 +1365,8 @@ semEFun fun field formArgs actualArgs semArgsCombos (c:cs) n dp =
 collapseSem :: [ACeb] -> [ACeb]
 collapseSem sem = collapsedStableCase ++ collapsedUnstableCase
   where
-    collapsedStableCase   = if null stableCases   then [] else [mergeACebFold   stableCases]
-    collapsedUnstableCase = if null unstableCases then [] else [mergeACebFold unstableCases]
+    collapsedStableCase   = [mergeACebFold   stableCases | not (null stableCases)]
+    collapsedUnstableCase = [mergeACebFold unstableCases | not (null unstableCases)]
     (stableCases, unstableCases) = List.partition isStable sem
 
 unfoldLocalVars :: LocalEnv -> FAExpr -> FAExpr
@@ -1400,8 +1394,8 @@ varBindAExprReal fa aa _ (Var Real x) = bindRealVar fa aa
 varBindAExprReal fa aa sem (EFun f field fp args) = EFun f field fp (map (varBindAExprReal fa aa sem) args)
 varBindAExprReal fa aa sem (ArrayElem fp v aes) = ArrayElem fp v (map (varBindAExprReal fa aa sem) aes)
 varBindAExprReal fa aa sem (ListElem fp v a) = ListElem fp v (varBindAExprReal fa aa sem a)
-varBindAExprReal fa aa sem (TupleElem fp v a) = TupleElem fp v a
-varBindAExprReal fa aa sem (RecordElem fp v a) = RecordElem fp v a
+varBindAExprReal  _  _   _ (TupleElem fp v a) = TupleElem fp v a
+varBindAExprReal  _  _   _ (RecordElem fp v a) = RecordElem fp v a
 varBindAExprReal fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExprReal fa aa sem a)
 varBindAExprReal fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExprReal fa aa sem a1)
                                                              (varBindAExprReal fa aa sem a2)
@@ -1458,7 +1452,7 @@ varBindAExprReal fa aa sem  (RForLoop t idx idxStart idxEnd acc initAcc forBody)
                acc
                (varBindAExprReal fa aa sem initAcc)
                (varBindAExprReal fa aa sem forBody)
-varBindAExprReal fa aa sem a = a
+varBindAExprReal _ _ _ a = a
 
 varBindBExprReal :: [VarName] -> [AExpr] -> ACebS -> BExpr -> BExpr
 varBindBExprReal _  _  _   BTrue       = BTrue
@@ -1504,16 +1498,16 @@ varBindAExpr fa aa _ (Var Real x) = bindRealMark fa aa
     bindRealMark (y:ys) (a:as) | y == x    = fae2real a
                                | otherwise = bindRealMark ys as
     bindRealMark _ _ = error "bindErrorMark: something went wrong"
-varBindAExpr _ _ _ i@(Int _)         = i
-varBindAExpr _ _ _ r@(Rat _)         = r
+varBindAExpr _  _  _   i@(Int _)         = i
+varBindAExpr _  _  _   r@(Rat _)         = r
 varBindAExpr fa aa sem (EFun f field fp args) = EFun f field fp (map (varBindAExpr fa aa sem) args)
 varBindAExpr fa aa sem (ArrayElem t v idxs) = ArrayElem t v (map (varBindAExpr fa aa sem) idxs)
 varBindAExpr fa aa sem (ListElem t v idx) = ListElem t v (varBindAExpr fa aa sem idx)
-varBindAExpr fa aa sem (TupleElem t v idx) = TupleElem t v idx
-varBindAExpr fa aa sem (RecordElem t v idx) = RecordElem t v idx
-varBindAExpr _  _  _ (Prec fp)  = (Prec fp)
-varBindAExpr _  _  _ (ErrRat n) = ErrRat n
-varBindAExpr _  _  _ (Var fp x) = Var fp x
+varBindAExpr _  _  _   (TupleElem t v idx) = TupleElem t v idx
+varBindAExpr _  _  _   (RecordElem t v idx) = RecordElem t v idx
+varBindAExpr _  _  _   (Prec fp)  = Prec fp
+varBindAExpr _  _  _   (ErrRat n) = ErrRat n
+varBindAExpr _  _  _   (Var fp x) = Var fp x
 varBindAExpr fa aa _   (FExp a) = FExp (varBindFAExpr fa aa a)
 varBindAExpr fa aa sem (UnaryOp  op a    ) = UnaryOp  op (varBindAExpr  fa aa sem a)
 varBindAExpr fa aa sem (BinaryOp op a1 a2) = BinaryOp op (varBindAExpr  fa aa sem a1) (varBindAExpr fa aa sem a2)
@@ -1574,6 +1568,7 @@ varBindAExpr fa aa sem  (RForLoop t idx idxStart idxEnd acc initAcc forBody)
                acc
                (varBindAExpr fa aa sem initAcc)
                (varBindAExpr fa aa sem forBody)
+varBindAExpr _ _ _ x = error $ "[varBindAExpr] Unhandled case: " ++ show x
 
 varBindFAExpr :: [VarName] -> [FAExpr] -> FAExpr -> FAExpr
 varBindFAExpr fa aa = replaceInFAExpr (const Nothing) replaceFVar
@@ -1678,16 +1673,16 @@ argsBindFBExprStm :: [Arg] -> [FAExpr] -> FBExprStm -> FBExprStm
 argsBindFBExprStm args = varBindFBExprStm (map argName args)
 
 varBindLetFAExpr :: [(VarName, PVSType, FAExpr)] -> FAExpr -> FAExpr
-varBindLetFAExpr letElems stm = varBindFAExpr (map fst3 letElems) (map trd3 letElems) stm
+varBindLetFAExpr letElems = varBindFAExpr (map fst3 letElems) (map trd3 letElems)
 
 varBindLetCollFAExpr :: [(VarName, PVSType, FAExpr)] -> CollFAExpr -> CollFAExpr
-varBindLetCollFAExpr letElems stm = varBindCollFAExpr (map fst3 letElems) (map trd3 letElems) stm
+varBindLetCollFAExpr letElems = varBindCollFAExpr (map fst3 letElems) (map trd3 letElems)
 
 varBindLetFBExprStm :: [(VarName, PVSType, FAExpr)] -> FBExprStm -> FBExprStm
-varBindLetFBExprStm letElems stm = varBindFBExprStm (map fst3 letElems) (map trd3 letElems) stm
+varBindLetFBExprStm letElems = varBindFBExprStm (map fst3 letElems) (map trd3 letElems)
 
 varBindLetFBExpr :: [(VarName, PVSType, FAExpr)] -> FBExpr -> FBExpr
-varBindLetFBExpr letElems stm = varBindFBExpr (map fst3 letElems) (map trd3 letElems) stm
+varBindLetFBExpr letElems = varBindFBExpr (map fst3 letElems) (map trd3 letElems)
 
 initErrVars :: Interpretation -> Interpretation
 initErrVars = Map.map initErrVarsSem
@@ -1706,10 +1701,10 @@ initErrVars = Map.map initErrVarsSem
 --                                        | otherwise = fromJust ee == Infinity
 
 removeInfiniteCebS :: Interpretation -> Interpretation
-removeInfiniteCebS interp = Map.filter hasAtLeastANotInfCeb ( interp)
+removeInfiniteCebS = Map.filter hasAtLeastANotInfCeb
   where
-    hasAtLeastANotInfCeb (isTrans,fp,args,sem) = not $ null sem
-    removeInfiniteInSem (isTrans,fp,args,cebs) = (isTrans,fp,args,notInfCebS)
+    hasAtLeastANotInfCeb (_isTrans,_fp,_args,sem) = not $ null sem
+    _removeInfiniteInSem (isTrans,fp,args,cebs) = (isTrans,fp,args,notInfCebS)
       where
         notInfCebS = filter (not . hasInfiniteError) cebs
         hasInfiniteError ACeb{ eExpr = ee} | isNothing ee = False
@@ -1724,12 +1719,12 @@ unfoldFunCallInSem interp (isTrans, fp, args, sem) = (isTrans, fp, args, unfolde
     unfoldedSem = Map.map (unfoldFunCallInCebS interp) sem
 
 unfoldFunCallInCebS :: Interpretation -> ACebS -> ACebS
-unfoldFunCallInCebS interp sem = map (unfoldFunCallInCeb interp) sem
+unfoldFunCallInCebS interp = map (unfoldFunCallInCeb interp)
 
 unfoldFunCallInCeb :: Interpretation -> ACeb -> ACeb
 unfoldFunCallInCeb interp aceb =
   aceb {conds  = Conds (elimDuplicates $ concatMap (unfoldFunCallsInCond interp) cs),
-        eExpr  = maybe Nothing (Just . unfoldFunCallInEExprRec interp) ee
+        eExpr  = (Just . unfoldFunCallInEExprRec interp) =<< ee
        }
     where
       ACeb {conds = Conds cs, eExpr = ee} = aceb
@@ -1740,8 +1735,8 @@ unfoldFunCallsInCond :: Interpretation -> Condition -> [Condition]
 unfoldFunCallsInCond interp cond = elimDuplicates $
   filter (not . isFalseCond) $ unfoldFunCallsInCond' interp (reverse funCallsF) (reverse funCallsR) [cond]
   where
-    funCallsF = (funCallListFBExpr (fpCond cond)) ++ (funCallListFBExpr (fpPathCond cond))
-    funCallsR = (funCallListBExpr  (realCond cond)) ++ (funCallListBExpr (realPathCond cond))
+    funCallsF = funCallListFBExpr (fpCond cond) ++ funCallListFBExpr (fpPathCond cond)
+    funCallsR = funCallListBExpr  (realCond cond) ++ funCallListBExpr (realPathCond cond)
 
 unfoldFunCallsInCond' :: Interpretation -> [FAExpr] -> [AExpr] -> [Condition] -> [Condition]
 unfoldFunCallsInCond' _ [] [] conditions = conditions
@@ -1780,13 +1775,13 @@ unfoldFpFunCall isTrans fun field fp actArgs formArgs realCall funCallsR sem con
   where
     makeConditions ceb = map (makeCondition (rDeclRes $ rExprs ceb) (fDeclRes $ fpExprs ceb)) (uncond $ conds ceb)
     makeCondition realExprs fExprs condFun =
-      Cond {realPathCond = if realCall `notElem` funCallsR then (realPathCond cond)
+      Cond {realPathCond = if realCall `notElem` funCallsR then realPathCond cond
                            else
                            simplBExprFix $ And (argsBindBExprReal formArgs realActArgs sem (realPathCond condFun))
                            (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) (realPathCond cond)) realExprs)
            ,fpPathCond = simplFBExprFix $ FAnd (argsBindFBExpr formArgs actArgs (fpPathCond condFun))
                             (listFOr $ map (\fpExpr -> replaceInFBExpr (return Nothing) (replaceFPFunCall fpExpr) (fpPathCond cond)) fExprs)
-           ,realCond = if realCall `notElem` funCallsR then (realCond cond)
+           ,realCond = if realCall `notElem` funCallsR then realCond cond
                        else
                        simplBExprFix $ And (argsBindBExprReal formArgs realActArgs sem (realCond condFun))
                            (listOr $ map (\rExpr -> replaceInBExpr (replaceRealFunCall rExpr) (const Nothing) (realCond cond)) realExprs)

@@ -132,7 +132,7 @@ generateSMTFileFromStable f varBinds aceb =
   text "Float: "
     <+> prettySMTVarBinds varBinds
   $$
-  text ("Real: ")
+  text "Real: "
     <+> prettySMTVarBindsReal varBinds
   $$
   prettySMT (conds aceb)
@@ -157,7 +157,3 @@ generateSMTFileFromUnstable f varBinds newFPVar newErrVar newRVar newCond be =
   prettySMT newCond
   $$
   prettySMTbexpr be
-
-
-
-

@@ -10,33 +10,19 @@
 
 module FunctionCallErrorAbstraction where
 
-import Control.Monad
 import Data.Maybe (fromJust,fromMaybe)
-import Data.Either (isLeft)
-import Data.Bifunctor
 import qualified Data.Map as Map
-import Foreign.C.String
-import Foreign.C.Types (CUInt)
-import System.IO (hFlush,stdout)
-import GHC.IO.Handle (hFlush)
 
 import AbsPVSLang
 import AbsSpecLang
 import AbstractDomain
 import AbstractSemantics
-import Data.Maybe(fromMaybe)
 import Kodiak.Runnable
-import Kodiak.Kodiak
 import Kodiak.Runner
-import qualified Kodiak.Expression as K
-import Common.DecisionPath
+import Common.DecisionPath ( LDecisionPath(LDP) )
 import Common.TypesUtils
-import Common.ControlFlow
-import Common.DecisionPath
 import Foreign.C
-import Operators
 import Translation.Float2Real
-import Translation.Real2Float
 
 type AssumeStability = Bool
 
@@ -64,8 +50,7 @@ roundOffError config maximumDepth minimumPrecision varBinds interp env ae =
                            kiMaxDepth = maximumDepth,
                            kiPrecision = minimumPrecision
                            }
-    err <- maximumUpperBound <$> run kodiakInput ()
-    return err
+    maximumUpperBound <$> run kodiakInput ()
 
 
 aexprEnclosure :: Bool -> SemanticConfiguration
@@ -107,7 +92,7 @@ replaceFunCallErr :: Bool
                   -> [VarBind]
                   -> AExpr
                   -> IO AExpr
-replaceFunCallErr withError config interp env locVars callerFunBinds e@(ErrFun fun fp field funargs rargs argErrs) =
+replaceFunCallErr withError config interp env locVars callerFunBinds (ErrFun fun _fp field funargs _rargs _argErrs) =
   do
     let fpargs = map (addLocVarsFAExpr locVars) funargs
     fpargsEnclosures <- mapM (faexprEnclosure config interp env 2 7 callerFunBinds) fpargs
@@ -123,14 +108,14 @@ replaceFunCallErr withError config interp env locVars callerFunBinds e@(ErrFun f
        }
     result <- run ki ()
     let res = maximumUpperBound result
-    return $ Rat $ toRational $ res
+    return $ Rat $ toRational res
     where
       (_,_,formalArgs,sem) = fromJust $ Map.lookup fun interp
-      (_,acebs) = case Map.lookup field sem of
+      (_,_acebs) = case Map.lookup field sem of
           Nothing -> error $ "field: " ++ show field ++ " not found in semantic item: " ++ show sem
           Just acebs -> (concatMap (rDeclRes . rExprs) acebs,acebs)
 
-replaceFunCallErr withError config interp env locVars callerFunBinds e@(EFun fun field t args)
+replaceFunCallErr withError config interp env locVars callerFunBinds (EFun fun field _t args)
   = do
     fpargsEnclosures <- mapM (aexprEnclosure withError config interp env 2 7 callerFunBinds) args
     let binds = zipWith enclosure2binding formalArgs fpargsEnclosures
@@ -151,12 +136,12 @@ replaceFunCallErr withError config interp env locVars callerFunBinds e@(EFun fun
          kiPrecision = 14
         }
         e <- maximumUpperBound <$> run ki ()
-        return $ Interval (r_lb - (toRational e)) (r_ub + (toRational e))
+        return $ Interval (r_lb - toRational e) (r_ub + toRational e)
       else
-        return $ Interval (r_lb) (r_ub)
+        return $ Interval r_lb r_ub
 
   where
-    (_,fp,formalArgs,sem) = fromJust $ Map.lookup fun interp
+    (_,_fp,formalArgs,sem) = fromJust $ Map.lookup fun interp
 
     funRExprs = case Map.lookup field sem of
       Nothing -> error $ "field: " ++ show field ++ " not found in semantic item: " ++ show sem
@@ -228,7 +213,7 @@ replaceFunCallErr withError config interp env locVars callerFunBinds (ErrMulPow2
   = ErrMulPow2R t i <$> replaceFunCallErr withError config interp env locVars callerFunBinds ee
 replaceFunCallErr withError config interp env locVars callerFunBinds (ErrMulPow2L t i ee)
   = ErrMulPow2L t i <$> replaceFunCallErr withError config interp env locVars callerFunBinds ee
-replaceFunCallErr withError config interp env locVars callerFunBinds (ErrSubSternenz t ae1 ee1 ae2 ee2)
+replaceFunCallErr withError config interp env locVars callerFunBinds (ErrSubSternenz t ae1 _ee1 ae2 ee2)
   = ErrSubSternenz t <$> replaceFunCallErr withError config interp env locVars callerFunBinds ae1
                      <*> replaceFunCallErr withError config interp env locVars callerFunBinds ae1
                      <*> replaceFunCallErr withError config interp env locVars callerFunBinds ae2
@@ -242,5 +227,4 @@ replaceFunCallErr withError config interp env locVars callerFunBinds (HalfUlp ae
       return $ HalfUlp expr t
 replaceFunCallErr withError config interp env locVars callerFunBinds (MaxErr aes)
   = MaxErr <$> mapM (replaceFunCallErr withError config interp env locVars callerFunBinds) aes
-replaceFunCallErr _ config _ _ _ _ aexpr = return aexpr
-
+replaceFunCallErr _ _config _ _ _ _ aexpr = return aexpr

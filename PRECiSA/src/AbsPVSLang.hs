@@ -19,6 +19,7 @@ import Utils
 import PPExt
 import Prelude hiding ((<>))
 import Operators
+import Data.Function (fix)
 import Data.Set (fromList, toList)
 import Data.Bifunctor (bimap,second)
 import Common.TypesUtils
@@ -56,14 +57,14 @@ data PVSType = FPSingle
 fp2realType :: PVSType -> PVSType
 fp2realType TInt = TInt
 fp2realType Boolean = Boolean
-fp2realType (Array argsType t) = (Array (map fp2realType argsType) (fp2realType t))
+fp2realType (Array argsType t) = Array (map fp2realType argsType) (fp2realType t)
 fp2realType (List t) = List (fp2realType t)
 fp2realType (Tuple ts) = Tuple (map fp2realType ts)
-fp2realType (Record fields) = Record (map (\(field,t) -> (field,fp2realType t)) fields)
+fp2realType (Record fields) = Record (map (second fp2realType) fields)
 fp2realType _ = Real
 
 tupleIdxType :: PVSType -> Integer -> PVSType
-tupleIdxType (Tuple ts) idx =  ts!!(fromInteger $ idx - 1)
+tupleIdxType (Tuple ts) idx =  ts!!fromInteger (idx - 1)
 tupleIdxType t _ = error $ "tupleIdxType: " ++ show t ++ " is not a tuple."
 
 recordFieldType :: PVSType -> String -> PVSType
@@ -95,6 +96,7 @@ instance PPExt PVSType where
       prettyField (field, t) = text field <> colon <> prettyDoc t
   prettyDoc (TypeFun ts returnType) = text "[" <> hsep (punctuate (text "->") $ map prettyDoc ts)
                                       <+> text "->" <+> prettyDoc returnType <> text "]"
+  prettyDoc x = error $ "[PPExt.PVSType.prettyDoc] Unhandled case: " ++ show x
 
 data LetElem  = LetElem {letVar  :: VarName,
                          letType :: PVSType,
@@ -157,8 +159,8 @@ data CollAExpr
   = RCLet [LetElem] CollAExpr
   | RCIte BExpr CollAExpr CollAExpr
   | RCListIte [(BExpr, CollAExpr)] CollAExpr
-  | RRecordExpr [(RecordField, (Either AExpr BExpr))]
-  | RTupleExpr [(Either AExpr BExpr)]
+  | RRecordExpr [(RecordField, Either AExpr BExpr)]
+  | RTupleExpr [Either AExpr BExpr]
   | RArrayUpdate CollAExpr AExpr AExpr
   | RArrayCollUpdate CollAExpr AExpr CollAExpr
   | RCollFun FunName PVSType [AExpr]
@@ -200,7 +202,7 @@ data CollFAExpr
   | CIte FBExpr CollFAExpr CollFAExpr
   | CListIte [(FBExpr, CollFAExpr)] CollFAExpr
   | RecordExpr [(RecordField, Either FAExpr FBExpr)]
-  | TupleExpr [(Either FAExpr FBExpr)]
+  | TupleExpr [Either FAExpr FBExpr]
   | ArrayUpdate CollFAExpr FAExpr FAExpr
   | ArrayCollUpdate CollFAExpr FAExpr CollFAExpr
   | CollFun IsTrans FunName PVSType [FAExpr]
@@ -276,24 +278,24 @@ data RDecl = RDecl PVSType FunName [Arg] AExpr
 subExpressions :: FAExpr -> [FAExpr]
 subExpressions aexpr = toList $ fromList (subExpressions' aexpr)
   where
-    subExpressions' expr@(FEFun _ _ _ _ args) = expr:(concatMap subExpressions' args)
-    subExpressions' expr@(FArrayElem _ _ aes) = expr:(concatMap subExpressions' aes)
-    subExpressions' expr@(TypeCast _ _ ae) = expr:(subExpressions' ae)
-    subExpressions' expr@(Value ae) = expr:(subExpressions' ae)
+    subExpressions' expr@(FEFun _ _ _ _ args) = expr:concatMap subExpressions' args
+    subExpressions' expr@(FArrayElem _ _ aes) = expr:concatMap subExpressions' aes
+    subExpressions' expr@(TypeCast _ _ ae) = expr:subExpressions' ae
+    subExpressions' expr@(Value ae) = expr:subExpressions' ae
     subExpressions' expr@(BinaryFPOp _ _ ae1 ae2) = expr:(subExpressions' ae1 ++ subExpressions' ae2)
-    subExpressions' expr@(UnaryFPOp _ _ ae) = expr:(subExpressions' ae)
+    subExpressions' expr@(UnaryFPOp _ _ ae) = expr:subExpressions' ae
     subExpressions' expr@(FFma _ ae1 ae2 ae3) = expr:(subExpressions' ae1
                                                   ++ subExpressions' ae2
                                                   ++ subExpressions' ae3)
-    subExpressions' expr@(FMin aes) = expr:(concatMap subExpressions' aes)
-    subExpressions' expr@(FMax aes) = expr:(concatMap subExpressions' aes)
-    subExpressions' expr@(Let letElems letBody) = expr:((concatMap subExprLetElem letElems)++(subExpressions' letBody))
+    subExpressions' expr@(FMin aes) = expr:concatMap subExpressions' aes
+    subExpressions' expr@(FMax aes) = expr:concatMap subExpressions' aes
+    subExpressions' expr@(Let letElems letBody) = expr:(concatMap subExprLetElem letElems++subExpressions' letBody)
       where
         subExprLetElem (_,_,ae) = subExpressions' ae
     subExpressions' expr@(Ite be ae1 ae2) = expr:(subExpressionsFBExpr be
                                               ++ subExpressions' ae1
                                               ++ subExpressions' ae2)
-    subExpressions' expr@(ListIte thenList ae) =  expr:((concatMap subExprThenList thenList)++(subExpressions' ae))
+    subExpressions' expr@(ListIte thenList ae) =  expr:(concatMap subExprThenList thenList++subExpressions' ae)
       where
         subExprThenList (beThen,aeThen) =  subExpressionsFBExpr beThen ++ subExpressions' aeThen
     subExpressions' expr@(ForLoop _ _ idxStart idxEnd _ initAcc forBody) = expr:(subExpressions' idxStart
@@ -362,6 +364,7 @@ declType (CollDecl _ fp _ _ _) = fp
 realDeclName :: RDecl -> FunName
 realDeclName (RDecl _ f _ _) = f
 realDeclName (RPred   f _ _) = f
+realDeclName x = error $ "[realDeclName] Unhandled case: "  ++ show x
 
 fvarName :: FAExpr -> VarName
 fvarName (FVar _ x) = x
@@ -380,10 +383,12 @@ declBody (CollDecl _ _ _ _ body) = CExprBody body
 realDeclBody :: RDecl -> Either AExpr BExprStm
 realDeclBody (RDecl _ _ _ body) = Left  body
 realDeclBody (RPred _ _   body) = Right body
+realDeclBody x = error $ "[realDeclBody] Unhandled case: "  ++ show x
 
 realDeclArgs :: RDecl -> [Arg]
 realDeclArgs (RDecl _ _ args _) = args
 realDeclArgs (RPred _   args _) = args
+realDeclArgs x = error $ "[realDeclArgs] Unhandled case: "  ++ show x
 
 -- applyFunToDeclBody :: (FAExpr -> a) -> (FBExprStm -> a) -> Decl -> a
 -- applyFunToDeclBody fa _ (Decl _ _ _ _ aexpr) = fa aexpr
@@ -392,9 +397,10 @@ realDeclArgs (RPred _   args _) = args
 applyFunToRDeclBody :: (AExpr -> a) -> (BExprStm -> a) -> RDecl -> a
 applyFunToRDeclBody fa _ (RDecl _ _ _ aexpr) = fa aexpr
 applyFunToRDeclBody _ fb (RPred _ _   bexpr) = fb bexpr
+applyFunToRDeclBody _ _ x = error $ "[applyFunToRDeclBody] Unhandled case: "  ++ show x
 
 var2Arg :: VarName -> PVSType -> Arg
-var2Arg x t = Arg x t
+var2Arg = Arg
 
 arg2var :: Arg -> FAExpr
 arg2var (Arg x fp) = FVar fp x
@@ -460,7 +466,7 @@ isIntAExpr (RForLoop _ _ _ _ _ _ body) = isIntAExpr body
 isIntAExpr _ = False
 
 isFloatingFAExpr :: FAExpr -> Bool
-isFloatingFAExpr expr = (getPVSType expr == FPSingle) || (getPVSType expr == FPDouble)
+isFloatingFAExpr expr = getPVSType expr == FPSingle || getPVSType expr == FPDouble
 
 isIntFAExpr :: FAExpr -> Bool
 isIntFAExpr (FInt _)      = True
@@ -547,7 +553,7 @@ findInDecls fun (CollDecl _ retType g args stm:ds) | fun==g = Just (retType,args
 
 findInProg :: String -> [Decl] -> Maybe Decl
 findInProg _ [] = Nothing
-findInProg fun (decl:ds) | fun==(declName decl) = Just decl
+findInProg fun (decl:ds) | fun==declName decl = Just decl
                          | otherwise = findInProg fun ds
 
 findInRealProg :: String -> [RDecl] -> Maybe RDecl
@@ -556,6 +562,7 @@ findInRealProg fun (decl@(RDecl _ g _ _):ds) | fun==g = Just decl
                                              | otherwise = findInRealProg fun ds
 findInRealProg fun (decl@(RPred g _ _):ds) | fun==g = Just decl
                                            | otherwise = findInRealProg fun ds
+findInRealProg _ xs = error $ "[findInRealProg] Unhandled case: "  ++ show xs
 
 makeFPDeclRecursive :: Decl -> (Decl, [Decl])
 makeFPDeclRecursive (Decl isTrans fp f args stm) = (Decl isTrans fp f args recStm, forList)
@@ -604,6 +611,7 @@ makeRealDeclRecursive (RDecl fp f args stm) = (RDecl fp f args recStm, forList)
   where
     (recStm, forList) = runState (replaceForWithRealCallStm f args stm) ([],[])
 makeRealDeclRecursive decl@RPred{} = (decl,([],[]))
+makeRealDeclRecursive x = error $ "[makeRealDeclRecursive] Unhandled case: "  ++ show x
 
 replaceForWithRealCallStm :: FunName -> [Arg] -> AExpr -> State ([RDecl],[(AExpr,AExpr)]) AExpr
 replaceForWithRealCallStm f args forStm@(RForLoop fp idx idxInit idxEnd acc accInit body) = do
@@ -986,8 +994,8 @@ simplAExprAux' (BinaryOp MulOp (Int n) (Int m)) = Just $ Int (n*m)
 simplAExprAux' (BinaryOp MulOp (Int n) (Rat m)) = Just $ Rat (fromIntegral n * m)
 simplAExprAux' (BinaryOp MulOp (Rat n) (Int m)) = Just $ Rat (n * fromIntegral m)
 simplAExprAux' (BinaryOp MulOp (Rat n) (Rat m)) = Just $ Rat (n*m)
-simplAExprAux' (BinaryOp DivOp      _  (Int 0)) = error $ "Division by 0."
-simplAExprAux' (BinaryOp DivOp      _  (Rat 0)) = error $ "Division by 0."
+simplAExprAux' (BinaryOp DivOp      _  (Int 0)) = error "Division by 0."
+simplAExprAux' (BinaryOp DivOp      _  (Rat 0)) = error "Division by 0."
 simplAExprAux' (BinaryOp DivOp      n       _ ) | isZeroAExpr n = Just $ Int 0
 simplAExprAux' (BinaryOp DivOp (Int n) (Int m)) = Just $ Rat (fromIntegral n/ fromIntegral m)
 simplAExprAux' (BinaryOp DivOp (Int n) (Rat m)) = Just $ Rat (fromIntegral n/m)
@@ -1133,11 +1141,11 @@ localVarsBExprStm = elimDuplicates . localVarsBExprStm'
     localVarsBExprStm' (BIte be thenExpr elseExpr) = localVarsBExpr be
                                           ++ localVarsBExprStm' thenExpr
                                           ++ localVarsBExprStm' elseExpr
-    localVarsBExprStm' (BListIte thenExprs elseExpr) = concatMap localVarsBExprStm' (elseExpr:(map snd thenExprs))
+    localVarsBExprStm' (BListIte thenExprs elseExpr) = concatMap localVarsBExprStm' (elseExpr:map snd thenExprs)
     localVarsBExprStm' (BExpr be) = localVarsBExpr be
     localVarsBExprStm' BUnstWarning = []
 
-localVarsEither :: (Either FAExpr FBExpr) -> [(VarName, FAExpr)]
+localVarsEither :: Either FAExpr FBExpr -> [(VarName, FAExpr)]
 localVarsEither (Left fae)  = localVars fae
 localVarsEither (Right fbe) = localVarsBExpr fbe
 
@@ -1151,11 +1159,12 @@ localVarsCollExpr = elimDuplicates . localVarsCollExpr'
     localVarsCollExpr' (CIte be thenExpr elseExpr) = localVarsBExpr be
                                           ++ localVarsCollExpr' thenExpr
                                           ++ localVarsCollExpr' elseExpr
-    localVarsCollExpr' (CListIte thenExprs elseExpr) = concatMap localVarsCollExpr' (elseExpr:(map snd thenExprs))
+    localVarsCollExpr' (CListIte thenExprs elseExpr) = concatMap localVarsCollExpr' (elseExpr:map snd thenExprs)
     localVarsCollExpr' (RecordExpr fieldExprs) = concatMap (localVarsEither . snd) fieldExprs
     localVarsCollExpr' (TupleExpr exprs) = concatMap localVarsEither exprs
     localVarsCollExpr' (CollFun _ _ _ exprs) = concatMap localVars exprs
     localVarsCollExpr' (CollVar _ _) = []
+    localVarsCollExpr' x = error $ "[localVarsCollExpr.localVarsCollExpr'] Unhandled case: " ++ show x
 
 localVarsDecl :: Decl -> [(VarName, FAExpr)]
 localVarsDecl (Decl _ _ _ _ expr) = localVars expr
@@ -1215,7 +1224,7 @@ funCallListFBExpr :: FBExpr -> [FAExpr]
 funCallListFBExpr be = elimDuplicates $ foldFBExpr const funFCallListAcc const be []
 
 funCallListFAExpr :: FAExpr -> [FAExpr]
-funCallListFAExpr ae = elimDuplicates $ foldFAExpr (\acc be -> acc++(funCallListFBExpr be)) funFCallListAcc const ae []
+funCallListFAExpr ae = elimDuplicates $ foldFAExpr (\acc be -> acc++funCallListFBExpr be) funFCallListAcc const ae []
 
 funCallListFAExprWithConds :: RProgram -> FAExpr -> [FAExpr]
 funCallListFAExprWithConds rprog expr = filter hasConds list
@@ -1418,6 +1427,7 @@ foldCollExpr bExprF faExprF aExprF (TupleExpr exprList) a
 foldCollExpr bExprF faExprF aExprF (CollFun _ _ _ args) a
   = foldListFAExpr bExprF faExprF aExprF args a
 foldCollExpr _ _ _ (CollVar _ _) a = a
+foldCollExpr _ _ _ x _ = error $ "[foldCollExpr] Unhandled case: " ++ show x
 
 foldFBExprStm :: (a -> FBExpr -> a) -> (a -> FAExpr -> a) -> (a -> AExpr -> a) -> FBExprStm -> a -> a
 foldFBExprStm bExprF faExprF aExprF (BLet listElems body) a
@@ -1440,7 +1450,7 @@ foldFAExpr _ faExprF _ ae@(FCnst _ _)   a = faExprF a ae
 foldFAExpr _ faExprF _ ae@(FVar  _ _)   a = faExprF a ae
 foldFAExpr _ faExprF _ ae@(StructVar  _ _)   a = faExprF a ae
 foldFAExpr _ faExprF _ ae@(FInt _)      a = faExprF a ae
-foldFAExpr _ faExprF aExprF ae@(FMap _ _ _) a = faExprF a ae
+foldFAExpr _ faExprF _ ae@(FMap {}) a = faExprF a ae
 foldFAExpr _ faExprF _ UnstWarning      a = faExprF a UnstWarning
 
 foldFAExpr bExprF faExprF aExprF ae@(BinaryFPOp _ _ ae1 ae2) a = foldBinaryFAExpr bExprF faExprF aExprF ae ae1 ae2 a
@@ -1452,8 +1462,8 @@ foldFAExpr bExprF faExprF aExprF ae@(FFold _ _ _ _ ae0) a = foldUnaryFAExpr bExp
 foldFAExpr bExprF faExprF aExprF ae@(Value            ae1) a = foldUnaryFAExpr bExprF faExprF aExprF ae ae1 a
 foldFAExpr bExprF faExprF aExprF ae@(FArrayElem _ _ aes) a = foldListFAExpr bExprF faExprF aExprF aes $ faExprF a ae
 foldFAExpr bExprF faExprF aExprF ae@(FListElem    _ _ ae1) a = foldUnaryFAExpr bExprF faExprF aExprF ae ae1 a
-foldFAExpr _ faExprF _ ae@(FTupleElem   _ _ _) a = faExprF a ae
-foldFAExpr _ faExprF _ ae@(FRecordElem  _ _ _) a = faExprF a ae
+foldFAExpr _ faExprF _ ae@(FTupleElem {}) a = faExprF a ae
+foldFAExpr _ faExprF _ ae@(FRecordElem {}) a = faExprF a ae
 
 foldFAExpr bExprF faExprF aExprF ae@(FFma _ ae1 ae2 ae3) a = foldFAExpr bExprF faExprF aExprF ae1
                                                            $ foldFAExpr bExprF faExprF aExprF ae2
@@ -1472,6 +1482,7 @@ foldFAExpr bExprF faExprF aExprF (ListIte listThen stmElse) a = foldListFBExpr b
                                                                  $ foldListFAExpr bExprF faExprF aExprF (map snd listThen)
                                                                  $ faExprF a stmElse
 foldFAExpr bExprF faExprF aExprF ae@(ForLoop _ _ _ _ _ _ body) a = foldUnaryFAExpr bExprF faExprF aExprF ae body a
+foldFAExpr _ _ _ x _ = error $ "[foldFAExpr] Unhandled case: "  ++ show x
 
 foldBExpr :: (a -> FAExpr -> a) -> (a -> AExpr -> a) -> BExpr -> a -> a
 foldBExpr faExprF aExprF (Or  be1 be2)  a = foldBExpr faExprF aExprF be2
@@ -1489,11 +1500,11 @@ foldAExpr _       aExprF ae@(Int _)         a = aExprF a ae
 foldAExpr _       aExprF ae@(Rat _)         a = aExprF a ae
 foldAExpr _       aExprF ae@(Prec _)        a = aExprF a ae
 foldAExpr _       aExprF ae@(Var _ _)       a = aExprF a ae
-foldAExpr _       aExprF ae@(ListElem _ _ _) a = aExprF a ae
+foldAExpr _       aExprF ae@(ListElem {}) a = aExprF a ae
 foldAExpr _       aExprF ae@Infinity        a = aExprF a ae
 foldAExpr _       aExprF ae@(RealMark _ _)    a = aExprF a ae
 foldAExpr _       aExprF ae@(ErrRat _)      a = aExprF a ae
-foldAExpr _       aExprF ae@(ErrorMark _ _ _) a = aExprF a ae
+foldAExpr _       aExprF ae@(ErrorMark {}) a = aExprF a ae
 foldAExpr _       aExprF ae@RUnstWarning    a = aExprF a ae
 foldAExpr faExprF aExprF ae@(FromFloat _ fae) a = foldFAExpr const faExprF aExprF fae
                                                  $ aExprF a ae
@@ -1551,7 +1562,7 @@ replaceInFAExpr rf ff fexpr = fromMaybe (replaceInFAExpr' fexpr) (ff fexpr)
     replaceInFAExpr' (ToFloat  fp ae)      = ToFloat fp (replaceInAExpr rf ff ae)
     replaceInFAExpr' ae@(FInt _)      = ae
     replaceInFAExpr' ae@(FCnst _ _)   = ae
-    replaceInFAExpr' ae@(FInterval _ _ _)   = ae
+    replaceInFAExpr' ae@(FInterval {})   = ae
     replaceInFAExpr' ae@(FVar  _ _)   = ae
     replaceInFAExpr' ae@(StructVar _ _) = ae
     replaceInFAExpr' (FArrayElem fp v idxs)  = FArrayElem fp v (map (replaceInFAExpr rf ff) idxs)
@@ -1572,6 +1583,7 @@ replaceInFAExpr rf ff fexpr = fromMaybe (replaceInFAExpr' fexpr) (ff fexpr)
                                                     (replaceInFAExpr rf ff elseExpr)
     replaceInFAExpr' (ForLoop fp i n0 n acc acc0 body) = ForLoop fp i n0 n acc (replaceInFAExpr rf ff acc0)
                                                                                (replaceInFAExpr rf ff body)
+    replaceInFAExpr' x = error $ "[replaceInFAExpr'] Unhandled case: "  ++ show x
 
 replaceInCollFAExpr :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr) -> CollFAExpr -> CollFAExpr
 replaceInCollFAExpr rf ff (CLet letElems stm)
@@ -1593,6 +1605,7 @@ replaceInCollFAExpr rf ff (TupleExpr idxExprs)
     replaceInTupleField (Right expr) = Right $ replaceInFBExpr rf ff expr
 replaceInCollFAExpr rf ff (CollFun isTrans f t args)
   = CollFun isTrans f t (map (replaceInFAExpr rf ff) args)
+replaceInCollFAExpr _ _ x = error $ "[replaceInCollFAExpr] Unhandled case: "  ++ show x
 
 replaceInFBExpr :: (AExpr -> Maybe AExpr) -> (FAExpr -> Maybe FAExpr) -> FBExpr -> FBExpr
 replaceInFBExpr rg fg (FOr  be1 be2) = FOr  (replaceInFBExpr rg fg be1) (replaceInFBExpr rg fg be2)
@@ -1632,12 +1645,12 @@ replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
     replaceInAExpr' ae@(Int _)          = ae
     replaceInAExpr' ae@(Rat _)          = ae
     replaceInAExpr' ae@(Var _ _)        = ae
-    replaceInAExpr' ae@(ListElem _ _ _) = ae
+    replaceInAExpr' ae@(ListElem {}) = ae
     replaceInAExpr' ae@ArrayElem{}      = ae
     replaceInAExpr' ae@(RealMark _ _)    = ae
-    replaceInAExpr' ae@(ErrorMark _ _ _) = ae
+    replaceInAExpr' ae@(ErrorMark {}) = ae
     replaceInAExpr' ae@(ErrRat _)      = ae
-    replaceInAExpr' (Prec fp) = (Prec fp)
+    replaceInAExpr' (Prec fp) = Prec fp
     replaceInAExpr' Infinity     = Infinity
     replaceInAExpr' (EFun g field fp args) = EFun g field fp (map (replaceInAExpr rf ff) args)
     replaceInAExpr' (Min    aes) = Min    (map (replaceInAExpr rf ff) aes)
@@ -1670,6 +1683,7 @@ replaceInAExpr rf ff expr = fromMaybe (replaceInAExpr' expr) (rf expr)
                                                                                      acc (replaceInAExpr rf ff initAcc)
                                                                                          (replaceInAExpr rf ff body)
     replaceInAExpr' RUnstWarning = RUnstWarning
+    replaceInAExpr' x = error $ "[replaceInAExpr'] Unhandled case: "  ++ show x
 
 
 
@@ -1755,11 +1769,11 @@ unfoldLetIn (Let [] ae) = unfoldLetIn ae
 unfoldLetIn (Let ((x,_,expr):rest) ae) =
     replaceInFAExpr (const Nothing) replaceLocalVar (unfoldLetIn (Let rest ae))
     where
-      replaceLocalVar (FVar _ var) | var == x = Just $ expr
+      replaceLocalVar (FVar _ var) | var == x = Just expr
                                    | otherwise = Nothing
       replaceLocalVar _ = Nothing
 unfoldLetIn (Ite be aeThen aeElse) = Ite be (unfoldLetIn aeThen) (unfoldLetIn aeElse)
-unfoldLetIn (ListIte listThen aeElse) = ListIte (map (\(be,aeThen) -> (be,unfoldLetIn aeThen)) listThen)
+unfoldLetIn (ListIte listThen aeElse) = ListIte (map (second unfoldLetIn) listThen)
                                                 (unfoldLetIn aeElse)
 unfoldLetIn (ForLoop fp idx idxStart idxEnd acc initAcc forBody)
   = ForLoop fp idx (unfoldLetIn idxStart) (unfoldLetIn idxEnd) acc (unfoldLetIn initAcc) (unfoldLetIn forBody)
@@ -1777,7 +1791,7 @@ expandLocalVars :: LocalEnv -> FAExpr -> FAExpr
 expandLocalVars [] fae = fae
 expandLocalVars ((x,_,expr):rest) fae = expandLocalVars rest (replaceInFAExpr (const Nothing) replaceLocalVar fae)
   where
-    replaceLocalVar (FVar _ var) | var == x = Just $ expr
+    replaceLocalVar (FVar _ var) | var == x = Just expr
                                  | otherwise = Nothing
     replaceLocalVar _ = Nothing
 
@@ -1826,13 +1840,13 @@ fpGuardList acc (ListIte listThen _) = acc ++ concatMap (fpExprsInGuard . fst) l
 fpGuardList acc _              = acc
 
 listFPGuardsFAExpr :: FAExpr -> [FAExpr]
-listFPGuardsFAExpr expr = foldFAExpr const fpGuardList (\a _ -> a) expr []
+listFPGuardsFAExpr expr = foldFAExpr const fpGuardList const expr []
 
 listFPGuardsFBExprStm :: FBExprStm -> [FAExpr]
-listFPGuardsFBExprStm expr = foldFBExprStm const fpGuardList (\a _ -> a) expr []
+listFPGuardsFBExprStm expr = foldFBExprStm const fpGuardList const expr []
 
 listFPGuardsCollExpr :: CollFAExpr -> [FAExpr]
-listFPGuardsCollExpr expr = foldCollExpr const fpGuardList (\a _ -> a) expr []
+listFPGuardsCollExpr expr = foldCollExpr const fpGuardList const expr []
 
 listFPGuards :: DeclBody -> [FAExpr]
 listFPGuards (AExprBody expr) = listFPGuardsFAExpr expr
@@ -1843,23 +1857,21 @@ hasConditionals :: CheckFunCalls -> RProgram -> AExpr -> Bool
 hasConditionals _ _ (Int _) = False
 hasConditionals _ _ (Rat _) = False
 hasConditionals _ _ (Var _ _) = False
-hasConditionals _ _ (ArrayElem _ _ _) = False
+hasConditionals _ _ (ArrayElem {}) = False
 hasConditionals checkFunCalls prog (BinaryOp _ e1 e2) = hasConditionals checkFunCalls prog e1 ||
                                                         hasConditionals checkFunCalls prog e2
 hasConditionals checkFunCalls prog (UnaryOp _ e) = hasConditionals checkFunCalls prog e
-hasConditionals checkFunCalls prog (Min es) = foldl1 (||) (map (hasConditionals checkFunCalls prog) es)
-hasConditionals checkFunCalls prog (Max es) = foldl1 (||) (map (hasConditionals checkFunCalls prog) es)
+hasConditionals checkFunCalls prog (Min es) = any (hasConditionals checkFunCalls prog) es
+hasConditionals checkFunCalls prog (Max es) = any (hasConditionals checkFunCalls prog) es
 hasConditionals checkFunCalls prog (RLet letElems expr) =
   hasConditionals checkFunCalls prog expr ||
-  foldl1 (||) (map ((hasConditionals checkFunCalls prog) . letExpr) letElems)
-hasConditionals _ _ (RIte _ _ _) = True
+  any (hasConditionals checkFunCalls prog . letExpr) letElems
+hasConditionals _ _ (RIte {}) = True
 hasConditionals _ _  (RListIte _ _) = True
 hasConditionals checkFunCalls prog (RForLoop _ _ _ _ _ _ forBody) = hasConditionals checkFunCalls prog forBody
 hasConditionals checkFunCalls prog (EFun f _ _ _) =
-  if checkFunCalls
-  then applyFunToRDeclBody (hasConditionals checkFunCalls prog)
+  checkFunCalls && applyFunToRDeclBody (hasConditionals checkFunCalls prog)
                            (hasConditionalsBExpr checkFunCalls prog) body
-  else False
    where
       body = fromMaybe (error $ "Function " ++ show f ++ " not found.")
                  $ findInRealProg f prog
@@ -1867,11 +1879,11 @@ hasConditionals _ _ expr = error $ "hasConditionals not defined for expression "
 
 
 hasConditionalsBExpr :: CheckFunCalls -> RProgram -> BExprStm -> Bool
-hasConditionalsBExpr _ _ (RBIte _ _ _) = True
+hasConditionalsBExpr _ _ (RBIte {}) = True
 hasConditionalsBExpr _ _ (RBListIte _ _) = True
 hasConditionalsBExpr checkFunCalls prog (RBLet letElems body) =
   hasConditionalsBExpr checkFunCalls prog body ||
-  foldl1 (||) (map ((hasConditionals checkFunCalls prog) . letExpr) letElems)
+  any (hasConditionals checkFunCalls prog . letExpr) letElems
 hasConditionalsBExpr checkFunCalls prog (RBExpr be) = hasConditionalsBExpr' be
   where
     hasConditionalsBExpr' BTrue  = False
@@ -1884,10 +1896,8 @@ hasConditionalsBExpr checkFunCalls prog (RBExpr be) = hasConditionalsBExpr' be
     hasConditionalsBExpr' (Rel _ ae1 ae2) = hasConditionals checkFunCalls prog ae1 ||
                                             hasConditionals checkFunCalls prog ae2
     hasConditionalsBExpr' (EPred f _) =
-      if checkFunCalls
-      then applyFunToRDeclBody (hasConditionals checkFunCalls prog)
+      checkFunCalls && applyFunToRDeclBody (hasConditionals checkFunCalls prog)
                                (hasConditionalsBExpr checkFunCalls prog) body
-      else False
         where
           body = fromMaybe (error $ "Function " ++ show f ++ " not found.")
                  $ findInRealProg f prog
@@ -1896,7 +1906,7 @@ renameInLetElem :: VarSubs -> LetElem -> LetElem
 renameInLetElem subs letElem = letElem {letVar = newLetVar
                                         ,letExpr = renameVarsAExpr subs (letExpr letElem)}
   where
-    newLetVar = if (take 4 (letVar letElem)) == "Err_"
+    newLetVar = if take 4 (letVar letElem) == "Err_"
                 then case lookup (drop 4 (letVar letElem)) subs of
                       Nothing -> letVar letElem
                       Just y -> "Err_" ++ y
@@ -1911,11 +1921,9 @@ renameVar subs (RLet letElems expr)
 renameVar subs (ArrayElem t v exprs)
   = Just $ ArrayElem t v' (map (renameVarsAExpr subs) exprs)
     where
-      v' = case lookup v subs of
-            Nothing -> v
-            Just y  -> y
+      v' = fromMaybe v (lookup v subs)
 
-renameVar subs (Var t x) =  if (take 4 x) == "Err_"
+renameVar subs (Var t x) =  if take 4 x == "Err_"
                             then case lookup (drop 4 x) subs of
                                   Nothing -> Nothing
                                   Just y -> Just $ Var t ("Err_" ++ y)
@@ -1936,9 +1944,7 @@ renameVar _ _ = Nothing
 renameInFLetElem :: VarSubs -> FLetElem -> FLetElem
 renameInFLetElem subs (var, t, ae) = (newVar, t, renameVarsFAExpr subs ae)
   where
-    newVar = case lookup var subs of
-                  Nothing -> var
-                  Just y -> y
+    newVar = fromMaybe var (lookup var subs)
 
 renameFVar :: VarSubs -> FAExpr -> Maybe FAExpr
 renameFVar subs (Let letElems expr)
@@ -1947,9 +1953,7 @@ renameFVar subs (Let letElems expr)
 renameFVar subs (FArrayElem t v exprs)
   = Just $ FArrayElem t v' (map (renameVarsFAExpr subs) exprs)
     where
-      v' = case lookup v subs of
-            Nothing -> v
-            Just y  -> y
+      v' = fromMaybe v (lookup v subs)
 
 renameFVar subs (FVar t x) = case lookup x subs of
                                   Nothing -> Nothing
@@ -1958,13 +1962,13 @@ renameFVar subs (FVar t x) = case lookup x subs of
 renameFVar _ _ = Nothing
 
 renameVarsAExpr :: VarSubs -> AExpr -> AExpr
-renameVarsAExpr subs expr = replaceInAExpr (renameVar subs) (renameFVar subs) expr
+renameVarsAExpr subs = replaceInAExpr (renameVar subs) (renameFVar subs)
 
 renameVarsFAExpr :: VarSubs -> FAExpr -> FAExpr
-renameVarsFAExpr subs expr = replaceInFAExpr (renameVar subs) (renameFVar subs) expr
+renameVarsFAExpr subs = replaceInFAExpr (renameVar subs) (renameFVar subs)
 
 renameVarsBExpr :: VarSubs -> BExpr -> BExpr
-renameVarsBExpr subs expr = replaceInBExpr (renameVar subs) (renameFVar subs) expr
+renameVarsBExpr subs = replaceInBExpr (renameVar subs) (renameFVar subs)
 
 renameVarsBExprStm :: VarSubs -> BExprStm -> BExprStm
 renameVarsBExprStm subs (RBLet letElems expr) = RBLet (map (renameInLetElem subs) letElems) (renameVarsBExprStm subs expr)
@@ -2033,6 +2037,7 @@ instance PPExt Decl where
       <> text  "):" <+> text "bool" <+> text " =" <+> prettyDoc stm
     where
       suffix = if isTrans then "_fp" else ""
+  prettyDoc x = error $ "[Decl.PPExt.prettyDoc] Unhandled case: "  ++ show x
 
 printBinOpError :: (AExpr -> Doc) -> String -> AExpr -> AExpr -> AExpr -> AExpr -> Doc
 printBinOpError f nameErrFun r1 e1 r2 e2 =
@@ -2069,8 +2074,8 @@ prettyAExpr _ (ErrRat r) = parens $ text $ showRational r
 prettyAExpr _ (Var _ x) = text x
 prettyAExpr f (ArrayElem _ v idxs) = text v <> parens (hsep $ punctuate comma $ map (prettyAExpr f) idxs)
 prettyAExpr f (ListElem _ l idx) = text "nth" <> parens (text l <> comma <> prettyAExpr f idx)
-prettyAExpr f (TupleElem t x idx) = text x <> text "`" <> integer idx
-prettyAExpr f (RecordElem t x field) = text x <> text "`" <> text field
+prettyAExpr _ (TupleElem _ x idx) = text x <> text "`" <> integer idx
+prettyAExpr _ (RecordElem _ x field) = text x <> text "`" <> text field
 prettyAExpr _ (EFun g field _ [])
   = printNameWithField (text g <> text "_real") field
 prettyAExpr f (EFun g field _ args)
@@ -2108,16 +2113,16 @@ prettyAExpr f (MaxErr [es]) = f es
 prettyAExpr f (MaxErr ees@(_:(_:_))) =
     text "max" <> parens (hsep $ punctuate comma (map f ees))
 
-prettyAExpr f (RMap fp fun l) = text "map" <> parens( text fun <> comma <> text l)
-prettyAExpr f (RFold fp fun l n ae) = text "fold"
-  <> parens( text fun <> comma <> text l <> comma <> integer n <> comma <> prettyAExpr f ae)
+prettyAExpr _ (RMap _fp fun l) = text "map" <> parens (text fun <> comma <> text l)
+prettyAExpr f (RFold _fp fun l n ae) = text "fold"
+  <> parens (text fun <> comma <> text l <> comma <> integer n <> comma <> prettyAExpr f ae)
 
-prettyAExpr f (ErrFun fun _ ResValue args rargs errExprs)
-  = text fun <> text "_error" <> parens (hsep $ punctuate comma $ ((map prettyDoc errExprs)++(map prettyDoc rargs)))
-prettyAExpr f (ErrFun fun _ (ResRecordField field) args rargs errExprs)
-  = text fun <> text "_error" <> parens (hsep $ punctuate comma $ ((map prettyDoc errExprs)++(map prettyDoc rargs))) <> text ("`" ++ field)
-prettyAExpr f (ErrFun fun _ (ResTupleIndex idx) args rargs errExprs)
-  = text fun <> text "_error" <> parens (hsep $ punctuate comma $ ((map prettyDoc errExprs)++(map prettyDoc rargs))) <> text "`" <> integer idx
+prettyAExpr _ (ErrFun fun _ ResValue _args rargs errExprs)
+  = text fun <> text "_error" <> parens (hsep $ punctuate comma (map prettyDoc errExprs++map prettyDoc rargs))
+prettyAExpr _ (ErrFun fun _ (ResRecordField field) _args rargs errExprs)
+  = text fun <> text "_error" <> parens (hsep $ punctuate comma (map prettyDoc errExprs++map prettyDoc rargs)) <> text ("`" ++ field)
+prettyAExpr _ (ErrFun fun _ (ResTupleIndex idx) _args rargs errExprs)
+  = text fun <> text "_error" <> parens (hsep $ punctuate comma (map prettyDoc errExprs++map prettyDoc rargs)) <> text "`" <> integer idx
 prettyAExpr f (ErrBinOp AddOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_add" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp AddOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_add" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp SubOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_sub" r1 e1 r2 e2
@@ -2182,18 +2187,18 @@ prettyAExpr f (ErrUnOp ExpoOp  FPDouble r e) = printUnaryOpError f  "aerr_ulp_dp
 prettyAExpr f (ErrUnOp LnOp    FPSingle r e) = printUnaryOpError f  "aerr_ulp_sp_ln"  r e
 prettyAExpr f (ErrUnOp LnOp    FPDouble r e) = printUnaryOpError f  "aerr_ulp_dp_ln"  r e
 prettyAExpr f (HalfUlp r FPSingle)
-    = text "ulp_sp" <> (text "(" <> prettyAExpr f r <> text ")/2")
+    = text "ulp_sp" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r FPDouble)
-    = text "ulp_dp" <> (text "(" <> prettyAExpr f r <> text ")/2")
+    = text "ulp_dp" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (Array _ FPSingle))
-    = text "ulp_sp" <> (text "(" <> prettyAExpr f r <> text ")/2")
+    = text "ulp_sp" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (Array _ FPDouble))
-    = text "ulp_dp" <> (text "(" <> prettyAExpr f r <> text ")/2")
+    = text "ulp_dp" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (List FPSingle))
-    = text "ulp_sp" <> (text "(" <> prettyAExpr f r <> text ")/2")
+    = text "ulp_sp" <> text "(" <> prettyAExpr f r <> text ")/2"
 
 prettyAExpr f (HalfUlp r (List FPDouble))
-    = text "ulp_dp" <> (text "(" <> prettyAExpr f r <> text ")/2")
+    = text "ulp_dp" <> text "(" <> prettyAExpr f r <> text ")/2"
 
 
 prettyAExpr f (ErrCast FPSingle FPDouble r e) = printUnaryOpError f "aerr_sp_dp"  r e
@@ -2260,11 +2265,11 @@ instance PPExt CollFAExpr where
       $$ vcat (map (\(be,stm) -> text "ELSIF" <+> prettyDoc be
       $$ text "THEN" <+> prettyDoc stm) thenList)
       $$ text "ELSE" <+> prettyDoc stmElse $$ text "ENDIF"
-  prettyDoc (RecordExpr fs) = text "(#" <> (hsep $ punctuate comma $ map prettyRecord fs) <> text "#)"
+  prettyDoc (RecordExpr fs) = text "(#" <> hsep (punctuate comma $ map prettyRecord fs) <> text "#)"
     where
       prettyRecord (field, Left expr) = text field <> text ":=" <> prettyDoc expr
       prettyRecord (field, Right expr) = text field <> text ":=" <> prettyDoc expr
-  prettyDoc (TupleExpr ts) = text "(" <> (hsep $ punctuate comma $ map prettyTuple ts) <> text ")"
+  prettyDoc (TupleExpr ts) = text "(" <> hsep (punctuate comma $ map prettyTuple ts) <> text ")"
     where
       prettyTuple (Left  expr) = prettyDoc expr
       prettyTuple (Right expr) = prettyDoc expr
@@ -2276,6 +2281,7 @@ instance PPExt CollFAExpr where
     where
       suffix = if isTrans then "_fp" else ""
   prettyDoc (CollVar _ x) = text x
+  prettyDoc x = error $ "[PPExt.CollFAExpr.prettyDoc] Unhandled case: " ++ show x
 
 instance PPExt CollAExpr where
   prettyDoc (RCLet listElem stm)
@@ -2287,25 +2293,26 @@ instance PPExt CollAExpr where
       $$ text "THEN" <+> prettyDoc stm1
       $$ text "ELSE" <+> prettyDoc stm2
       $$ text "ENDIF"
-  prettyDoc (RCListIte [] stmElse) = error "prettyDoc CListIte: empty stmThen list"
+  prettyDoc (RCListIte [] _stmElse) = error "prettyDoc CListIte: empty stmThen list"
   prettyDoc (RCListIte ((beThen,stmThen):thenList) stmElse)
     = text "IF" <+> prettyDoc beThen $$ text "THEN" <+> prettyDoc stmThen
       $$ vcat (map (\(be,stm) -> text "ELSIF" <+> prettyDoc be
       $$ text "THEN" <+> prettyDoc stm) thenList)
       $$ text "ELSE" <+> prettyDoc stmElse $$ text "ENDIF"
-  prettyDoc (RRecordExpr fs) =  text "(#" <> (hsep $ punctuate comma $ map prettyRecord fs) <> text "#)"
+  prettyDoc (RRecordExpr fs) =  text "(#" <> hsep (punctuate comma $ map prettyRecord fs) <> text "#)"
     where
       prettyRecord (field, Left expr) = text field <> text  ":=" <> prettyDoc expr
       prettyRecord (field, Right expr) = text field <> text  ":=" <> prettyDoc expr
-  prettyDoc (RTupleExpr ts) = text "(" <> (hsep $ punctuate comma $ map prettyTuple ts) <> text ")"
+  prettyDoc (RTupleExpr ts) = text "(" <> hsep (punctuate comma $ map prettyTuple ts) <> text ")"
     where
       prettyTuple (Left  expr) = prettyDoc expr
       prettyTuple (Right expr) = prettyDoc expr
-  prettyDoc (RCollFun g t args)
+  prettyDoc (RCollFun g _t args)
     = text g <> (if null args
         then emptyDoc
         else parens (hsep $ punctuate comma $ map prettyDoc args))
   prettyDoc (RCollVar  _ x) = text x
+  prettyDoc x = error $ "[PPExt.CollAExpr.prettyDoc] Unhandled case: " ++ show x
 
 instance PPExt FAExpr where
   prettyDoc (FInt i) = integer i
@@ -2314,8 +2321,8 @@ instance PPExt FAExpr where
   prettyDoc (UnaryFPOp NegOp _ (FCnst _ d)) = text "-" <> parens (text $ showRational d)
   prettyDoc (FVar _ x) = text x
   prettyDoc (FArrayElem _ v idxs) = text v <> parens (hsep $ punctuate comma $ map prettyDoc idxs)
-  prettyDoc (FTupleElem  t x idx) = text x <> text "`" <> integer idx
-  prettyDoc (FRecordElem t x field) = text x <> text "`" <> text field
+  prettyDoc (FTupleElem  _t x idx) = text x <> text "`" <> integer idx
+  prettyDoc (FRecordElem _t x field) = text x <> text "`" <> text field
   prettyDoc (FEFun isTrans f field _ []) = printNameWithField (text f <> text suffix) field
     where
       suffix = if isTrans then "_fp" else ""
@@ -2412,7 +2419,7 @@ instance PPExt FAExpr where
           <+> parens (prettyDoc forBody)
           )
   --
-  prettyDoc (FListElem _ l idx) = text "nth" <> parens (text "l" <> comma <> prettyDoc idx)
+  prettyDoc (FListElem _ _l idx) = text "nth" <> parens (text "l" <> comma <> prettyDoc idx)
   prettyDoc ee = error $ "prettyDoc for " ++ show ee ++ " not implemented yet."
 
 instance PPExt BExpr where

@@ -20,7 +20,6 @@ module Parser.Parser
 where
 
 import AbsPVSLang
-import AbsFPCoreLang
 import AbsSpecLang
 import Common.DecisionPath
 import ErrM
@@ -41,13 +40,10 @@ parseProgram str =
     return $ raw2Prog rawParsedProg
 
 parseFileToTargetDPs :: FilePath -> IO (Err TargetDPs)
-parseFileToTargetDPs src_filename = fmap (parseTargetDPs) (readFile src_filename)
+parseFileToTargetDPs src_filename = fmap parseTargetDPs (readFile src_filename)
 
 parseTargetDPs :: String -> Err TargetDPs
-parseTargetDPs str =
-  do
-    parsedTargetDPs <- rawparserTargetDPs str
-    return parsedTargetDPs
+parseTargetDPs = rawparserTargetDPs
 
 parseFileToSpec :: [Decl] -> FilePath -> IO (Err Spec)
 parseFileToSpec decls src_filename = fmap (parseSpec decls) (readFile src_filename)
@@ -76,23 +72,23 @@ parseFPCoreProgram str =
   do
     rawParsedFPCoreProg <- fpcoreparserPVS str
     return $ fpcore2Prog rawParsedFPCoreProg
-    
+
 
 parseFPCoreFAExpr :: String -> Err FAExpr
 parseFPCoreFAExpr str =
   do
     rawParsedFPCoreProg <- fpcoreparserPVS str
     let prog = fpcore2Prog rawParsedFPCoreProg
-    let extractfae [(Decl _ _ _ _ fae)] = fae
+    let extractfae [Decl _ _ _ _ fae] = fae
         extractfae _ = error "program not supported"
     return $ extractfae prog
 
 parseFileToFPCoreSpec :: FilePath -> IO Spec
-parseFileToFPCoreSpec src_filename = fmap parseFPCoreSpec(readFile src_filename)
+parseFileToFPCoreSpec src_filename = fmap parseFPCoreSpec (readFile src_filename)
 
-parseFPCoreSpec :: String -> Spec 
+parseFPCoreSpec :: String -> Spec
 parseFPCoreSpec str = unerr res
-  where 
+  where
     res = do
       rawParsedFPCoreProg <- fpcoreparserPVS str
       return $ fpcore2Spec rawParsedFPCoreProg

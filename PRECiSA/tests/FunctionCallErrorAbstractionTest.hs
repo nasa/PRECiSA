@@ -101,7 +101,7 @@ testreplaceFunCallErr = testGroup "ReplaceFunCallErr"
       rfcewc True semconf emptyInterp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 1)] (Int 1) `returnsValue` (Int 1)
 
     testCase2 = testCase "testFunctionCallErrorAbstraction 2" $
-      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 1)] (ErrFun "f" FPDouble ResValue [FVar FPDouble "x"]) `returnsValue` Rat 3
+      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 1)] (ErrFun "f" FPDouble ResValue [FVar FPDouble "x"] [] []) `returnsValue` Rat 3
       where
         interp = Map.fromList [("f",(False, FPDouble, [Arg "x" FPDouble], sem))]
           where
@@ -125,7 +125,7 @@ testreplaceFunCallErr = testGroup "ReplaceFunCallErr"
 
 
     testCase3 = testCase "testFunctionCallErrorAbstraction 3" $
-      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 1)] (ErrFun "f" FPDouble ResValue [FInt 3]) `returnsValue` Rat 3
+      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 1)] (ErrFun "f" FPDouble ResValue [FInt 3] [] []) `returnsValue` Rat 3
       where
         interp = Map.fromList [("f",(False, FPDouble, [Arg "x" FPDouble], sem))]
           where
@@ -141,7 +141,7 @@ testreplaceFunCallErr = testGroup "ReplaceFunCallErr"
               ]
 
     testCase4 = testCase "testFunctionCallErrorAbstraction 4" $
-      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [FVar FPDouble "x"]) `returnsValue` Rat 4
+      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [FVar FPDouble "x"] [] []) `returnsValue` Rat 4
       where
         interp = Map.fromList [("f",(False, FPDouble, [Arg "x" FPDouble], sem))]
           where
@@ -157,7 +157,7 @@ testreplaceFunCallErr = testGroup "ReplaceFunCallErr"
               ]
 
     testCase5 = testCase "testFunctionCallErrorAbstraction 5" $
-      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)]) `returnsValue` Rat (6755399441055745/1125899906842624)
+      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FInt 2)] [] []) `returnsValue` Rat (6755399441055745/1125899906842624)
       where
         interp = Map.fromList [("f",(False, FPDouble, [Arg "x" FPDouble], sem))]
           where
@@ -173,7 +173,7 @@ testreplaceFunCallErr = testGroup "ReplaceFunCallErr"
               ]
 
     testCase6 = testCase "testFunctionCallErrorAbstraction 6" $
-      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [FEFun False "d" ResValue FPDouble [FVar FPDouble "x"]]) `returnsValue` Rat 5
+      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [FEFun False "d" ResValue FPDouble [FVar FPDouble "x"]] [] []) `returnsValue` Rat 5
       where
         interp = Map.fromList [("f",(False, FPDouble, [Arg "x" FPDouble], semf))
                               ,("d",(False, FPDouble, [Arg "x" FPDouble], semd))]
@@ -259,7 +259,7 @@ testreplaceFunCallErr = testGroup "ReplaceFunCallErr"
               ]
 
     testCase10 = testCase "testFunctionCallErrorAbstraction 10" $
-      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [BinaryFPOp AddOp FPDouble (FInt 2) (FEFun False "d" ResValue FPDouble [FVar FPDouble "x"])]) `returnsValue` Rat 7
+      rfcewc True semconf interp emptyEnv [] [VarBind "x" ResValue FPDouble (LBInt 0) (UBInt 4)] (ErrFun "f" FPDouble ResValue [BinaryFPOp AddOp FPDouble (FInt 2) (FEFun False "d" ResValue FPDouble [FVar FPDouble "x"])] [] []) `returnsValue` Rat 7
       where
 
         interp = Map.fromList [("f",(False, FPDouble, [Arg "x" FPDouble], semf))
@@ -291,13 +291,13 @@ testreplaceFunCallErr = testGroup "ReplaceFunCallErr"
       where
         interp = fromList
           [("d",(False,FPDouble,[Arg "y" FPDouble],fromList [(ResValue,[ACeb {conds = Conds [Cond {realPathCond = BTrue, fpPathCond = FBTrue, realCond = BTrue, fpCond = FBTrue}], rExprs = RDeclRes [RealMark "y" ResValue], fpExprs = FDeclRes [FVar FPDouble "y"], eExpr = Just (ErrorMark "y" ResValue FPDouble), decisionPath = LDP [], cFlow = Stable}])]))
-          ,("f",(False,FPDouble,[Arg "r" FPDouble],fromList [(ResValue,[ACeb {conds = Conds [Cond {realPathCond = BTrue, fpPathCond = FBTrue, realCond = BTrue, fpCond = FBTrue}], rExprs = RDeclRes [EFun "d" ResValue Real [Var Real "r"]], fpExprs = FDeclRes [FEFun False "d" ResValue FPDouble [FVar FPDouble "r"]], eExpr = Just (ErrFun "d" FPDouble ResValue [FVar FPDouble "r"]), decisionPath = LDP [], cFlow = Stable}])]))
-          ,("g",(False,FPDouble,[Arg "vz" FPDouble],fromList [(ResValue,[ACeb {conds = Conds [Cond {realPathCond = BTrue, fpPathCond = FBTrue, realCond = BTrue, fpCond = FBTrue}], rExprs = RDeclRes [EFun "f" ResValue Real [Var Real "vz"]], fpExprs = FDeclRes [FEFun False "f" ResValue FPDouble [FVar FPDouble "vz"]], eExpr = Just (ErrFun "f" FPDouble ResValue [FVar FPDouble "vz"]), decisionPath = LDP [], cFlow = Stable}])]))
+          ,("f",(False,FPDouble,[Arg "r" FPDouble],fromList [(ResValue,[ACeb {conds = Conds [Cond {realPathCond = BTrue, fpPathCond = FBTrue, realCond = BTrue, fpCond = FBTrue}], rExprs = RDeclRes [EFun "d" ResValue Real [Var Real "r"]], fpExprs = FDeclRes [FEFun False "d" ResValue FPDouble [FVar FPDouble "r"]], eExpr = Just (ErrFun "d" FPDouble ResValue [FVar FPDouble "r"] [] []), decisionPath = LDP [], cFlow = Stable}])]))
+          ,("g",(False,FPDouble,[Arg "vz" FPDouble],fromList [(ResValue,[ACeb {conds = Conds [Cond {realPathCond = BTrue, fpPathCond = FBTrue, realCond = BTrue, fpCond = FBTrue}], rExprs = RDeclRes [EFun "f" ResValue Real [Var Real "vz"]], fpExprs = FDeclRes [FEFun False "f" ResValue FPDouble [FVar FPDouble "vz"]], eExpr = Just (ErrFun "f" FPDouble ResValue [FVar FPDouble "vz"] [] []), decisionPath = LDP [], cFlow = Stable}])]))
           ]
         env = emptyEnv
         locVars = []
         fname = "g"
-        expr = ErrFun "f" FPDouble ResValue [FVar FPDouble "vz"]
+        expr = ErrFun "f" FPDouble ResValue [FVar FPDouble "vz"] [] []
 
 -- returnsValue :: IO AExpr -> AExpr -> Assertion
 returnsValue actual expected =
