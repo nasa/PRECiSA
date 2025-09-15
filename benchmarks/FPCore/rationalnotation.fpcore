@@ -1,0 +1,2 @@
+(FPCore ratnot (x)
+(+ x 5/10))

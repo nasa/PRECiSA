@@ -1,0 +1,1 @@
+(FPCore (X) (+.f64  (/.f64 1 (+.f64 (sqrt.f64 (+.f64 X 1)) (sqrt.f64 X))) (/.f64 (-.f64 X X) (+.f64 (sqrt.f64 (+.f64 X 1)) (sqrt.f64 X)))))

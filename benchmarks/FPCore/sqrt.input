@@ -1,0 +1,1 @@
+azimuth(Lat1,Lon1,Lat2,Lon2): Lat1 in [0, 0.4], Lat2 in [0.5, 1], Lon1 in [0, 3.14159265], Lon2 in [-3.14159265, -0.5]
