@@ -1,0 +1,7 @@
+{
+  "name": "logExp",
+  "pvsFile": "../../benchmarks/FPBench/logExp.pvs",
+  "inputFile": "../../benchmarks/FPBench/logExp.input",
+  "stableError": 6.77E-15,
+  "unstableError": null
+}

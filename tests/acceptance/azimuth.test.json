@@ -1,0 +1,7 @@
+{
+  "name": "azimuth",
+  "pvsFile": "../../benchmarks/FPBench/azimuth.pvs",
+  "inputFile": "../../benchmarks/FPBench/azimuth.input",
+  "stableError": 1.32E-13,
+  "unstableError": null
+}

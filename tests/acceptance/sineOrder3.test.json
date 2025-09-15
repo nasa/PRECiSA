@@ -1,0 +1,7 @@
+{
+  "name": "sineOrder3",
+  "pvsFile": "../../benchmarks/FPBench/sineOrder3.pvs",
+  "inputFile": "../../benchmarks/FPBench/sineOrder3.input",
+  "stableError": 1.27E-15,
+  "unstableError": null
+}

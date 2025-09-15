@@ -1,0 +1,7 @@
+{
+  "name": "sphere",
+  "pvsFile": "../../benchmarks/FPBench/sphere.pvs",
+  "inputFile": "../../benchmarks/FPBench/sphere.input",
+  "stableError": 9.99E-15,
+  "unstableError": null
+}

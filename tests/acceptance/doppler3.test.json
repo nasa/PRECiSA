@@ -1,0 +1,7 @@
+{
+  "name": "doppler3",
+  "pvsFile": "../../benchmarks/FPBench/doppler3.pvs",
+  "inputFile": "../../benchmarks/FPBench/doppler3.input",
+  "stableError": 1.22E-13,
+  "unstableError": null
+}

@@ -1,0 +1,7 @@
+{
+  "name": "polycarp",
+  "pvsFile": "../../benchmarks/FPBench/polycarp.pvs",
+  "inputFile": "../../benchmarks/FPBench/polycarp.input",
+  "stableError": 1.83E-15,
+  "unstableError": 0.600
+}

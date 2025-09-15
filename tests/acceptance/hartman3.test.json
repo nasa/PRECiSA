@@ -1,0 +1,7 @@
+{
+  "name": "hartman3",
+  "pvsFile": "../../benchmarks/FPBench/hartman3.pvs",
+  "inputFile": "../../benchmarks/FPBench/hartman3.input",
+  "stableError": 2.33E-14,
+  "unstableError": null
+}

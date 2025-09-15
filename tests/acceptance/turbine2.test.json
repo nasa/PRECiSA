@@ -1,0 +1,7 @@
+{
+  "name": "turbine2",
+  "pvsFile": "../../benchmarks/FPBench/turbine2.pvs",
+  "inputFile": "../../benchmarks/FPBench/turbine2.input",
+  "stableError": 3.12E-14,
+  "unstableError": null
+}

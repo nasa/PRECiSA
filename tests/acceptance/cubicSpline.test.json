@@ -1,0 +1,7 @@
+{
+  "name": "cubicSpline",
+  "pvsFile": "../../benchmarks/FPBench/cubicSpline.pvs",
+  "inputFile": "../../benchmarks/FPBench/cubicSpline.input",
+  "stableError": 1.33E-14,
+  "unstableError": 27.0
+}

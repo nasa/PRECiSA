@@ -1,0 +1,7 @@
+{
+  "name": "carbonGas",
+  "pvsFile": "../../benchmarks/FPBench/carbonGas.pvs",
+  "inputFile": "../../benchmarks/FPBench/carbonGas.input",
+  "stableError": 7.19E-9,
+  "unstableError": null
+}

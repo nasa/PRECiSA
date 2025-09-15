@@ -1,0 +1,7 @@
+{
+  "name": "predatorPrey",
+  "pvsFile": "../../benchmarks/FPBench/predatorPrey.pvs",
+  "inputFile": "../../benchmarks/FPBench/predatorPrey.input",
+  "stableError": 1.84E-16,
+  "unstableError": null
+}

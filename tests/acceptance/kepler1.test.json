@@ -1,0 +1,7 @@
+{
+  "name": "kepler1",
+  "pvsFile": "../../benchmarks/FPBench/kepler1.pvs",
+  "inputFile": "../../benchmarks/FPBench/kepler1.input",
+  "stableError": 4.63E-13,
+  "unstableError": null
+}

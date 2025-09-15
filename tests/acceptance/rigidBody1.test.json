@@ -1,0 +1,7 @@
+{
+  "name": "rigidBody1",
+  "pvsFile": "../../benchmarks/FPBench/rigidBody1.pvs",
+  "inputFile": "../../benchmarks/FPBench/rigidBody1.input",
+  "stableError": 2.95E-13,
+  "unstableError": null
+}

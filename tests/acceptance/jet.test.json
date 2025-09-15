@@ -1,0 +1,7 @@
+{
+  "name": "jet",
+  "pvsFile": "../../benchmarks/FPBench/jet.pvs",
+  "inputFile": "../../benchmarks/FPBench/jet.input",
+  "stableError": 2.27E-11,
+  "unstableError": null
+}

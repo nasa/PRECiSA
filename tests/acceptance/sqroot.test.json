@@ -1,0 +1,7 @@
+{
+  "name": "sqroot",
+  "pvsFile": "../../benchmarks/FPBench/sqroot.pvs",
+  "inputFile": "../../benchmarks/FPBench/sqroot.input",
+  "stableError": 6.83E-16,
+  "unstableError": null
+}

@@ -1,0 +1,7 @@
+{
+  "name": "verhulst",
+  "pvsFile": "../../benchmarks/FPBench/verhulst.pvs",
+  "inputFile": "../../benchmarks/FPBench/verhulst.input",
+  "stableError": 4.19E-16,
+  "unstableError": null
+}

@@ -1,0 +1,7 @@
+{
+  "name": "himmilbeau",
+  "pvsFile": "../../benchmarks/FPBench/himmilbeau.pvs",
+  "inputFile": "../../benchmarks/FPBench/himmilbeau.input",
+  "stableError": 1.00E-12,
+  "unstableError": null
+}
