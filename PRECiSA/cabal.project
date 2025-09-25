@@ -1,3 +1,5 @@
 optimization: True
+with-compiler: ghc-9.6.7
 
 packages: precisa.cabal
+

@@ -32,6 +32,7 @@ common shared
     ,bytestring
   extra-libraries:
     kodiak
+  tested-with: GHC == 9.6.7
 
 library
   import: shared

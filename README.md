@@ -20,7 +20,7 @@ You can install PRECiSA in two different ways:
 ## Prerequisites
 
 To build and install PRECiSA you need:
-* The [Glasgow Haskell Compiler](https://www.haskell.org/ghc/) (version `>=8.10.7`) and
+* The [Glasgow Haskell Compiler](https://www.haskell.org/ghc/) (version `==9.6.7`) and
 * its package manager [Cabal](https://cabal.readthedocs.io/en/3.6/) (version `>=3.6.2.1`).
 
 If you install PRECiSA using the *Makefile* option you also need:
