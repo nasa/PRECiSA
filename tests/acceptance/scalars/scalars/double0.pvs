@@ -1,0 +1,8 @@
+double0: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+% @fp-function
+example(x: double): double = x
+
+END double0

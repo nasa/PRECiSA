@@ -1,0 +1,14 @@
+%
+% Date: 2025-11-05
+% Rationale: Exponential function
+% Author: m3
+%
+double5: THEORY
+BEGIN
+
+  IMPORTING PRECiSA@ieee754_double
+
+  % @fp-function
+  example(x: double): double = Dexp(x)
+
+END double5
