@@ -10,8 +10,17 @@ dist
 dist-newstyle
 
 # Certificates
-cert_*
-num_cert_*
+*_cert.pvs
+num_cert.pvs
+*_real.*
+*.tccs
+.pvscontext
+pvsbin
+*.summary-tc
+
+# Temporary files
+temp.*
+*~
 
 # CMake
 build
