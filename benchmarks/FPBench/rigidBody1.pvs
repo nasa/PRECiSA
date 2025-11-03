@@ -1,6 +1,6 @@
 rigidBody1: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 rigidBody1(X1,X2,X3: double):double =

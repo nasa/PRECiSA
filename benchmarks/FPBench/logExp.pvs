@@ -1,6 +1,6 @@
 logExp: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 logExp (X: double | DtoR(1 + Dexp(X)) > 0):double =

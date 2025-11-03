@@ -1,6 +1,6 @@
 hartman3: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 hartman3 (X1,X2,X3: double):double =
@@ -20,6 +20,6 @@ LET E4 = (0.1 * (X1 - 0.03815) * (X1 - 0.03815)) +
               (10 * (X2 - 0.5743) * (X2 - 0.5743)) +
                    (35 * (X3 - 0.8828) * (X3 - 0.8828))
 IN
--((1 * exp(-E1)) + (1.2 * exp(-E2)) + (3 * exp(-E3)) + (3.2 * exp(-E4)))
+-((1 * Dexp(-E1)) + (1.2 * Dexp(-E2)) + (3 * Dexp(-E3)) + (3.2 * Dexp(-E4)))
 
 END hartman3

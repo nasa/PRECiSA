@@ -2056,6 +2056,12 @@ printNameWithField g (ResRecordField field)
 printNameWithField g (ResTupleIndex idx)
   = g <> text "`" <> integer idx
 
+linearizeMax :: [Doc] -> Doc
+linearizeMax [] = error "linearizeMax requires a non-empty list"
+linearizeMax xs = foldr1 f xs
+  where
+    f l r = text "max" <> parens (l <> comma <> r)
+
 instance PPExt AExpr where
   prettyDoc = fix prettyAExpr
 
@@ -2063,7 +2069,7 @@ prettyAExpr :: (AExpr -> Doc) -> AExpr -> Doc
 prettyAExpr _ Infinity = text "infinity"
 prettyAExpr _ (Int i) = integer i
 prettyAExpr _ (Rat d) = parens $ text $ showRational d
-prettyAExpr _ (FExp fa) = text "Fexp" <> parens (prettyDoc fa)
+prettyAExpr _ (FExp fa) = text "Dexp" <> parens (prettyDoc fa)
 prettyAExpr _ (RealMark x ResValue) = text "r_" <> text x
 prettyAExpr _ (RealMark x (ResRecordField field)) = text "r_" <> text x <> text "`" <> text field
 prettyAExpr _ (RealMark x (ResTupleIndex idx)) = text "r_" <> text x <> text "`" <> integer idx
@@ -2110,8 +2116,7 @@ prettyAExpr f (UnaryOp ExpoOp  a) = text "exp"  <> lparen <> f a <> rparen
 
 prettyAExpr _ (MaxErr []) = error "Something went wrong: MaxErr applied to empty list"
 prettyAExpr f (MaxErr [es]) = f es
-prettyAExpr f (MaxErr ees@(_:(_:_))) =
-    text "max" <> parens (hsep $ punctuate comma (map f ees))
+prettyAExpr f (MaxErr ees@(_:(_:_))) = linearizeMax $ map f ees
 
 prettyAExpr _ (RMap _fp fun l) = text "map" <> parens (text fun <> comma <> text l)
 prettyAExpr f (RFold _fp fun l n ae) = text "fold"
@@ -2189,16 +2194,16 @@ prettyAExpr f (ErrUnOp LnOp    FPDouble r e) = printUnaryOpError f  "aerr_ulp_dp
 prettyAExpr f (HalfUlp r FPSingle)
     = text "ulp_sp" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r FPDouble)
-    = text "ulp_dp" <> text "(" <> prettyAExpr f r <> text ")/2"
+    = text "ulp_double" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (Array _ FPSingle))
-    = text "ulp_sp" <> text "(" <> prettyAExpr f r <> text ")/2"
+    = text "ulp_sp_for_arrays" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (Array _ FPDouble))
-    = text "ulp_dp" <> text "(" <> prettyAExpr f r <> text ")/2"
+    = text "ulp_dp_for_arrays" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (List FPSingle))
-    = text "ulp_sp" <> text "(" <> prettyAExpr f r <> text ")/2"
+    = text "ulp_sp_for_lists" <> text "(" <> prettyAExpr f r <> text ")/2"
 
 prettyAExpr f (HalfUlp r (List FPDouble))
-    = text "ulp_dp" <> text "(" <> prettyAExpr f r <> text ")/2"
+    = text "ulp_dp_for_lists" <> text "(" <> prettyAExpr f r <> text ")/2"
 
 
 prettyAExpr f (ErrCast FPSingle FPDouble r e) = printUnaryOpError f "aerr_sp_dp"  r e
@@ -2390,7 +2395,7 @@ instance PPExt FAExpr where
   prettyDoc (FFma   FPDouble a1 a2 a3) = text "fma_double" <> parens (prettyDoc a1 <> comma <+> prettyDoc a2 <> comma <+> prettyDoc a3)
   --
   prettyDoc (FMin as) = text "min" <> parens (hsep $ punctuate comma $ map prettyDoc as)
-  prettyDoc (FMax as) = text "max" <> parens (hsep $ punctuate comma $ map prettyDoc as)
+  prettyDoc (FMax as) = linearizeMax $ map prettyDoc as
   --
   prettyDoc UnstWarning = text "warning"
   prettyDoc (Let letElem stm)
@@ -2430,7 +2435,7 @@ instance PPExt BExpr where
   prettyDoc (Not be) = text "NOT" <> parens (prettyDoc be)
   prettyDoc (Rel Eq  a1 a2) = parens $ prettyDoc a1 <+> text "="  <+> prettyDoc a2
   prettyDoc (Rel Neq a1 a2) = parens $ prettyDoc a1 <+> text "/=" <+> prettyDoc a2
-  prettyDoc (Rel Lt  a1 a2) = parens $ prettyDoc a1 <+> text "<"  <+> prettyDoc a2
+  prettyDoc (Rel Lt  a1 a2) = text "Dqlt" <> parens (prettyDoc a1 <> text "," <> prettyDoc a2)
   prettyDoc (Rel LtE a1 a2) = parens $ prettyDoc a1 <+> text "<=" <+> prettyDoc a2
   prettyDoc (Rel Gt  a1 a2) = parens $ prettyDoc a1 <+> text ">"  <+> prettyDoc a2
   prettyDoc (Rel GtE a1 a2) = parens $ prettyDoc a1 <+> text ">=" <+> prettyDoc a2

@@ -1,6 +1,6 @@
 kepler2: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 kepler2 (X1,X2,X3,X4,X5,X6: double):double =
@@ -11,4 +11,3 @@ kepler2 (X1,X2,X3,X4,X5,X6: double):double =
 		 - X1 * X2 * X6 - X4 * X5 * X6
 
 END kepler2
-

@@ -1,10 +1,10 @@
 sphere: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 sphere(R,X,Lat,Lon: double):double =
-  X + R * (sin(Lat) * cos(Lon))
-  % X + R * sin(Lat) * cos(Lon) worst round-off error
+  X + R * (Dsin(Lat) * Dcos(Lon))
+  % X + R * Dsin(Lat) * Dcos(Lon) worst round-off error
 
 END sphere

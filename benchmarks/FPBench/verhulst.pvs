@@ -1,9 +1,8 @@
 verhulst: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 verhulst(X: double | 1 + (X/1.11) /= 0):double =
   (4 * X)/(1 + (X/1.11))
 END verhulst
-

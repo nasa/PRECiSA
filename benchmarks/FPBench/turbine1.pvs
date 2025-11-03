@@ -1,6 +1,6 @@
 turbine1: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 turbine1(V: double | 1 - V /= 0,W: double,R: double | DtoR(R*R) /= 0):double

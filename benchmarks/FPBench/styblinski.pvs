@@ -1,6 +1,6 @@
 styblinski: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 styblinski(X,Y: double): double =

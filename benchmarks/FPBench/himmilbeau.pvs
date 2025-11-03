@@ -1,6 +1,6 @@
 himmilbeau: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 % @fp-range X1 in [-5, 5], X2 in [-5, 5]

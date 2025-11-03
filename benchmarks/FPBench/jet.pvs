@@ -1,7 +1,7 @@
 
 jet: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 jet(X1: double,X2: double | X1*X1 + 1 /= 0):double =

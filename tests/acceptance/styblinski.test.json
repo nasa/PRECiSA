@@ -1,0 +1,7 @@
+{
+  "name": "styblinski",
+  "pvsFile": "../../benchmarks/FPBench/styblinski.pvs",
+  "inputFile": "../../benchmarks/FPBench/styblinski.input",
+  "stableError": 3.80E-14,
+  "unstableError": 51.6
+}

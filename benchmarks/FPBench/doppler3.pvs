@@ -1,6 +1,6 @@
 doppler3: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 dop3(U,V: double,

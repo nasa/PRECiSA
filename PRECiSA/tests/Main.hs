@@ -16,6 +16,7 @@ import AbstractDomainTest
 import AbstractSemanticsTest
 import SMT.Test
 import Common.Test
+import CertificateTest
 import Kodiak.Test
 import UtilsTest
 import AbsPVSLangTest
@@ -32,6 +33,7 @@ unitTests = testGroup "Unit tests"
   [testAbsPVSLang
   ,testAbstractSemantics
   ,testAbstractDomain
+  ,testCertificate
   ,testCommon
   ,testFunctionCallErrorAbstraction
   ,testUtils

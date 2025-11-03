@@ -1,6 +1,6 @@
 sineOrder3: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 sineOrder3(Z: double):double = 0.954929658551372 * Z -  0.12900613773279798*Z*Z*Z

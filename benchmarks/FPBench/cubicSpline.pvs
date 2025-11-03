@@ -1,6 +1,6 @@
 cubicSpline: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 cubicSpline (X: double):double =
     IF (X <= -1.00000000000000022204460492503136)
@@ -17,5 +17,3 @@ cubicSpline (X: double):double =
          ENDIF
     ENDIF
 END cubicSpline
-
-

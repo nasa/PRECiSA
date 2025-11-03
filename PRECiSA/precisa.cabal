@@ -119,6 +119,7 @@ test-suite precisaTests
     AbsPVSLangTest
     AbstractDomainTest
     AbstractSemanticsTest
+    CertificateTest
     Common.ControlFlowTest
     Common.DecisionPathTest
     Common.ShowRationalTest
@@ -134,5 +135,6 @@ test-suite precisaTests
     MapFPCoreLangASTTest
     SMT.PrettyPrinterTest
     SMT.Test
+    TestUtils
     Translation.Real2FloatTest
     UtilsTest

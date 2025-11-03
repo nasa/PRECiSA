@@ -1,0 +1,39 @@
+ieee754_double: THEORY
+BEGIN
+
+  IMPORTING float_bounded_axiomatic@ieee754_double
+
+  % trigonometric operations
+  IMPORTING float_bounded_axiomatic@ieee754_cos[ieee754_double_radix,ieee754_double_precision,ieee754_double_maxExp] AS cos_double
+  IMPORTING float_bounded_axiomatic@ieee754_sin[ieee754_double_radix,ieee754_double_precision,ieee754_double_maxExp] AS sin_double
+  IMPORTING float_bounded_axiomatic@ieee754_atan[ieee754_double_radix,ieee754_double_precision,ieee754_double_maxExp] AS atan_double
+
+  % logarithm/exponential
+  IMPORTING float_bounded_axiomatic@ieee754_exp[ieee754_double_radix,ieee754_double_precision,ieee754_double_maxExp] AS exp_double
+  IMPORTING float_bounded_axiomatic@ieee754_ln [ieee754_double_radix,ieee754_double_precision,ieee754_double_maxExp] AS ln_double
+
+  sin_double  (x: binary64): binary64
+  cos_double  (x: binary64): binary64
+  atan_double (x: binary64): binary64
+  exp_double  (x: binary64): binary64
+  ln_double   (x: binary64): binary64
+
+  Dsin( x : binary64) : MACRO binary64 = sin_double(x)
+  Dcos( x : binary64) : MACRO binary64 = cos_double(x)
+  Datan( x : binary64) : MACRO binary64 = atan_double(x)
+  Dexp( x : binary64) : MACRO binary64 = exp_double(x)
+  Dlgn( x : binary64) : MACRO binary64 = ln_double(x)
+
+  sin_def  : AXIOM forall(x: binary64): sin_double(x)   = sin_ieee754(x)
+  cos_def  : AXIOM forall(x: binary64): cos_double(x)   = cos_ieee754(x)
+  atan_def : AXIOM forall(x: binary64): atan_double(x)  = atan_ieee754(x)
+  exp_def  : AXIOM forall(x: binary64): exp_double(x)   = exp_ieee754(x)
+  ln_def   : AXIOM forall(x: binary64): ln_double(x)    = ln_ieee754(x)
+
+  int_in_range?_double(x: real): bool
+
+  aerr_ulp_dp_atn(r:real,e:nnreal): nnreal
+  aerr_ulp_dp_mul_p2r(r:real,e:nnreal): nnreal
+  aerr_ulp_dp_mul_p2l(r:real,e:nnreal): nnreal
+
+END ieee754_double

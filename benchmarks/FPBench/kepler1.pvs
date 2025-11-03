@@ -1,6 +1,6 @@
 kepler1: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 kepler1 (X1,X2,X3,X4: double):double =

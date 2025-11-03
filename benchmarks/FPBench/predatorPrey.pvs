@@ -1,9 +1,9 @@
-predPrey: THEORY
+predatorPrey: THEORY
 BEGIN
-IMPORTING float@ieee754_double
+IMPORTING PRECiSA@ieee754_double
 
 % @fp-function
 predatorPrey(X: double | (1 + ((X/1.11) * (X/1.11))) /= 0):double =
   (4 * X * X) / (1 + (X/1.11) * (X / 1.11))
 
-END predPrey
+END predatorPrey
