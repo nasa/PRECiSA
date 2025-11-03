@@ -3,6 +3,18 @@
 ABSPATH_SOURCE="$(realpath ${BASH_SOURCE[0]})"
 CHECKER="$(dirname $ABSPATH_SOURCE)/checkErrorDifference.py"
 
+typecheck=
+
+while [ $# -gt 1 ]
+do
+    case $1 in
+	--typecheck)
+        typecheck=yes
+	    ;;
+    esac
+    shift
+done
+
 test=$1
 test_folder=$(dirname $test)
 
@@ -42,4 +54,23 @@ if ! [[ $status1 -eq 0 && $status2 -eq 0 ]]; then
     echo "  results:"
     echo "$(jq . $results | sed 's/^/    /')"
     exit 1;
+fi
+
+if [[ "$typecheck" == "yes" ]]; then
+    cd $(dirname $pvsFile)
+
+    pvsRealFile="$(basename ${pvsFile%.*})_real.pvs"
+    pvsCertFile="$(basename ${pvsFile%.*})_cert.pvs"
+    pvsNumCertFile="$(basename ${pvsFile%.*})_num_cert.pvs"
+    echo "pvsFile: $pvsFile"
+    echo "pvsRealFile: $pvsRealFile"
+    echo "pvsCertFile: $pvsCertFile"
+    echo "pvsNumCertFile: $pvsNumCertFile"
+
+    for file in $(basename $pvsFile) $pvsRealFile $pvsCertFile $pvsNumCertFile; do
+        if ! proveit -q -T $file; then
+            echo "Typechecking failed for $file"
+            exit 1
+        fi
+    done
 fi
