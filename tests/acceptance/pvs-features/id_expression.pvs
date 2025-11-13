@@ -1,0 +1,7 @@
+id_expression: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: [ double , double ]): [ double , double ] = x
+
+END id_expression

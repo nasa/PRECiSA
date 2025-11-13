@@ -1,0 +1,7 @@
+tuple_expression2: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: double): [ double , double ] = ( x , x )
+
+END tuple_expression2

@@ -1,0 +1,9 @@
+fcall_expression: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+f(y: double): [ double , double ] = ( y , y )
+
+example(x: double): [ double, double ] = f(x)
+
+END fcall_expression

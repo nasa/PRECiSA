@@ -1,0 +1,10 @@
+type_synonyms: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+My_double : TYPE = double
+
+% @fp-function
+example(x: My_double): My_double = x
+
+END type_synonyms

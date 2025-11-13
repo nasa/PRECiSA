@@ -1,0 +1,10 @@
+type_synonyms2: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+double_pair : TYPE = [ double , double ]
+
+% @fp-function
+example(x: double_pair): double = x`1
+
+END type_synonyms2

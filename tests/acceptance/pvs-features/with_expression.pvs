@@ -1,0 +1,7 @@
+with_expression: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: ARRAY [int -> double]): ARRAY [int -> double] = x WITH [ 1 := 1.0 ]
+
+END with_expression

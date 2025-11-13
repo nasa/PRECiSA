@@ -102,8 +102,9 @@ FArgsNoType.   Args ::= [Id] ;
 
 separator nonempty Decl "" ;
 
-DeclN.    Decl ::= Id "(" Args ")" ":" Type "=" Expr ;
-Decl0.    Decl ::= Id ":" Type "=" Expr  ;
+DeclTypeAlias. Decl ::= Id ":" "TYPE" "=" Type  ;
+DeclFunction.  Decl ::= Id "(" Args ")" ":" Type "=" Expr ;
+DeclConstant.  Decl ::= Id ":" Type "=" Expr  ;
 
 LibImp.   Imp ::= "IMPORTING" [Id] ;
 

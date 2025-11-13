@@ -131,6 +131,7 @@ test-suite precisaTests
     -- Kodiak.PaverTest
     Kodiak.PrettyPrintTest
     Kodiak.Test
+    MapPVSLangASTTest
     MapRealPVSLangASTTest
     MapFPCoreLangASTTest
     SMT.PrettyPrinterTest

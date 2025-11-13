@@ -1,0 +1,8 @@
+ieee754_aggregated_semantics : THEORY BEGIN
+
+IMPORTING float_bounded_axiomatic@ieee754_semantics
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+DtoR(xs: list[(finite?_double)]) : MACRO list[real] = map(proj_double,xs)
+
+END ieee754_aggregated_semantics

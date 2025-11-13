@@ -1,0 +1,7 @@
+if_expression: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: double): bool = IF x > 1.0 THEN TRUE ELSE FALSE ENDIF
+
+END if_expression

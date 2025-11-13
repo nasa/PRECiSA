@@ -1,0 +1,19 @@
+
+infty_norm : THEORY BEGIN
+
+infty_norm_acc(l: list[real], acc: real): RECURSIVE real =
+  IF l = null
+    THEN acc
+  ELSE
+    LET rec_acc = infty_norm_acc(cdr(l),acc)
+    IN IF car(l) > rec_acc
+      THEN car(l)
+      ELSE rec_acc
+    ENDIF
+  ENDIF
+  MEASURE length(l)
+
+infty_norm(l: list[real]): RECURSIVE real = infty_norm_acc(l,0)
+  MEASURE length(l)
+
+END infty_norm

@@ -1,0 +1,11 @@
+zipWith[T1 : TYPE,T2 : TYPE,R : TYPE] : THEORY BEGIN
+
+zipWith(f: [[T1, T2] -> R], l1:list[T1],l2:{ ll:list[T2] | length(ll) = length(l1)}): RECURSIVE list[R] =
+  IF l1 = null
+    THEN null
+  ELSE
+    cons(f(car(l1),car(l2)), zipWith(f,cdr(l1),cdr(l2)))
+  ENDIF
+  MEASURE length(l1)
+
+END zipWith

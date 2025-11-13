@@ -26,7 +26,7 @@ raw2AExpr__tests = testGroup "raw2AExpr"
   ]
 
 raw2AExpr_LetList1 = testCase "letList1" $
-    raw2AExpr [] [] (AbsRawPVSLang.Let [AbsRawPVSLang.LetElem (Id "x") (AbsRawPVSLang.Int 1)
+    raw2AExpr [] [] [] (AbsRawPVSLang.Let [AbsRawPVSLang.LetElem (Id "x") (AbsRawPVSLang.Int 1)
                                      ,AbsRawPVSLang.LetElem (Id "y") (AbsRawPVSLang.Int 3)]
                                      (AbsRawPVSLang.Int 2))
     @?=
@@ -39,7 +39,7 @@ raw2AExpr_LetList1 = testCase "letList1" $
                     (AbsPVSLang.Int 2)
 
 raw2AExpr_LetList2 = testCase "letList2" $
-    raw2AExpr [] [] (AbsRawPVSLang.Let [AbsRawPVSLang.LetElemType (Id "x") (TypeSimple (Id "int"))
+    raw2AExpr [] [] [] (AbsRawPVSLang.Let [AbsRawPVSLang.LetElemType (Id "x") (TypeSimple (Id "int"))
                                             (AbsRawPVSLang.Int 1)
                                            ,AbsRawPVSLang.LetElemType (Id "y") (TypeSimple (Id "int"))
                                             (AbsRawPVSLang.Int 3)]

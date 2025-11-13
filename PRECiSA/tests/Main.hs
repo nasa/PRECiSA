@@ -21,6 +21,7 @@ import Kodiak.Test
 import UtilsTest
 import AbsPVSLangTest
 import Translation.Real2FloatTest
+import MapPVSLangASTTest
 import MapRealPVSLangASTTest
 import MapFPCoreLangASTTest
 import FunctionCallErrorAbstractionTest
@@ -41,6 +42,7 @@ unitTests = testGroup "Unit tests"
   ,testSMT
   ,testUtils
   ,testReal2Float
+  ,testMapPVSLangAST
   ,testMapRealPVSLangAST
   ,testMapFPCoreLangAST
   ]

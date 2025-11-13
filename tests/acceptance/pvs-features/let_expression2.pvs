@@ -1,0 +1,7 @@
+let_expression2: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: double): bool = LET y = x + 2, z = y - 1 IN z > 3
+
+END let_expression2

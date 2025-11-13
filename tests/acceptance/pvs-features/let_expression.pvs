@@ -1,0 +1,7 @@
+let_expression: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: double): double = LET y = 1, z = y + 2 IN z + y + x
+
+END let_expression

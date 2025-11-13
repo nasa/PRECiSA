@@ -1,0 +1,7 @@
+record_expression3: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: double) : [# a: double, b: double #] = (# a := 1.0 , b := 0.0 #)
+
+END record_expression3

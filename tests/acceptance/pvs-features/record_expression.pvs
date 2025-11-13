@@ -1,0 +1,7 @@
+record_expression: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: [# a: double, b: double #]): double = x ` b
+
+END record_expression

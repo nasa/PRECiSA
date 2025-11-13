@@ -1,0 +1,7 @@
+if_expression4: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: [ double, double ], y: [ double, double ]): [ double, double ] = IF TRUE THEN x ELSE y ENDIF
+
+END if_expression4

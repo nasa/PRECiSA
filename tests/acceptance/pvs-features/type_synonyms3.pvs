@@ -1,0 +1,10 @@
+type_synonyms3: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+double_point : TYPE = [# x : double , y : double #]
+
+% @fp-function
+example(x: double_point): double = x`x
+
+END type_synonyms3

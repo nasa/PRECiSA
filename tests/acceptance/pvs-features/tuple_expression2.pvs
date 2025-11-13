@@ -1,0 +1,9 @@
+tuple_expression2: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+f(y: [ double, double ]): [ double, double ] = y
+
+example(x: [ double, double ]): double = f(x) ` 1
+
+END tuple_expression2

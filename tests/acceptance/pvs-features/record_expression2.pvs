@@ -1,0 +1,9 @@
+record_expression2: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+f(y: [# a: double, b: double #]): [# a: double, b: double #] = y
+
+example(x: [# a: double, b: double #]): double = f(x) ` b
+
+END record_expression2

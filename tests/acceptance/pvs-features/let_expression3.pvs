@@ -1,0 +1,9 @@
+let_expression3: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+f(x: double): double = x
+
+example(x: [ double, double ]): [ double, double ] = LET y = x, z = y IN x
+
+END let_expression3

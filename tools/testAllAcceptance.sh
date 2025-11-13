@@ -9,7 +9,7 @@ cd $ACCEPTANCE_FOLDER
 exit_code=0
 for t in *.test.json; do
     echo -n .
-    $CHECKER --typecheck $t || exit_code=$?
+    $CHECKER $t || exit_code=$?
 done
 
 if [[ $exit_code -ne 0 ]]; then

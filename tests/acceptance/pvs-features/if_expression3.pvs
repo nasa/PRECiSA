@@ -1,0 +1,7 @@
+if_expression2: THEORY
+BEGIN
+IMPORTING float_bounded_axiomatic@ieee754_double
+
+example(x: double): double = IF x > 1.0 THEN 1.0 ELSIF x < -1.0 THEN -1.0 ELSE 0.0 ENDIF
+
+END if_expression2
