@@ -13,8 +13,9 @@ module MapRealPVSLangASTTest where
 import Test.Tasty
 import Test.Tasty.HUnit
 import AbsPVSLang
-import MapRealPVSLangAST
-import AbsRawPVSLang
+import Frontend.PVS.MapRealPVSLangAST
+import           Frontend.PVS.AbsRawPVSLang
+import qualified Frontend.PVS.AbsRawPVSLang as Raw
 
 testMapRealPVSLangAST = testGroup "MapRealPVSLangAST"
     [raw2AExpr__tests
@@ -26,9 +27,9 @@ raw2AExpr__tests = testGroup "raw2AExpr"
   ]
 
 raw2AExpr_LetList1 = testCase "letList1" $
-    raw2AExpr [] [] [] (AbsRawPVSLang.Let [AbsRawPVSLang.LetElem (Id "x") (AbsRawPVSLang.Int 1)
-                                     ,AbsRawPVSLang.LetElem (Id "y") (AbsRawPVSLang.Int 3)]
-                                     (AbsRawPVSLang.Int 2))
+    raw2AExpr [] [] [] (Raw.Let [Raw.LetElem (Id "x") (Raw.Int 1)
+                                     ,Raw.LetElem (Id "y") (Raw.Int 3)]
+                                     (Raw.Int 2))
     @?=
     AbsPVSLang.RLet [AbsPVSLang.LetElem{letVar ="x"
                                        ,letType = TInt
@@ -39,11 +40,11 @@ raw2AExpr_LetList1 = testCase "letList1" $
                     (AbsPVSLang.Int 2)
 
 raw2AExpr_LetList2 = testCase "letList2" $
-    raw2AExpr [] [] [] (AbsRawPVSLang.Let [AbsRawPVSLang.LetElemType (Id "x") (TypeSimple (Id "int"))
-                                            (AbsRawPVSLang.Int 1)
-                                           ,AbsRawPVSLang.LetElemType (Id "y") (TypeSimple (Id "int"))
-                                            (AbsRawPVSLang.Int 3)]
-                                     (AbsRawPVSLang.Int 2))
+    raw2AExpr [] [] [] (Raw.Let [Raw.LetElemType (Id "x") (TypeSimple (Id "int"))
+                                            (Raw.Int 1)
+                                           ,Raw.LetElemType (Id "y") (TypeSimple (Id "int"))
+                                            (Raw.Int 3)]
+                                     (Raw.Int 2))
     @?=
     AbsPVSLang.RLet [AbsPVSLang.LetElem{letVar ="x"
                                        ,letType = TInt

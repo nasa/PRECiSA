@@ -14,7 +14,6 @@
 
 module PRECiSA
   ( main,
-    -- computeAllErrorsInKodiak,
     computeAllErrorsInKodiakMap
   )
 where
@@ -30,6 +29,7 @@ import Data.Maybe (fromMaybe,fromJust)
 import qualified Data.Map as Map
 import ErrM
 import FPCore.FPCorePrinter
+import Frontend.PVS.MapPVSLangAST (parseFileToProgram)
 import FunctionCallErrorAbstraction
 import Options
 import PPExt
@@ -43,7 +43,7 @@ import SMT.SMT
 import System.Directory
 import System.FilePath
 import Translation.Float2Real
-import qualified Json as JSON
+import qualified JSON
 import qualified Data.ByteString.Lazy as BS
 import Utils(snd4,trd4,frt4)
 
@@ -124,10 +124,6 @@ parseAndAnalyze
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
 
   results <- computeAllErrorsInKodiakMap optUnfoldFuns decls semConf unfoldedPgmSem spec searchParams
-
-  -- results <- if optUnfoldFuns
-  --             then computeAllErrorsInKodiakMap unfoldedPgmSem spec searchParams
-  --             else computeAllErrorsInKodiak sta unfoldedPgmSem spec searchParams
 
   let resultSummary = summarizeAllErrors (getKodiakResults results)
 

@@ -11,7 +11,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Json where
+module JSON where
 
 import GHC.Generics
 import Data.Aeson
@@ -29,7 +29,6 @@ data AnalysisResult = AnalysisResult {
     certFile :: String,
     numCertFile :: String
 } deriving (Generic, Show)
-
 
 instance ToJSON AnalysisResultFun
 instance FromJSON AnalysisResultFun

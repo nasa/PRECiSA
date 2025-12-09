@@ -11,9 +11,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE Strict #-}
 {-# LANGUAGE TupleSections #-}
+{-# OPTIONS_GHC -Wall -Werror #-}
 
-module MapPVSLangAST
-  ( raw2FAExpr,
+module Frontend.PVS.MapPVSLangAST
+  ( parseFileToProgram,
+    raw2FAExpr,
     raw2FBExprStm,
     raw2CollExpr,
     isBExpr,
@@ -29,8 +31,8 @@ module MapPVSLangAST
   )
 where
 
-import AbsRawPVSLang
-import qualified AbsRawPVSLang as Raw
+import Frontend.PVS.AbsRawPVSLang
+import qualified Frontend.PVS.AbsRawPVSLang as Raw
 import AbsPVSLang
 import qualified AbsPVSLang as PVS
 import Common.TypesUtils
@@ -40,9 +42,18 @@ import Control.Monad.Extra
 import ErrM
 import Numeric
 import qualified Operators as Op
-import Parser.ParRawPVSLang
-import Parser.LexRawPVSLang
+import Frontend.PVS.LexRawPVSLang
+import Frontend.PVS.ParRawPVSLang
 import Data.Maybe (fromMaybe)
+
+parseFileToProgram :: FilePath -> IO (Err PVS.Program)
+parseFileToProgram src_filename = fmap parseProgram (readFile src_filename)
+
+parseProgram :: String -> Err PVS.Program
+parseProgram str =
+  do
+    rawParsedProg <- rawparserPVS str
+    return $ raw2Prog rawParsedProg
 
 --------------------------------------------------------------------------------
 --  ReaderT refactoring for input parameters and maintanability
@@ -78,7 +89,7 @@ type VarTypeEnv = [(String, PVSType)]
 type FunTypeEnv = [(String, PVSType)]
 type TypeContext = [(String, PVSType)]
 
-isNumType :: AbsRawPVSLang.Type -> Bool
+isNumType :: Raw.Type -> Bool
 isNumType (TypeSimple (Id "int"))                  = True
 isNumType (TypeSimple (Id "integer"))              = True
 isNumType (TypeSimple (Id "single"))               = True
@@ -93,51 +104,51 @@ isNumType (TypeBelow _)                            = True
 isNumType (ParametricTypeBi (Id "fixed_point") _ _)= True
 isNumType _ = False
 
-isIntType :: AbsRawPVSLang.Type -> Bool
+isIntType :: Raw.Type -> Bool
 isIntType (TypeSimple (Id "int"))     = True
 isIntType (TypeSimple (Id "integer")) = True
 isIntType (TypeBelow _)               = True
 isIntType _                           = False
 
-isRecordType :: AbsRawPVSLang.Type -> Bool
+isRecordType :: Raw.Type -> Bool
 isRecordType (TypeRecord _) = True
 isRecordType _ = False
 
-isTupleType :: AbsRawPVSLang.Type -> Bool
+isTupleType :: Raw.Type -> Bool
 isTupleType (TypeTuple _) = True
 isTupleType _ = False
 
-isBExpr :: AbsRawPVSLang.Expr -> Bool
-isBExpr (AbsRawPVSLang.Or  _fbe1 _fbe2) = True
-isBExpr (AbsRawPVSLang.And _fbe1 _fbe2) = True
-isBExpr (AbsRawPVSLang.Not       _fbe) = True
-isBExpr (AbsRawPVSLang.Eq  _fae1 _fae2) = True
-isBExpr (AbsRawPVSLang.Neq _fae1 _fae2) = True
-isBExpr (AbsRawPVSLang.Lt  _fae1 _fae2) = True
-isBExpr (AbsRawPVSLang.LtE _fae1 _fae2) = True
-isBExpr (AbsRawPVSLang.Gt  _fae1 _fae2) = True
-isBExpr (AbsRawPVSLang.GtE _fae1 _fae2) = True
-isBExpr AbsRawPVSLang.BTrue  = True
-isBExpr AbsRawPVSLang.BFalse = True
+isBExpr :: Raw.Expr -> Bool
+isBExpr (Raw.Or  _fbe1 _fbe2) = True
+isBExpr (Raw.And _fbe1 _fbe2) = True
+isBExpr (Raw.Not       _fbe) = True
+isBExpr (Raw.Eq  _fae1 _fae2) = True
+isBExpr (Raw.Neq _fae1 _fae2) = True
+isBExpr (Raw.Lt  _fae1 _fae2) = True
+isBExpr (Raw.LtE _fae1 _fae2) = True
+isBExpr (Raw.Gt  _fae1 _fae2) = True
+isBExpr (Raw.GtE _fae1 _fae2) = True
+isBExpr Raw.BTrue  = True
+isBExpr Raw.BFalse = True
 isBExpr _ = False
 
-getTypeContext :: [AbsRawPVSLang.Decl] -> TypeContext
+getTypeContext :: [Raw.Decl] -> TypeContext
 getTypeContext = getTypeContext' []
 
-getTypeContext' :: TypeContext -> [AbsRawPVSLang.Decl] -> TypeContext
+getTypeContext' :: TypeContext -> [Raw.Decl] -> TypeContext
 getTypeContext' tc [] = tc
 getTypeContext' tc (DeclTypeAlias (Id name) ty:ds) = getTypeContext' tc' ds
   where tc' = (name,raw2FPType tc ty):tc
 getTypeContext' tc (_:ds) = getTypeContext' tc ds
 
-raw2Prog :: AbsRawPVSLang.Program -> AbsPVSLang.Program
+raw2Prog :: Raw.Program -> AbsPVSLang.Program
 raw2Prog pgm = runM defaultEnv (mapM raw2Decl decls')
   where
     decls = getDeclList pgm
       where
-        getDeclList :: AbsRawPVSLang.Program -> [AbsRawPVSLang.Decl]
-        getDeclList (AbsRawPVSLang.Prog     _   ds _) = ds
-        getDeclList (AbsRawPVSLang.ProgImp  _ _ ds _) = ds
+        getDeclList :: Raw.Program -> [Raw.Decl]
+        getDeclList (Raw.Prog     _   ds _) = ds
+        getDeclList (Raw.ProgImp  _ _ ds _) = ds
 
     defaultEnv =
       Env
@@ -151,22 +162,22 @@ raw2Prog pgm = runM defaultEnv (mapM raw2Decl decls')
 
     decls' = nonTypeDeclarations decls
       where
-        nonTypeDeclarations :: [AbsRawPVSLang.Decl] -> [AbsRawPVSLang.Decl]
+        nonTypeDeclarations :: [Raw.Decl] -> [Raw.Decl]
         nonTypeDeclarations = filter (not . isTypeSynonym)
           where
-            isTypeSynonym :: AbsRawPVSLang.Decl -> Bool
+            isTypeSynonym :: Raw.Decl -> Bool
             isTypeSynonym (DeclTypeAlias _ _) = True
             isTypeSynonym _ = False
 
-retTypeFun :: TypeContext -> AbsRawPVSLang.Decl -> (String, PVSType)
-retTypeFun tc (DeclConstant (AbsRawPVSLang.Id f)   fp _) = (f, raw2FPType tc fp)
-retTypeFun tc (DeclFunction (AbsRawPVSLang.Id f) _ fp _) = (f, raw2FPType tc fp)
+retTypeFun :: TypeContext -> Raw.Decl -> (String, PVSType)
+retTypeFun tc (DeclConstant (Raw.Id f)   fp _) = (f, raw2FPType tc fp)
+retTypeFun tc (DeclFunction (Raw.Id f) _ fp _) = (f, raw2FPType tc fp)
 retTypeFun _ decl = error $ "[retTypeFun] unexpected argument: " ++ show decl
 
 rationalizeFP :: Show a => a -> Rational
 rationalizeFP d = (fst . head $ readSigned readFloat $ show d) :: Rational
 
-raw2Decl :: AbsRawPVSLang.Decl -> M AbsPVSLang.Decl
+raw2Decl :: Raw.Decl -> M AbsPVSLang.Decl
 raw2Decl e
   | DeclConstant f (TypeSimple (Id "bool")) e1 <- e = Pred False Original (raw2Id f) [] <$> raw2FBExprStmM e1
   | DeclFunction f rawArgs (TypeSimple (Id "bool")) e1 <- e
@@ -228,32 +239,32 @@ raw2Decl e
         pure (Decl False ty (raw2Id f) args stm')
   | otherwise = error $ "[raw2Decl] unexpected argument: " ++ show e
 
-raw2Elsif :: AbsRawPVSLang.ElsIf -> M (AbsPVSLang.FBExpr, AbsPVSLang.FAExpr)
+raw2Elsif :: Raw.ElsIf -> M (AbsPVSLang.FBExpr, AbsPVSLang.FAExpr)
 raw2Elsif (ElsIf be stm) = (,) <$> raw2FBExprM be <*> raw2FAExprM stm
 
-raw2BinOp :: AbsRawPVSLang.Expr -> AbsRawPVSLang.Expr -> Op.BinOp -> M AbsPVSLang.FAExpr
+raw2BinOp :: Raw.Expr -> Raw.Expr -> Op.BinOp -> M AbsPVSLang.FAExpr
 raw2BinOp e1 e2 op = do
   e1' <- raw2FAExprM e1
   e2' <- raw2FAExprM e2
   let fp = lubPVSType (getPVSType e1') (getPVSType e2')
   pure (PVS.BinaryFPOp op fp e1' e2')
 
-raw2BinOpWithType :: AbsRawPVSLang.Expr -> AbsRawPVSLang.Expr -> Op.BinOp -> PVSType -> M AbsPVSLang.FAExpr
+raw2BinOpWithType :: Raw.Expr -> Raw.Expr -> Op.BinOp -> PVSType -> M AbsPVSLang.FAExpr
 raw2BinOpWithType e1 e2 op ty = do
   e1' <- raw2FAExprM e1
   e2' <- raw2FAExprM e2
   pure (PVS.BinaryFPOp op ty e1' e2')
 
-realToFP :: PVSType -> AbsRawPVSLang.Expr -> AbsPVSLang.FAExpr
-realToFP _  (AbsRawPVSLang.Int i) = AbsPVSLang.FInt i
-realToFP fp (AbsRawPVSLang.Rat d) = AbsPVSLang.ToFloat fp $ AbsPVSLang.Rat $ rationalizeFP d
+realToFP :: PVSType -> Raw.Expr -> AbsPVSLang.FAExpr
+realToFP _  (Raw.Int i) = AbsPVSLang.FInt i
+realToFP fp (Raw.Rat d) = AbsPVSLang.ToFloat fp $ AbsPVSLang.Rat $ rationalizeFP d
 realToFP _ fae = error $ "realToFP: " ++ show fae ++ "is not of type rational."
 
-intToFP :: PVSType -> AbsRawPVSLang.Expr -> AbsPVSLang.FAExpr
-intToFP _ (AbsRawPVSLang.Int i) = AbsPVSLang.FInt i
+intToFP :: PVSType -> Raw.Expr -> AbsPVSLang.FAExpr
+intToFP _ (Raw.Int i) = AbsPVSLang.FInt i
 intToFP _ fae = error $ "intToFP: " ++ show fae ++ "is not of type int."
 
-raw2CollExpr :: TypeContext -> VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.CollFAExpr
+raw2CollExpr :: TypeContext -> VarTypeEnv -> FunTypeEnv -> Raw.Expr -> AbsPVSLang.CollFAExpr
 raw2CollExpr tc env fenv x = runM defaultEnv (raw2CollExprM x)
   where
     defaultEnv =
@@ -263,7 +274,7 @@ raw2CollExpr tc env fenv x = runM defaultEnv (raw2CollExprM x)
           typeContext = tc
         }
 
-raw2CollExprM :: AbsRawPVSLang.Expr -> M AbsPVSLang.CollFAExpr
+raw2CollExprM :: Raw.Expr -> M AbsPVSLang.CollFAExpr
 raw2CollExprM e
   | Raw.With array idx newValue <- e = ArrayUpdate <$> raw2CollExprM array <*> raw2FAExprM idx <*> raw2FAExprM newValue
   | Raw.Let letElems stm <- e
@@ -316,7 +327,7 @@ raw2CollExprM e
     raw2CollElsif (ElsIf be stm) = (,) <$> raw2FBExprM be <*> raw2CollExprM stm
 
     raw2RecordElem :: Raw.RecordElem -> M (RecordField, Either PVS.FAExpr PVS.FBExpr)
-    raw2RecordElem (AbsRawPVSLang.RecordElem (AbsRawPVSLang.Id field) expr)
+    raw2RecordElem (Raw.RecordElem (Raw.Id field) expr)
       = (field,) <$>
           if isBExpr expr
             then Right <$> raw2FBExprM expr
@@ -328,7 +339,7 @@ raw2CollExprM e
           then Right <$> raw2FBExprM expr
           else Left  <$> raw2FAExprM expr
 
-raw2FBExprStm :: TypeContext -> VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FBExprStm
+raw2FBExprStm :: TypeContext -> VarTypeEnv -> FunTypeEnv -> Raw.Expr -> AbsPVSLang.FBExprStm
 raw2FBExprStm tc env fenv x = runM defaultEnv (raw2FBExprStmM x)
   where
     defaultEnv =
@@ -338,7 +349,7 @@ raw2FBExprStm tc env fenv x = runM defaultEnv (raw2FBExprStmM x)
           typeContext = tc
         }
 
-raw2FBExprStmM :: AbsRawPVSLang.Expr -> M AbsPVSLang.FBExprStm
+raw2FBExprStmM :: Raw.Expr -> M AbsPVSLang.FBExprStm
 raw2FBExprStmM e
   | Raw.Let letElems stm <- e
     = do
@@ -362,10 +373,10 @@ raw2FBExprStmM e
         pure (BListIte ((be',stmThen') : listElsif') elseStm')
   | otherwise = BExpr <$> raw2FBExprM e
 
-raw2BElsif :: AbsRawPVSLang.ElsIf -> M (AbsPVSLang.FBExpr, AbsPVSLang.FBExprStm)
+raw2BElsif :: Raw.ElsIf -> M (AbsPVSLang.FBExpr, AbsPVSLang.FBExprStm)
 raw2BElsif (ElsIf be stm) = (,) <$> raw2FBExprM be <*> raw2FBExprStmM stm
 
-raw2FBExpr :: TypeContext -> VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FBExpr
+raw2FBExpr :: TypeContext -> VarTypeEnv -> FunTypeEnv -> Raw.Expr -> AbsPVSLang.FBExpr
 raw2FBExpr tc env fenv x = runM defaultEnv (raw2FBExprM x)
   where
     defaultEnv =
@@ -375,7 +386,7 @@ raw2FBExpr tc env fenv x = runM defaultEnv (raw2FBExprM x)
           typeContext = tc
         }
 
-raw2FBExprM :: AbsRawPVSLang.Expr -> M AbsPVSLang.FBExpr
+raw2FBExprM :: Raw.Expr -> M AbsPVSLang.FBExpr
 raw2FBExprM e
   | Raw.BTrue  <- e = pure PVS.FBTrue
   | Raw.BFalse <- e = pure PVS.FBFalse
@@ -391,7 +402,7 @@ raw2FBExprM e
   | Raw.GtE e1 e2 <- e = PVS.FRel Op.GtE <$> raw2FAExprM e1 <*> raw2FAExprM e2
   | otherwise = error $ "raw2FBExpr: Boolean expression expected but got " ++ show e ++ "."
 
-raw2FAExpr :: TypeContext -> VarTypeEnv -> FunTypeEnv -> AbsRawPVSLang.Expr -> AbsPVSLang.FAExpr
+raw2FAExpr :: TypeContext -> VarTypeEnv -> FunTypeEnv -> Raw.Expr -> AbsPVSLang.FAExpr
 raw2FAExpr tc env fenv x = runM defaultEnv (raw2FAExprM x)
   where
     defaultEnv =
@@ -482,10 +493,10 @@ raw2FAExprM e
         env  <- askVarTypeEnv
         let ty = getElementType env name
         pure (PVS.FMap ty funName name)
-  | Raw.Call (AbsRawPVSLang.Id "fold")
+  | Raw.Call (Raw.Id "fold")
       [Raw.ExprId (Raw.Id funName)
-      ,AbsRawPVSLang.ExprId (AbsRawPVSLang.Id name)
-      ,AbsRawPVSLang.Int n
+      ,Raw.ExprId (Raw.Id name)
+      ,Raw.Int n
       ,baseCase] <- e
     = do
         env  <- askVarTypeEnv
@@ -610,18 +621,18 @@ raw2FAExprM e
         t = fromMaybe (error errorMsg) (lookup name env)
         errorMsg = "raw2FAExpr: list " ++ show name ++ " not found."
 
-raw2LetElemM :: AbsRawPVSLang.LetElem -> M AbsPVSLang.FLetElem
-raw2LetElemM (AbsRawPVSLang.LetElem x ae) = (raw2Id x, FPDouble,) <$> raw2FAExprM ae
+raw2LetElemM :: Raw.LetElem -> M AbsPVSLang.FLetElem
+raw2LetElemM (Raw.LetElem x ae) = (raw2Id x, FPDouble,) <$> raw2FAExprM ae
 raw2LetElemM (LetElemType x t ae) = (raw2Id x,,) <$> raw2FPTypeM t <*> raw2FAExprM ae
 
-raw2Args :: TypeContext -> AbsRawPVSLang.Args -> [AbsPVSLang.Arg]
+raw2Args :: TypeContext -> Raw.Args -> [AbsPVSLang.Arg]
 raw2Args tc a = runM (defaultTypeContextEnv tc) (raw2ArgsM a)
 
-raw2ArgsM :: AbsRawPVSLang.Args -> M [AbsPVSLang.Arg]
+raw2ArgsM :: Raw.Args -> M [AbsPVSLang.Arg]
 raw2ArgsM (FArgs args) = concatMapM raw2Arg args
 raw2ArgsM args@(FArgsNoType _) = error $ "[raw2Args] arguments have no type: " ++ show args
 
-raw2Arg :: AbsRawPVSLang.Arg -> M [AbsPVSLang.Arg]
+raw2Arg :: Raw.Arg -> M [AbsPVSLang.Arg]
 raw2Arg arg = mapM (raw2ArgWithType t') xs'
   where
     (xs',t') = getIdsAndType arg
@@ -629,28 +640,28 @@ raw2Arg arg = mapM (raw2ArgWithType t') xs'
         getIdsAndType (FArg xs t)        = (xs,t)
         getIdsAndType (FArgGuard xs t _) = (xs,t)
 
-raw2ArgWithType :: AbsRawPVSLang.Type -> AbsRawPVSLang.Id -> M AbsPVSLang.Arg
+raw2ArgWithType :: Raw.Type -> Raw.Id -> M AbsPVSLang.Arg
 raw2ArgWithType t x =
   do
     ty <- raw2FPTypeM t
     pure $ AbsPVSLang.Arg (raw2Id x) ty
 
-raw2FieldDecls :: TypeContext -> AbsRawPVSLang.FieldDecls -> (RecordField,PVSType)
+raw2FieldDecls :: TypeContext -> Raw.FieldDecls -> (RecordField,PVSType)
 raw2FieldDecls tc fd = runM (defaultTypeContextEnv tc) (raw2FieldDeclsM fd)
 
-raw2FieldDeclsM :: AbsRawPVSLang.FieldDecls -> M (RecordField, PVSType)
+raw2FieldDeclsM :: Raw.FieldDecls -> M (RecordField, PVSType)
 raw2FieldDeclsM (FieldDecls (Id field) t) =
   do
     ty <- raw2FPTypeM t
     pure (field, ty)
 
-raw2FPType :: TypeContext -> AbsRawPVSLang.Type -> PVSType
+raw2FPType :: TypeContext -> Raw.Type -> PVSType
 raw2FPType tc x = runM (defaultTypeContextEnv tc) (raw2FPTypeM x)
 
 defaultTypeContextEnv :: TypeContext -> Env
 defaultTypeContextEnv = Env [] []
 
-raw2FPTypeM :: AbsRawPVSLang.Type -> M PVSType
+raw2FPTypeM :: Raw.Type -> M PVSType
 raw2FPTypeM ty'
   | TypeBelow e <- ty' = Below <$> raw2FAExprM e
   | otherwise
@@ -681,7 +692,7 @@ raw2FPTypeM ty'
       | TypeTuple ts <- ty = Tuple (map (raw2FPType' tc) ts)
       | TypeArray ts t <- ty , all isIntType ts && isNumType t = Array (map (raw2FPType' tc) ts) (raw2FPType' tc t)
       | TypeArray _ _ <- ty = error $ "[raw2FPType.raw2FPType'] generic type of array is not supported: " ++ show ty
-      | AbsRawPVSLang.TypeFun typeList retType <- ty  = AbsPVSLang.TypeFun (map (raw2FPType' tc) typeList) (raw2FPType' tc retType)
+      | Raw.TypeFun typeList retType <- ty  = AbsPVSLang.TypeFun (map (raw2FPType' tc) typeList) (raw2FPType' tc retType)
       | TypeFun2 typeList retType <- ty = AbsPVSLang.TypeFun (map (raw2FPType' tc) typeList) (raw2FPType' tc retType)
       | TypeList t <- ty = List (raw2FPType' tc t)
       | otherwise = error $ "[raw2FPType.raw2FPType'] unsupported type: " ++ show ty
@@ -690,8 +701,8 @@ toErrM :: Either String a -> Err a
 toErrM (Left e) = Bad e
 toErrM (Right a) = Ok a
 
-rawparserPVS :: String -> Err AbsRawPVSLang.Program
+rawparserPVS :: String -> Err Raw.Program
 rawparserPVS = toErrM . pProgram . tokens
 
-raw2Id :: AbsRawPVSLang.Id -> VarName
-raw2Id (AbsRawPVSLang.Id x) = x
+raw2Id :: Raw.Id -> VarName
+raw2Id (Raw.Id x) = x

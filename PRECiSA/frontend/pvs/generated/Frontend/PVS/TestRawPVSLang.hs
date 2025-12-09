@@ -18,11 +18,11 @@ import System.Environment ( getArgs )
 import System.Exit        ( exitFailure )
 import Control.Monad      ( when )
 
-import AbsRawPVSLang   ()
-import LexRawPVSLang   ( Token, mkPosToken )
-import ParRawPVSLang   ( pProgram, myLexer )
-import PrintRawPVSLang ( Print, printTree )
-import SkelRawPVSLang  ()
+import Frontend.PVS.AbsRawPVSLang   ()
+import Frontend.PVS.LexRawPVSLang   ( Token, mkPosToken )
+import Frontend.PVS.ParRawPVSLang   ( pProgram, myLexer )
+import Frontend.PVS.PrintRawPVSLang ( Print, printTree )
+import Frontend.PVS.SkelRawPVSLang  ()
 
 type Err        = Either String
 type ParseFun a = [Token] -> Err a

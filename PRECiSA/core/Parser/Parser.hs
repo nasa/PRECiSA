@@ -8,14 +8,12 @@
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 module Parser.Parser
-  ( parseFileToProgram,
-    parseFileToRealProgram,
-    parseFileToSpec,
-    parseFileToTargetDPs,
+  ( parseFileToSpec,
     parseFileToFPCoreProgram,
+    parseFileToFPCoreSpec,
+    parseFileToTargetDPs,
     parseFPCoreProgram,
     parseFPCoreFAExpr,
-    parseFileToFPCoreSpec,
   )
 where
 
@@ -23,21 +21,11 @@ import AbsPVSLang
 import AbsSpecLang
 import Common.DecisionPath
 import ErrM
-import MapPVSLangAST
-import MapRealPVSLangAST
+-- import Frontend.PVS.MapRealPVSLangAST
 import MapFPCoreLangAST
 import MapFPCoreSpecLangAST
 import MapSpecLangAST
 import Parser.ParDecisionPaths
-
-parseFileToProgram :: FilePath -> IO (Err Program)
-parseFileToProgram src_filename = fmap parseProgram (readFile src_filename)
-
-parseProgram :: String -> Err Program
-parseProgram str =
-  do
-    rawParsedProg <- rawparserPVS str
-    return $ raw2Prog rawParsedProg
 
 parseFileToTargetDPs :: FilePath -> IO (Err TargetDPs)
 parseFileToTargetDPs src_filename = fmap parseTargetDPs (readFile src_filename)
@@ -54,15 +42,6 @@ parseSpec decls str =
     rawParsedSpec <- rawparserSpec str
     let parsedSpec = raw2Spec decls rawParsedSpec
     return parsedSpec
-
-parseFileToRealProgram :: FilePath -> IO (Err RProgram)
-parseFileToRealProgram src_filename = fmap parseRealProgram (readFile src_filename)
-
-parseRealProgram :: String -> Err RProgram
-parseRealProgram str =
-  do
-    rawParsedRealProg <- rawparserRealPVS str
-    return $ raw2RealProg rawParsedRealProg
 
 parseFileToFPCoreProgram :: FilePath -> IO (Err Program)
 parseFileToFPCoreProgram src_filename = fmap parseFPCoreProgram (readFile src_filename)

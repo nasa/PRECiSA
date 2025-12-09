@@ -7,7 +7,7 @@
 
 {-# LANGUAGE PatternSynonyms #-}
 
-module LexRawPVSLang where
+module Frontend.PVS.LexRawPVSLang where
 
 import Prelude
 

@@ -13,7 +13,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module ErrM where
+module Frontend.PVS.ErrM where
 
 import Prelude             (id, const, Either(..), String)
 

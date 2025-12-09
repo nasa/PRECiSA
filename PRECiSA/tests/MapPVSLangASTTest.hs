@@ -1,8 +1,8 @@
 module MapPVSLangASTTest where
 
 import qualified AbsPVSLang as PVS
-import qualified AbsRawPVSLang as Raw
-import qualified MapPVSLangAST as MAP
+import qualified Frontend.PVS.AbsRawPVSLang as Raw
+import qualified Frontend.PVS.MapPVSLangAST as MAP
 import qualified Operators as OP
 import Test.Tasty
 import Test.Tasty.HUnit

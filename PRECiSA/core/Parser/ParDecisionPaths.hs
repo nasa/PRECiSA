@@ -1,28 +1,33 @@
 -- Notices:
 --
 -- Copyright 2020 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
- 
+
 -- Disclaimers
 -- No Warranty: THE SUBJECT SOFTWARE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER EXPRESSED, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL CONFORM TO SPECIFICATIONS, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR FREEDOM FROM INFRINGEMENT, ANY WARRANTY THAT THE SUBJECT SOFTWARE WILL BE ERROR FREE, OR ANY WARRANTY THAT DOCUMENTATION, IF PROVIDED, WILL CONFORM TO THE SUBJECT SOFTWARE. THIS AGREEMENT DOES NOT, IN ANY MANNER, CONSTITUTE AN ENDORSEMENT BY GOVERNMENT AGENCY OR ANY PRIOR RECIPIENT OF ANY RESULTS, RESULTING DESIGNS, HARDWARE, SOFTWARE PRODUCTS OR ANY OTHER APPLICATIONS RESULTING FROM USE OF THE SUBJECT SOFTWARE.  FURTHER, GOVERNMENT AGENCY DISCLAIMS ALL WARRANTIES AND LIABILITIES REGARDING THIRD-PARTY SOFTWARE, IF PRESENT IN THE ORIGINAL SOFTWARE, AND DISTRIBUTES IT "AS IS."
- 
+
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
-	
-	
+
+
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -w #-}
 {-# OPTIONS_GHC -fno-warn-incomplete-patterns -fno-warn-overlapping-patterns #-}
 module Parser.ParDecisionPaths where
+
 import Parser.LexDecisionPaths
 import Common.DecisionPath
-import AbsRawPVSLang (Id(..))
 import ErrM
 import qualified Data.Array as Happy_Data_Array
 import qualified Data.Bits as Bits
 import Control.Applicative(Applicative(..))
 import Control.Monad (ap)
+import Data.String
+
+newtype Id = Id String
+  deriving (Eq, Ord, Show, Read, Data.String.IsString)
 
 -- parser produced by Happy Version 1.19.9
 
-data HappyAbsSyn 
+data HappyAbsSyn
 	= HappyTerminal (Token)
 	| HappyErrorToken Int
 	| HappyAbsSyn4 (Integer)
@@ -41,12 +46,12 @@ data HappyAbsSyn
  - /type M a = .../, then /(HappyReduction M)/
  - is not allowed.  But Happy is a
  - code-generator that can just substitute it.
-type HappyReduction m = 
-	   Int 
+type HappyReduction m =
+	   Int
 	-> (Token)
 	-> HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> m HappyAbsSyn)
-	-> [HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> m HappyAbsSyn)] 
-	-> HappyStk HappyAbsSyn 
+	-> [HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> m HappyAbsSyn)]
+	-> HappyStk HappyAbsSyn
 	-> [(Token)] -> m HappyAbsSyn
 -}
 
@@ -82,11 +87,11 @@ action_0,
  action_29,
  action_30,
  action_31 :: () => Int -> ({-HappyReduction (Err) = -}
-	   Int 
+	   Int
 	-> (Token)
 	-> HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> (Err) HappyAbsSyn)
-	-> [HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> (Err) HappyAbsSyn)] 
-	-> HappyStk HappyAbsSyn 
+	-> [HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> (Err) HappyAbsSyn)]
+	-> HappyStk HappyAbsSyn
 	-> [(Token)] -> (Err) HappyAbsSyn)
 
 happyReduce_1,
@@ -108,11 +113,11 @@ happyReduce_1,
  happyReduce_17,
  happyReduce_18,
  happyReduce_19 :: () => ({-HappyReduction (Err) = -}
-	   Int 
+	   Int
 	-> (Token)
 	-> HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> (Err) HappyAbsSyn)
-	-> [HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> (Err) HappyAbsSyn)] 
-	-> HappyStk HappyAbsSyn 
+	-> [HappyState (Token) (HappyStk HappyAbsSyn -> [(Token)] -> (Err) HappyAbsSyn)]
+	-> HappyStk HappyAbsSyn
 	-> [(Token)] -> (Err) HappyAbsSyn)
 
 happyExpList :: Happy_Data_Array.Array Int Int
@@ -249,28 +254,28 @@ happyReduction_1 (HappyTerminal (PT _ (TI happy_var_1)))
 	 =  HappyAbsSyn4
 		 ((read ( happy_var_1)) :: Integer
 	)
-happyReduction_1 _  = notHappyAtAll 
+happyReduction_1 _  = notHappyAtAll
 
 happyReduce_2 = happySpecReduce_1  5 happyReduction_2
 happyReduction_2 (HappyTerminal (PT _ (T_Id happy_var_1)))
 	 =  HappyAbsSyn5
 		 (Id (happy_var_1)
 	)
-happyReduction_2 _  = notHappyAtAll 
+happyReduction_2 _  = notHappyAtAll
 
 happyReduce_3 = happySpecReduce_1  6 happyReduction_3
 happyReduction_3 (HappyAbsSyn4  happy_var_1)
 	 =  HappyAbsSyn4
 		 (happy_var_1
 	)
-happyReduction_3 _  = notHappyAtAll 
+happyReduction_3 _  = notHappyAtAll
 
 happyReduce_4 = happySpecReduce_1  7 happyReduction_4
 happyReduction_4 (HappyAbsSyn4  happy_var_1)
 	 =  HappyAbsSyn7
 		 ((:[]) happy_var_1
 	)
-happyReduction_4 _  = notHappyAtAll 
+happyReduction_4 _  = notHappyAtAll
 
 happyReduce_5 = happySpecReduce_3  7 happyReduction_5
 happyReduction_5 (HappyAbsSyn7  happy_var_3)
@@ -279,7 +284,7 @@ happyReduction_5 (HappyAbsSyn7  happy_var_3)
 	 =  HappyAbsSyn7
 		 (happy_var_3 ++ (happy_var_1:[])
 	)
-happyReduction_5 _ _ _  = notHappyAtAll 
+happyReduction_5 _ _ _  = notHappyAtAll
 
 happyReduce_6 = happySpecReduce_3  8 happyReduction_6
 happyReduction_6 _
@@ -288,7 +293,7 @@ happyReduction_6 _
 	 =  HappyAbsSyn8
 		 (LDP happy_var_2
 	)
-happyReduction_6 _ _ _  = notHappyAtAll 
+happyReduction_6 _ _ _  = notHappyAtAll
 
 happyReduce_7 = happySpecReduce_0  9 happyReduction_7
 happyReduction_7  =  HappyAbsSyn9
@@ -300,7 +305,7 @@ happyReduction_8 (HappyAbsSyn8  happy_var_1)
 	 =  HappyAbsSyn9
 		 ((:[]) happy_var_1
 	)
-happyReduction_8 _  = notHappyAtAll 
+happyReduction_8 _  = notHappyAtAll
 
 happyReduce_9 = happySpecReduce_3  9 happyReduction_9
 happyReduction_9 (HappyAbsSyn9  happy_var_3)
@@ -309,14 +314,14 @@ happyReduction_9 (HappyAbsSyn9  happy_var_3)
 	 =  HappyAbsSyn9
 		 ((:) happy_var_1 happy_var_3
 	)
-happyReduction_9 _ _ _  = notHappyAtAll 
+happyReduction_9 _ _ _  = notHappyAtAll
 
 happyReduce_10 = happySpecReduce_1  10 happyReduction_10
 happyReduction_10 (HappyAbsSyn9  happy_var_1)
 	 =  HappyAbsSyn9
 		 (happy_var_1
 	)
-happyReduction_10 _  = notHappyAtAll 
+happyReduction_10 _  = notHappyAtAll
 
 happyReduce_11 = happySpecReduce_1  10 happyReduction_11
 happyReduction_11 _
@@ -335,7 +340,7 @@ happyReduction_13 (HappyAbsSyn5  happy_var_1)
 	 =  HappyAbsSyn11
 		 ((:[]) happy_var_1
 	)
-happyReduction_13 _  = notHappyAtAll 
+happyReduction_13 _  = notHappyAtAll
 
 happyReduce_14 = happySpecReduce_3  11 happyReduction_14
 happyReduction_14 (HappyAbsSyn11  happy_var_3)
@@ -344,7 +349,7 @@ happyReduction_14 (HappyAbsSyn11  happy_var_3)
 	 =  HappyAbsSyn11
 		 ((:) happy_var_1 happy_var_3
 	)
-happyReduction_14 _ _ _  = notHappyAtAll 
+happyReduction_14 _ _ _  = notHappyAtAll
 
 happyReduce_15 = happyReduce 6 12 happyReduction_15
 happyReduction_15 ((HappyAbsSyn9  happy_var_6) `HappyStk`
@@ -365,14 +370,14 @@ happyReduction_16 (HappyAbsSyn9  happy_var_3)
 	 =  HappyAbsSyn12
 		 (buildDecisionPaths happy_var_1 happy_var_3
 	)
-happyReduction_16 _ _ _  = notHappyAtAll 
+happyReduction_16 _ _ _  = notHappyAtAll
 
 happyReduce_17 = happySpecReduce_1  13 happyReduction_17
 happyReduction_17 (HappyAbsSyn12  happy_var_1)
 	 =  HappyAbsSyn13
 		 ((:[]) happy_var_1
 	)
-happyReduction_17 _  = notHappyAtAll 
+happyReduction_17 _  = notHappyAtAll
 
 happyReduce_18 = happySpecReduce_2  13 happyReduction_18
 happyReduction_18 (HappyAbsSyn13  happy_var_2)
@@ -380,14 +385,14 @@ happyReduction_18 (HappyAbsSyn13  happy_var_2)
 	 =  HappyAbsSyn13
 		 ((:) happy_var_1 happy_var_2
 	)
-happyReduction_18 _ _  = notHappyAtAll 
+happyReduction_18 _ _  = notHappyAtAll
 
 happyReduce_19 = happySpecReduce_1  14 happyReduction_19
 happyReduction_19 (HappyAbsSyn13  happy_var_1)
 	 =  HappyAbsSyn14
 		 (happy_var_1
 	)
-happyReduction_19 _  = notHappyAtAll 
+happyReduction_19 _  = notHappyAtAll
 
 happyNewToken action sts stk [] =
 	action 25 25 notHappyAtAll (HappyState action) sts stk []
@@ -657,7 +662,7 @@ myLexer = tokens
 
 
 
--- Id: GenericTemplate.hs,v 1.26 2005/01/14 14:47:22 simonmar Exp 
+-- Id: GenericTemplate.hs,v 1.26 2005/01/14 14:47:22 simonmar Exp
 
 
 
@@ -706,7 +711,7 @@ happyParse start_state = happyNewToken start_state notHappyAtAll notHappyAtAll
 -- the stack in this case.
 happyAccept (1) tk st sts (_ `HappyStk` ans `HappyStk` _) =
         happyReturn1 ans
-happyAccept j tk st sts (HappyStk ans _) = 
+happyAccept j tk st sts (HappyStk ans _) =
          (happyReturn1 ans)
 
 -----------------------------------------------------------------------------
@@ -844,7 +849,7 @@ happyGoto action j tk st = action j j tk (HappyState action)
 -- parse error if we are in recovery and we fail again
 happyFail explist (1) tk old_st _ stk@(x `HappyStk` _) =
      let i = (case x of { HappyErrorToken (i) -> i }) in
---      trace "failing" $ 
+--      trace "failing" $
         happyError_ explist i tk
 
 {-  We don't need state discarding for our restricted implementation of
@@ -852,7 +857,7 @@ happyFail explist (1) tk old_st _ stk@(x `HappyStk` _) =
     for now --SDM
 
 -- discard a state
-happyFail  (1) tk old_st (((HappyState (action))):(sts)) 
+happyFail  (1) tk old_st (((HappyState (action))):(sts))
                                                 (saved_tok `HappyStk` _ `HappyStk` stk) =
 --      trace ("discarding state, depth " ++ show (length stk))  $
         action (1) (1) tk (HappyState (action)) sts ((saved_tok`HappyStk`stk))
@@ -879,7 +884,7 @@ notHappyAtAll = error "Internal Happy error\n"
 
 
 -----------------------------------------------------------------------------
--- Seq-ing.  If the --strict flag is given, then Happy emits 
+-- Seq-ing.  If the --strict flag is given, then Happy emits
 --      happySeq = happyDoSeq
 -- otherwise it emits
 --      happySeq = happyDontSeq
@@ -912,4 +917,3 @@ happyDontSeq a b = b
 {-# NOINLINE happyFail #-}
 
 -- end of Happy Template.
-

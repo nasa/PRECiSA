@@ -34,14 +34,31 @@ common shared
     kodiak
   tested-with: GHC == 9.6.7
 
+library frontend-pvs
+  import: shared
+  hs-source-dirs:
+      frontend/pvs/translation/
+    , frontend/pvs/generated/
+  exposed-modules:
+    Frontend.PVS.MapPVSLangAST
+    Frontend.PVS.MapRealPVSLangAST
+    Frontend.PVS.AbsRawPVSLang
+    Frontend.PVS.LexRawPVSLang
+    Frontend.PVS.ParRawPVSLang
+  build-depends:
+      precisa
+
 library
   import: shared
-  hs-source-dirs: src/
+  hs-source-dirs: core/
   exposed-modules:
-    PRECiSA
-    AbsFPCoreLang
     AbsPVSLang
-    AbsRawPVSLang
+    Common.TypesUtils
+    ErrM
+    Operators
+    PPExt
+    Utils
+    AbsFPCoreLang
     AbsRawSpecLang
     AbsSpecLang
     AbstractDomain
@@ -49,11 +66,8 @@ library
     Common.ControlFlow
     Common.DecisionPath
     Common.ShowRational
-    Common.TypesUtils
-    ErrM
     FPCore.FPCorePrinter
     FreshVariables
-    Json
     Kodiak.Expression
     Kodiak.Generator
     Kodiak.Kodiak
@@ -63,29 +77,21 @@ library
     Kodiak.Runner
     MapFPCoreLangAST
     MapFPCoreSpecLangAST
-    MapPVSLangAST
-    MapRealPVSLangAST
     MapSpecLangAST
     FunctionCallErrorAbstraction
-    Operators
-    Options
     Parser.LexDecisionPaths
     Parser.LexFPCoreLang
-    Parser.LexRawPVSLang
     Parser.LexRawSpecLang
     Parser.ParDecisionPaths
     Parser.ParFPCoreLang
-    Parser.ParRawPVSLang
     Parser.ParRawSpecLang
     Parser.Parser
-    PPExt
     PVSCert
     SMT.GenerateSMTModel
     SMT.PrettyPrinter
     SMT.SMT
     Translation.Float2Real
     Translation.Real2Float
-    Utils
   ghc-options: -Wall -Werror
 
 executable precisa
@@ -94,7 +100,12 @@ executable precisa
   build-depends:
       base      >= 4.14
     , precisa
+    , frontend-pvs
   hs-source-dirs: app/
+  other-modules:
+    JSON,
+    Options,
+    PRECiSA
   main-is:
     Main.hs
 
@@ -108,6 +119,7 @@ test-suite precisaTests
     , mtl >= 2.2
     , tasty >=0.11
     , tasty-hunit >=0.9 && <0.10
+    , frontend-pvs
     , precisa
   type:
     exitcode-stdio-1.0

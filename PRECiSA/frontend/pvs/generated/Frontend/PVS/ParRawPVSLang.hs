@@ -11,7 +11,7 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns -Wno-overlapping-patterns #-}
 {-# LANGUAGE PatternSynonyms #-}
 
-module Parser.ParRawPVSLang
+module Frontend.PVS.ParRawPVSLang
   ( happyError
   , myLexer
   , pProgram
@@ -19,8 +19,8 @@ module Parser.ParRawPVSLang
 
 import Prelude
 
-import qualified AbsRawPVSLang
-import Parser.LexRawPVSLang
+import qualified Frontend.PVS.AbsRawPVSLang
+import Frontend.PVS.LexRawPVSLang
 import qualified Control.Monad as Happy_Prelude
 import qualified Data.Bool as Happy_Prelude
 import qualified Data.Function as Happy_Prelude
@@ -40,34 +40,34 @@ import Control.Monad (ap)
 
 -- parser produced by Happy Version 2.1.7
 
-data HappyAbsSyn
+data HappyAbsSyn 
         = HappyTerminal (Token)
         | HappyErrorToken Happy_Prelude.Int
         | HappyAbsSyn5 (Double)
         | HappyAbsSyn6 (Integer)
-        | HappyAbsSyn7 (AbsRawPVSLang.Id)
-        | HappyAbsSyn8 ([AbsRawPVSLang.Id])
-        | HappyAbsSyn9 (AbsRawPVSLang.ElsIf)
-        | HappyAbsSyn10 ([AbsRawPVSLang.ElsIf])
-        | HappyAbsSyn11 (AbsRawPVSLang.LetElem)
-        | HappyAbsSyn12 ([AbsRawPVSLang.LetElem])
-        | HappyAbsSyn13 (AbsRawPVSLang.RecordElem)
-        | HappyAbsSyn14 ([AbsRawPVSLang.RecordElem])
-        | HappyAbsSyn15 (AbsRawPVSLang.LambdaKeyWord)
-        | HappyAbsSyn16 (AbsRawPVSLang.LambdaExpr)
-        | HappyAbsSyn17 ([AbsRawPVSLang.Expr])
-        | HappyAbsSyn18 (AbsRawPVSLang.Expr)
-        | HappyAbsSyn30 (AbsRawPVSLang.FieldDecls)
-        | HappyAbsSyn31 ([AbsRawPVSLang.Type])
-        | HappyAbsSyn32 ([AbsRawPVSLang.FieldDecls])
-        | HappyAbsSyn33 (AbsRawPVSLang.Type)
-        | HappyAbsSyn34 ([AbsRawPVSLang.Arg])
-        | HappyAbsSyn35 (AbsRawPVSLang.Arg)
-        | HappyAbsSyn36 (AbsRawPVSLang.Args)
-        | HappyAbsSyn37 ([AbsRawPVSLang.Decl])
-        | HappyAbsSyn38 (AbsRawPVSLang.Decl)
-        | HappyAbsSyn39 (AbsRawPVSLang.Imp)
-        | HappyAbsSyn40 (AbsRawPVSLang.Program)
+        | HappyAbsSyn7 (Frontend.PVS.AbsRawPVSLang.Id)
+        | HappyAbsSyn8 ([Frontend.PVS.AbsRawPVSLang.Id])
+        | HappyAbsSyn9 (Frontend.PVS.AbsRawPVSLang.ElsIf)
+        | HappyAbsSyn10 ([Frontend.PVS.AbsRawPVSLang.ElsIf])
+        | HappyAbsSyn11 (Frontend.PVS.AbsRawPVSLang.LetElem)
+        | HappyAbsSyn12 ([Frontend.PVS.AbsRawPVSLang.LetElem])
+        | HappyAbsSyn13 (Frontend.PVS.AbsRawPVSLang.RecordElem)
+        | HappyAbsSyn14 ([Frontend.PVS.AbsRawPVSLang.RecordElem])
+        | HappyAbsSyn15 (Frontend.PVS.AbsRawPVSLang.LambdaKeyWord)
+        | HappyAbsSyn16 (Frontend.PVS.AbsRawPVSLang.LambdaExpr)
+        | HappyAbsSyn17 ([Frontend.PVS.AbsRawPVSLang.Expr])
+        | HappyAbsSyn18 (Frontend.PVS.AbsRawPVSLang.Expr)
+        | HappyAbsSyn30 (Frontend.PVS.AbsRawPVSLang.FieldDecls)
+        | HappyAbsSyn31 ([Frontend.PVS.AbsRawPVSLang.Type])
+        | HappyAbsSyn32 ([Frontend.PVS.AbsRawPVSLang.FieldDecls])
+        | HappyAbsSyn33 (Frontend.PVS.AbsRawPVSLang.Type)
+        | HappyAbsSyn34 ([Frontend.PVS.AbsRawPVSLang.Arg])
+        | HappyAbsSyn35 (Frontend.PVS.AbsRawPVSLang.Arg)
+        | HappyAbsSyn36 (Frontend.PVS.AbsRawPVSLang.Args)
+        | HappyAbsSyn37 ([Frontend.PVS.AbsRawPVSLang.Decl])
+        | HappyAbsSyn38 (Frontend.PVS.AbsRawPVSLang.Decl)
+        | HappyAbsSyn39 (Frontend.PVS.AbsRawPVSLang.Imp)
+        | HappyAbsSyn40 (Frontend.PVS.AbsRawPVSLang.Program)
 
 {-# NOINLINE happyTokenStrings #-}
 happyTokenStrings = ["'#)'","'#]'","'('","'(#'","')'","'*'","'+'","','","'-'","'->'","'/'","'/='","':'","':='","'<'","'<='","'='","'>'","'>='","'AND'","'ARRAY'","'BEGIN'","'ELSE'","'ELSIF'","'END'","'ENDIF'","'FALSE'","'FUNCTION'","'IF'","'IMPORTING'","'IN'","'LAMBDA'","'LET'","'NOT'","'OR'","'SUBRANGE'","'THEN'","'THEORY'","'TRUE'","'TYPE'","'WITH'","'['","'[#'","']'","'^'","'`'","'below'","'for'","'for_down'","'lambda'","'list'","'|'","L_doubl","L_integ","L_Id","%eof"]
@@ -199,28 +199,28 @@ happyReduction_1 (HappyTerminal (PT _ (TD happy_var_1)))
          =  HappyAbsSyn5
                  ((read happy_var_1) :: Double
         )
-happyReduction_1 _  = notHappyAtAll
+happyReduction_1 _  = notHappyAtAll 
 
 happyReduce_2 = happySpecReduce_1  1# happyReduction_2
 happyReduction_2 (HappyTerminal (PT _ (TI happy_var_1)))
          =  HappyAbsSyn6
                  ((read happy_var_1) :: Integer
         )
-happyReduction_2 _  = notHappyAtAll
+happyReduction_2 _  = notHappyAtAll 
 
 happyReduce_3 = happySpecReduce_1  2# happyReduction_3
 happyReduction_3 (HappyTerminal (PT _ (T_Id happy_var_1)))
          =  HappyAbsSyn7
-                 (AbsRawPVSLang.Id happy_var_1
+                 (Frontend.PVS.AbsRawPVSLang.Id happy_var_1
         )
-happyReduction_3 _  = notHappyAtAll
+happyReduction_3 _  = notHappyAtAll 
 
 happyReduce_4 = happySpecReduce_1  3# happyReduction_4
 happyReduction_4 (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn8
                  ((:[]) happy_var_1
         )
-happyReduction_4 _  = notHappyAtAll
+happyReduction_4 _  = notHappyAtAll 
 
 happyReduce_5 = happySpecReduce_3  3# happyReduction_5
 happyReduction_5 (HappyAbsSyn8  happy_var_3)
@@ -229,7 +229,7 @@ happyReduction_5 (HappyAbsSyn8  happy_var_3)
          =  HappyAbsSyn8
                  ((:) happy_var_1 happy_var_3
         )
-happyReduction_5 _ _ _  = notHappyAtAll
+happyReduction_5 _ _ _  = notHappyAtAll 
 
 happyReduce_6 = happyReduce 4# 4# happyReduction_6
 happyReduction_6 ((HappyAbsSyn18  happy_var_4) `HappyStk`
@@ -238,7 +238,7 @@ happyReduction_6 ((HappyAbsSyn18  happy_var_4) `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn9
-                 (AbsRawPVSLang.ElsIf happy_var_2 happy_var_4
+                 (Frontend.PVS.AbsRawPVSLang.ElsIf happy_var_2 happy_var_4
         ) `HappyStk` happyRest
 
 happyReduce_7 = happySpecReduce_1  5# happyReduction_7
@@ -246,7 +246,7 @@ happyReduction_7 (HappyAbsSyn9  happy_var_1)
          =  HappyAbsSyn10
                  ((:[]) happy_var_1
         )
-happyReduction_7 _  = notHappyAtAll
+happyReduction_7 _  = notHappyAtAll 
 
 happyReduce_8 = happySpecReduce_2  5# happyReduction_8
 happyReduction_8 (HappyAbsSyn10  happy_var_2)
@@ -254,16 +254,16 @@ happyReduction_8 (HappyAbsSyn10  happy_var_2)
          =  HappyAbsSyn10
                  ((:) happy_var_1 happy_var_2
         )
-happyReduction_8 _ _  = notHappyAtAll
+happyReduction_8 _ _  = notHappyAtAll 
 
 happyReduce_9 = happySpecReduce_3  6# happyReduction_9
 happyReduction_9 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn11
-                 (AbsRawPVSLang.LetElem happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.LetElem happy_var_1 happy_var_3
         )
-happyReduction_9 _ _ _  = notHappyAtAll
+happyReduction_9 _ _ _  = notHappyAtAll 
 
 happyReduce_10 = happyReduce 5# 6# happyReduction_10
 happyReduction_10 ((HappyAbsSyn18  happy_var_5) `HappyStk`
@@ -273,7 +273,7 @@ happyReduction_10 ((HappyAbsSyn18  happy_var_5) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn11
-                 (AbsRawPVSLang.LetElemType happy_var_1 happy_var_3 happy_var_5
+                 (Frontend.PVS.AbsRawPVSLang.LetElemType happy_var_1 happy_var_3 happy_var_5
         ) `HappyStk` happyRest
 
 happyReduce_11 = happySpecReduce_1  7# happyReduction_11
@@ -281,7 +281,7 @@ happyReduction_11 (HappyAbsSyn11  happy_var_1)
          =  HappyAbsSyn12
                  ((:[]) happy_var_1
         )
-happyReduction_11 _  = notHappyAtAll
+happyReduction_11 _  = notHappyAtAll 
 
 happyReduce_12 = happySpecReduce_3  7# happyReduction_12
 happyReduction_12 (HappyAbsSyn12  happy_var_3)
@@ -290,23 +290,23 @@ happyReduction_12 (HappyAbsSyn12  happy_var_3)
          =  HappyAbsSyn12
                  ((:) happy_var_1 happy_var_3
         )
-happyReduction_12 _ _ _  = notHappyAtAll
+happyReduction_12 _ _ _  = notHappyAtAll 
 
 happyReduce_13 = happySpecReduce_3  8# happyReduction_13
 happyReduction_13 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn13
-                 (AbsRawPVSLang.RecordElem happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.RecordElem happy_var_1 happy_var_3
         )
-happyReduction_13 _ _ _  = notHappyAtAll
+happyReduction_13 _ _ _  = notHappyAtAll 
 
 happyReduce_14 = happySpecReduce_1  9# happyReduction_14
 happyReduction_14 (HappyAbsSyn13  happy_var_1)
          =  HappyAbsSyn14
                  ((:[]) happy_var_1
         )
-happyReduction_14 _  = notHappyAtAll
+happyReduction_14 _  = notHappyAtAll 
 
 happyReduce_15 = happySpecReduce_3  9# happyReduction_15
 happyReduction_15 (HappyAbsSyn14  happy_var_3)
@@ -315,18 +315,18 @@ happyReduction_15 (HappyAbsSyn14  happy_var_3)
          =  HappyAbsSyn14
                  ((:) happy_var_1 happy_var_3
         )
-happyReduction_15 _ _ _  = notHappyAtAll
+happyReduction_15 _ _ _  = notHappyAtAll 
 
 happyReduce_16 = happySpecReduce_1  10# happyReduction_16
 happyReduction_16 _
          =  HappyAbsSyn15
-                 (AbsRawPVSLang.LambdaWord1
+                 (Frontend.PVS.AbsRawPVSLang.LambdaWord1
         )
 
 happyReduce_17 = happySpecReduce_1  10# happyReduction_17
 happyReduction_17 _
          =  HappyAbsSyn15
-                 (AbsRawPVSLang.LambdaWord2
+                 (Frontend.PVS.AbsRawPVSLang.LambdaWord2
         )
 
 happyReduce_18 = happyReduce 17# 11# happyReduction_18
@@ -349,7 +349,7 @@ happyReduction_18 ((HappyAbsSyn18  happy_var_17) `HappyStk`
         (HappyAbsSyn15  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn16
-                 (AbsRawPVSLang.Lambda happy_var_1 happy_var_3 happy_var_7 happy_var_9 happy_var_12 happy_var_14 happy_var_17
+                 (Frontend.PVS.AbsRawPVSLang.Lambda happy_var_1 happy_var_3 happy_var_7 happy_var_9 happy_var_12 happy_var_14 happy_var_17
         ) `HappyStk` happyRest
 
 happyReduce_19 = happySpecReduce_1  12# happyReduction_19
@@ -357,7 +357,7 @@ happyReduction_19 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn17
                  ((:[]) happy_var_1
         )
-happyReduction_19 _  = notHappyAtAll
+happyReduction_19 _  = notHappyAtAll 
 
 happyReduce_20 = happySpecReduce_3  12# happyReduction_20
 happyReduction_20 (HappyAbsSyn17  happy_var_3)
@@ -366,14 +366,14 @@ happyReduction_20 (HappyAbsSyn17  happy_var_3)
          =  HappyAbsSyn17
                  ((:) happy_var_1 happy_var_3
         )
-happyReduction_20 _ _ _  = notHappyAtAll
+happyReduction_20 _ _ _  = notHappyAtAll 
 
 happyReduce_21 = happySpecReduce_1  13# happyReduction_21
 happyReduction_21 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_21 _  = notHappyAtAll
+happyReduction_21 _  = notHappyAtAll 
 
 happyReduce_22 = happyReduce 4# 13# happyReduction_22
 happyReduction_22 ((HappyAbsSyn18  happy_var_4) `HappyStk`
@@ -382,7 +382,7 @@ happyReduction_22 ((HappyAbsSyn18  happy_var_4) `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.Let happy_var_2 happy_var_4
+                 (Frontend.PVS.AbsRawPVSLang.Let happy_var_2 happy_var_4
         ) `HappyStk` happyRest
 
 happyReduce_23 = happySpecReduce_1  14# happyReduction_23
@@ -390,158 +390,158 @@ happyReduction_23 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_23 _  = notHappyAtAll
+happyReduction_23 _  = notHappyAtAll 
 
 happyReduce_24 = happySpecReduce_3  14# happyReduction_24
 happyReduction_24 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Or happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.Or happy_var_1 happy_var_3
         )
-happyReduction_24 _ _ _  = notHappyAtAll
+happyReduction_24 _ _ _  = notHappyAtAll 
 
 happyReduce_25 = happySpecReduce_1  15# happyReduction_25
 happyReduction_25 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_25 _  = notHappyAtAll
+happyReduction_25 _  = notHappyAtAll 
 
 happyReduce_26 = happySpecReduce_3  15# happyReduction_26
 happyReduction_26 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.And happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.And happy_var_1 happy_var_3
         )
-happyReduction_26 _ _ _  = notHappyAtAll
+happyReduction_26 _ _ _  = notHappyAtAll 
 
 happyReduce_27 = happySpecReduce_1  16# happyReduction_27
 happyReduction_27 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_27 _  = notHappyAtAll
+happyReduction_27 _  = notHappyAtAll 
 
 happyReduce_28 = happySpecReduce_2  16# happyReduction_28
 happyReduction_28 (HappyAbsSyn18  happy_var_2)
         _
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Not happy_var_2
+                 (Frontend.PVS.AbsRawPVSLang.Not happy_var_2
         )
-happyReduction_28 _ _  = notHappyAtAll
+happyReduction_28 _ _  = notHappyAtAll 
 
 happyReduce_29 = happySpecReduce_1  17# happyReduction_29
 happyReduction_29 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_29 _  = notHappyAtAll
+happyReduction_29 _  = notHappyAtAll 
 
 happyReduce_30 = happySpecReduce_3  17# happyReduction_30
 happyReduction_30 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Eq happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.Eq happy_var_1 happy_var_3
         )
-happyReduction_30 _ _ _  = notHappyAtAll
+happyReduction_30 _ _ _  = notHappyAtAll 
 
 happyReduce_31 = happySpecReduce_3  17# happyReduction_31
 happyReduction_31 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Neq happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.Neq happy_var_1 happy_var_3
         )
-happyReduction_31 _ _ _  = notHappyAtAll
+happyReduction_31 _ _ _  = notHappyAtAll 
 
 happyReduce_32 = happySpecReduce_3  17# happyReduction_32
 happyReduction_32 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Lt happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.Lt happy_var_1 happy_var_3
         )
-happyReduction_32 _ _ _  = notHappyAtAll
+happyReduction_32 _ _ _  = notHappyAtAll 
 
 happyReduce_33 = happySpecReduce_3  17# happyReduction_33
 happyReduction_33 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.LtE happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.LtE happy_var_1 happy_var_3
         )
-happyReduction_33 _ _ _  = notHappyAtAll
+happyReduction_33 _ _ _  = notHappyAtAll 
 
 happyReduce_34 = happySpecReduce_3  17# happyReduction_34
 happyReduction_34 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Gt happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.Gt happy_var_1 happy_var_3
         )
-happyReduction_34 _ _ _  = notHappyAtAll
+happyReduction_34 _ _ _  = notHappyAtAll 
 
 happyReduce_35 = happySpecReduce_3  17# happyReduction_35
 happyReduction_35 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.GtE happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.GtE happy_var_1 happy_var_3
         )
-happyReduction_35 _ _ _  = notHappyAtAll
+happyReduction_35 _ _ _  = notHappyAtAll 
 
 happyReduce_36 = happySpecReduce_1  18# happyReduction_36
 happyReduction_36 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_36 _  = notHappyAtAll
+happyReduction_36 _  = notHappyAtAll 
 
 happyReduce_37 = happySpecReduce_3  18# happyReduction_37
 happyReduction_37 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.ExprAdd happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.ExprAdd happy_var_1 happy_var_3
         )
-happyReduction_37 _ _ _  = notHappyAtAll
+happyReduction_37 _ _ _  = notHappyAtAll 
 
 happyReduce_38 = happySpecReduce_3  18# happyReduction_38
 happyReduction_38 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.ExprSub happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.ExprSub happy_var_1 happy_var_3
         )
-happyReduction_38 _ _ _  = notHappyAtAll
+happyReduction_38 _ _ _  = notHappyAtAll 
 
 happyReduce_39 = happySpecReduce_1  19# happyReduction_39
 happyReduction_39 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_39 _  = notHappyAtAll
+happyReduction_39 _  = notHappyAtAll 
 
 happyReduce_40 = happySpecReduce_3  19# happyReduction_40
 happyReduction_40 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.ExprMul happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.ExprMul happy_var_1 happy_var_3
         )
-happyReduction_40 _ _ _  = notHappyAtAll
+happyReduction_40 _ _ _  = notHappyAtAll 
 
 happyReduce_41 = happySpecReduce_3  19# happyReduction_41
 happyReduction_41 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.ExprDiv happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.ExprDiv happy_var_1 happy_var_3
         )
-happyReduction_41 _ _ _  = notHappyAtAll
+happyReduction_41 _ _ _  = notHappyAtAll 
 
 happyReduce_42 = happyReduce 7# 19# happyReduction_42
 happyReduction_42 (_ `HappyStk`
@@ -553,7 +553,7 @@ happyReduction_42 (_ `HappyStk`
         (HappyAbsSyn18  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.With happy_var_1 happy_var_4 happy_var_6
+                 (Frontend.PVS.AbsRawPVSLang.With happy_var_1 happy_var_4 happy_var_6
         ) `HappyStk` happyRest
 
 happyReduce_43 = happySpecReduce_1  20# happyReduction_43
@@ -561,38 +561,38 @@ happyReduction_43 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_43 _  = notHappyAtAll
+happyReduction_43 _  = notHappyAtAll 
 
 happyReduce_44 = happySpecReduce_2  20# happyReduction_44
 happyReduction_44 (HappyAbsSyn18  happy_var_2)
         _
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.ExprNeg happy_var_2
+                 (Frontend.PVS.AbsRawPVSLang.ExprNeg happy_var_2
         )
-happyReduction_44 _ _  = notHappyAtAll
+happyReduction_44 _ _  = notHappyAtAll 
 
 happyReduce_45 = happySpecReduce_1  21# happyReduction_45
 happyReduction_45 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_45 _  = notHappyAtAll
+happyReduction_45 _  = notHappyAtAll 
 
 happyReduce_46 = happySpecReduce_3  21# happyReduction_46
 happyReduction_46 (HappyAbsSyn18  happy_var_3)
         _
         (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.ExprPow happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.ExprPow happy_var_1 happy_var_3
         )
-happyReduction_46 _ _ _  = notHappyAtAll
+happyReduction_46 _ _ _  = notHappyAtAll 
 
 happyReduce_47 = happySpecReduce_1  22# happyReduction_47
 happyReduction_47 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_47 _  = notHappyAtAll
+happyReduction_47 _  = notHappyAtAll 
 
 happyReduce_48 = happyReduce 7# 22# happyReduction_48
 happyReduction_48 (_ `HappyStk`
@@ -604,7 +604,7 @@ happyReduction_48 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.If happy_var_2 happy_var_4 happy_var_6
+                 (Frontend.PVS.AbsRawPVSLang.If happy_var_2 happy_var_4 happy_var_6
         ) `HappyStk` happyRest
 
 happyReduce_49 = happyReduce 8# 22# happyReduction_49
@@ -618,7 +618,7 @@ happyReduction_49 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.ListIf happy_var_2 happy_var_4 happy_var_5 happy_var_7
+                 (Frontend.PVS.AbsRawPVSLang.ListIf happy_var_2 happy_var_4 happy_var_5 happy_var_7
         ) `HappyStk` happyRest
 
 happyReduce_50 = happyReduce 10# 22# happyReduction_50
@@ -634,7 +634,7 @@ happyReduction_50 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.For happy_var_3 happy_var_5 happy_var_7 happy_var_9
+                 (Frontend.PVS.AbsRawPVSLang.For happy_var_3 happy_var_5 happy_var_7 happy_var_9
         ) `HappyStk` happyRest
 
 happyReduce_51 = happyReduce 10# 22# happyReduction_51
@@ -650,7 +650,7 @@ happyReduction_51 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.ForDown happy_var_3 happy_var_5 happy_var_7 happy_var_9
+                 (Frontend.PVS.AbsRawPVSLang.ForDown happy_var_3 happy_var_5 happy_var_7 happy_var_9
         ) `HappyStk` happyRest
 
 happyReduce_52 = happySpecReduce_1  23# happyReduction_52
@@ -658,25 +658,25 @@ happyReduction_52 (HappyAbsSyn18  happy_var_1)
          =  HappyAbsSyn18
                  (happy_var_1
         )
-happyReduction_52 _  = notHappyAtAll
+happyReduction_52 _  = notHappyAtAll 
 
 happyReduce_53 = happySpecReduce_3  23# happyReduction_53
 happyReduction_53 (HappyAbsSyn6  happy_var_3)
         _
         (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.TupleIndex happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.TupleIndex happy_var_1 happy_var_3
         )
-happyReduction_53 _ _ _  = notHappyAtAll
+happyReduction_53 _ _ _  = notHappyAtAll 
 
 happyReduce_54 = happySpecReduce_3  23# happyReduction_54
 happyReduction_54 (HappyAbsSyn7  happy_var_3)
         _
         (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.RecordField happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.RecordField happy_var_1 happy_var_3
         )
-happyReduction_54 _ _ _  = notHappyAtAll
+happyReduction_54 _ _ _  = notHappyAtAll 
 
 happyReduce_55 = happyReduce 6# 23# happyReduction_55
 happyReduction_55 ((HappyAbsSyn6  happy_var_6) `HappyStk`
@@ -687,7 +687,7 @@ happyReduction_55 ((HappyAbsSyn6  happy_var_6) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.TupleFunIndex happy_var_1 happy_var_3 happy_var_6
+                 (Frontend.PVS.AbsRawPVSLang.TupleFunIndex happy_var_1 happy_var_3 happy_var_6
         ) `HappyStk` happyRest
 
 happyReduce_56 = happyReduce 6# 23# happyReduction_56
@@ -699,7 +699,7 @@ happyReduction_56 ((HappyAbsSyn7  happy_var_6) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.RecordFunField happy_var_1 happy_var_3 happy_var_6
+                 (Frontend.PVS.AbsRawPVSLang.RecordFunField happy_var_1 happy_var_3 happy_var_6
         ) `HappyStk` happyRest
 
 happyReduce_57 = happySpecReduce_3  23# happyReduction_57
@@ -707,18 +707,18 @@ happyReduction_57 _
         (HappyAbsSyn14  happy_var_2)
         _
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.RecordExpr happy_var_2
+                 (Frontend.PVS.AbsRawPVSLang.RecordExpr happy_var_2
         )
-happyReduction_57 _ _ _  = notHappyAtAll
+happyReduction_57 _ _ _  = notHappyAtAll 
 
 happyReduce_58 = happySpecReduce_3  23# happyReduction_58
 happyReduction_58 _
         (HappyAbsSyn17  happy_var_2)
         _
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.TupleExpr happy_var_2
+                 (Frontend.PVS.AbsRawPVSLang.TupleExpr happy_var_2
         )
-happyReduction_58 _ _ _  = notHappyAtAll
+happyReduction_58 _ _ _  = notHappyAtAll 
 
 happyReduce_59 = happyReduce 4# 23# happyReduction_59
 happyReduction_59 (_ `HappyStk`
@@ -727,40 +727,40 @@ happyReduction_59 (_ `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn18
-                 (AbsRawPVSLang.Call happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.Call happy_var_1 happy_var_3
         ) `HappyStk` happyRest
 
 happyReduce_60 = happySpecReduce_1  23# happyReduction_60
 happyReduction_60 (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.ExprId happy_var_1
+                 (Frontend.PVS.AbsRawPVSLang.ExprId happy_var_1
         )
-happyReduction_60 _  = notHappyAtAll
+happyReduction_60 _  = notHappyAtAll 
 
 happyReduce_61 = happySpecReduce_1  23# happyReduction_61
 happyReduction_61 (HappyAbsSyn6  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Int happy_var_1
+                 (Frontend.PVS.AbsRawPVSLang.Int happy_var_1
         )
-happyReduction_61 _  = notHappyAtAll
+happyReduction_61 _  = notHappyAtAll 
 
 happyReduce_62 = happySpecReduce_1  23# happyReduction_62
 happyReduction_62 (HappyAbsSyn5  happy_var_1)
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.Rat happy_var_1
+                 (Frontend.PVS.AbsRawPVSLang.Rat happy_var_1
         )
-happyReduction_62 _  = notHappyAtAll
+happyReduction_62 _  = notHappyAtAll 
 
 happyReduce_63 = happySpecReduce_1  23# happyReduction_63
 happyReduction_63 _
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.BTrue
+                 (Frontend.PVS.AbsRawPVSLang.BTrue
         )
 
 happyReduce_64 = happySpecReduce_1  23# happyReduction_64
 happyReduction_64 _
          =  HappyAbsSyn18
-                 (AbsRawPVSLang.BFalse
+                 (Frontend.PVS.AbsRawPVSLang.BFalse
         )
 
 happyReduce_65 = happySpecReduce_3  24# happyReduction_65
@@ -770,23 +770,23 @@ happyReduction_65 _
          =  HappyAbsSyn18
                  (happy_var_2
         )
-happyReduction_65 _ _ _  = notHappyAtAll
+happyReduction_65 _ _ _  = notHappyAtAll 
 
 happyReduce_66 = happySpecReduce_3  25# happyReduction_66
 happyReduction_66 (HappyAbsSyn33  happy_var_3)
         _
         (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn30
-                 (AbsRawPVSLang.FieldDecls happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.FieldDecls happy_var_1 happy_var_3
         )
-happyReduction_66 _ _ _  = notHappyAtAll
+happyReduction_66 _ _ _  = notHappyAtAll 
 
 happyReduce_67 = happySpecReduce_1  26# happyReduction_67
 happyReduction_67 (HappyAbsSyn33  happy_var_1)
          =  HappyAbsSyn31
                  ((:[]) happy_var_1
         )
-happyReduction_67 _  = notHappyAtAll
+happyReduction_67 _  = notHappyAtAll 
 
 happyReduce_68 = happySpecReduce_3  26# happyReduction_68
 happyReduction_68 (HappyAbsSyn31  happy_var_3)
@@ -795,14 +795,14 @@ happyReduction_68 (HappyAbsSyn31  happy_var_3)
          =  HappyAbsSyn31
                  ((:) happy_var_1 happy_var_3
         )
-happyReduction_68 _ _ _  = notHappyAtAll
+happyReduction_68 _ _ _  = notHappyAtAll 
 
 happyReduce_69 = happySpecReduce_1  27# happyReduction_69
 happyReduction_69 (HappyAbsSyn30  happy_var_1)
          =  HappyAbsSyn32
                  ((:[]) happy_var_1
         )
-happyReduction_69 _  = notHappyAtAll
+happyReduction_69 _  = notHappyAtAll 
 
 happyReduce_70 = happySpecReduce_3  27# happyReduction_70
 happyReduction_70 (HappyAbsSyn32  happy_var_3)
@@ -811,14 +811,14 @@ happyReduction_70 (HappyAbsSyn32  happy_var_3)
          =  HappyAbsSyn32
                  ((:) happy_var_1 happy_var_3
         )
-happyReduction_70 _ _ _  = notHappyAtAll
+happyReduction_70 _ _ _  = notHappyAtAll 
 
 happyReduce_71 = happySpecReduce_1  28# happyReduction_71
 happyReduction_71 (HappyAbsSyn7  happy_var_1)
          =  HappyAbsSyn33
-                 (AbsRawPVSLang.TypeSimple happy_var_1
+                 (Frontend.PVS.AbsRawPVSLang.TypeSimple happy_var_1
         )
-happyReduction_71 _  = notHappyAtAll
+happyReduction_71 _  = notHappyAtAll 
 
 happyReduce_72 = happyReduce 6# 28# happyReduction_72
 happyReduction_72 (_ `HappyStk`
@@ -829,7 +829,7 @@ happyReduction_72 (_ `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn33
-                 (AbsRawPVSLang.ParametricTypeBi happy_var_1 happy_var_3 happy_var_5
+                 (Frontend.PVS.AbsRawPVSLang.ParametricTypeBi happy_var_1 happy_var_3 happy_var_5
         ) `HappyStk` happyRest
 
 happyReduce_73 = happyReduce 4# 28# happyReduction_73
@@ -839,7 +839,7 @@ happyReduction_73 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn33
-                 (AbsRawPVSLang.TypeBelow happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.TypeBelow happy_var_3
         ) `HappyStk` happyRest
 
 happyReduce_74 = happySpecReduce_3  28# happyReduction_74
@@ -847,18 +847,18 @@ happyReduction_74 _
         (HappyAbsSyn32  happy_var_2)
         _
          =  HappyAbsSyn33
-                 (AbsRawPVSLang.TypeRecord happy_var_2
+                 (Frontend.PVS.AbsRawPVSLang.TypeRecord happy_var_2
         )
-happyReduction_74 _ _ _  = notHappyAtAll
+happyReduction_74 _ _ _  = notHappyAtAll 
 
 happyReduce_75 = happySpecReduce_3  28# happyReduction_75
 happyReduction_75 _
         (HappyAbsSyn31  happy_var_2)
         _
          =  HappyAbsSyn33
-                 (AbsRawPVSLang.TypeTuple happy_var_2
+                 (Frontend.PVS.AbsRawPVSLang.TypeTuple happy_var_2
         )
-happyReduction_75 _ _ _  = notHappyAtAll
+happyReduction_75 _ _ _  = notHappyAtAll 
 
 happyReduce_76 = happyReduce 6# 28# happyReduction_76
 happyReduction_76 (_ `HappyStk`
@@ -869,7 +869,7 @@ happyReduction_76 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn33
-                 (AbsRawPVSLang.TypeArray happy_var_3 happy_var_5
+                 (Frontend.PVS.AbsRawPVSLang.TypeArray happy_var_3 happy_var_5
         ) `HappyStk` happyRest
 
 happyReduce_77 = happyReduce 6# 28# happyReduction_77
@@ -881,7 +881,7 @@ happyReduction_77 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn33
-                 (AbsRawPVSLang.TypeFun happy_var_3 happy_var_5
+                 (Frontend.PVS.AbsRawPVSLang.TypeFun happy_var_3 happy_var_5
         ) `HappyStk` happyRest
 
 happyReduce_78 = happyReduce 5# 28# happyReduction_78
@@ -892,7 +892,7 @@ happyReduction_78 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn33
-                 (AbsRawPVSLang.TypeFun2 happy_var_2 happy_var_4
+                 (Frontend.PVS.AbsRawPVSLang.TypeFun2 happy_var_2 happy_var_4
         ) `HappyStk` happyRest
 
 happyReduce_79 = happyReduce 4# 28# happyReduction_79
@@ -902,7 +902,7 @@ happyReduction_79 (_ `HappyStk`
         _ `HappyStk`
         happyRest)
          = HappyAbsSyn33
-                 (AbsRawPVSLang.TypeList happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.TypeList happy_var_3
         ) `HappyStk` happyRest
 
 happyReduce_80 = happySpecReduce_1  29# happyReduction_80
@@ -910,7 +910,7 @@ happyReduction_80 (HappyAbsSyn35  happy_var_1)
          =  HappyAbsSyn34
                  ((:[]) happy_var_1
         )
-happyReduction_80 _  = notHappyAtAll
+happyReduction_80 _  = notHappyAtAll 
 
 happyReduce_81 = happySpecReduce_3  29# happyReduction_81
 happyReduction_81 (HappyAbsSyn34  happy_var_3)
@@ -919,16 +919,16 @@ happyReduction_81 (HappyAbsSyn34  happy_var_3)
          =  HappyAbsSyn34
                  ((:) happy_var_1 happy_var_3
         )
-happyReduction_81 _ _ _  = notHappyAtAll
+happyReduction_81 _ _ _  = notHappyAtAll 
 
 happyReduce_82 = happySpecReduce_3  30# happyReduction_82
 happyReduction_82 (HappyAbsSyn33  happy_var_3)
         _
         (HappyAbsSyn8  happy_var_1)
          =  HappyAbsSyn35
-                 (AbsRawPVSLang.FArg happy_var_1 happy_var_3
+                 (Frontend.PVS.AbsRawPVSLang.FArg happy_var_1 happy_var_3
         )
-happyReduction_82 _ _ _  = notHappyAtAll
+happyReduction_82 _ _ _  = notHappyAtAll 
 
 happyReduce_83 = happyReduce 5# 30# happyReduction_83
 happyReduction_83 ((HappyAbsSyn18  happy_var_5) `HappyStk`
@@ -938,29 +938,29 @@ happyReduction_83 ((HappyAbsSyn18  happy_var_5) `HappyStk`
         (HappyAbsSyn8  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn35
-                 (AbsRawPVSLang.FArgGuard happy_var_1 happy_var_3 happy_var_5
+                 (Frontend.PVS.AbsRawPVSLang.FArgGuard happy_var_1 happy_var_3 happy_var_5
         ) `HappyStk` happyRest
 
 happyReduce_84 = happySpecReduce_1  31# happyReduction_84
 happyReduction_84 (HappyAbsSyn34  happy_var_1)
          =  HappyAbsSyn36
-                 (AbsRawPVSLang.FArgs happy_var_1
+                 (Frontend.PVS.AbsRawPVSLang.FArgs happy_var_1
         )
-happyReduction_84 _  = notHappyAtAll
+happyReduction_84 _  = notHappyAtAll 
 
 happyReduce_85 = happySpecReduce_1  31# happyReduction_85
 happyReduction_85 (HappyAbsSyn8  happy_var_1)
          =  HappyAbsSyn36
-                 (AbsRawPVSLang.FArgsNoType happy_var_1
+                 (Frontend.PVS.AbsRawPVSLang.FArgsNoType happy_var_1
         )
-happyReduction_85 _  = notHappyAtAll
+happyReduction_85 _  = notHappyAtAll 
 
 happyReduce_86 = happySpecReduce_1  32# happyReduction_86
 happyReduction_86 (HappyAbsSyn38  happy_var_1)
          =  HappyAbsSyn37
                  ((:[]) happy_var_1
         )
-happyReduction_86 _  = notHappyAtAll
+happyReduction_86 _  = notHappyAtAll 
 
 happyReduce_87 = happySpecReduce_2  32# happyReduction_87
 happyReduction_87 (HappyAbsSyn37  happy_var_2)
@@ -968,7 +968,7 @@ happyReduction_87 (HappyAbsSyn37  happy_var_2)
          =  HappyAbsSyn37
                  ((:) happy_var_1 happy_var_2
         )
-happyReduction_87 _ _  = notHappyAtAll
+happyReduction_87 _ _  = notHappyAtAll 
 
 happyReduce_88 = happyReduce 5# 33# happyReduction_88
 happyReduction_88 ((HappyAbsSyn33  happy_var_5) `HappyStk`
@@ -978,7 +978,7 @@ happyReduction_88 ((HappyAbsSyn33  happy_var_5) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn38
-                 (AbsRawPVSLang.DeclTypeAlias happy_var_1 happy_var_5
+                 (Frontend.PVS.AbsRawPVSLang.DeclTypeAlias happy_var_1 happy_var_5
         ) `HappyStk` happyRest
 
 happyReduce_89 = happyReduce 8# 33# happyReduction_89
@@ -992,7 +992,7 @@ happyReduction_89 ((HappyAbsSyn18  happy_var_8) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn38
-                 (AbsRawPVSLang.DeclFunction happy_var_1 happy_var_3 happy_var_6 happy_var_8
+                 (Frontend.PVS.AbsRawPVSLang.DeclFunction happy_var_1 happy_var_3 happy_var_6 happy_var_8
         ) `HappyStk` happyRest
 
 happyReduce_90 = happyReduce 5# 33# happyReduction_90
@@ -1003,16 +1003,16 @@ happyReduction_90 ((HappyAbsSyn18  happy_var_5) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn38
-                 (AbsRawPVSLang.DeclConstant happy_var_1 happy_var_3 happy_var_5
+                 (Frontend.PVS.AbsRawPVSLang.DeclConstant happy_var_1 happy_var_3 happy_var_5
         ) `HappyStk` happyRest
 
 happyReduce_91 = happySpecReduce_2  34# happyReduction_91
 happyReduction_91 (HappyAbsSyn8  happy_var_2)
         _
          =  HappyAbsSyn39
-                 (AbsRawPVSLang.LibImp happy_var_2
+                 (Frontend.PVS.AbsRawPVSLang.LibImp happy_var_2
         )
-happyReduction_91 _ _  = notHappyAtAll
+happyReduction_91 _ _  = notHappyAtAll 
 
 happyReduce_92 = happyReduce 8# 35# happyReduction_92
 happyReduction_92 ((HappyAbsSyn7  happy_var_8) `HappyStk`
@@ -1025,7 +1025,7 @@ happyReduction_92 ((HappyAbsSyn7  happy_var_8) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn40
-                 (AbsRawPVSLang.ProgImp happy_var_1 happy_var_5 happy_var_6 happy_var_8
+                 (Frontend.PVS.AbsRawPVSLang.ProgImp happy_var_1 happy_var_5 happy_var_6 happy_var_8
         ) `HappyStk` happyRest
 
 happyReduce_93 = happyReduce 7# 35# happyReduction_93
@@ -1038,7 +1038,7 @@ happyReduction_93 ((HappyAbsSyn7  happy_var_7) `HappyStk`
         (HappyAbsSyn7  happy_var_1) `HappyStk`
         happyRest)
          = HappyAbsSyn40
-                 (AbsRawPVSLang.Prog happy_var_1 happy_var_5 happy_var_7
+                 (Frontend.PVS.AbsRawPVSLang.Prog happy_var_1 happy_var_5 happy_var_7
         ) `HappyStk` happyRest
 
 happyTerminalToTok term = case term of {

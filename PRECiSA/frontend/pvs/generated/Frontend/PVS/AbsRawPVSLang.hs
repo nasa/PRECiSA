@@ -4,7 +4,7 @@
 
 -- | The abstract syntax of language RawPVSLang.
 
-module AbsRawPVSLang where
+module Frontend.PVS.AbsRawPVSLang where
 
 import Prelude (Double, Integer, String)
 import qualified Prelude as C (Eq, Ord, Show, Read)

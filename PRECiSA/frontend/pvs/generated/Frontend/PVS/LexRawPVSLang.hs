@@ -9,7 +9,7 @@
 
 {-# LANGUAGE PatternSynonyms #-}
 
-module Parser.LexRawPVSLang where
+module Frontend.PVS.LexRawPVSLang where
 
 import Prelude
 
