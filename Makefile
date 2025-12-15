@@ -31,7 +31,7 @@ ifneq (yes, $(call VERSION_MATCH,$(CABAL_REQUIRED_VERSION),$(CABAL_VERSION)))
   $(error "Cabal version $(CABAL_VERSION) < $(CABAL_REQUIRED_VERSION) is not supported")
 endif
 
-HASKELL_REQUIRED_VERSION := 8.10.7
+HASKELL_REQUIRED_VERSION := 9.6.7
 HASKELL_VERSION := $(shell $(HASKELL_COMPILER) --numeric-version | head -n1 | cut -d" " -f4)
 ifneq (yes, $(call VERSION_MATCH,$(HASKELL_REQUIRED_VERSION),$(HASKELL_VERSION)))
   $(error "Haskell version $(HASKELL_VERSION) < $(HASKELL_REQUIRED_VERSION) is not supported")
@@ -55,11 +55,14 @@ build-precisa: configure-precisa
 	)
 
 configure-precisa: build-kodiak
-	@( \
-		cd $(PRECISA_PATH); \
-		echo "package precisa" > cabal.project.local; \
-		echo "  extra-lib-dirs: $(KODIAK_LIBRARY_DIR)" >> cabal.project.local; \
-		echo "  ghc-options: -optl=-Wl,-rpath,$(KODIAK_LIBRARY_DIR)" >> cabal.project.local; \
+	@(                                                                    \
+	    (                                                                 \
+	        echo "optimization: True";                                    \
+	        echo "";                                                      \
+	        echo "package precisa";                                       \
+	        echo "  extra-lib-dirs: $(KODIAK_LIBRARY_DIR)";               \
+	        echo "  ghc-options: -optl=-Wl,-rpath,$(KODIAK_LIBRARY_DIR)"; \
+	    ) > cabal.project.local;                                          \
 	)
 
 build-kodiak: checkout-submodules build-filib
