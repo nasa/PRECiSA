@@ -6,7 +6,7 @@
 double8: THEORY
 BEGIN
 
-  IMPORTING PRECiSA@ieee754_double
+  IMPORTING float_bounded_axiomatic@ieee754_double
 
   % @fp-function
   example(x: double): double = Dabs(x)

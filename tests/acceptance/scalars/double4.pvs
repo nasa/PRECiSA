@@ -6,7 +6,7 @@
 double04: THEORY
 BEGIN
 
-  IMPORTING PRECiSA@ieee754_double
+  IMPORTING float_bounded_axiomatic@ieee754_double
 
   example(x: double): double
   = IF x <= -1 THEN

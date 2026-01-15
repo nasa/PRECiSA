@@ -1,0 +1,8 @@
+double10: THEORY
+BEGIN
+
+  IMPORTING float_bounded_axiomatic@ieee754_double
+
+  example(x: double): double = IF x > 0 THEN 2 / x ELSE x ENDIF
+
+END double10
