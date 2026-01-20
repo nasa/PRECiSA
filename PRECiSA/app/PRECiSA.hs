@@ -37,7 +37,8 @@ import Kodiak.Runner
 import Kodiak.Runnable
 import qualified Kodiak.Paver as KP
 import Prelude hiding ((<>))
-import PVSCert
+import Certificate.Numerical
+import Certificate.Symbolic (genCertFile)
 import Parser.Parser
 import SMT.SMT
 import System.Directory

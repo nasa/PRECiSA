@@ -63,6 +63,8 @@ library
     AbsSpecLang
     AbstractDomain
     AbstractSemantics
+    Certificate.Symbolic
+    Certificate.Numerical
     Common.ControlFlow
     Common.DecisionPath
     Common.ShowRational
@@ -86,7 +88,6 @@ library
     Parser.ParFPCoreLang
     Parser.ParRawSpecLang
     Parser.Parser
-    PVSCert
     SMT.GenerateSMTModel
     SMT.PrettyPrinter
     SMT.SMT
