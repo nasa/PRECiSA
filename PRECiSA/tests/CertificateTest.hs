@@ -1,12 +1,17 @@
+{-# LANGUAGE QuasiQuotes #-}
 module CertificateTest where
 
 import AbsPVSLang
+import Certificate.Symbolic
+import Common.ControlFlow (ControlFlow(..))
 
+import Data.List (dropWhile)
 import Prelude hiding ((<>))
 import Test.Tasty
 import Test.Tasty.HUnit
 import TestUtils (throwsException)
 import Text.PrettyPrint
+import Text.RawString.QQ (r)
 
 testCertificate = testGroup "Certificate"
   [testGroup "linearizeMax"
@@ -21,4 +26,22 @@ testCertificate = testGroup "Certificate"
     ,testCase "5" $
       throwsException $ linearizeMax []
     ]
+  ,testGroup "Symbolic"
+    [testGroup "prPvsProof"
+      [testCase "for stable" $
+        prPvsProof "example" 0 Stable `isCloseTo`
+        [r|
+%|- example_0: PROOF
+%|- (prove-symbolic-certificate$)
+%|- QED|]
+      ,testCase "for unstable" $
+        prPvsProof "example" 0 Unstable `isCloseTo`
+        [r|
+%|- example_0: PROOF
+%|- (prove-symbolic-certificate$ t)
+%|- QED|]
+      ]
+    ]
   ]
+  where
+    isCloseTo doc str = render doc @?= dropWhile (=='\n') str

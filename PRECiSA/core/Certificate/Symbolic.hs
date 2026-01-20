@@ -3,6 +3,7 @@ module Certificate.Symbolic where
 import AbsPVSLang hiding (fpGuardList,letExpr,varName)
 import AbstractDomain
 import AbstractSemantics
+import Common.ControlFlow (ControlFlow(..))
 import Common.TypesUtils (VarName)
 import PPExt
 
@@ -112,7 +113,7 @@ printCEBLemmasAndProof f fReal field args stm fp (n,aceb)
     $$
     text ""
     $$
-    prPvsProof f n
+    prPvsProof f n (cFlow aceb)
 
 prErrorDef :: String -> String -> ResultField -> [Arg] -> ACeb -> PVSType -> Int -> Doc
 prErrorDef f _fReal _field           []    _ _fp _  = error $ "[prErrorDef] unexpected empty arguments for function " ++ show f
@@ -204,10 +205,12 @@ printFunctionPartialBound f f_real field args ty n =
     hsep (punctuate comma $ map printParameterRealVariant args)
   )
 
-prPvsProof :: String -> Int -> Doc
-prPvsProof f n =
+prPvsProof :: String -> Int -> ControlFlow -> Doc
+prPvsProof f n cf =
     text "%|- " <> text f <> text "_" <> int n <> text ": PROOF"
-    $$ text "%|- (precisa)"
+    $$ case cf of
+      Stable   -> text "%|- (prove-symbolic-certificate$)"
+      Unstable -> text "%|- (prove-symbolic-certificate$ t)"
     $$ text "%|- QED"
 
 prIsFiniteHp :: [FAExpr] -> [(VarName, FAExpr)] -> Doc
