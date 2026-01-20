@@ -251,7 +251,12 @@ data FBExprStm
   deriving (Eq, Ord, Read, Show)
 
 -- progam
-type Program = [Decl]
+type Theory = String
+
+data Program = Program
+  { importings :: [Theory]
+  , program    :: [Decl]
+  } deriving (Eq, Show)
 
 data Arg = Arg VarName PVSType
     deriving (Eq, Ord, Show, Read)
@@ -2022,7 +2027,7 @@ instance PPExt RDecl where
       <> text  "):" <+> prettyDoc t <+> text " =" $$ prettyDoc stm
 
 instance PPExt Program where
-  prettyDoc decls = vcat (map prettyDoc decls)
+  prettyDoc (Program _imps decls) = vcat (map prettyDoc decls)
 
 instance PPExt Decl where
   prettyDoc (Decl isTrans fp fun args stm)

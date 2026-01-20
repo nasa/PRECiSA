@@ -34,7 +34,7 @@ real2fpArg :: PVSType -> Arg -> Arg
 real2fpArg  fp (Arg x t) = Arg x (real2fpType fp t)
 
 real2fpProg :: NormBoolExpr -> PVSType -> RProgram -> Program
-real2fpProg normBE fp prog = map (real2fpDecl normBE fp prog) prog
+real2fpProg normBE fp prog = Program [] $ map (real2fpDecl normBE fp prog) prog
 
 real2fpDecl :: NormBoolExpr -> PVSType -> RProgram -> RDecl -> Decl
 real2fpDecl normBE fp prog (RDecl retType f xs stm)

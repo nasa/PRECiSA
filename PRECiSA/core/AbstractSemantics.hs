@@ -244,7 +244,7 @@ zeroErrAceb = ACeb {
         }
 
 immediateConsequence :: Program -> Interpretation -> SemanticConfiguration -> TargetDPs -> Interpretation
-immediateConsequence decls interps semConf decPaths =
+immediateConsequence (Program _imps decls) interps semConf decPaths =
   foldl (\interp decl -> declSem decl interp decPaths semConf) interps decls
 
 declSem :: Decl -> Interpretation -> TargetDPs -> SemanticConfiguration -> Interpretation

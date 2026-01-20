@@ -39,7 +39,7 @@ genCertFile inputFileName certFileName realFileName prog sem =
   text ("END " ++ certFileName)
 
 printCerts :: Interpretation -> Program -> Doc
-printCerts interp decls = Map.foldrWithKey printCertsFun emptyDoc interp
+printCerts interp (Program _imps decls) = Map.foldrWithKey printCertsFun emptyDoc interp
   where
     printCertsFun _ (_,Boolean, _, _) certDoc = certDoc
     printCertsFun f (isTrans,t, args, sem) certDoc = case findInDecls f decls of

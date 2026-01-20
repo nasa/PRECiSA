@@ -8,7 +8,7 @@ import Prelude hiding ((<>))
 import Operators
 
 fpcprintProgram :: Program -> Spec -> Doc
-fpcprintProgram [decl] spec = fpcprintDecl decl spec
+fpcprintProgram (Program _imps [decl]) spec = fpcprintDecl decl spec
 fpcprintProgram _ _ = error "fpcprintProgram: only programs with one function declaration can be converted to FPCore."
 
 fpcprintDecl :: Decl -> Spec -> Doc

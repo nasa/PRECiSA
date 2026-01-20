@@ -33,7 +33,7 @@ fp2realArg :: Arg -> Arg
 fp2realArg (Arg x t)     = Arg (fp2realVarName x) (fp2realType t)
 
 fp2realProg :: Program -> RProgram
-fp2realProg = map fp2realDecl
+fp2realProg = map fp2realDecl . program
 
 fp2realDecl :: Decl -> RDecl
 fp2realDecl (Decl _ fp f args stm)

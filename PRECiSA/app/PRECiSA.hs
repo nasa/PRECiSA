@@ -83,11 +83,11 @@ parseAndAnalyze
 
   let noCollapsedStables = False
   errparseProg <- if parsefpcore
-                  then do
+                  then
                     parseFileToFPCoreProgram fileprog
-                  else do
+                  else
                     parseFileToProgram fileprog
-  decls <- errify error errparseProg
+  pgm@(Program _imps decls) <- errify error errparseProg
   spec <- if parsefpcorespec
           then do
             if parsefpcore
@@ -107,10 +107,10 @@ parseAndAnalyze
            errify fail errparseTargetDPs
 
   -------------
-  let progSem = fixpointSemantics decls (botInterp decls) 3 semConf dps
-  let symbCertificates = renderPVS $ genCertFile inputFileName certFileName realProgFileName decls progSem
+  let progSem = fixpointSemantics pgm (botInterp decls) 3 semConf dps
+  let symbCertificates = renderPVS $ genCertFile inputFileName certFileName realProgFileName pgm progSem
   writeFile certFile symbCertificates
-  let realProgDoc = genRealProgFile inputFileName  realProgFileName (fp2realProg decls)
+  let realProgDoc = genRealProgFile inputFileName  realProgFileName (fp2realProg pgm)
   writeFile realProgFile (renderPVS realProgDoc)
 
   let searchParams = KP.SP { maximumDepth = fromInteger . toInteger $ maxBBDepth
@@ -132,7 +132,7 @@ parseAndAnalyze
   writeFile numCertFile numCertificate
 
   when printfpcore $ do
-    putStrLn $ renderPVS $ fpcprintProgram decls spec
+    putStrLn $ renderPVS $ fpcprintProgram pgm spec
 
   pavingFiles <- if withPaving
     then do

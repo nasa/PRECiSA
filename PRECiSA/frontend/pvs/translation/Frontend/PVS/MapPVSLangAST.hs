@@ -141,9 +141,21 @@ getTypeContext' tc (DeclTypeAlias (Id name) ty:ds) = getTypeContext' tc' ds
   where tc' = (name,raw2FPType tc ty):tc
 getTypeContext' tc (_:ds) = getTypeContext' tc ds
 
-raw2Prog :: Raw.Program -> AbsPVSLang.Program
-raw2Prog pgm = runM defaultEnv (mapM raw2Decl decls')
+raw2Prog :: Raw.Program -> PVS.Program
+raw2Prog pgm = Program imps $ runM defaultEnv (mapM raw2Decl decls')
   where
+    imps = getImportings pgm
+      where
+        getImportings :: Raw.Program -> [String]
+        getImportings (Raw.Prog     _    _ _) = []
+        getImportings (Raw.ProgImp  _ is _ _) = unwrapImportings is
+          where
+            unwrapImportings :: Imp -> [String]
+            unwrapImportings (LibImp ids) = map unId ids
+              where
+                unId :: Raw.Id -> String
+                unId (Raw.Id s) = s
+
     decls = getDeclList pgm
       where
         getDeclList :: Raw.Program -> [Raw.Decl]

@@ -24,8 +24,8 @@ type VarTypeEnv = [(String, PVSType)]
 type FunTypeEnv = [(String, PVSType)]
 
 fpcore2Prog :: AbsFPCoreLang.FPCore -> AbsPVSLang.Program
-fpcore2Prog (AbsFPCoreLang.FProgram  (Symbol name) args _props expr) = [fpcore2Decl [(name, FPDouble)] name args expr]
-fpcore2Prog (AbsFPCoreLang.FProgramSymbless args _props expr) = [fpcore2Decl [("f", FPDouble)] "f" args expr]
+fpcore2Prog (AbsFPCoreLang.FProgram  (Symbol name) args _props expr) = Program [] [fpcore2Decl [(name, FPDouble)] name args expr]
+fpcore2Prog (AbsFPCoreLang.FProgramSymbless args _props expr) = Program [] [fpcore2Decl [("f", FPDouble)] "f" args expr]
 
 -- Every FPCore program maps to one PVS declaration.
 fpcore2Decl :: FunTypeEnv -> String -> [AbsFPCoreLang.Argument] -> AbsFPCoreLang.Expr -> AbsPVSLang.Decl

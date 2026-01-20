@@ -60,7 +60,7 @@ parseFPCoreFAExpr str =
     let prog = fpcore2Prog rawParsedFPCoreProg
     let extractfae [Decl _ _ _ _ fae] = fae
         extractfae _ = error "program not supported"
-    return $ extractfae prog
+    return $ extractfae (program prog)
 
 parseFileToFPCoreSpec :: FilePath -> IO Spec
 parseFileToFPCoreSpec src_filename = fmap parseFPCoreSpec (readFile src_filename)
