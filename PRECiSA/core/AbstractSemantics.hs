@@ -1058,13 +1058,13 @@ stmSem ae@(BinaryFPOp MulOp fp a1 a2) interp env locVars config dp dps =
                 then Conds [Cond {
                   realPathCond = realPathCond cond
                  ,fpPathCond = fpPathCond cond
-                 ,realCond = simplBExprFix $ And (realCond cond) (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a2)))
+                 ,realCond = realCond cond
                  ,fpCond = fpPathCond cond}
                 | cond <- uncond (conds ceb2)]
                 else Conds [Cond {
                   realPathCond = realPathCond cond
                  ,fpPathCond = fpPathCond cond
-                 ,realCond = simplBExprFix $ And (realCond cond) (Rel Lt (Int n) (BinaryOp SubOp (Prec fp) (FExp a1)))
+                 ,realCond = realCond cond
                  ,fpCond = fpPathCond cond}
                 | cond <- uncond (conds ceb1)],
         rExprs  = RDeclRes [BinaryOp   MulOp    r1 r2 | r1 <- rDeclRes $ rExprs  ceb1, r2 <- rDeclRes $ rExprs ceb2],
