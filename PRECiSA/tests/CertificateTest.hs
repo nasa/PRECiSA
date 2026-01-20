@@ -26,21 +26,31 @@ testCertificate = testGroup "Certificate"
     ,testCase "5" $
       throwsException $ linearizeMax []
     ]
-  ,testGroup "Symbolic"
-    [testGroup "prPvsProof"
-      [testCase "for stable" $
-        prPvsProof "example" 0 Stable `isCloseTo`
-        [r|
+  ,testSymbolicCertificate
+  ]
+
+testSymbolicCertificate = testGroup "Symbolic"
+  [testGroup "prPvsProof"
+    [testCase "for stable" $
+      prPvsProof "example" 0 Stable `isCloseTo`
+      [r|
 %|- example_0: PROOF
 %|- (prove-symbolic-certificate$)
 %|- QED|]
-      ,testCase "for unstable" $
-        prPvsProof "example" 0 Unstable `isCloseTo`
-        [r|
+    ,testCase "for unstable" $
+      prPvsProof "example" 0 Unstable `isCloseTo`
+      [r|
 %|- example_0: PROOF
 %|- (prove-symbolic-certificate$ t)
 %|- QED|]
-      ]
+    ]
+
+  ,testGroup "prIsFinite"
+    [testCase "for integer literals" $
+      prIsFinite (FInt 2) `isCloseTo` [r|
+finite?_double(round_double(2))
+AND
+abs(DtoR(round_double(2)) - 2) <= 0|]
     ]
   ]
   where

@@ -248,7 +248,10 @@ prLocalVars locVarList doc =
 prIsFinite :: FAExpr -> Doc
 prIsFinite ae | getPVSType ae == FPSingle = text "finite?_single" <> parens (prettyDoc ae)
               | getPVSType ae == FPDouble = text "finite?_double" <> parens (prettyDoc ae)
-              | getPVSType ae == TInt = text "int_in_range?_double" <> parens (prettyDoc ae)
+              | getPVSType ae == TInt =
+                  text "finite?_double" <> parens (text "round_double" <> parens (prettyDoc ae))
+                    $$ text "AND"
+                    $$ text "abs" <> parens (text "DtoR" <> parens (text "round_double" <> parens (prettyDoc ae)) <+> text "-" <+> prettyDoc ae) <+> text "<=" <+> text "0"
               | otherwise = error $ "prIsFinite: " ++ show ae ++ " is not a floating-point or integer expression."
 
 printArgumentBound :: Arg -> Doc
