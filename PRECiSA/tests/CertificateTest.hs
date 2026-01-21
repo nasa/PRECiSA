@@ -52,6 +52,22 @@ finite?_double(round_double(2))
 AND
 abs(DtoR(round_double(2)) - 2) <= 0|]
     ]
+
+  ,testGroup "printErrorImportings"
+    [testCase "double only" $
+      printErrorImportings (Program ["float_bounded_axiomatic@ieee754_double"] []) `isCloseTo` [r|
+IMPORTING float_bounded_axiomatic@aerr_ulp__double|]
+    ,testCase "double only" $
+      printErrorImportings (Program ["PRECiSA@ieee754_double"] []) `isCloseTo` [r|
+IMPORTING float_bounded_axiomatic@aerr_ulp__double|]
+    ,testCase "single only" $
+      printErrorImportings (Program ["float_bounded_axiomatic@ieee754_single"] []) `isCloseTo` [r|
+IMPORTING float_bounded_axiomatic@aerr_ulp__single|]
+    ,testCase "single only" $
+      printErrorImportings (Program ["float_bounded_axiomatic@ieee754_double","float_bounded_axiomatic@ieee754_single"] []) `isCloseTo` [r|
+IMPORTING float_bounded_axiomatic@aerr_ulp__double
+IMPORTING float_bounded_axiomatic@aerr_ulp__single|]
+    ]
   ]
   where
     isCloseTo doc str = render doc @?= dropWhile (=='\n') str
