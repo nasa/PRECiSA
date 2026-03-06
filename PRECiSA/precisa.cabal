@@ -70,6 +70,7 @@ library
     Common.ShowRational
     FPCore.FPCorePrinter
     FreshVariables
+    Kodiak.ErrorComputation
     Kodiak.Expression
     Kodiak.Generator
     Kodiak.Kodiak

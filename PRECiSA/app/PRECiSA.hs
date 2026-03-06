@@ -13,29 +13,26 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module PRECiSA
-  ( main,
-    computeAllErrorsInKodiakMap
+  ( main
   )
 where
 
 import AbsPVSLang
-import AbsSpecLang
 import AbstractSemantics
 import AbstractDomain
 import Common.DecisionPath
 import Common.ControlFlow
 import Control.Monad (when)
-import Data.Maybe (fromMaybe,fromJust)
+import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
 import ErrM
 import FPCore.FPCorePrinter
 import Frontend.PVS.MapPVSLangAST (parseFileToProgram)
-import FunctionCallErrorAbstraction
 import Options
 import PPExt
 import Kodiak.Runner
-import Kodiak.Runnable
 import qualified Kodiak.Paver as KP
+import Kodiak.ErrorComputation (computeAllErrorsInKodiakMap)
 import Prelude hiding ((<>))
 import Certificate.Numerical
 import Certificate.Symbolic (genCertFile)
@@ -46,7 +43,6 @@ import System.FilePath
 import Translation.Float2Real
 import qualified JSON
 import qualified Data.ByteString.Lazy as BS
-import Utils(snd4,trd4,frt4)
 
 main :: IO ()
 main = parseOptions >>= parseAndAnalyze
@@ -216,72 +212,3 @@ printAllErrors = mapM_ printFunction
     printField ResValue = ""
     printField (ResRecordField recField) = " field " ++ recField
     printField (ResTupleIndex tupleIdx) = " index " ++ show tupleIdx
-
-
-
-computeAllErrorsInKodiakMap ::
-  Bool
-  -> [Decl]
-  -> SemanticConfiguration
-  -> Interpretation
-  -> Spec
-  -> KP.SearchParameters
-  -> IO [(String
-         ,PVSType
-         ,[Arg]
-         ,[(ResultField, [(Conditions
-                          ,LDecisionPath
-                          ,ControlFlow
-                          ,KodiakResult
-                          ,AExpr
-                          ,[FAExpr]
-                          ,[AExpr])])])]
-computeAllErrorsInKodiakMap unfoldFunCalls' decls config interp (Spec specBinds) searchParams = mapM runFunction functionNames
-  where
-    declInterps = Map.filter isNumericalInterp interp
-    functionNames = Map.keys declInterps
-    functionBindingsMap = map (\(SpecBind f b) -> (f,b)) specBinds
-
-    runFunction fname = do
-      let funInfo = fromMaybe errorMsg $ Map.lookup fname interp
-      let fprec = snd4 funInfo
-      let args = trd4 funInfo
-      let fSem = frt4 funInfo
-      let fields = Map.keys fSem
-      results <- mapM (runFunField fname fSem) fields
-      return (fname, fprec, args, results)
-      where
-        errorMsg = error $ "computeAllErrorsInKodiakMap: function " ++ fname ++ " not found."
-
-
-    runFunField fname sem field = do
-      let funErrExprs = fromMaybe errorMsgField (Map.lookup field sem)
-      let functionErrorExpressionsMap = map aceb2PathFlowErrorTuple funErrExprs
-      fieldResults <- mapM runErrorExpression functionErrorExpressionsMap
-      return (field, fieldResults)
-        where
-          errorMsgField = error $ "runFunction: function " ++ show fname ++ " not found in input bound specification."
-          aceb2PathFlowErrorTuple aceb = (conds aceb, decisionPath aceb, cFlow aceb,
-                 fromJust $ eExpr aceb, fDeclRes $ fpExprs aceb, rDeclRes $ rExprs aceb)
-
-          runErrorExpression (conditions :: Conditions,path :: LDecisionPath, flow, err, fpes, res) = do
-            ki <- kodiakInput
-            result <- run ki ()
-            return (conditions, path, flow, result, initAExpr err, fpes, res)
-              where
-                kodiakInput = do
-                  let binds = fromJust $ findInSpec fname specBinds
-                  errExpr <- if unfoldFunCalls'
-                             then return $ simplAExpr $ initAExpr err
-                             else case findInDecls fname decls of
-                               Just (_,_,AExprBody funBody) -> do
-                                 let locVars = localVarsWithType funBody
-                                 replaceFunCallErr True config interp emptyEnv locVars binds $ simplAExpr $ initAExpr err
-                               _ -> error $ "[computeAllErrorsInKodiakMap.runFunField] Function " ++ fname ++ " not found."
-                  return $ KI { kiName = fname,
-                       kiExpression = errExpr,
-                       kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
-                                            (lookup fname functionBindingsMap),
-                       kiMaxDepth  = KP.maximumDepth searchParams,
-                       kiPrecision = KP.minimumPrecision searchParams
-                     }
