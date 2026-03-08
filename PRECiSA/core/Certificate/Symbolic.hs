@@ -4,7 +4,6 @@ import AbsPVSLang hiding (fpGuardList,letExpr,varName)
 import AbstractDomain
 import AbstractSemantics
 import Common.ControlFlow (ControlFlow(..))
-import Common.TypesUtils (VarName)
 import PPExt
 
 import           Data.List (intersperse,sort)

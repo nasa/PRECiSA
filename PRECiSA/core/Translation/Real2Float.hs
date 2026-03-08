@@ -11,9 +11,7 @@
 module Translation.Real2Float where
 
 import AbsPVSLang
-import Operators
 import Utils(isInt)
-import Common.TypesUtils
 import Data.Bifunctor (second)
 import Data.Maybe (fromMaybe)
 

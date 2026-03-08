@@ -14,8 +14,6 @@ import AbstractDomain
 import AbsPVSLang
 import Control.Monad.State
 import Data.List(find)
-import Operators
-import Common.TypesUtils
 
 type ReplaceFPState = State (Int,[(VarName, FAExpr, PVSType)])
 type ReplaceRState  = State (Int,[(VarName,  AExpr)])

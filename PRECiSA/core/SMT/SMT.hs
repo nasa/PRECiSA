@@ -29,7 +29,6 @@ import qualified Data.List as List
 import Data.List (isInfixOf)
 import Data.Maybe (catMaybes, fromMaybe)
 import Prelude hiding ((<>))
-import Common.TypesUtils (VarName)
 import Foreign.C
 
 filterUnsatCebs :: CUInt -> CUInt -> FilePath -> Interpretation -> Spec -> IO Interpretation

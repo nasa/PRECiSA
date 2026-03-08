@@ -14,7 +14,6 @@ module Frontend.PVS.MapRealPVSLangAST where
 import Frontend.PVS.AbsRawPVSLang
 import qualified Frontend.PVS.AbsRawPVSLang as Raw
 import AbsPVSLang
-import Common.TypesUtils
 import Data.Maybe(fromMaybe)
 import ErrM
 import qualified Operators as Op

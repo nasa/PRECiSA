@@ -16,7 +16,7 @@ import AbstractDomain
 import Certificate.Symbolic (f2r,prIsFinite,printFinitenessConditions)
 import Common.DecisionPath
 import Common.ControlFlow
-import Common.TypesUtils (VarName,PredAbs(..))
+
 import Data.Maybe (fromMaybe)
 import Kodiak.Runner
 import Numeric

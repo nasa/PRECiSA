@@ -35,7 +35,6 @@ import Frontend.PVS.AbsRawPVSLang
 import qualified Frontend.PVS.AbsRawPVSLang as Raw
 import AbsPVSLang
 import qualified AbsPVSLang as PVS
-import Common.TypesUtils
 import Data.Functor.Identity
 import Control.Monad.Reader
 import Control.Monad.Extra

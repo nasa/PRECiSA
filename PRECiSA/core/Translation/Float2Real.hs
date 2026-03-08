@@ -9,18 +9,17 @@
 
 
 module Translation.Float2Real
-  ( fbe2be,
-    fae2real,
+  ( fae2real,
     fae2real',
+    fbe2be,
+    fp2realArg,
     fp2realProg,
   )
 where
 
 import AbsPVSLang hiding (localVars)
-import Operators
 import Data.Bifunctor (bimap)
 import Data.Function (fix)
-import Common.TypesUtils (VarName)
 import Utils (fst3)
 
 fp2realVarName :: VarName -> VarName

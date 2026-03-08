@@ -13,7 +13,12 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module AbsPVSLang where
+module AbsPVSLang
+  ( module AbsPVSLang,
+    module Operators,
+    module Common.TypesUtils,
+  )
+where
 
 import Utils
 import PPExt

@@ -12,7 +12,7 @@ module MapFPCoreLangAST
 where
 
 import AbsFPCoreLang
-import AbsPVSLang
+import AbsPVSLang hiding (AcosOp, AsinOp, AtanOp, CosOp, DivOp, FloorOp, MulOp, PowOp, SinOp, SqrtOp, TanOp)
 import Data.Ratio
 import ErrM
 import qualified Operators as Op

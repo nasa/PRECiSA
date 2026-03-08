@@ -16,8 +16,6 @@ import AbsSpecLang
 import PPExt
 import Prelude hiding ((<>))
 import qualified Common.ShowRational as Rat
-import Operators
-import Common.TypesUtils
 
 baseVarName :: String -> ResultField -> String
 baseVarName x ResValue = x

@@ -22,8 +22,6 @@ import Kodiak.Runner
 import Common.DecisionPath
 import Utils
 import Translation.Float2Real
-import Operators
-import Common.TypesUtils
 import Foreign.C
 import FreshVariables
 

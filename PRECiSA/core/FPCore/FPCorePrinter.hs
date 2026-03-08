@@ -5,7 +5,6 @@ import AbsSpecLang
 import Data.Ratio
 import PPExt
 import Prelude hiding ((<>))
-import Operators
 
 fpcprintProgram :: Program -> Spec -> Doc
 fpcprintProgram (Program _imps [decl]) spec = fpcprintDecl decl spec

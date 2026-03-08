@@ -20,7 +20,6 @@ import AbstractSemantics
 import Kodiak.Runnable
 import Kodiak.Runner
 import Common.DecisionPath ( LDecisionPath(LDP) )
-import Common.TypesUtils
 import Foreign.C
 import Translation.Float2Real
 

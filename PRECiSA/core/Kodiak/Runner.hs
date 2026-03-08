@@ -22,7 +22,6 @@ import Control.Monad ((>=>),foldM)
 import Data.Functor ((<&>))
 import Data.Maybe(fromMaybe)
 import Foreign.C
-import Operators
 
 data KodiakInput = KI { kiName :: String,
                         kiExpression :: EExpr,

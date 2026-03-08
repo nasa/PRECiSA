@@ -16,11 +16,10 @@ import AbstractDomain
 import AbsPVSLang
 import Common.ControlFlow
 import Common.DecisionPath
-import Common.TypesUtils
 import qualified Data.List as List
 import qualified Data.Set as Set
 import Numeric
-import Operators
+import qualified Operators
 import Utils
 import Foreign.C.Types (CDouble, CFloat)
 import Data.Maybe
