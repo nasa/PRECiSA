@@ -27,6 +27,7 @@ import Kodiak.ExpressionTest
 -- import Kodiak.GeneratorTest
 -- import Kodiak.PaverTest
 import Kodiak.PrettyPrintTest as KPT
+import Kodiak.ErrorComputationTest (kodiakErrorComputationTests)
 import Operators
 
 testKodiak :: TestTree
@@ -40,6 +41,7 @@ testKodiak = testGroup "Kodiak"
     -- ,testKodiakGenerator
     -- ,testKodiakPaver
     ,KPT.testAll
+    ,kodiakErrorComputationTests
     ]
 
 testBooleanExpressions :: TestTree

@@ -17,10 +17,14 @@ import Operators
 import Common.TypesUtils
 import UtilsTest (fromDouble2Rat)
 import Data.Set (fromList)
+import Text.PrettyPrint (render)
+import PPExt (prettyDoc)
 
 
 testAbsPVSLang = testGroup "AbsPVSLang"
-   [simplFAExpr__tests
+   [prettyFAExpr__tests
+   ,prettyAExpr__tests
+   ,simplFAExpr__tests
    ,rewriteEquivEExpr__tests
    ,equivEExpr__tests
    ,replaceVarWithAExpr__tests
@@ -65,6 +69,26 @@ testAbsPVSLang = testGroup "AbsPVSLang"
    ,unfoldLetIn__tests
    ]
 
+prettyFAExpr__tests = testGroup "prettyFAExpr" $
+  [ testCase "prettyDoc BinaryFPOp ArrayDotOp" $
+      render (prettyDoc (BinaryFPOp (ArrayDotOp 3) FPDouble
+                          (FVar (ArrayOf 3 FPDouble) "x")
+                          (FVar (ArrayOf 3 FPDouble) "y")))
+      @?= "dot_double(3)(x, y)"
+  ]
+
+prettyAExpr__tests = testGroup "prettyAExpr" $
+  [ testCase "prettyDoc BinaryOp ArrayDotOp" $
+      render (prettyDoc (BinaryOp (ArrayDotOp 3)
+                          (Var (ArrayOf 3 FPDouble) "x")
+                          (Var (ArrayOf 3 FPDouble) "y")))
+      @?= "rdot(3)(x, y)"
+  , testCase "prettyDoc ErrBinOp ArrayDotOp FPDouble" $
+      render (prettyDoc (ErrBinOp (ArrayDotOp 3) FPDouble
+                          (Int 0) (Int 0)
+                          (Int 1) (Int 1)))
+      @?= "aerr_ulp_arrays_dot_double(3)(0, 0, 1, 1)"
+  ]
 
 subExpressions__tests = testGroup "subExpressions__tests" $ [
   subExpressions__test1
@@ -80,6 +104,7 @@ subExpressions__tests = testGroup "subExpressions__tests" $ [
  ,subExpressions__test11
  ,subExpressions__test12
  ,subExpressions__test13
+ ,subExpressions__test14
  ]
 
 
@@ -166,6 +191,13 @@ subExpressions__test13 = testCase "subExpressions FMax" $
   subExpressions  (FMax [(FVar TInt "y")])
   `setEquiv`
   [FMax [(FVar TInt "y")], FVar TInt "y"]
+
+subExpressions__test14 = testCase "subExpressions ArrayDotOp" $
+  subExpressions (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
+  `setEquiv`
+  [BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y")
+  ,FVar (ArrayOf 3 FPDouble) "x"
+  ,FVar (ArrayOf 3 FPDouble) "y"]
 
 
 renameVar__tests = testGroup "renameVar__tests" $ [
@@ -453,6 +485,8 @@ renameVarsFAExpr__tests = testGroup "renameVarsFAExpr__tests" $ [
  ,renameVarsFAExpr__test14
  ,renameVarsFAExpr__test15
  ,renameVarsFAExpr__test16
+ ,renameVarsFAExpr__test17
+ ,renameVarsFAExpr__test18
  ]
 
 renameVarsFAExpr__test1 = testCase "renameVarsFAExpr Let" $
@@ -534,6 +568,16 @@ renameVarsFAExpr__test16 = testCase "renameVar FMax" $
   renameVarsFAExpr [("x","y")] (FMax [(FVar TInt "x")])
   @?=
   (FMax [(FVar TInt "y")])
+
+renameVarsFAExpr__test17 = testCase "renameVarsFAExpr ArrayDotOp match" $
+  renameVarsFAExpr [("x","z")] (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
+  @?=
+  BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "z") (FVar (ArrayOf 3 FPDouble) "y")
+
+renameVarsFAExpr__test18 = testCase "renameVarsFAExpr ArrayDotOp no match" $
+  renameVarsFAExpr [("a","z")] (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
+  @?=
+  BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y")
 
 renameVarsFBExprStm__tests = testGroup "renameVarsFBExpr__tests" $ [
   renameVarsFBExprStm__test1
@@ -1156,6 +1200,7 @@ funCallListFAExpr__tests = testGroup "funCallListFAExpr tests"
   ,funCallListFAExpr__test5
   ,funCallListFAExpr__test6
   ,funCallListFAExpr__test7
+  ,funCallListFAExpr__test8
   ]
 
 funCallListFAExpr__test1 = testCase "funCallList of 8 is []" $
@@ -1187,6 +1232,11 @@ funCallListFAExpr__test7 = testCase "funCallList of if(f(X)<0) then 1 else 2 is 
   funCallListFAExpr (Ite (FRel Lt (FEFun False "f" ResValue FPDouble []) (FInt 0)) (FInt 1) (FInt 2))
   @?=
   [FEFun False "f" ResValue FPDouble []]
+
+funCallListFAExpr__test8 = testCase "funCallList of dot_double(3)(x,y) is []" $
+  funCallListFAExpr (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
+  @?=
+  []
 
 funCallListFBExpr__tests = testGroup "funCallListFBExpr tests"
   [funCallListFBExpr__test1
@@ -1284,6 +1334,7 @@ noRoundOffErrorInAExpr__tests = testGroup "noRoundOffErrorInAExpr tests"
   ,noRoundOffErrorInAExpr__test11
   ,noRoundOffErrorInAExpr__test12
   ,noRoundOffErrorInAExpr__test13
+  ,noRoundOffErrorInAExpr__test14
   ]
 
 noRoundOffErrorInAExpr__test1 = testCase "9 has no round-off error" $
@@ -1325,6 +1376,9 @@ noRoundOffErrorInAExpr__test12 = testCase "int fun with no args has no round-off
 noRoundOffErrorInAExpr__test13 = testCase "int fun has no round-off error" $
     noRoundOffErrorInAExpr (FEFun False "f" ResValue TInt [FCnst FPDouble (fromDouble2Rat 0.1)]) @?= True
 
+noRoundOffErrorInAExpr__test14 = testCase "dot_double(3)(x,y) has round-off error" $
+    noRoundOffErrorInAExpr (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y")) @?= False
+
 varList__tests = testGroup "varList tests"
   [varList__test1
   ,varList__test2
@@ -1338,6 +1392,7 @@ varList__tests = testGroup "varList tests"
   ,varList__test10
   ,varList__test11
   ,varList__test12
+  ,varList__test13
   ]
 
 varList__test1 = testCase "varList of constant 0.1 is []" $
@@ -1387,6 +1442,10 @@ varList__test11 = testCase "varList of a RtoD(DtoR(x)) is [x]" $
 
 varList__test12 = testCase "varList of a RtoD(DtoR(x + y)) is [x,y]" $
     varList (ToFloat FPDouble(FromFloat FPDouble(BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (FVar FPDouble "y")))) @?= [FVar FPDouble "x",FVar FPDouble "y"]
+
+varList__test13 = testCase "varList of dot_double(3)(x,y) is [x,y]" $
+    varList (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
+    @?= [FVar (ArrayOf 3 FPDouble) "x", FVar (ArrayOf 3 FPDouble) "y"]
 
 
 equivModuloIndex__tests = testGroup "equivModuloIndex tests"
@@ -1549,6 +1608,7 @@ isArithExpr__tests = testGroup "isArithExpr tests"
   ,isArithExpr__test3
   ,isArithExpr__test4
   ,isArithExpr__test5
+  ,isArithExpr__test6
   ]
 
 isArithExpr__test1 = testCase "2 + (-1) is an arithmetic expression" $
@@ -1569,6 +1629,10 @@ isArithExpr__test4 = testCase "f(2) + (-1) is an arithmetic expression" $
 
 isArithExpr__test5 = testCase "x + (-1) is an arithmetic expression" $
     isArithExpr (BinaryFPOp AddOp FPDouble (FVar FPDouble "x") (UnaryFPOp NegOp FPDouble (FInt 1)))
+    @?= True
+
+isArithExpr__test6 = testCase "dot_double(3)(x,y) is an arithmetic expression" $
+    isArithExpr (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
     @?= True
 
 isListArithExprs__tests = testGroup "isListArithExprs tests"

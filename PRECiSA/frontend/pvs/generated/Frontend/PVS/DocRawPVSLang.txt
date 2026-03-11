@@ -30,13 +30,13 @@ Id literals are recognized by the regular expression
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in RawPVSLang are the following:
-  | ``AND`` | ``ARRAY`` | ``BEGIN`` | ``ELSE``
-  | ``ELSIF`` | ``END`` | ``ENDIF`` | ``FALSE``
-  | ``FUNCTION`` | ``IF`` | ``IMPORTING`` | ``IN``
-  | ``LAMBDA`` | ``LET`` | ``NOT`` | ``OR``
-  | ``SUBRANGE`` | ``THEN`` | ``THEORY`` | ``TRUE``
-  | ``TYPE`` | ``WITH`` | ``below`` | ``for``
-  | ``for_down`` | ``lambda`` | ``list`` |
+  | ``AND`` | ``BEGIN`` | ``ELSE`` | ``ELSIF``
+  | ``END`` | ``ENDIF`` | ``FALSE`` | ``FUNCTION``
+  | ``IF`` | ``IMPORTING`` | ``IN`` | ``LAMBDA``
+  | ``LET`` | ``NOT`` | ``OR`` | ``SUBRANGE``
+  | ``THEN`` | ``THEORY`` | ``TRUE`` | ``TYPE``
+  | ``WITH`` | ``below`` | ``for`` | ``for_down``
+  | ``fparray64`` | ``lambda`` | ``list`` |
 
 The symbols used in RawPVSLang are the following:
   | , | = | : | :=
@@ -104,31 +104,28 @@ All other symbols are terminals.
   |  |  **|**  | ``IF`` //Expr// ``THEN`` //Expr// //[ElsIf]// ``ELSE`` //Expr// ``ENDIF``
   |  |  **|**  | ``for`` ``(`` //Expr// ``,`` //Expr// ``,`` //Expr// ``,`` //LambdaExpr// ``)``
   |  |  **|**  | ``for_down`` ``(`` //Expr// ``,`` //Expr// ``,`` //Expr// ``,`` //LambdaExpr// ``)``
-  | //Expr10// | -> | //Expr11//
-  |  |  **|**  | //Id// ````` //Integer//
-  |  |  **|**  | //Id// ````` //Id//
-  |  |  **|**  | //Id// ``(`` //[Expr]// ``)`` ````` //Integer//
-  |  |  **|**  | //Id// ``(`` //[Expr]// ``)`` ````` //Id//
+  | //Expr10// | -> | ``(`` //Expr// ``)``
+  |  |  **|**  | //Expr10// ````` //Integer//
+  |  |  **|**  | //Expr10// ````` //Id//
   |  |  **|**  | ``(#`` //[RecordElem]// ``#)``
   |  |  **|**  | ``(`` //[Expr]// ``)``
-  |  |  **|**  | //Id// ``(`` //[Expr]// ``)``
+  |  |  **|**  | //Expr10// ``(`` //[Expr]// ``)``
   |  |  **|**  | //Id//
   |  |  **|**  | //Integer//
   |  |  **|**  | //Double//
   |  |  **|**  | ``TRUE``
   |  |  **|**  | ``FALSE``
-  | //Expr11// | -> | ``(`` //Expr// ``)``
   | //FieldDecls// | -> | //Id// ``:`` //Type//
   | //[Type]// | -> | //Type//
   |  |  **|**  | //Type// ``,`` //[Type]//
   | //[FieldDecls]// | -> | //FieldDecls//
   |  |  **|**  | //FieldDecls// ``,`` //[FieldDecls]//
   | //Type// | -> | //Id//
+  |  |  **|**  | ``fparray64`` ``(`` //Integer// ``)``
   |  |  **|**  | //Id// ``(`` //Integer// ``,`` //Integer// ``)``
   |  |  **|**  | ``below`` ``(`` //Expr// ``)``
   |  |  **|**  | ``[#`` //[FieldDecls]// ``#]``
   |  |  **|**  | ``[`` //[Type]// ``]``
-  |  |  **|**  | ``ARRAY`` ``[`` //[Type]// ``->`` //Type// ``]``
   |  |  **|**  | ``FUNCTION`` ``[`` //[Type]// ``->`` //Type// ``]``
   |  |  **|**  | ``[`` //[Type]// ``->`` //Type// ``]``
   |  |  **|**  | ``list`` ``[`` //Type// ``]``

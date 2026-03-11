@@ -1,0 +1,28 @@
+(|ex_array_dot_cert|
+ (|dot_example_TCC1| 0
+  (|dot_example_TCC1-1| NIL 3979990009 ("" (SUBTYPE-TCC) NIL NIL)
+   ((|proj_array| CONST-DECL "rarray(length(a))" |ieee754_arrays|
+     |float_bounded_axiomatic|)
+    (|finite_array?| CONST-DECL "bool" |ieee754_arrays|
+     |float_bounded_axiomatic|))
+   NIL
+   (|dot_example| SUBTYPE "ex_array_dot_cert.r1"
+    "rarray(length(ieee754_arrays[2, 53, 1023].proj_array(ex_array_dot_cert.f1)))"
+    (24 30 24 32))))
+ (|dot_example_TCC2| 0
+  (|dot_example_TCC2-1| NIL 3979990009 ("" (SUBTYPE-TCC) NIL NIL)
+   ((|finite_array?| CONST-DECL "bool" |ieee754_arrays|
+     |float_bounded_axiomatic|)
+    (|proj_array| CONST-DECL "rarray(length(a))" |ieee754_arrays|
+     |float_bounded_axiomatic|)
+    (- CONST-DECL "rarray(length(a))" |real_array| |structures|)
+    (|abs| CONST-DECL "rarray(length(a))" |real_array| |structures|)
+    (|max| CONST-DECL "real" |real_array| |structures|)
+    (|l_inf_norm| CONST-DECL "real" |real_array| |structures|))
+   NIL
+   (|dot_example| SUBTYPE "ex_array_dot_cert.r2"
+    "rarray(length(ieee754_arrays[2, 53, 1023].proj_array(ex_array_dot_cert.f2)))"
+    (25 30 25 32))))
+ (|dot_example| 0
+  (|dot_example-1| NIL 3980339407 ("" (POSTPONE) NIL NIL) NIL SHOSTAK)))
+

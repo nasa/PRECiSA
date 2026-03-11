@@ -64,13 +64,11 @@ transExpr x = case x of
   Frontend.PVS.AbsRawPVSLang.ListIf expr1 expr2 elsifs expr3 -> failure x
   Frontend.PVS.AbsRawPVSLang.For expr1 expr2 expr3 lambdaexpr -> failure x
   Frontend.PVS.AbsRawPVSLang.ForDown expr1 expr2 expr3 lambdaexpr -> failure x
-  Frontend.PVS.AbsRawPVSLang.TupleIndex id integer -> failure x
-  Frontend.PVS.AbsRawPVSLang.RecordField id1 id2 -> failure x
-  Frontend.PVS.AbsRawPVSLang.TupleFunIndex id exprs integer -> failure x
-  Frontend.PVS.AbsRawPVSLang.RecordFunField id1 exprs id2 -> failure x
+  Frontend.PVS.AbsRawPVSLang.TupleIndex expr integer -> failure x
+  Frontend.PVS.AbsRawPVSLang.RecordField expr id -> failure x
   Frontend.PVS.AbsRawPVSLang.RecordExpr recordelems -> failure x
   Frontend.PVS.AbsRawPVSLang.TupleExpr exprs -> failure x
-  Frontend.PVS.AbsRawPVSLang.Call id exprs -> failure x
+  Frontend.PVS.AbsRawPVSLang.Call expr exprs -> failure x
   Frontend.PVS.AbsRawPVSLang.ExprId id -> failure x
   Frontend.PVS.AbsRawPVSLang.Int integer -> failure x
   Frontend.PVS.AbsRawPVSLang.Rat double -> failure x
@@ -84,11 +82,11 @@ transFieldDecls x = case x of
 transType :: Frontend.PVS.AbsRawPVSLang.Type -> Result
 transType x = case x of
   Frontend.PVS.AbsRawPVSLang.TypeSimple id -> failure x
+  Frontend.PVS.AbsRawPVSLang.TypeDoubleArray integer -> failure x
   Frontend.PVS.AbsRawPVSLang.ParametricTypeBi id integer1 integer2 -> failure x
   Frontend.PVS.AbsRawPVSLang.TypeBelow expr -> failure x
   Frontend.PVS.AbsRawPVSLang.TypeRecord fielddeclss -> failure x
   Frontend.PVS.AbsRawPVSLang.TypeTuple types -> failure x
-  Frontend.PVS.AbsRawPVSLang.TypeArray types type_ -> failure x
   Frontend.PVS.AbsRawPVSLang.TypeFun types type_ -> failure x
   Frontend.PVS.AbsRawPVSLang.TypeFun2 types type_ -> failure x
   Frontend.PVS.AbsRawPVSLang.TypeList type_ -> failure x

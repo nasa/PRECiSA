@@ -32,27 +32,33 @@ test__raw2FAExpr =
         )
     , test
         ( "tuple",
-          Raw.TupleIndex (Raw.Id "x") 1,
+          Raw.TupleIndex (Raw.ExprId (Raw.Id "x")) 1,
           PVS.FTupleElem PVS.FPDouble "x" 1,
           ([("x",PVS.Tuple [PVS.FPDouble,PVS.FPDouble])], [], [])
         )
     , test
         ( "tuple function return",
-          Raw.TupleFunIndex (Raw.Id "f") [Raw.ExprId (Raw.Id "x")] 1,
+          Raw.TupleIndex (Raw.Call (Raw.ExprId (Raw.Id "f")) [Raw.ExprId (Raw.Id "x")]) 1,
           PVS.FEFun False "f" (PVS.ResTupleIndex 1) PVS.FPDouble [PVS.FVar (PVS.Tuple [PVS.FPDouble,PVS.FPDouble]) "x"],
           ([("x",PVS.Tuple [PVS.FPDouble,PVS.FPDouble])], [("f",PVS.Tuple [PVS.FPDouble,PVS.FPDouble]),("example",PVS.FPDouble)], [])
         )
     , test
         ( "record",
-          Raw.RecordField (Raw.Id "x") (Raw.Id "b"),
+          Raw.RecordField (Raw.ExprId (Raw.Id "x")) (Raw.Id "b"),
           PVS.FRecordElem PVS.FPDouble "x" "b",
           ([("x",PVS.Record [("a",PVS.FPDouble),("b",PVS.FPDouble)])], [], [])
         )
     , test
         ( "record function return",
-          Raw.RecordFunField (Raw.Id "f") [Raw.ExprId (Raw.Id "x")] (Raw.Id "b"),
+          Raw.RecordField (Raw.Call (Raw.ExprId (Raw.Id "f")) [Raw.ExprId (Raw.Id "x")]) (Raw.Id "b"),
           PVS.FEFun False "f" (PVS.ResRecordField "b") PVS.FPDouble [PVS.FVar (PVS.Record [("a",PVS.FPDouble),("b",PVS.FPDouble)]) "x"],
           ([("x",PVS.Record [("a",PVS.FPDouble),("b",PVS.FPDouble)])], [("f",PVS.Record [("a",PVS.FPDouble),("b",PVS.FPDouble)]),("example",PVS.FPDouble)], [])
+        )
+    , test
+        ( "dot_double",
+          Raw.Call (Raw.Call (Raw.ExprId (Raw.Id "dot_double")) [Raw.Int 3]) [Raw.ExprId (Raw.Id "x"), Raw.ExprId (Raw.Id "y")],
+          PVS.BinaryFPOp (OP.ArrayDotOp 3) PVS.FPDouble (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "x") (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "y"),
+          ([("x", PVS.ArrayOf 3 PVS.FPDouble), ("y", PVS.ArrayOf 3 PVS.FPDouble)], [], [])
         )
     ]
   where
@@ -116,7 +122,7 @@ test__raw2CollExpr =
           PVS.CollVar (PVS.Tuple [PVS.FPDouble,PVS.FPDouble]) "x"
     , testCase "FCall" $
       MAP.raw2CollExpr [] [("x",PVS.FPDouble)] [("f",PVS.Tuple [PVS.FPDouble,PVS.FPDouble]),("example",PVS.Tuple [PVS.FPDouble,PVS.FPDouble])]
-        (Raw.Call (Raw.Id "f") [Raw.ExprId (Raw.Id "x")])
+        (Raw.Call (Raw.ExprId (Raw.Id "f")) [Raw.ExprId (Raw.Id "x")])
         @?=
           PVS.CollFun False "f" (PVS.Tuple [PVS.FPDouble,PVS.FPDouble]) [PVS.FVar PVS.FPDouble "x"]
     ]

@@ -28,6 +28,8 @@ module Frontend.PVS.MapPVSLangAST
     TypeContext,
     rawparserPVS,
     raw2Prog,
+    isNumType,
+    isIntType,
   )
 where
 
@@ -198,18 +200,6 @@ raw2Decl e
         let venv  = map mapArg2Pair args
         e1' <- local (updateVarTypeEnv (const venv)) $ raw2FBExprStmM e1
         pure (Pred False Original (raw2Id f) args e1')
-  | DeclConstant f fptype@(TypeArray _ _) stm <- e
-    = do
-        fenv <- askFunTypeEnv
-        tc   <- askTypeContext
-        pure (CollDecl False (raw2FPType tc fptype) (raw2Id f) [] (raw2CollExpr tc [] fenv stm))
-  | DeclFunction f rawArgs fptype@(TypeArray _ _) stm <- e
-    = do
-        fenv <- askFunTypeEnv
-        tc   <- askTypeContext
-        let args = raw2Args tc rawArgs
-        let env  = map mapArg2Pair args
-        pure (CollDecl False (raw2FPType tc fptype) (raw2Id f) args (raw2CollExpr tc env fenv stm))
   | DeclConstant f fptype@(TypeRecord _) stm <- e
     = do
         fenv <- askFunTypeEnv
@@ -325,7 +315,7 @@ raw2CollExprM e
                         Just t@(Array _ _) -> PVS.CollVar t i
                         Just _  -> error $ "Identifier " ++ show i ++ "is not of data collection type."
                         Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env
-  | Raw.Call (Raw.Id f) args <- e
+  | Raw.Call (Raw.ExprId (Raw.Id f)) args <- e
     = do
         fenv <- askFunTypeEnv
         let fp = fromMaybe
@@ -402,7 +392,7 @@ raw2FBExprM e
   | Raw.BTrue  <- e = pure PVS.FBTrue
   | Raw.BFalse <- e = pure PVS.FBFalse
   | Raw.Not e1 <- e = PVS.FNot <$> raw2FBExprM e1
-  | Raw.Call (Raw.Id f) as <- e = PVS.FEPred False Original f <$> mapM raw2FAExprM as
+  | Raw.Call (Raw.ExprId (Raw.Id f)) as <- e = PVS.FEPred False Original f <$> mapM raw2FAExprM as
   | Raw.Or  e1 e2 <- e = PVS.FOr  <$> raw2FBExprM e1 <*> raw2FBExprM e2
   | Raw.And e1 e2 <- e = PVS.FAnd <$> raw2FBExprM e1 <*> raw2FBExprM e2
   | Raw.Eq  e1 e2 <- e = PVS.FRel Op.Eq  <$> raw2FAExprM e1 <*> raw2FAExprM e2
@@ -429,10 +419,10 @@ raw2FAExprM e
   | Raw.Rat d     <- e = pure (PVS.ToFloat FPDouble $ PVS.Rat $ rationalizeFP d)
   | Raw.ExprNeg (Raw.Int i) <- e = pure (PVS.FInt (-i))
   | Raw.ExprNeg (Raw.Rat d) <- e = pure (PVS.ToFloat FPDouble $ PVS.Rat $ rationalizeFP (-d))
-  | Raw.ExprNeg (Raw.Call (Raw.Id "ItoD") [Raw.Int i]) <- e = pure (PVS.ToFloat FPDouble $ PVS.Int (-i))
-  | Raw.ExprNeg (Raw.Call (Raw.Id "ItoS") [Raw.Int i]) <- e = pure (PVS.ToFloat FPSingle $ PVS.Int (-i))
-  | Raw.ExprNeg (Raw.Call (Raw.Id "RtoD") [Raw.Rat d]) <- e = pure (PVS.ToFloat FPDouble $ PVS.Rat $ rationalizeFP (-d))
-  | Raw.ExprNeg (Raw.Call (Raw.Id "RtoS") [Raw.Rat d]) <- e = pure (PVS.ToFloat FPSingle $ PVS.Rat $ rationalizeFP (-d))
+  | Raw.ExprNeg (Raw.Call (Raw.ExprId (Raw.Id "ItoD")) [Raw.Int i]) <- e = pure (PVS.ToFloat FPDouble $ PVS.Int (-i))
+  | Raw.ExprNeg (Raw.Call (Raw.ExprId (Raw.Id "ItoS")) [Raw.Int i]) <- e = pure (PVS.ToFloat FPSingle $ PVS.Int (-i))
+  | Raw.ExprNeg (Raw.Call (Raw.ExprId (Raw.Id "RtoD")) [Raw.Rat d]) <- e = pure (PVS.ToFloat FPDouble $ PVS.Rat $ rationalizeFP (-d))
+  | Raw.ExprNeg (Raw.Call (Raw.ExprId (Raw.Id "RtoS")) [Raw.Rat d]) <- e = pure (PVS.ToFloat FPSingle $ PVS.Rat $ rationalizeFP (-d))
   | Raw.ExprNeg e1 <- e = do
       e1' <- raw2FAExprM e1
       let ty = getPVSType e1'
@@ -448,7 +438,7 @@ raw2FAExprM e
           case lookup i env of
             Just fp -> pure (PVS.FVar fp i)
             Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env ++ " ,nor in fenv: " ++ show fenv
-  | Raw.Call (Raw.Id f) [fae] <- e = do
+  | Raw.Call (Raw.ExprId (Raw.Id f)) [fae] <- e = do
     fae' <- raw2FAExprM fae
     let fp = getPVSType fae'
     pure $ case f of
@@ -493,18 +483,18 @@ raw2FAExprM e
       "ItoS"   -> intToFP  FPSingle fae
       "ItoD"   -> intToFP  FPDouble fae
       _        -> error $ "[raw2FAExpr] unexpected function identifier: " ++ show f
-  | Raw.Call (Raw.Id "nth") [Raw.ExprId (Raw.Id name),idx] <- e
+  | Raw.Call (Raw.ExprId (Raw.Id "nth")) [Raw.ExprId (Raw.Id name),idx] <- e
     = do
         idx' <- raw2FAExprM idx
         env  <- askVarTypeEnv
         let ty = getElementType env name
         pure (PVS.FListElem ty name idx')
-  | Raw.Call (Raw.Id "map") [Raw.ExprId (Raw.Id funName),Raw.ExprId (Raw.Id name)] <- e
+  | Raw.Call (Raw.ExprId (Raw.Id "map")) [Raw.ExprId (Raw.Id funName),Raw.ExprId (Raw.Id name)] <- e
     = do
         env  <- askVarTypeEnv
         let ty = getElementType env name
         pure (PVS.FMap ty funName name)
-  | Raw.Call (Raw.Id "fold")
+  | Raw.Call (Raw.ExprId (Raw.Id "fold"))
       [Raw.ExprId (Raw.Id funName)
       ,Raw.ExprId (Raw.Id name)
       ,Raw.Int n
@@ -514,27 +504,32 @@ raw2FAExprM e
         let ty = getElementType env name
         baseCase' <- raw2FAExprM baseCase
         pure (PVS.FFold ty funName name n baseCase')
-  | Raw.Call (Raw.Id  "add") [e1,e2] <- e = raw2BinOp         e1 e2 Op.AddOp
-  | Raw.Call (Raw.Id "Iadd") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.AddOp TInt
-  | Raw.Call (Raw.Id "Sadd") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.AddOp FPSingle
-  | Raw.Call (Raw.Id "Dadd") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.AddOp FPDouble
-  | Raw.Call (Raw.Id  "sub") [e1,e2] <- e = raw2BinOp         e1 e2 Op.SubOp
-  | Raw.Call (Raw.Id "Isub") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.SubOp TInt
-  | Raw.Call (Raw.Id "Ssub") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.SubOp FPSingle
-  | Raw.Call (Raw.Id "Dsub") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.SubOp FPDouble
-  | Raw.Call (Raw.Id  "mul") [e1,e2] <- e = raw2BinOp         e1 e2 Op.MulOp
-  | Raw.Call (Raw.Id "Imul") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.MulOp TInt
-  | Raw.Call (Raw.Id "Smul") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.MulOp FPSingle
-  | Raw.Call (Raw.Id "Dmul") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.MulOp FPDouble
-  | Raw.Call (Raw.Id  "div") [e1,e2] <- e = raw2BinOp         e1 e2 Op.DivOp
-  | Raw.Call (Raw.Id "Idiv") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.DivOp TInt
-  | Raw.Call (Raw.Id "Sdiv") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.DivOp FPSingle
-  | Raw.Call (Raw.Id "Ddiv") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.DivOp FPDouble
-  | Raw.Call (Raw.Id  "mod") [e1,e2] <- e = raw2BinOp         e1 e2 Op.ModOp
-  | Raw.Call (Raw.Id "Imod") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.ModOp TInt
-  | Raw.Call (Raw.Id "Smod") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.ModOp FPSingle
-  | Raw.Call (Raw.Id "Dmod") [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.ModOp FPDouble
-  | Raw.Call (Raw.Id f) args <- e
+  | Raw.Call (Raw.ExprId (Raw.Id  "add")) [e1,e2] <- e = raw2BinOp         e1 e2 Op.AddOp
+  | Raw.Call (Raw.ExprId (Raw.Id "Iadd")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.AddOp TInt
+  | Raw.Call (Raw.ExprId (Raw.Id "Sadd")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.AddOp FPSingle
+  | Raw.Call (Raw.ExprId (Raw.Id "Dadd")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.AddOp FPDouble
+  | Raw.Call (Raw.ExprId (Raw.Id  "sub")) [e1,e2] <- e = raw2BinOp         e1 e2 Op.SubOp
+  | Raw.Call (Raw.ExprId (Raw.Id "Isub")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.SubOp TInt
+  | Raw.Call (Raw.ExprId (Raw.Id "Ssub")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.SubOp FPSingle
+  | Raw.Call (Raw.ExprId (Raw.Id "Dsub")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.SubOp FPDouble
+  | Raw.Call (Raw.ExprId (Raw.Id  "mul")) [e1,e2] <- e = raw2BinOp         e1 e2 Op.MulOp
+  | Raw.Call (Raw.ExprId (Raw.Id "Imul")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.MulOp TInt
+  | Raw.Call (Raw.ExprId (Raw.Id "Smul")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.MulOp FPSingle
+  | Raw.Call (Raw.ExprId (Raw.Id "Dmul")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.MulOp FPDouble
+  | Raw.Call (Raw.ExprId (Raw.Id  "div")) [e1,e2] <- e = raw2BinOp         e1 e2 Op.DivOp
+  | Raw.Call (Raw.ExprId (Raw.Id "Idiv")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.DivOp TInt
+  | Raw.Call (Raw.ExprId (Raw.Id "Sdiv")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.DivOp FPSingle
+  | Raw.Call (Raw.ExprId (Raw.Id "Ddiv")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.DivOp FPDouble
+  | Raw.Call (Raw.ExprId (Raw.Id  "mod")) [e1,e2] <- e = raw2BinOp         e1 e2 Op.ModOp
+  | Raw.Call (Raw.ExprId (Raw.Id "Imod")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.ModOp TInt
+  | Raw.Call (Raw.ExprId (Raw.Id "Smod")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.ModOp FPSingle
+  | Raw.Call (Raw.ExprId (Raw.Id "Dmod")) [e1,e2] <- e = raw2BinOpWithType e1 e2 Op.ModOp FPDouble
+  | Raw.Call (Raw.Call (Raw.ExprId (Raw.Id "dot_double")) [Raw.Int n]) [e1,e2] <- e
+    = do
+        e1' <- raw2FAExprM e1
+        e2' <- raw2FAExprM e2
+        pure (PVS.BinaryFPOp (Op.ArrayDotOp (fromInteger n)) FPDouble e1' e2')
+  | Raw.Call (Raw.ExprId (Raw.Id f)) args <- e
     = do
         env  <- askVarTypeEnv
         fenv <- askFunTypeEnv
@@ -583,46 +578,52 @@ raw2FAExprM e
         stmElse' <- raw2FAExprM stmElse
         elsifs'  <- mapM raw2Elsif elsifs
         pure (ListIte ((be',stmThen') : elsifs') stmElse')
-  | TupleIndex (Id tuple) idx <- e
-    = do
-        env  <- askVarTypeEnv
-        let t = fromMaybe (error $ "raw2FAExpr: tuple " ++ show tuple ++ " not found.")
-                  (lookup tuple env)
-        let fp = case t of
-              Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
-              _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a tuple type."
-        pure (FTupleElem fp tuple idx)
-  | TupleFunIndex (Id f) args idx <- e
-    = do
-        fenv <- askFunTypeEnv
-        let t = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
-                      (lookup f fenv)
-        let fp = case t of
-              Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
-              _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a tuple type."
-        args' <- mapM raw2FAExprM args
-        pure (FEFun False f (ResTupleIndex idx) fp args')
-  | RecordField (Id record) (Id field) <- e
-    = do
-        env  <- askVarTypeEnv
-        let t = fromMaybe (error $ "raw2FAExpr: record " ++ show record ++ " not found.")
-                      (lookup record env)
-        let fp = case t of
-              Record fieldTypes -> fromMaybe (error $ "raw2FAExpr: record field " ++ show field ++ " not found.")
-                                              (lookup field fieldTypes)
-              _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a record type."
-        pure (FRecordElem fp record field)
-  | RecordFunField (Id f) args (Id field) <- e
-    = do
-        fenv <- askFunTypeEnv
-        let t = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.") (lookup f fenv)
-        let fp = case t of
-              Record fieldTypes -> fromMaybe (error $ "raw2FAExpr: record field " ++ show field ++ " not found.")
-                                              (lookup field fieldTypes)
-              _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a record type."
-        args' <- mapM raw2FAExprM args
-        pure (FEFun False f (ResRecordField field) fp args')
-  | otherwise = error $ "raw2FAExpr: artihmetic expression expected but got " ++ show e ++ "."
+  | TupleIndex callee idx <- e
+    = case callee of
+        Raw.ExprId (Raw.Id tuple) ->
+          do env <- askVarTypeEnv
+             let t = fromMaybe (error $ "raw2FAExpr: tuple " ++ show tuple ++ " not found.")
+                                (lookup tuple env)
+             let fp = case t of
+                   Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
+                   _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a tuple type."
+             pure (FTupleElem fp tuple idx)
+        Raw.Call (Raw.ExprId (Raw.Id f)) args ->
+          do fenv  <- askFunTypeEnv
+             args' <- mapM raw2FAExprM args
+             let t = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
+                                (lookup f fenv)
+             let fp = case t of
+                   Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
+                   _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a tuple type."
+             pure (FEFun False f (ResTupleIndex idx) fp args')
+        _ -> error $ "raw2FAExpr: unsupported callee in TupleIndex: " ++ show callee
+  | RecordField callee (Id field) <- e
+    = case callee of
+        Raw.ExprId (Raw.Id record) ->
+          do env <- askVarTypeEnv
+             let t = fromMaybe (error $ "raw2FAExpr: record " ++ show record ++ " not found.")
+                                (lookup record env)
+             let fp = case t of
+                   Record fieldTypes -> fromMaybe (error $ "raw2FAExpr: record field " ++ show field ++ " not found.")
+                                                   (lookup field fieldTypes)
+                   _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a record type."
+             pure (FRecordElem fp record field)
+        Raw.Call (Raw.ExprId (Raw.Id f)) args ->
+          do fenv  <- askFunTypeEnv
+             args' <- mapM raw2FAExprM args
+             let t = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
+                                (lookup f fenv)
+             let fp = case t of
+                   Record fieldTypes -> fromMaybe (error $ "raw2FAExpr: record field " ++ show field ++ " not found.")
+                                                   (lookup field fieldTypes)
+                   _ -> error $ "raw2FAExpr: " ++ show t ++ "is not a record type."
+             pure (FEFun False f (ResRecordField field) fp args')
+        _ -> error $ "raw2FAExpr: unsupported callee in RecordField: " ++ show callee
+  | otherwise = do
+                  env  <- askVarTypeEnv
+                  fenv <- askFunTypeEnv
+                  error $ "raw2FAExpr: artihmetic expression expected but got " ++ show e ++ "." ++ "\nfenv: " ++ show fenv ++ "\nenv: " ++ show env
   where
     getElementType :: VarTypeEnv -> String -> PVSType
     getElementType env name = case t of
@@ -701,8 +702,7 @@ raw2FPTypeM ty'
       | ParametricTypeBi _t _a _b <- ty = error "Fixed-point numbers not supported yet."
       | TypeRecord fieldDecls <- ty = Record (map (raw2FieldDecls tc) fieldDecls)
       | TypeTuple ts <- ty = Tuple (map (raw2FPType' tc) ts)
-      | TypeArray ts t <- ty , all isIntType ts && isNumType t = Array (map (raw2FPType' tc) ts) (raw2FPType' tc t)
-      | TypeArray _ _ <- ty = error $ "[raw2FPType.raw2FPType'] generic type of array is not supported: " ++ show ty
+      | TypeDoubleArray n <- ty = PVS.ArrayOf n PVS.FPDouble
       | Raw.TypeFun typeList retType <- ty  = AbsPVSLang.TypeFun (map (raw2FPType' tc) typeList) (raw2FPType' tc retType)
       | TypeFun2 typeList retType <- ty = AbsPVSLang.TypeFun (map (raw2FPType' tc) typeList) (raw2FPType' tc retType)
       | TypeList t <- ty = List (raw2FPType' tc t)

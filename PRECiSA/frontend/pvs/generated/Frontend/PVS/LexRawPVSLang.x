@@ -161,7 +161,7 @@ eitherResIdent tv s = treeFind resWords
 -- | The keywords and symbols of the language organized as binary search tree.
 resWords :: BTree
 resWords =
-  b "FALSE" 27
+  b "FUNCTION" 27
     (b ":=" 14
        (b "+" 7
           (b "(#" 4
@@ -169,27 +169,27 @@ resWords =
           (b "/" 11
              (b "-" 9 (b "," 8 N N) (b "->" 10 N N))
              (b ":" 13 (b "/=" 12 N N) N)))
-       (b "ARRAY" 21
+       (b "BEGIN" 21
           (b ">" 18
              (b "<=" 16 (b "<" 15 N N) (b "=" 17 N N))
              (b "AND" 20 (b ">=" 19 N N) N))
-          (b "ELSIF" 24
-             (b "ELSE" 23 (b "BEGIN" 22 N N) N)
-             (b "ENDIF" 26 (b "END" 25 N N) N))))
-    (b "TYPE" 40
-       (b "NOT" 34
-          (b "IN" 31
-             (b "IF" 29 (b "FUNCTION" 28 N N) (b "IMPORTING" 30 N N))
-             (b "LET" 33 (b "LAMBDA" 32 N N) N))
-          (b "THEN" 37
-             (b "SUBRANGE" 36 (b "OR" 35 N N) N)
-             (b "TRUE" 39 (b "THEORY" 38 N N) N)))
-       (b "below" 47
-          (b "]" 44
-             (b "[" 42 (b "WITH" 41 N N) (b "[#" 43 N N))
-             (b "`" 46 (b "^" 45 N N) N))
+          (b "END" 24
+             (b "ELSIF" 23 (b "ELSE" 22 N N) N)
+             (b "FALSE" 26 (b "ENDIF" 25 N N) N))))
+    (b "WITH" 40
+       (b "OR" 34
+          (b "LAMBDA" 31
+             (b "IMPORTING" 29 (b "IF" 28 N N) (b "IN" 30 N N))
+             (b "NOT" 33 (b "LET" 32 N N) N))
+          (b "THEORY" 37
+             (b "THEN" 36 (b "SUBRANGE" 35 N N) N)
+             (b "TYPE" 39 (b "TRUE" 38 N N) N)))
+       (b "for" 47
+          (b "^" 44
+             (b "[#" 42 (b "[" 41 N N) (b "]" 43 N N))
+             (b "below" 46 (b "`" 45 N N) N))
           (b "lambda" 50
-             (b "for_down" 49 (b "for" 48 N N) N)
+             (b "fparray64" 49 (b "for_down" 48 N N) N)
              (b "|" 52 (b "list" 51 N N) N))))
   where
   b s n = B bs (TS bs n)

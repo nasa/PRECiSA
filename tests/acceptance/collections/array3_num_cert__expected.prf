@@ -1,0 +1,43 @@
+(|ex_array_dot_num_cert|
+ (|dot_example_TCC1| 0
+  (|dot_example_TCC1-1| NIL 3980336003 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (|dot_example| SUBTYPE "ex_array_dot_num_cert.r1"
+    "rarray(length(ieee754_arrays[2, 53, 1023].proj_array(ex_array_dot_num_cert.f1)))"
+    (24 30 24 32))))
+ (|dot_example_TCC2| 0
+  (|dot_example_TCC2-1| NIL 3980336003 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (|dot_example| SUBTYPE "ex_array_dot_num_cert.r2"
+    "rarray(length(ieee754_arrays[2, 53, 1023].proj_array(ex_array_dot_num_cert.f2)))"
+    (25 30 25 32))))
+ (|dot_example| 0
+  (|dot_example-1| NIL 3980336003
+   ("" (SKEEP)
+    (("" (LEMMA "dot_example")
+      (("" (INST?)
+        (("" (INST -1 "ulp_array(r1)" "ulp_array(r2)")
+          (("" (SPLIT -1)
+            (("1"
+              (CASE
+                  "aerr_ulp_arrays_dot(3)(r1, ulp_array(r1), r2, ulp_array(r2)) <= num_error_bound")
+              (("1" (ASSERT) NIL NIL)
+               ("2" (EXPAND "aerr_ulp_arrays_dot" 1)
+                (("2" (EXPAND "aerr_ulp_arrays_dot_from" 1)
+                  (("2" (EXPAND "aerr_ulp_arrays_dot_from" 1)
+                    (("2" (EXPAND "aerr_ulp_arrays_dot_from" 1)
+                      (("2" (NAME-REPLACE "r1_0" "r1`seq(0)")
+                        (("2" (POSTPONE) NIL NIL)) NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL))
+              NIL)
+             ("2" (PROPAX) NIL NIL) ("3" (PROPAX) NIL NIL)
+             ("4" (PROPAX) NIL NIL) ("5" (PROPAX) NIL NIL)
+             ("6" (PROPAX) NIL NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   NIL SHOSTAK)))
+

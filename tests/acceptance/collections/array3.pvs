@@ -1,0 +1,10 @@
+array3: THEORY
+BEGIN
+
+ IMPORTING float_bounded_axiomatic@ieee754_double_base_array
+
+ % @fp-function
+ dot3(x,y: fparray64(3)): double = dot_double(3)(x,y)
+
+%% for example [: 1 -1 1 :] and [: 1 4 6 :]
+END array3

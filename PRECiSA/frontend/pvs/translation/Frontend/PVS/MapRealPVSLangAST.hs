@@ -69,15 +69,6 @@ raw2Decl tc fenv (DeclFunction f rawArgs (TypeSimple (Id "bool")) expr)
     args = raw2Args tc rawArgs
     env = map mapArg2Pair args
 
-raw2Decl tc fenv (DeclConstant f fptype@(TypeArray _ _) stm)
-  = RCollDecl (raw2FPType tc fptype) (raw2Id f) [] (raw2RCollExpr tc [] fenv stm)
-
-raw2Decl tc fenv (DeclFunction f rawArgs fptype@(TypeArray _ _) stm)
-  = RCollDecl (raw2FPType tc fptype) (raw2Id f) args (raw2RCollExpr tc env fenv stm)
-  where
-    args = raw2Args tc rawArgs
-    env  = map mapArg2Pair args
-
 raw2Decl tc fenv (DeclConstant f fptype@(TypeRecord _) stm)
   = RCollDecl (raw2FPType tc fptype) (raw2Id f) [] (raw2RCollExpr tc [] fenv stm)
 
@@ -180,7 +171,7 @@ raw2RCollExpr _ env fenv (Raw.ExprId (Raw.Id i))
                     Just _  -> error $ "Identifier " ++ show i ++ "is not of data collection type."
                     Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env
 
-raw2RCollExpr tc env fenv (Raw.Call (Raw.Id f) actArgs)
+raw2RCollExpr tc env fenv (Raw.Call (Raw.ExprId (Raw.Id f)) actArgs)
   = RCollFun f fp (map (raw2AExpr tc env fenv) actArgs)
     where
       fp = fromMaybe (error $ "raw2FAExpr: function " ++ show f ++ " not found.")
@@ -211,7 +202,7 @@ raw2AExpr tc env fenv (Raw.ExprMul fae1 fae2) = raw2BinOp tc env fenv fae1 fae2 
 raw2AExpr tc env fenv (Raw.ExprDiv fae1 fae2) = raw2BinOp tc env fenv fae1 fae2 Op.DivOp
 raw2AExpr tc env fenv (Raw.ExprPow fae1 fae2) = raw2BinOp tc env fenv fae1 fae2 Op.PowOp
 
-raw2AExpr tc env fenv (Raw.Call (Raw.Id f) [fae])
+raw2AExpr tc env fenv (Raw.Call (Raw.ExprId (Raw.Id f)) [fae])
   | f == "abs"    = AbsPVSLang.UnaryOp Op.AbsOp  (raw2AExpr tc env fenv fae)
   | f == "sqrt"   = AbsPVSLang.UnaryOp Op.SqrtOp (raw2AExpr tc env fenv fae)
   | f == "sin"    = AbsPVSLang.UnaryOp Op.SinOp  (raw2AExpr tc env fenv fae)
@@ -223,7 +214,7 @@ raw2AExpr tc env fenv (Raw.Call (Raw.Id f) [fae])
   | f == "ln"     = AbsPVSLang.UnaryOp Op.LnOp   (raw2AExpr tc env fenv fae)
   | f == "exp"    = AbsPVSLang.UnaryOp Op.ExpoOp (raw2AExpr tc env fenv fae)
 
-raw2AExpr tc env fenv (Raw.Call (Raw.Id f) [Raw.ExprId (Raw.Id listName),idx])
+raw2AExpr tc env fenv (Raw.Call (Raw.ExprId (Raw.Id f)) [Raw.ExprId (Raw.Id listName),idx])
   | f == "nth"  = AbsPVSLang.ListElem fp listName (raw2AExpr tc env fenv idx)
   where
     t = fromMaybe (error errorMsg)
@@ -233,7 +224,7 @@ raw2AExpr tc env fenv (Raw.Call (Raw.Id f) [Raw.ExprId (Raw.Id listName),idx])
             _       -> error errorMsg
     errorMsg = "raw2AExpr: list " ++ show listName ++ " not found."
 
-raw2AExpr _ env _ (Raw.Call (Raw.Id f) [Raw.ExprId (Raw.Id funName)
+raw2AExpr _ env _ (Raw.Call (Raw.ExprId (Raw.Id f)) [Raw.ExprId (Raw.Id funName)
                                                            ,Raw.ExprId (Raw.Id listName)])
   | f == "map"  = AbsPVSLang.RMap fp funName listName
   where
@@ -244,7 +235,7 @@ raw2AExpr _ env _ (Raw.Call (Raw.Id f) [Raw.ExprId (Raw.Id funName)
             _       -> error errorMsg
     errorMsg = "raw2AExpr: list " ++ show listName ++ " not found."
 
-raw2AExpr tc env fenv (Raw.Call (Raw.Id f) [Raw.ExprId (Raw.Id funName)
+raw2AExpr tc env fenv (Raw.Call (Raw.ExprId (Raw.Id f)) [Raw.ExprId (Raw.Id funName)
                                                                ,Raw.ExprId (Raw.Id listName)
                                                                ,Raw.Int n
                                                                ,baseCase])
@@ -257,55 +248,57 @@ raw2AExpr tc env fenv (Raw.Call (Raw.Id f) [Raw.ExprId (Raw.Id funName)
             _       -> error errorMsg
     errorMsg = "raw2AExpr: list " ++ show listName ++ " not found."
 
-raw2AExpr tc env fenv (Raw.Call (Raw.Id f) [fae1,fae2])
+raw2AExpr tc env fenv (Raw.Call (Raw.ExprId (Raw.Id f)) [fae1,fae2])
   | f == "add"  = raw2BinOp tc env fenv fae1 fae2 Op.AddOp
   | f == "sub"  = raw2BinOp tc env fenv fae1 fae2 Op.SubOp
   | f == "mul"  = raw2BinOp tc env fenv fae1 fae2 Op.MulOp
   | f == "div"  = raw2BinOp tc env fenv fae1 fae2 Op.DivOp
   | f == "mod"  = raw2BinOp tc env fenv fae1 fae2 Op.ModOp
 
-raw2AExpr tc env fenv (Raw.Call (Raw.Id f) actArgs)
+raw2AExpr tc env fenv (Raw.Call (Raw.ExprId (Raw.Id f)) actArgs)
   = case lookup f fenv of
       Just fp -> AbsPVSLang.EFun f ResValue fp (map (raw2AExpr tc env fenv) actArgs)
       Nothing -> case lookup f env of
                    Just (Array _ t) -> ArrayElem t f (map (raw2AExpr tc env fenv) actArgs)
                    _ -> error $ "raw2AExpr: identifier " ++ show f ++ " not found."
 
-raw2AExpr _ env _ (TupleIndex (Id tuple) idx) = TupleElem fp tuple idx
-  where
-    fp = case t of
-           Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
-           _ -> error $ "raw2AExpr: " ++ show t ++ "is not a tuple type."
-    t = fromMaybe (error $ "raw2AExpr: tuple " ++ show tuple ++ " not found.")
-                   (lookup tuple env)
+raw2AExpr tc env fenv (TupleIndex callee idx)
+  = case callee of
+      Raw.ExprId (Raw.Id tuple) ->
+        let t = fromMaybe (error $ "raw2AExpr: tuple " ++ show tuple ++ " not found.")
+                          (lookup tuple env)
+            fp = case t of
+                   Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
+                   _ -> error $ "raw2AExpr: " ++ show t ++ "is not a tuple type."
+        in TupleElem fp tuple idx
+      Raw.Call (Raw.ExprId (Raw.Id f)) args ->
+        let t = fromMaybe (error $ "raw2AExpr: function " ++ show f ++ " not found.")
+                          (lookup f fenv)
+            fp = case t of
+                   Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
+                   _ -> error $ "raw2AExpr: " ++ show t ++ "is not a tuple type."
+        in EFun f (ResTupleIndex idx) fp (map (raw2AExpr tc env fenv) args)
+      _ -> error $ "raw2AExpr: unsupported callee in TupleIndex: " ++ show callee
 
-raw2AExpr _ env _ (RecordField (Id record) (Id field)) = AbsPVSLang.RecordElem fp record field
-  where
-    fp = case t of
-           Record fieldTypes -> fromMaybe (error $ "raw2AExpr: record field " ++ show field ++ " not found.")
-                                          (lookup field fieldTypes)
-           _ -> error $ "raw2AExpr: " ++ show t ++ "is not a record type."
-    t = fromMaybe (error $ "raw2AExpr: record " ++ show record ++ " not found.")
-                   (lookup record env)
-
-raw2AExpr tc env fenv (TupleFunIndex (Id f) args idx)
-  = EFun f (ResTupleIndex idx) fp (map (raw2AExpr tc env fenv) args)
-  where
-    fp = case t of
-           Tuple idxTypes -> idxTypes !! fromInteger (idx - 1)
-           _ -> error $ "raw2AExpr: " ++ show t ++ "is not a tuple type."
-    t = fromMaybe (error $ "raw2AExpr: function " ++ show f ++ " not found.")
-                   (lookup f fenv)
-
-raw2AExpr tc env fenv (RecordFunField (Id f) args (Id field))
-  = EFun f (ResRecordField field) fp (map (raw2AExpr tc env fenv) args)
-  where
-    fp = case t of
-           Record fieldTypes -> fromMaybe (error $ "raw2AExpr: record field " ++ show field ++ " not found.")
-                                          (lookup field fieldTypes)
-           _ -> error $ "raw2AExpr: " ++ show t ++ "is not a record type."
-    t = fromMaybe (error $ "raw2AExpr: function " ++ show f ++ " not found.")
-                   (lookup f fenv)
+raw2AExpr tc env fenv (RecordField callee (Id field))
+  = case callee of
+      Raw.ExprId (Raw.Id record) ->
+        let t = fromMaybe (error $ "raw2AExpr: record " ++ show record ++ " not found.")
+                          (lookup record env)
+            fp = case t of
+                   Record fieldTypes -> fromMaybe (error $ "raw2AExpr: record field " ++ show field ++ " not found.")
+                                                  (lookup field fieldTypes)
+                   _ -> error $ "raw2AExpr: " ++ show t ++ "is not a record type."
+        in AbsPVSLang.RecordElem fp record field
+      Raw.Call (Raw.ExprId (Raw.Id f)) args ->
+        let t = fromMaybe (error $ "raw2AExpr: function " ++ show f ++ " not found.")
+                          (lookup f fenv)
+            fp = case t of
+                   Record fieldTypes -> fromMaybe (error $ "raw2AExpr: record field " ++ show field ++ " not found.")
+                                                  (lookup field fieldTypes)
+                   _ -> error $ "raw2AExpr: " ++ show t ++ "is not a record type."
+        in EFun f (ResRecordField field) fp (map (raw2AExpr tc env fenv) args)
+      _ -> error $ "raw2AExpr: unsupported callee in RecordField: " ++ show callee
 
 raw2AExpr tc env fenv (Raw.Let letElems stm)
   = RLet letList (raw2AExpr tc newenv fenv stm)
@@ -368,7 +361,7 @@ raw2BExpr tc env fenv (Raw.Gt  ae1 ae2) = AbsPVSLang.Rel Op.Gt  (raw2AExpr tc en
 raw2BExpr tc env fenv (Raw.GtE ae1 ae2) = AbsPVSLang.Rel Op.GtE (raw2AExpr tc env fenv ae1) (raw2AExpr tc env fenv ae2)
 raw2BExpr _ _   _     Raw.BTrue        = AbsPVSLang.BTrue
 raw2BExpr _ _   _     Raw.BFalse       = AbsPVSLang.BFalse
-raw2BExpr tc env fenv  (Call (Id f) args) =
+raw2BExpr tc env fenv  (Call (ExprId (Id f)) args) =
   case lookup f fenv of
     Just Boolean -> AbsPVSLang.EPred f (map (raw2AExpr tc env fenv) args)
     Just _ -> error "raw2BExpr: Boolean function expected."

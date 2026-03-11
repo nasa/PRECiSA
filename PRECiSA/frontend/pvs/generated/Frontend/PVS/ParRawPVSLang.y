@@ -43,35 +43,35 @@ import Frontend.PVS.LexRawPVSLang
   '>'         { PT _ (TS _ 18) }
   '>='        { PT _ (TS _ 19) }
   'AND'       { PT _ (TS _ 20) }
-  'ARRAY'     { PT _ (TS _ 21) }
-  'BEGIN'     { PT _ (TS _ 22) }
-  'ELSE'      { PT _ (TS _ 23) }
-  'ELSIF'     { PT _ (TS _ 24) }
-  'END'       { PT _ (TS _ 25) }
-  'ENDIF'     { PT _ (TS _ 26) }
-  'FALSE'     { PT _ (TS _ 27) }
-  'FUNCTION'  { PT _ (TS _ 28) }
-  'IF'        { PT _ (TS _ 29) }
-  'IMPORTING' { PT _ (TS _ 30) }
-  'IN'        { PT _ (TS _ 31) }
-  'LAMBDA'    { PT _ (TS _ 32) }
-  'LET'       { PT _ (TS _ 33) }
-  'NOT'       { PT _ (TS _ 34) }
-  'OR'        { PT _ (TS _ 35) }
-  'SUBRANGE'  { PT _ (TS _ 36) }
-  'THEN'      { PT _ (TS _ 37) }
-  'THEORY'    { PT _ (TS _ 38) }
-  'TRUE'      { PT _ (TS _ 39) }
-  'TYPE'      { PT _ (TS _ 40) }
-  'WITH'      { PT _ (TS _ 41) }
-  '['         { PT _ (TS _ 42) }
-  '[#'        { PT _ (TS _ 43) }
-  ']'         { PT _ (TS _ 44) }
-  '^'         { PT _ (TS _ 45) }
-  '`'         { PT _ (TS _ 46) }
-  'below'     { PT _ (TS _ 47) }
-  'for'       { PT _ (TS _ 48) }
-  'for_down'  { PT _ (TS _ 49) }
+  'BEGIN'     { PT _ (TS _ 21) }
+  'ELSE'      { PT _ (TS _ 22) }
+  'ELSIF'     { PT _ (TS _ 23) }
+  'END'       { PT _ (TS _ 24) }
+  'ENDIF'     { PT _ (TS _ 25) }
+  'FALSE'     { PT _ (TS _ 26) }
+  'FUNCTION'  { PT _ (TS _ 27) }
+  'IF'        { PT _ (TS _ 28) }
+  'IMPORTING' { PT _ (TS _ 29) }
+  'IN'        { PT _ (TS _ 30) }
+  'LAMBDA'    { PT _ (TS _ 31) }
+  'LET'       { PT _ (TS _ 32) }
+  'NOT'       { PT _ (TS _ 33) }
+  'OR'        { PT _ (TS _ 34) }
+  'SUBRANGE'  { PT _ (TS _ 35) }
+  'THEN'      { PT _ (TS _ 36) }
+  'THEORY'    { PT _ (TS _ 37) }
+  'TRUE'      { PT _ (TS _ 38) }
+  'TYPE'      { PT _ (TS _ 39) }
+  'WITH'      { PT _ (TS _ 40) }
+  '['         { PT _ (TS _ 41) }
+  '[#'        { PT _ (TS _ 42) }
+  ']'         { PT _ (TS _ 43) }
+  '^'         { PT _ (TS _ 44) }
+  '`'         { PT _ (TS _ 45) }
+  'below'     { PT _ (TS _ 46) }
+  'for'       { PT _ (TS _ 47) }
+  'for_down'  { PT _ (TS _ 48) }
+  'fparray64' { PT _ (TS _ 49) }
   'lambda'    { PT _ (TS _ 50) }
   'list'      { PT _ (TS _ 51) }
   '|'         { PT _ (TS _ 52) }
@@ -192,22 +192,17 @@ Expr9
 
 Expr10 :: { Frontend.PVS.AbsRawPVSLang.Expr }
 Expr10
-  : Expr11 { $1 }
-  | Id '`' Integer { Frontend.PVS.AbsRawPVSLang.TupleIndex $1 $3 }
-  | Id '`' Id { Frontend.PVS.AbsRawPVSLang.RecordField $1 $3 }
-  | Id '(' ListExpr ')' '`' Integer { Frontend.PVS.AbsRawPVSLang.TupleFunIndex $1 $3 $6 }
-  | Id '(' ListExpr ')' '`' Id { Frontend.PVS.AbsRawPVSLang.RecordFunField $1 $3 $6 }
+  : '(' Expr ')' { $2 }
+  | Expr10 '`' Integer { Frontend.PVS.AbsRawPVSLang.TupleIndex $1 $3 }
+  | Expr10 '`' Id { Frontend.PVS.AbsRawPVSLang.RecordField $1 $3 }
   | '(#' ListRecordElem '#)' { Frontend.PVS.AbsRawPVSLang.RecordExpr $2 }
   | '(' ListExpr ')' { Frontend.PVS.AbsRawPVSLang.TupleExpr $2 }
-  | Id '(' ListExpr ')' { Frontend.PVS.AbsRawPVSLang.Call $1 $3 }
+  | Expr10 '(' ListExpr ')' { Frontend.PVS.AbsRawPVSLang.Call $1 $3 }
   | Id { Frontend.PVS.AbsRawPVSLang.ExprId $1 }
   | Integer { Frontend.PVS.AbsRawPVSLang.Int $1 }
   | Double { Frontend.PVS.AbsRawPVSLang.Rat $1 }
   | 'TRUE' { Frontend.PVS.AbsRawPVSLang.BTrue }
   | 'FALSE' { Frontend.PVS.AbsRawPVSLang.BFalse }
-
-Expr11 :: { Frontend.PVS.AbsRawPVSLang.Expr }
-Expr11 : '(' Expr ')' { $2 }
 
 FieldDecls :: { Frontend.PVS.AbsRawPVSLang.FieldDecls }
 FieldDecls
@@ -224,11 +219,11 @@ ListFieldDecls
 Type :: { Frontend.PVS.AbsRawPVSLang.Type }
 Type
   : Id { Frontend.PVS.AbsRawPVSLang.TypeSimple $1 }
+  | 'fparray64' '(' Integer ')' { Frontend.PVS.AbsRawPVSLang.TypeDoubleArray $3 }
   | Id '(' Integer ',' Integer ')' { Frontend.PVS.AbsRawPVSLang.ParametricTypeBi $1 $3 $5 }
   | 'below' '(' Expr ')' { Frontend.PVS.AbsRawPVSLang.TypeBelow $3 }
   | '[#' ListFieldDecls '#]' { Frontend.PVS.AbsRawPVSLang.TypeRecord $2 }
   | '[' ListType ']' { Frontend.PVS.AbsRawPVSLang.TypeTuple $2 }
-  | 'ARRAY' '[' ListType '->' Type ']' { Frontend.PVS.AbsRawPVSLang.TypeArray $3 $5 }
   | 'FUNCTION' '[' ListType '->' Type ']' { Frontend.PVS.AbsRawPVSLang.TypeFun $3 $5 }
   | '[' ListType '->' Type ']' { Frontend.PVS.AbsRawPVSLang.TypeFun2 $2 $4 }
   | 'list' '[' Type ']' { Frontend.PVS.AbsRawPVSLang.TypeList $3 }

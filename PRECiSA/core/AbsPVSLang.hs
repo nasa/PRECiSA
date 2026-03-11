@@ -8,9 +8,10 @@
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies #-}
 
 module AbsPVSLang
@@ -31,13 +32,14 @@ import Common.TypesUtils
 import Control.Monad.State
 import Data.Either
 import Data.Maybe
+import Data.Data
 import Numeric.IEEE
 
 type FunName = String
 type ListName = String
 type EExpr = AExpr
 type TightErr = Bool
-type IsTrans = Bool
+type IsTrans = Bool        -- ^ Is Translation from a Real version
 type CheckFunCalls = Bool
 type TupleIndex = Integer
 type Collection  = AExpr
@@ -52,21 +54,24 @@ data PVSType = FPSingle
              | Real
              | Boolean
              | Array [PVSType] PVSType
+             | ArrayOf Size PVSType
              | List PVSType
              | Tuple [PVSType]
              | Record [(RecordField,PVSType)]
              | TypeFun [PVSType] PVSType
              | Below FAExpr
-  deriving (Eq, Ord, Show, Read)
+  deriving (Eq, Ord, Show, Read, Data, Typeable)
 
 fp2realType :: PVSType -> PVSType
 fp2realType TInt = TInt
 fp2realType Boolean = Boolean
+fp2realType FPDouble = Real
 fp2realType (Array argsType t) = Array (map fp2realType argsType) (fp2realType t)
+fp2realType (ArrayOf n t) = ArrayOf n (fp2realType t)
 fp2realType (List t) = List (fp2realType t)
 fp2realType (Tuple ts) = Tuple (map fp2realType ts)
 fp2realType (Record fields) = Record (map (second fp2realType) fields)
-fp2realType _ = Real
+fp2realType t = error $ "fp2realType: unsupported PVSType: " ++ show t
 
 tupleIdxType :: PVSType -> Integer -> PVSType
 tupleIdxType (Tuple ts) idx =  ts!!fromInteger (idx - 1)
@@ -94,6 +99,8 @@ instance PPExt PVSType where
   prettyDoc Boolean = text "bool"
   prettyDoc (Array ts returnType) = text "[" <> hsep (punctuate (text "->") $ map prettyDoc ts)
                                       <+> text "->" <+> prettyDoc returnType <> text "]"
+  prettyDoc (ArrayOf n FPDouble) = text "fparray64" <> parens (integer n)
+  prettyDoc (ArrayOf n Real) = text "rarray" <> parens (integer n)
   prettyDoc (List t) = text "list[" <> prettyDoc t <> text "]"
   prettyDoc (Tuple ts) = text "[" <> hsep (punctuate comma (map prettyDoc ts)) <> text "]"
   prettyDoc (Record ts) = text "[#" <> hsep (punctuate comma (map prettyField ts)) <> text "#]"
@@ -106,7 +113,7 @@ instance PPExt PVSType where
 data LetElem  = LetElem {letVar  :: VarName,
                          letType :: PVSType,
                          letExpr :: AExpr}
-  deriving (Eq, Ord, Read, Show)
+  deriving (Eq, Ord, Read, Show, Data, Typeable)
 
 type FLetElem = (VarName,PVSType,FAExpr)
 
@@ -116,7 +123,7 @@ data ResultField
   = ResValue
   | ResRecordField RecordField
   | ResTupleIndex TupleIndex
-  deriving (Eq, Ord, Read, Show)
+  deriving (Eq, Ord, Read, Show, Data, Typeable)
 
 data AExpr
  -- real arithmetic expressions
@@ -158,7 +165,7 @@ data AExpr
     | ErrFun FunName PVSType ResultField [FAExpr] [AExpr] [AExpr]
     | MaxErr [EExpr]
     | Infinity
-    deriving (Eq, Ord, Read, Show)
+    deriving (Eq, Ord, Read, Show, Data, Typeable)
 
 data CollAExpr
   = RCLet [LetElem] CollAExpr
@@ -200,7 +207,7 @@ data FAExpr
     | ListIte [(FBExpr, FAExpr)] FAExpr
     | ForLoop PVSType VarName FAExpr FAExpr VarName FAExpr FAExpr
     | UnstWarning
-    deriving (Eq, Ord, Read, Show)
+    deriving (Eq, Ord, Read, Show, Data, Typeable)
 
 data CollFAExpr
   = CLet [FLetElem] CollFAExpr
@@ -223,7 +230,7 @@ data BExpr
   | BTrue
   | BFalse
   | EPred String [AExpr]
-  deriving (Eq, Ord, Read, Show)
+  deriving (Eq, Ord, Read, Show, Data, Typeable)
 
 data BExprStm
   = RBLet [LetElem] BExprStm
@@ -245,7 +252,7 @@ data FBExpr
   | BValue FBExpr
   | BStructVar VarName
   | FEPred IsTrans PredAbs String [FAExpr]
-  deriving (Eq, Ord, Read, Show)
+  deriving (Eq, Ord, Read, Show, Data, Typeable)
 
 data FBExprStm
   = BLet [FLetElem] FBExprStm
@@ -2021,15 +2028,15 @@ instance PPExt RDecl where
   prettyDoc (RDecl fp fun args stm)
     = text fun <> text "(" <>
       hsep (punctuate comma $ map prettyDoc args)
-      <> text  "):" <+> prettyDoc fp <+> text " =" $$ prettyDoc stm
+      <> text  "):" <+> prettyDoc fp <+> text "=" <+> prettyDoc stm
   prettyDoc (RPred fun args stm)
     = text fun <> text "(" <>
       hsep (punctuate comma $ map prettyDoc args)
-      <> text  "):" <+> text "bool" <+> text " =" $$ prettyDoc stm
+      <> text  "):" <+> text "bool" <+> text "=" <+> prettyDoc stm
   prettyDoc (RCollDecl t fun args stm)
     = text fun <> text "(" <>
       hsep (punctuate comma $ map prettyDoc args)
-      <> text  "):" <+> prettyDoc t <+> text " =" $$ prettyDoc stm
+      <> text  "):" <+> prettyDoc t <+> text "=" <+> prettyDoc stm
 
 instance PPExt Program where
   prettyDoc (Program _imps decls) = vcat (map prettyDoc decls)
@@ -2110,6 +2117,7 @@ prettyAExpr f (BinaryOp ItDivOp a1 a2) = text "Itdiv" <> parens (f a1 <> comma <
 prettyAExpr f (BinaryOp ModOp   a1 a2) = text "mod" <> parens (f a1 <> comma <+> f a2)
 prettyAExpr f (BinaryOp ItModOp a1 a2) = text "Itmod" <> parens (f a1 <> comma <+> f a2)
 prettyAExpr f (BinaryOp PowOp   a1 a2) = f a1 <> text "^" <> lparen <> f a2 <> rparen
+prettyAExpr f (BinaryOp (ArrayDotOp n) a1 a2) = text ("rdot(" ++ show n ++ ")") <> parens (f a1 <> comma <+> f a2)
 
 prettyAExpr f (UnaryOp NegOp   a) = text "-"     <> lparen <> f a <> rparen
 prettyAExpr f (UnaryOp FloorOp a) = text "floor" <> lparen <> f a <> rparen
@@ -2140,6 +2148,8 @@ prettyAExpr _ (ErrFun fun _ (ResTupleIndex idx) _args rargs errExprs)
   = text fun <> text "_error" <> parens (hsep $ punctuate comma (map prettyDoc errExprs++map prettyDoc rargs)) <> text "`" <> integer idx
 prettyAExpr f (ErrBinOp AddOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_add" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp AddOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_add" r1 e1 r2 e2
+prettyAExpr f (ErrBinOp AddOp (ArrayOf n FPDouble) r1 e1 r2 e2) = printBinOpError f ("aerr_ulp_adp_add(" ++ show n ++")") r1 e1 r2 e2
+prettyAExpr f (ErrBinOp (ArrayDotOp n) FPDouble r1 e1 r2 e2) = printBinOpError f ("aerr_ulp_dpa_dot(" ++ show n ++ ")") r1 e1 r2 e2
 prettyAExpr f (ErrBinOp SubOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_sub" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp SubOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_sub" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp MulOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_mul" r1 e1 r2 e2
@@ -2208,7 +2218,9 @@ prettyAExpr f (HalfUlp r FPDouble)
 prettyAExpr f (HalfUlp r (Array _ FPSingle))
     = text "ulp_sp_for_arrays" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (Array _ FPDouble))
-    = text "ulp_dp_for_arrays" <> text "(" <> prettyAExpr f r <> text ")/2"
+    = text "ulp_dp_array" <> text "(" <> prettyAExpr f r <> text ")/2"
+prettyAExpr f (HalfUlp r (ArrayOf _ FPDouble))
+    = text "ulp_dp_array" <> text "(" <> prettyAExpr f r <> text ")/2"
 prettyAExpr f (HalfUlp r (List FPSingle))
     = text "ulp_sp_for_lists" <> text "(" <> prettyAExpr f r <> text ")/2"
 
@@ -2384,6 +2396,8 @@ instance PPExt FAExpr where
   prettyDoc (BinaryFPOp AddOp   TInt     a1 a2) = prettyDocBinaryOp "Iadd"  a1 a2
   prettyDoc (BinaryFPOp AddOp   FPSingle a1 a2) = prettyDocBinaryOp "Sadd"  a1 a2
   prettyDoc (BinaryFPOp AddOp   FPDouble a1 a2) = prettyDocBinaryOp "Dadd"  a1 a2
+  prettyDoc (BinaryFPOp AddOp   (ArrayOf n FPDouble) a1 a2) = prettyDocBinaryOp ("ADadd(" ++ show n ++ ")")  a1 a2
+  prettyDoc (BinaryFPOp (ArrayDotOp n) FPDouble a1 a2) = prettyDocBinaryOp ("dot_double(" ++ show n ++ ")") a1 a2
   prettyDoc (BinaryFPOp SubOp   TInt     a1 a2) = prettyDocBinaryOp "Isub"  a1 a2
   prettyDoc (BinaryFPOp SubOp   FPSingle a1 a2) = prettyDocBinaryOp "Ssub"  a1 a2
   prettyDoc (BinaryFPOp SubOp   FPDouble a1 a2) = prettyDocBinaryOp "Dsub"  a1 a2

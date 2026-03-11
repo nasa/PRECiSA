@@ -1,0 +1,30 @@
+(|array1_num_cert|
+ (|example_c_0_TCC1| 0
+  (|example_c_0_TCC1-1| NIL 3974891754 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (|example_c_0| SUBTYPE "array1_num_cert.a"
+    "(arrays[2].finite_array?_double)" (9 22 9 23))))
+ (|example_c_0_TCC2| 0
+  (|example_c_0_TCC2-1| NIL 3974891754 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (|example_c_0| SUBTYPE "array1.example(array1_num_cert.a)"
+    "(arrays[2].finite_array?_double)" (11 25 11 35))))
+ (|example_c_0| 0
+  (|example_c_0-1| NIL 3974890740
+   ("" (SKEEP)
+    (("" (LEMMA "example")
+      (("" (INST -1 "ulp_double_array(r_a) / 2" "r_a" "a")
+        (("" (SPLIT -1)
+          (("1"
+            (CASE
+                "example_error(ulp_double_array(r_a) / 2, r_a) <= 1 / 140737488355328")
+            (("1" (ASSERT) NIL NIL)
+             ("2" (COMMENT "this should be provable via B&B")
+              (("2" (POSTPONE) NIL ";;; this should be provable via B&B"))
+              NIL))
+            NIL)
+           ("2" (POSTPONE) NIL NIL) ("3" (PROPAX) NIL NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   NIL SHOSTAK)))
+

@@ -1,0 +1,13 @@
+array1_num_cert__expected:  theory
+begin
+
+  importing array1_cert__expected
+
+  example_c_0
+  : lemma
+    ∀(r_a: rarray(3), a: fparray64(3)):
+    l_inf_norm(DAtoRA(a) - r_a)<=ulp_dp_array(r_a)/2 ∧
+    -125 <= r_a ∧ r_a <= 125
+    => l_inf_norm(DAtoRA(example(a)) - example_real(r_a)) <= 1 / 140737488355328
+
+end array1_num_cert__expected

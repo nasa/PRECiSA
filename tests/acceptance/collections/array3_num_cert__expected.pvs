@@ -1,0 +1,28 @@
+ex_array_dot_num_cert: theory
+begin
+
+  importing ex_array_dot_cert
+
+  %
+  % Assuming lb1 <= at(r1,i) <= ub1
+  %
+
+  lb1: macro  real = 1
+  ub1: macro  real = 10
+  lb2: macro  real = 2
+  ub2: macro  real = 20
+
+  num_error_bound: macro real = 3.1342432 % made-up number, TODO replace by Kodiak output
+
+  dot_example
+  : lemma
+    ∀(r1,r2: rarray(3), f1,f2: fparray64(3))
+    : lb1 <= r1 <= ub1 ∧
+      lb2 <= r2 <= ub2 ∧
+      finite_array?_double(f1) ∧ finite_array?_double(f2) ∧
+      finite?_double(dot3(f1, f2))∧
+      l_inf_norm(DAtoRA(f1) - r1) <= ulp_dp_array(r1) ∧   --- TODO: Fix l_inf_norm
+      l_inf_norm(DAtoRA(f2) - r2) <= ulp_dp_array(r2)     --- TODO: Fix l_inf_norm
+      ⇒ abs(DtoR(dot3(f1, f2)) - dot3_real(r1, r2)) <= num_error_bound
+
+end ex_array_dot_num_cert

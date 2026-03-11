@@ -28,8 +28,9 @@ common shared
     , scientific           >= 0.3  && <0.4
     , time                 >= 1.5 && <1.10
     , ieee                 >= 0.7
-    ,aeson
-    ,bytestring
+    , aeson
+    , bytestring
+    , uniplate
   extra-libraries:
     kodiak
   tested-with: GHC == 9.6.7
@@ -64,6 +65,7 @@ library
     AbstractDomain
     AbstractSemantics
     Certificate.Symbolic
+    Certificate.Real
     Certificate.Numerical
     Common.ControlFlow
     Common.DecisionPath
@@ -142,6 +144,7 @@ test-suite precisaTests
     -- FreshVariablesTest
     -- Kodiak.GeneratorTest
     FunctionCallErrorAbstractionTest
+    Kodiak.ErrorComputationTest
     Kodiak.ExpressionTest
     -- Kodiak.PaverTest
     Kodiak.PrettyPrintTest

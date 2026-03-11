@@ -1,0 +1,18 @@
+(|array1_cert|
+ (|example_TCC1| 0
+  (|example_TCC1-1| NIL 3974896485 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (|example| SUBTYPE "array1.example(array1_cert.a)"
+    "(arrays[2].finite_array?_double)" (18 30 18 40))))
+ (|example| 0
+  (|example-1| NIL 3974896638
+   ("" (SKEEP)
+    (("" (EXPAND "example_error")
+      (("" (EXPAND "example")
+        (("" (EXPAND "example_real") (("" (PROPAX) NIL NIL)) NIL)) NIL))
+      NIL))
+    NIL)
+   ((|example_error| CONST-DECL "nonneg_real" |array1_cert| NIL)
+    (|example_real| CONST-DECL "real_array" |array1_real| NIL)
+    (|example| CONST-DECL "double_array[2]" |array1| NIL))
+   SHOSTAK)))
+

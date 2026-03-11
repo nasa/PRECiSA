@@ -46,6 +46,7 @@ printErrorImportings (Program imps _) = vcat $ map text $ sort $ foldl f [] imps
     f acc imp
       | "float_bounded_axiomatic@ieee754_double" <- imp = "IMPORTING float_bounded_axiomatic@aerr_ulp__double":acc
       | "float_bounded_axiomatic@ieee754_single" <- imp = "IMPORTING float_bounded_axiomatic@aerr_ulp__single":acc
+      | "float_bounded_axiomatic@ieee754_double_base_array" <- imp = "IMPORTING float_bounded_axiomatic@aerr_ulp__double_array":acc
       | "PRECiSA@ieee754_double" <- imp = trace ("[WARNING][printErrorImportings] the importing: " ++ imp ++ " is deprecated and should not be used") $ "IMPORTING float_bounded_axiomatic@aerr_ulp__double":acc
       | otherwise = acc
 
@@ -108,7 +109,7 @@ printAggregatedLemmasAndProofs f args n
       argsTypedDoc = parens (hsep (punctuate comma $ map printParameterError args)
         <>  text ": nonneg_real" <> comma
         <+> hsep (punctuate comma $ map printParameterRealVariant args)
-        <>  text ": real")
+        <>  text ":" <+> printParameterRealVariantType (head args))
       actArgsDoc = parens (hsep (punctuate comma $ map printParameterError args)
         <> comma
         <+> hsep (punctuate comma $ map printParameterRealVariant args))
@@ -141,6 +142,7 @@ prErrorDef f _fReal _field args@(arg:_) aceb _fp n  =
     ACeb {eExpr = err} = aceb
 
 printArgType :: Arg -> Doc
+printArgType (Arg _ (ArrayOf n _)) = text "rarray" <> parens (integer n)
 printArgType (Arg _            _ ) = text "real"
 
 prPvsLemma :: String -> String -> ResultField -> [Arg] -> ACeb -> PVSType -> Int -> [FAExpr] -> Doc
@@ -180,6 +182,7 @@ printFinitenessConditions f args ty fpResult =
 
 finitePred :: PVSType -> Doc
 finitePred          FPDouble = text "finite?_double"
+finitePred (ArrayOf _n _ity) = text "finite_array?_double"
 finitePred                 t = error $ "[printFinitenessConditions:finitePred] unsupported type: " ++ show t
 
 printSubExpressionsFiniteness :: [FAExpr] -> Doc
@@ -242,6 +245,7 @@ f2r fp doc = case fp of
   Array   _ FPSingle -> text "StoR" <> parens doc
   Array   _ FPDouble -> text "DtoR" <> parens doc
   Array   _        _ -> doc
+  ArrayOf _ FPDouble -> text "DAtoRA" <> parens doc
   List  FPSingle -> text "StoR" <> parens doc
   List  FPDouble -> text "DtoR" <> parens doc
   List         _ -> doc
@@ -263,9 +267,22 @@ prIsFinite ae | getPVSType ae == FPSingle = text "finite?_single" <> parens (pre
                   text "finite?_double" <> parens (text "round_double" <> parens (prettyDoc ae))
                     $$ text "AND"
                     $$ text "abs" <> parens (text "DtoR" <> parens (text "round_double" <> parens (prettyDoc ae)) <+> text "-" <+> prettyDoc ae) <+> text "<=" <+> text "0"
+              | ArrayOf _ FPDouble <- getPVSType ae = text "finite_array?_double" <> parens (prettyDoc ae)
               | otherwise = error $ "prIsFinite: " ++ show ae ++ " is not a floating-point or integer expression."
 
 printArgumentBound :: Arg -> Doc
+printArgumentBound arg@(Arg x ty@(ArrayOf _n _ity)) =
+  printNorm ty <> parens (
+    f2r ty (text x)
+    <+>
+    text "-"
+    <+>
+    printParameterRealVariant arg
+  )
+  <+>
+  text "<="
+  <+>
+  printParameterError arg
 printArgumentBound (Arg x (Tuple ts)) = vcat $ zipWith (curry (printArgumentBound . tuple2Arg)) ts indexes
   where
     tuple2Arg (idxType, idx) = Arg (x ++ "_" ++ show idx) idxType
@@ -287,11 +304,16 @@ printArgumentBound arg@(Arg x t) =
   printParameterError arg
 
 printNorm :: PVSType -> Doc
+printNorm (ArrayOf _ FPDouble) = text "l_inf_norm"
 printNorm             FPDouble = text "abs"
 printNorm                   ty = error $ "[printNorm] unimplemented norm for type: " ++ show ty
 
 printParameterRealVariant :: Arg -> Doc
-printParameterRealVariant  (Arg x _) = text "r_" <> text x
+printParameterRealVariant (Arg x             _) = text "r_" <> text x
+
+printParameterRealVariantType :: Arg -> Doc
+printParameterRealVariantType (Arg _ (ArrayOf n _)) = text "rarray" <> parens (integer n)
+printParameterRealVariantType                     _ = text "real"
 
 printParameterError :: Arg -> Doc
 printParameterError (Arg x _) = text "e_" <> text x

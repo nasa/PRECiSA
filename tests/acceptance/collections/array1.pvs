@@ -1,0 +1,11 @@
+array1: THEORY
+BEGIN
+
+IMPORTING float_bounded_axiomatic@ieee754_double_base_array
+
+my_array : TYPE = fparray64(3)
+
+% @fp-function
+example(x: fparray64(3)): fparray64(3) = x
+
+END array1

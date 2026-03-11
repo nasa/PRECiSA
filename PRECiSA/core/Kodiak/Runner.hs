@@ -57,7 +57,7 @@ instance KodiakRunnable KodiakInput () KodiakResult where
       mapM_ (`run` pSys) varRanges
       pExpr <- run errorExpr variableMap
       minmax_system_maximize pSys pExpr
-      -- minmax_system_print pSys
+      minmax_system_print pSys
       lb <- minmax_system_maximum_lower_bound pSys <&> (fromRational . toRational)
       ub <- minmax_system_maximum_upper_bound pSys <&> (fromRational . toRational)
       return $ KR { maximumLowerBound = lb,
@@ -210,6 +210,11 @@ instance KodiakRunnable AExpr VariableMap PReal where
         run' (HalfUlp e FPSingle) vmap =
           do
            sulp <- runUnaryOperator e vmap real_create_single_ulp
+           ptwo <- run' (Rat 2) vmap
+           real_create_division sulp ptwo
+        run' (HalfUlp e (ArrayOf _ FPDouble)) vmap =
+          do
+           sulp <- runUnaryOperator e vmap real_create_double_ulp
            ptwo <- run' (Rat 2) vmap
            real_create_division sulp ptwo
         run' (ErrBinOp AddOp FPDouble r1 e1 r2 e2) vmap =

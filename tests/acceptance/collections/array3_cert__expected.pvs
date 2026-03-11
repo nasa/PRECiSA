@@ -1,0 +1,32 @@
+ex_array_dot_cert : theory
+begin
+
+  %importing PRECiSA@strategies
+  importing ex_array_dot
+  importing ex_array_dot_real
+  importing float_bounded_axiomatic@aerr_ulp__double_array
+
+  % dot_error(e1,e2: nonneg_real, r1,r2: rarray(3))
+  % : nonneg_real
+  % = aerr_ulp_add(r1`seq(0) * r2`seq(0),
+  %                  aerr_ulp_mul(r1`seq(0), e1, r2`seq(0), e2),
+  %                  r1`seq(1) * r2`seq(1) + r1`seq(2) * r2`seq(2),
+  %                  aerr_ulp_add(r1`seq(1) * r2`seq(1),
+  %                               aerr_ulp_mul(r1`seq(1), e1, r2`seq(1), e2),
+  %                               r1`seq(2) * r2`seq(2),
+  %                               aerr_ulp_mul(r1`seq(2), e1, r2`seq(2),
+  %                                            e2)))
+  
+  dot_example
+  : lemma
+    ∀(e1,e2: nonneg_real, r1,r2: rarray(3), f1,f2: fparray64(3))
+    : finite_array?_double(f1) ∧ finite_array?_double(f2) ∧
+      l_inf_norm(DAtoRA(f1) - r1) <= e1 ∧
+      l_inf_norm(DAtoRA(f2) - r2) <= e2 ∧
+      % (forall(i: below(3)): finite?_double(mul_ieee754(at(f1, i), at(f2, i)))) ∧
+      finite?_double(dot3(f1, f2))
+      IMPLIES
+        abs(DtoR(dot3(f1, f2)) - dot3_real(r1, r2))
+        <= aerr_ulp_arrays_dot(3)(r1,e1,r2,e2)
+
+end ex_array_dot_cert

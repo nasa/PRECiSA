@@ -65,6 +65,15 @@ configure-precisa: build-kodiak
 	    ) > cabal.project.local;                                          \
 	)
 
+.PHONY=update-pvs-grammar
+update-pvs-grammar:
+	@(                                                                                                                     \
+	    bnfc --haskell --name-space=Frontend.PVS --outputdir=PRECiSA/frontend/pvs/generated PRECiSA/bnfc/RawPVSLang.cfh && \
+	    cd PRECiSA/frontend/pvs/generated/Frontend/PVS &&                                                                  \
+	    happy ParRawPVSLang.y --ghc &&                                                                                     \
+	    alex LexRawPVSLang.x                                                                                               \
+	)
+
 build-kodiak: checkout-submodules build-filib
 	@( \
 		cd $(BUILD_FOLDER); \

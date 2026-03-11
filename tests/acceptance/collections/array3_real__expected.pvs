@@ -1,0 +1,8 @@
+ex_array_dot_real: THEORY
+BEGIN
+
+  IMPORTING structures@real_array
+
+  dot3_real(x,y: rarray(3)):  real = rdot(3)(x,y)
+
+END ex_array_dot_real

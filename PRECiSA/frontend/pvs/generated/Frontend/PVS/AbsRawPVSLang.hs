@@ -47,13 +47,11 @@ data Expr
     | ListIf Expr Expr [ElsIf] Expr
     | For Expr Expr Expr LambdaExpr
     | ForDown Expr Expr Expr LambdaExpr
-    | TupleIndex Id Integer
-    | RecordField Id Id
-    | TupleFunIndex Id [Expr] Integer
-    | RecordFunField Id [Expr] Id
+    | TupleIndex Expr Integer
+    | RecordField Expr Id
     | RecordExpr [RecordElem]
     | TupleExpr [Expr]
-    | Call Id [Expr]
+    | Call Expr [Expr]
     | ExprId Id
     | Int Integer
     | Rat Double
@@ -66,11 +64,11 @@ data FieldDecls = FieldDecls Id Type
 
 data Type
     = TypeSimple Id
+    | TypeDoubleArray Integer
     | ParametricTypeBi Id Integer Integer
     | TypeBelow Expr
     | TypeRecord [FieldDecls]
     | TypeTuple [Type]
-    | TypeArray [Type] Type
     | TypeFun [Type] Type
     | TypeFun2 [Type] Type
     | TypeList Type

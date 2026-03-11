@@ -24,8 +24,7 @@ LambdaWord2.  LambdaKeyWord ::= "lambda" ;
 Lambda. LambdaExpr ::= LambdaKeyWord "(" Id ":" "SUBRANGE" "(" Expr "," Expr ")" "," Id ":" Type ")" ":" Expr ;
 
 separator nonempty Expr "," ;
-coercions   Expr 11 ;
-
+coercions   Expr 10 ;
 
 Let.        Expr ::= "LET" [LetElem] "IN" Expr ;
 
@@ -59,13 +58,11 @@ For.         Expr9 ::= "for" "(" Expr "," Expr "," Expr "," LambdaExpr ")";
 ForDown.     Expr9 ::= "for_down" "(" Expr "," Expr "," Expr "," LambdaExpr ")";
 
 
-TupleIndex.     Expr10 ::= Id "`" Integer ;
-RecordField.    Expr10 ::= Id "`" Id ;
-TupleFunIndex.  Expr10 ::= Id "(" [Expr] ")" "`" Integer ;
-RecordFunField. Expr10 ::= Id "(" [Expr] ")" "`" Id ;
+TupleIndex.     Expr10 ::= Expr10 "`" Integer ;
+RecordField.    Expr10 ::= Expr10 "`" Id ;
 RecordExpr.     Expr10 ::= "(#" [RecordElem] "#)" ;
 TupleExpr.      Expr10 ::= "(" [Expr] ")" ;
-Call.           Expr10 ::= Id "(" [Expr] ")" ;
+Call.           Expr10 ::= Expr10 "(" [Expr] ")" ;
 ExprId.         Expr10 ::= Id ;
 Int.            Expr10 ::= Integer ;
 Rat.            Expr10 ::= Double ;
@@ -80,12 +77,12 @@ FieldDecls. FieldDecls ::= Id ":" Type ;
 separator nonempty Type "," ;
 separator nonempty FieldDecls "," ;
 
-TypeSimple.   Type ::= Id ;
+TypeSimple.       Type ::= Id ;
+TypeDoubleArray.  Type ::= "fparray64" "(" Integer ")" ;
 ParametricTypeBi. Type ::= Id "(" Integer "," Integer ")" ;
 TypeBelow.    Type ::= "below" "(" Expr ")" ;
 TypeRecord.   Type ::= "[#" [FieldDecls] "#]" ;
 TypeTuple.    Type ::= "[" [Type] "]" ;
-TypeArray.    Type ::= "ARRAY" "[" [Type] "->" Type "]" ;
 TypeFun.      Type ::= "FUNCTION" "[" [Type] "->" Type "]" ;
 TypeFun2.     Type ::= "[" [Type] "->" Type "]" ;
 TypeList.     Type ::= "list" "[" Type "]" ;

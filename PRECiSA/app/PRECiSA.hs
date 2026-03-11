@@ -35,12 +35,12 @@ import qualified Kodiak.Paver as KP
 import Kodiak.ErrorComputation (computeAllErrorsInKodiakMap)
 import Prelude hiding ((<>))
 import Certificate.Numerical
+import Certificate.Real (genRealTheory)
 import Certificate.Symbolic (genCertFile)
 import Parser.Parser
 import SMT.SMT
 import System.Directory
 import System.FilePath
-import Translation.Float2Real
 import qualified JSON
 import qualified Data.ByteString.Lazy as BS
 
@@ -104,9 +104,9 @@ parseAndAnalyze
 
   -------------
   let progSem = fixpointSemantics pgm (botInterp decls) 3 semConf dps
-  let symbCertificates = renderPVS $ genCertFile inputFileName certFileName realProgFileName pgm progSem
+  let symbCertificates = renderPVS $ genCertFile inputFileName certFileName realTheoryName pgm progSem
   writeFile certFile symbCertificates
-  let realProgDoc = genRealProgFile inputFileName  realProgFileName (fp2realProg pgm)
+  let realProgDoc = genRealTheory realTheoryName pgm
   writeFile realProgFile (renderPVS realProgDoc)
 
   let searchParams = KP.SP { maximumDepth = fromInteger . toInteger $ maxBBDepth
@@ -171,7 +171,7 @@ parseAndAnalyze
       realProgFile = filePath ++ inputFileName ++ "_real.pvs"
       certFileName = inputFileName ++ "_cert"
       numCertFileName = inputFileName ++ "_num_cert"
-      realProgFileName = inputFileName ++ "_real"
+      realTheoryName = inputFileName ++ "_real"
       generatePavingFilename pvsFilename functionName = pvsFilename ++ "." ++ functionName ++ ".paving"
 
 getKodiakResults :: [(String,PVSType,[Arg],[(ResultField,[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])])] -> [(String, ResultField, [(ControlFlow,KodiakResult)])]

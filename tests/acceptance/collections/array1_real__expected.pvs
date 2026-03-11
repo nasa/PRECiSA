@@ -1,0 +1,8 @@
+array1_real__expected: THEORY
+BEGIN
+
+  IMPORTING structures@real_array
+
+  example_real(r_x: rarray(3)): rarray(3) = r_x
+
+END array1_real__expected

@@ -1,0 +1,9 @@
+array5: THEORY
+BEGIN
+
+ IMPORTING float_bounded_axiomatic@ieee754_double_base_array
+
+ % @fp-function
+ dot2(x,y: fparray64(2)): double = dot_double(2)(x,y)
+
+END array5

@@ -1,0 +1,21 @@
+array1_cert: theory
+begin
+
+  importing PRECiSA@strategies
+
+  importing array1
+  importing array1_real
+
+  example_error(e_a: nonneg_real, r_a: rarray(3))
+  : nonneg_real
+  = e_a
+
+  example
+  : lemma
+    ∀(e_a: nonneg_real, r_a: rarray(3), a: fparray64(3)):
+    finite_array?_double(a) AND
+    l_inf_norm(DAtoRA(a) - r_a)<=e_a
+    IMPLIES l_inf_norm(DAtoRA(example(a)) - example_real(r_a)) <= example_error(e_a, r_a)
+
+
+end array1_cert
