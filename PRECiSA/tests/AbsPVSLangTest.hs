@@ -75,6 +75,11 @@ prettyFAExpr__tests = testGroup "prettyFAExpr" $
                           (FVar (ArrayOf 3 FPDouble) "x")
                           (FVar (ArrayOf 3 FPDouble) "y")))
       @?= "dot_double(3)(x, y)"
+  , testCase "prettyDoc BinaryFPOp ArrayAddOp" $
+      render (prettyDoc (BinaryFPOp (ArrayAddOp 3) FPDouble
+                          (FVar (ArrayOf 3 FPDouble) "x")
+                          (FVar (ArrayOf 3 FPDouble) "y")))
+      @?= ";+(x, y)"
   ]
 
 prettyAExpr__tests = testGroup "prettyAExpr" $
@@ -88,6 +93,16 @@ prettyAExpr__tests = testGroup "prettyAExpr" $
                           (Int 0) (Int 0)
                           (Int 1) (Int 1)))
       @?= "aerr_ulp_arrays_dot_double(3)(0, 0, 1, 1)"
+  , testCase "prettyDoc BinaryOp ArrayAddOp" $
+      render (prettyDoc (BinaryOp (ArrayAddOp 3)
+                          (Var (ArrayOf 3 FPDouble) "x")
+                          (Var (ArrayOf 3 FPDouble) "y")))
+      @?= ";+(x, y)"
+  , testCase "prettyDoc ErrBinOp ArrayAddOp FPDouble" $
+      render (prettyDoc (ErrBinOp (ArrayAddOp 3) FPDouble
+                          (Int 0) (Int 0)
+                          (Int 1) (Int 1)))
+      @?= "aerr_ulp_arrays_add_double(3)(0, 0, 1, 1)"
   ]
 
 subExpressions__tests = testGroup "subExpressions__tests" $ [

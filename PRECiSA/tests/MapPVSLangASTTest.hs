@@ -60,6 +60,12 @@ test__raw2FAExpr =
           PVS.BinaryFPOp (OP.ArrayDotOp 3) PVS.FPDouble (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "x") (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "y"),
           ([("x", PVS.ArrayOf 3 PVS.FPDouble), ("y", PVS.ArrayOf 3 PVS.FPDouble)], [], [])
         )
+    , test
+        ( "adda_double",
+          Raw.Call (Raw.Call (Raw.ExprId (Raw.Id "adda_double")) [Raw.Int 3]) [Raw.ExprId (Raw.Id "x"), Raw.ExprId (Raw.Id "y")],
+          PVS.BinaryFPOp (OP.ArrayAddOp 3) PVS.FPDouble (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "x") (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "y"),
+          ([("x", PVS.ArrayOf 3 PVS.FPDouble), ("y", PVS.ArrayOf 3 PVS.FPDouble)], [], [])
+        )
     ]
   where
     test (name, e, e', (vEnv, fEnv, tyEnv)) = testCase name $ MAP.raw2FAExpr tyEnv vEnv fEnv e @?= e'

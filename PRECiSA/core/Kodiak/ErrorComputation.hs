@@ -111,11 +111,24 @@ expandArrays' (ArrayElem ty var [Int idx]) = do
   return $ Var ty (projName idx var)
 expandArrays' (ArrayElem ty var idxs) = do
   error $ "[expandArrays'] ArrayElem should not be used: " ++ show (ArrayElem ty var idxs)
+expandArrays' (ErrBinOp (ArrayAddOp n) FPDouble r1 e1 r2 e2) = expandArrayAddOp (toInteger n) r1 e1 r2 e2
 expandArrays' (ErrBinOp (ArrayDotOp n) FPDouble r1 e1 r2 e2) = expandArrayDotOp (toInteger n) r1 e1 r2 e2
 expandArrays' (HalfUlp (RealMark var ResValue) (ArrayOf _ FPDouble)) = do
   let maxRM = RealMark (projName 0 var) ResValue
   return $ HalfUlp maxRM FPDouble
 expandArrays' other = return other
+
+expandArrayAddOp :: Integer -> AExpr -> AExpr -> AExpr -> AExpr -> IO AExpr
+expandArrayAddOp n r1 e1 r2 e2
+  | n == 0 = error "not reachable"
+  | otherwise = return $
+      ErrBinOp
+        AddOp
+        FPDouble
+        (r1 `mkProj` 0)
+        e1
+        (r2 `mkProj` 0)
+        e2
 
 expandArrayDotOp :: Integer -> AExpr -> AExpr -> AExpr -> AExpr -> IO AExpr
 expandArrayDotOp n r1 e1 r2 e2
@@ -144,12 +157,17 @@ expandArrayDotOp' idx maxIdx r1 e1 r2 e2
             r2'
             e2' )
   | otherwise = error $ "[expandArrayDotOp'] not implemented. idx: " ++ show idx ++ ", maxIdx: " ++ show maxIdx ++ ", r1: " ++ show r1 ++ ", e1: " ++ show e1 ++ ", r2: " ++ show r2 ++ ", e2: " ++ show e2
-  where
-    mkProj e i
-      | i < 0 = error $ "[mkProj] cannot accept negative indexes: " ++ show i
-      | RealMark var ResValue <- e = RealMark (projName i var) ResValue
-      | Var (ArrayOf n FPDouble) var <- e, i < n = Var FPDouble (projName i var)
-      | otherwise = error $ "[mkProj] not implemented for e: " ++ show e ++ ", and i: " ++ show i
+
+mkProj :: AExpr -> Integer -> AExpr
+mkProj e i
+  | i < 0 = error $ "[mkProj] cannot accept negative indexes: " ++ show i
+  | RealMark var ResValue <- e = RealMark (projName i var) ResValue
+  | Var (ArrayOf n FPDouble) var <- e, i < n = Var FPDouble (projName i var)
+  | BinaryOp (ArrayAddOp _) e1 e2 <- e =
+      let e1' = mkProj e1 i
+          e2' = mkProj e2 i
+      in BinaryOp AddOp e1' e2'
+  | otherwise = error $ "[mkProj] not implemented for e: " ++ show e ++ ", and i: " ++ show i
 
 projName :: Integer -> String -> String
 projName i n = n ++ "_array_idx_" ++ show i

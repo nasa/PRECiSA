@@ -1,0 +1,9 @@
+array6: THEORY
+BEGIN
+
+IMPORTING float_bounded_axiomatic@ieee754_double_base_array
+
+% @fp-function
+addTwice(x,y: fparray64(3)): fparray64(3) = adda_double(2)(x,adda_double(2)(x,y))
+
+END array6

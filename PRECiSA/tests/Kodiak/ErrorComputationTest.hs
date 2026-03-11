@@ -84,6 +84,43 @@ testExpandArrays =
         result <- expandArrays input
         result
           @?= Var FPDouble "x_array_idx_2",
+      testCase "with ArrayAddOp of length 1 (I)" $ do
+        let input =
+              ErrBinOp
+                (ArrayAddOp 1)
+                FPDouble
+                (RealMark "x" ResValue)
+                (HalfUlp (RealMark "x" ResValue) (ArrayOf 1 FPDouble))
+                (RealMark "y" ResValue)
+                (HalfUlp (RealMark "y" ResValue) (ArrayOf 1 FPDouble))
+        result <- expandArrays input
+        result
+          @?=
+            ErrBinOp
+              AddOp
+              FPDouble
+              (RealMark "x_array_idx_0" ResValue)
+              (HalfUlp (RealMark "x_array_idx_0" ResValue) FPDouble)
+              (RealMark "y_array_idx_0" ResValue)
+              (HalfUlp (RealMark "y_array_idx_0" ResValue) FPDouble),
+      testCase "with ArrayAddOp of length 2 (I)" $ do
+        let input =
+              ErrBinOp
+                (ArrayAddOp 2)
+                FPDouble
+                (RealMark "r1" ResValue)
+                (HalfUlp (RealMark "r1" ResValue) (ArrayOf 2 FPDouble))
+                (RealMark "r2" ResValue)
+                (HalfUlp (RealMark "r2" ResValue) (ArrayOf 2 FPDouble))
+        result <- expandArrays input
+        result
+          @?= ErrBinOp
+            AddOp
+            FPDouble
+            (RealMark "r1_array_idx_0" ResValue)
+            (HalfUlp (RealMark "r1_array_idx_0" ResValue) FPDouble)
+            (RealMark "r2_array_idx_0" ResValue)
+            (HalfUlp (RealMark "r2_array_idx_0" ResValue) FPDouble),
       testCase "with ArrayDotOp of length 1 (I)" $ do
         let input =
               ErrBinOp

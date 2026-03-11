@@ -26,6 +26,7 @@ data BinOp = AddOp
            | IDivOp
            | ItDivOp
            | ArrayDotOp Int
+           | ArrayAddOp Int
   deriving (Eq, Ord, Show, Read, Data, Typeable)
 
 data UnOp = NegOp
