@@ -1,0 +1,623 @@
+;;
+;;
+;;
+
+
+;; TODO move to PVS/src/prover/eproofcheck.lisp
+(defun simplify-expression (expr &key module-name (strategy '(grind))
+				 display? (id 'simplify-expr) interactive?)
+  (assert (or module-name *current-context*))
+  (let* ((*suppress-printing* (not interactive?))
+	 (*printproofstate* nil)
+	 (*proving-tcc* (not interactive?))
+	 (*generate-tccs* t)
+	 (*subgoals* t)
+	 (ctheory (if module-name
+		      (get-theory module-name)
+		      (current-theory)))
+	 (*current-context* (if module-name
+				(context ctheory)
+				*current-context*))
+	 (expr (typecheck-uniquely (pc-parse expr 'expr)))
+	 (sk-id (intern (freshname "simp")))
+	 (bexpr (if (tc-eq (find-supertype (type expr)) *boolean*)
+		    expr
+		    (let* ((ftype (mk-funtype (type expr) *boolean*))
+			   (skdecl (make-instance 'skolem-const-decl
+				     :id sk-id
+				     :type ftype
+				     :module ctheory))
+			   (*in-checker* t))
+		      (copy-prover-context)
+		      (setf (declarations-hash *current-context*)
+			    (copy (current-declarations-hash)))
+		      (put-decl skdecl)
+		      (make!-application (typecheck (pc-parse sk-id 'expr)
+					   :expected ftype)
+					 expr))))
+	 (cexpr (universal-closure bexpr))
+	 (expr-decl (make-instance 'formula-decl
+		      :id (ref-to-id id)
+		      :module ctheory
+		      :spelling 'formula
+		      :definition cexpr
+		      :closed-definition cexpr))
+	 (*start-proof-display* display?)
+	 ;; The next section needed for translate-to-prove, which is used
+	 ;; by arith-order, make-prod, and arith-ord-translate.  This will
+	 ;; be removed once term-lt is written.
+	 (*translate-id-hash* (init-if-rec *translate-id-hash*))
+	 (*translate-id-counter* nil)
+	 (*subtype-names* nil)
+	 (*local-typealist* *local-typealist*)
+	 (*rec-type-dummies* nil)
+	 (*named-exprs* nil))
+    (newcounter *translate-id-counter*)
+    (initprover)
+    ;; remove above once term-lt is written
+    (prove-decl expr-decl
+		:strategy (unless interactive?
+			    `(then (then ,strategy (postpone)) (quit))))
+    (let ((mform (merge-subgoals *subgoals*)))
+      (remove-skolem-constants
+       (gensubst mform
+	 #'(lambda (ex) (argument ex))
+	 #'(lambda (ex) (and (application? ex)
+			     (name-expr? (operator ex))
+			     (eq (id (operator ex)) sk-id))))))))
+
+;; TODO move to PVS/src/Field/extrategies.lisp
+(defun extra-get-var-ranges (fms vars)
+  (clrhash *extra-varranges*)
+  (let ((uvars (remove-if #'listp vars)))
+    (loop for fm in fms
+	  do (if (negation? fm)
+		 (get-var-range-from-formula (args1 fm) uvars t)
+	       (get-var-range-from-formula fm uvars))))
+  (loop for v in vars
+	when (listp v)
+	do (get-var-range-from-interval (pc-parse (car v) 'expr) (cadr v))
+        and
+        collect (car v)
+        else
+        collect v))
+
+
+(defun get-const-decl (theory-ref decl-id)
+  (with-theory (th) theory-ref
+             (loop for decl in (all-declarations th)
+                   when (and (const-decl? decl) (string= decl-id (id decl)))
+                   return decl)))
+
+;; (defun get-formula-decl (theory-ref decl-id)
+;;   (with-theory (th) theory-ref
+;;              (loop for decl in (all-declarations th)
+;;                    when (and (formula-decl? decl) (string= decl-id (id decl)))
+;;                    return decl)))
+;;
+;; this works in pvsio if the variables are defined as constants in the theory
+;;
+;; (let (
+;;             (vars '(("r1_0__" "[|-4,4|]")))
+;;             (subs (append *precisa-builtin* *ia-builtin*))
+;;             (precision 3)
+;;             (maxdepth 10)
+;;             (expr "ulp(r1_0__)")
+;;             (min? nil)
+;;             (max? nil)
+;;             (dirvar nil))
+;;         (let*((name      (freshname "nml"))
+;;               (accuracy  (ratio2decimal (expt 10 (- precision)) nil precision))
+;;               (ia-expr (extra-get-expr expr))
+;;               (fms       nil)
+;;               (vars      (ia-complete-vars (enlist-it vars) (ia-get-vars-from-expr ia-expr subs)))
+;;               (initeqs   (extra-reset-evalexprs))
+;;               (ia-vars (extra-get-var-ranges fms vars))
+;;               (unvars    (ia-find-unbound-vars ia-vars))
+;;               msg
+;;               (ia-box    (unless msg (ia-box ia-vars)))
+;;               (m_or_m    (+ (if min? -1 0) (if max? 1 0)))
+;;               (ia-iexpr (ia-interval-expr ia-expr precision ia-vars subs))
+;;               (ia-dirvar (or dirvar (cond ((< m_or_m 0) "mindir_maxvar")
+;; 				    ((> m_or_m 0) "maxdir_maxvar")
+;; 				    (t "altdir_maxvar"))))
+;;               (maxdepth  (if (null ia-vars) 0 maxdepth))
+;;               (ia-eval   (format nil "numerical_bandb.numerical(~a,~a,~a,~a)(~a,~a)"
+;; 			   maxdepth accuracy ia-dirvar m_or_m ia-iexpr ia-box)))
+;;           (let*((evaluable-expr (extra-get-expr ia-eval))
+;;                 (output (evalexpr evaluable-expr nil nil nil)))
+;;             (let ((depth  (extra-get-number-from-expr (get-expr-from-obj output 'depth)))
+;; 		  (splits (get-expr-from-obj output 'splits))
+;; 		  (ans    (get-expr-from-obj output 'ans)))
+;;               (unless (and (name-expr? ans) (eq (id ans) 'None))
+;;                 (let*((ans    (if (record-expr? ans) ans (args1 ans)))
+;;                       (upperb (extra-get-number-from-expr 
+;; 					       (get-expr-from-obj ans 'mm 'ub))))
+;;                   upperb))))))
+
+;; test
+;; (compute-upper-bound-with-numerical "ulp(r1_0__)" '(("r1_0__" "[|-4,4|]")))
+(defun compute-upper-bound-with-numerical
+    (expr
+     &optional
+       vars
+       (precision 3)
+       (maxdepth 10)
+       min?
+       max?
+       dirvar)
+  ""
+  (let ((subs (append *precisa-builtin* *ia-builtin*)))
+    (let*((accuracy  (ratio2decimal (expt 10 (- precision)) nil precision))
+          (ia-expr (extra-get-expr expr))
+          (fms       nil)
+          (vars      (ia-complete-vars (enlist-it vars) (ia-get-vars-from-expr ia-expr subs)))
+          (initeqs   (extra-reset-evalexprs))
+          (ia-vars (extra-get-var-ranges fms vars))
+          (unvars    (ia-find-unbound-vars ia-vars))
+          (ia-box    (ia-box ia-vars))
+          (m_or_m    (+ (if min? -1 0) (if max? 1 0)))
+          (ia-iexpr (ia-interval-expr ia-expr precision ia-vars subs))
+          (ia-dirvar (or dirvar (cond ((< m_or_m 0) "mindir_maxvar")
+				      ((> m_or_m 0) "maxdir_maxvar")
+				      (t "altdir_maxvar"))))
+          (maxdepth  (if (null ia-vars) 0 maxdepth))
+          (ia-eval   (format nil "numerical_bandb.numerical(~a,~a,~a,~a)(~a,~a)"
+			     maxdepth accuracy ia-dirvar m_or_m ia-iexpr ia-box)))
+      (let*((evaluable-expr (extra-get-expr ia-eval))
+            (output (evalexpr evaluable-expr nil nil nil)))
+        (let ((depth  (extra-get-number-from-expr (get-expr-from-obj output 'depth)))
+	      (splits (get-expr-from-obj output 'splits))
+	      (ans    (get-expr-from-obj output 'ans)))
+          (unless (and (name-expr? ans) (eq (id ans) 'None))
+            (let*((ans    (if (record-expr? ans) ans (args1 ans)))
+                  (upperb (extra-get-number-from-expr 
+			   (get-expr-from-obj ans 'mm 'ub))))
+              upperb)))))))
+
+;; (defun expand-in-expr (name expr)
+;;   "Expands all the apparitions of NAME in EXPR"
+;;   (let ((*assert-if-arith-hash* (make-hash-table :test #'eq))
+;;         (*assert-flag* 'simplify)
+;;         ;;
+;;         (*sequent-typealist* nil)
+;;         (*if-simplifies* nil)
+;;         (*names-from-symbols* nil)
+;;         (*use-rationals* t))
+;;     (let ((*use-rationals* t))
+;;       (multiple-value-bind (sig result)
+;;           (assert-if-inside 
+;;            (expand-defn (list (pc-parse name 'bname)) expr nil))
+;;         result))))
+(defun expand-in-expr (name expr)
+  "Expands all the apparitions of NAME in EXPR"
+  (let ((simplified (simplify-expression expr :strategy `(expand ,name))))
+    (if (forall-expr? simplified)
+        (expression simplified)
+        simplified)))
+
+(defun array-indexing-expr? (app)
+  (and (field-application? (operator app))
+       (number-expr? (argument app))))
+
+(defparameter *unroll-indexing-map* nil)
+
+(defun unroll-indexing-expression (idx-expr)
+  (let ((scalar-type (type idx-expr))
+        (scalar-id   (format nil "~a_~a" (id (argument (operator idx-expr))) (number(argument idx-expr)))))
+    (let*((scalar-binding
+           (let ((cached-bind (assoc scalar-id *unroll-indexing-map* :test #'equal)))
+             (if cached-bind
+                 (cdr cached-bind)
+                 (let ((bind (make-bind-decl (makesym scalar-id) scalar-type)))
+                   (setq *unroll-indexing-map* (acons scalar-id bind *unroll-indexing-map*))
+                   bind)))))
+      (mk-name-expr (makesym scalar-id) nil nil (make-resolution scalar-binding (current-theory-name) scalar-type)))))
+
+;; copying
+(defmethod unroll-array-functions ((expr application))
+  ;; if some of the arguments is an (subtype of) abstract array
+  ;; the application gets unrolled
+  ;; (break)
+  (cond
+    ((arg-tuple-expr? (argument expr))
+      (let ((args (exprs(argument expr))))
+        (if (some (lambda (arg) (let*((arg-type (type arg))
+                                      (print-type (if (subtype? arg-type)
+                                                      (let ((top-type (top-type arg-type)))
+                                                        (if top-type (print-type top-type) (print-type arg-type)))
+                                                      (print-type arg-type)))
+                                      (arg-type-id (and print-type (id print-type))))
+                                  (eq arg-type-id '|aarray|)))
+                  args)
+            (unroll-array-functions (expand-in-expr (id (operator* expr)) expr))
+            (copy expr
+                  'argument (copy (argument expr)
+                                  'exprs (loop for arg in (exprs (argument expr))
+                                               collect (unroll-array-functions arg)))))))
+    ((array-indexing-expr? expr)
+     ;; if it's an array indexation, replace it by a new scalar variable
+     (unroll-indexing-expression expr))
+    (t (let((arg (argument expr)))
+         (let*((arg-type (type arg))
+               (print-type (if (subtype? arg-type)
+                               (let ((top-type (top-type arg-type)))
+                                 (if top-type (print-type top-type) (print-type arg-type)))
+                               (print-type arg-type)))
+               (arg-type-id (and print-type (id print-type))))
+           (if (eq arg-type-id '|aarray|)
+               (unroll-array-functions (expand-in-expr (id (operator* expr)) expr))
+               (copy expr 'argument (unroll-array-functions arg))))))))
+
+(defmethod unroll-array-functions (obj)
+  (copy obj 'free-variables 'unbound))
+
+
+  ;; (defun has-array-argument-type? (arg)
+  ;;   "Check if an argument has an abstract array type."
+  ;;   (let* ((arg-type (type arg))
+  ;;          (print-type (if (subtype? arg-type)
+  ;;                          (let ((top-type (top-type arg-type)))
+  ;;                            (if top-type (print-type top-type) (print-type arg-type)))
+  ;;                          (print-type arg-type)))
+  ;;          (arg-type-id (and print-type (id print-type))))
+  ;;     (eq arg-type-id '|aarray|)))
+
+  ;; (defmethod unroll-array-functions ((expr application))
+  ;;   ;; if some of the arguments is an (subtype of) abstract array
+  ;;   ;; the application gets unrolled
+  ;;   (break)
+  ;;   (cond
+  ;;     ((arg-tuple-expr? (argument expr))
+  ;;       (let ((args (exprs (argument expr))))
+  ;;         (if (some #'has-array-argument-type? args)
+  ;;             ;; Array argument detected - expand the entire expression
+  ;;             (unroll-array-functions (expand-in-expr (id (operator* expr)) expr))
+  ;;             ;; No array arguments - recursively process them in place
+  ;;             (progn
+  ;;               (loop for arg in args do (unroll-array-functions arg))
+  ;;               expr))))
+
+  ;;     ((array-indexing-expr? expr)
+  ;;      ;; if it's an array indexation, replace it by a new scalar variable
+  ;;      (unroll-indexing-expression expr))
+
+  ;;     (t
+  ;;      ;; Single argument case
+  ;;      (let ((arg (argument expr)))
+  ;;        (if (has-array-argument-type? arg)
+  ;;            ;; Array argument - expand the entire expression
+  ;;            (unroll-array-functions (expand-in-expr (id (operator* expr)) expr))
+  ;;            ;; Non-array argument - recursively process it in place
+  ;;            (progn
+  ;;              (unroll-array-functions arg)
+  ;;              expr))))))
+
+  ;; (defmethod unroll-array-functions (obj)
+  ;;   obj)
+
+
+;; (defmethod unroll-array-functions ((expr field-application))
+;;   (break))
+
+
+
+;;;;
+;;;;
+;;;;
+
+
+
+(defun expand-lhs-expr ()
+  (unwind-protect
+       (let*((original-decl (args1 (definition (declaration *top-proofstate*))))
+             (unrolled-decl (unroll-array-functions original-decl)))
+         (format t "~%~%Unrolled: ~a~%~%" unrolled-decl)
+    (setf (status-flag *top-proofstate*) 'X))))
+
+;; (with-theory (th) "errorExpression"
+;;              (let ((decl (get-formula-decl "errorExpression" "dummy")))
+;;                (with-context (context decl)
+
+;; (defun unroll-array-funcions-in (formula-decl)
+;;   (let (strategy)
+;;     (unless (closed-definition formula-decl)
+;;       (let ((*generate-tccs* 'none))
+;;         (with-current-decl formula-decl
+;; 	  (setf (closed-definition formula-decl)
+;; 	        (universal-closure (definition formula-decl))))))
+;;     (let* ((init-real-time (get-internal-real-time))
+;; 	   (init-run-time (get-run-time))
+;; 	   (*skovar-counter* nil)
+;; 	   (*skofun-counter* nil)
+;; 	   (*bind-counter* nil)
+;; 	   (*recursive-prove-decl-call* *in-checker*)
+;; 	   (*displaying-proof* nil)
+;; 	   (*current-displayed* nil)
+;; 	   (*flush-displayed* nil)
+;; 	   (*auto-rewrites-names* nil)
+;; 	   (*auto-rewrites-off* nil)
+;; 	   (*assert-typepreds* nil)
+;; 	   (*record-undone-proofstate* nil)
+;; 	   (*pvs-bdd-hash* nil)
+;; 	   (*bdd-pvs-hash* nil)
+;; 	   (*bdd-counter* *bdd-counter*)
+;; 	   (*track-rewrites* nil)
+;; 	   (*context-modified* nil)
+;; 	   (*generate-tccs* 'none)
+;; 	   (*rewrite-msg-off* *rewrite-msg-off*)
+;; 	   (*ruletrace* nil)
+;; 	   (*ruletracedepth* 0)
+;; 	   ;; Hash tables
+;; 	   (*assert-if-arith-hash* (make-hash-table :test #'eq))
+;; 	   (*auto-rewrites* (init-if-rec *auto-rewrites*))
+;; 	   (*auto-rewrites-ops* (init-if-rec *auto-rewrites-ops*))
+;; 	   (*all-rewrites-names* nil)
+;; 	   (*match-cache* (init-if-rec *match-cache*))
+;; 	   (*subtype-of-hash* (init-if-rec *subtype-of-hash*))
+;; 	   (*create-formulas-cache* (init-if-rec *create-formulas-cache*))
+;; 	   (*term-print-strings* (init-if-rec *term-print-strings*))
+;; 	   ;;
+;; 	   (*in-checker* t) ; Make sure this follows setting of *current-context*
+;; 	   (*current-decision-procedure* (determine-decision-procedure formula-decl))
+;; 	   (auto-rewrites-info (with-current-decl formula-decl (initialize-auto-rewrites)))
+;; 	   (*translate-id-hash* (init-if-rec *translate-id-hash*))
+;; 	   (*translate-id-counter* nil)
+;; 	   (*subtype-names* nil)
+;; 	   (*local-typealist* *local-typealist*)
+;; 	   (*rec-type-dummies* nil)
+;; 	   (*named-exprs* nil)
+;; 	   (*tccs-proved* nil)
+;; 	   (*query-input* nil)
+;; 	   (*prover-log* nil))
+;;       (reset-pseudo-normalize-caches)
+;;       (reset-beta-cache)
+;;       (clrhash *subst-fields-hash*)
+;;       (newcounter *translate-id-counter*)
+;;       (initprover)
+;;       ;; remove above once term-lt is written
+;;       (newcounter *skovar-counter*)
+;;       (newcounter *skofun-counter*)
+;;       (newcounter *bind-counter*)
+;;       (with-current-decl formula-decl
+;;         (let* ((top-formula (closed-definition formula-decl))
+;; 	       (s-form (make-instance 's-formula :formula top-formula))
+;; 	       (sequent (make-instance 'sequent :s-forms (list s-form)))
+;; 	       (*init-dp-state* (dpi-empty-state))
+;; 	       (*dp-state* (dpi-push-state *init-dp-state*))
+;; 	       (*top-dp-state* (dpi-push-state *init-dp-state*))
+;; 	       (*top-proofstate*
+;; 	        (make-instance 'top-proofstate
+;; 		               :current-goal sequent
+;; 		               :label (string (id formula-decl))
+;; 		               :strategy (if strategy
+;; 				             strategy
+;; 				             (query*-step))
+;; 		               :context *current-context*
+;; 		               :dp-state *dp-state*
+;; 		               :justification (justification formula-decl)
+;; 		               :declaration formula-decl
+;; 		               :current-auto-rewrites auto-rewrites-info))
+;; 	       (cur-all-subst-mod-params-caches
+;; 	        (all-subst-mod-params-caches *workspace-session*))
+;; 	       (new-all-subst-mod-params-caches
+;; 	        (copy-subst-mod-params-cache))
+;; 	       )
+;; 	  (before-prove*)
+;; 	  (setf (all-subst-mod-params-caches *workspace-session*)
+;; 	        new-all-subst-mod-params-caches)
+;; 	  (unwind-protect (dpi-start #'expand-lhs-expr)
+;; 	    (setf (all-subst-mod-params-caches *workspace-session*)
+;; 		  cur-all-subst-mod-params-caches)
+;; 	    (after-prove*)
+;; 	    (dpi-end *top-proofstate*)
+;; 	    ;; (unless *recursive-prove-decl-call*
+;; 	    ;;   (save-proof-info formula-decl init-real-time init-run-time))
+;; 	    (finish-proofstate *top-proofstate*))
+;; 	  *top-proofstate*)))))
+
+
+;;
+;; debuging
+;;
+
+  (defun has-lhash-repetitions? (lht)
+    "Check if there are shadowed keys (repetitions) by comparing total unique
+     keys from map-lhash against sum of all keys at each level."
+    (let ((unique-count 0)
+          (total-count 0))
+      ;; Count unique keys using map-lhash (which skips duplicates)
+      (map-lhash #'(lambda (key value)
+                     (declare (ignore key value))
+                     (incf unique-count))
+                 lht)
+      ;; Count all keys at all levels
+      (do ((current lht (lhash-next current)))
+          ((null current))
+        (when (hash-table-p (lhash-table current))
+          (incf total-count (hash-table-count (lhash-table current)))))
+      ;; If unique < total, there are repetitions
+      (< unique-count total-count)))
+
+
+(defun find-lhash-duplicates (lht)
+    "Returns a list of keys that appear at multiple levels in the linked-hash-table."
+    (let ((key-levels (make-hash-table :test (hash-table-test
+                                               (lhash-table lht))))
+          (duplicates nil))
+      (do ((current lht (lhash-next current))
+           (level 0 (1+ level)))
+          ((null current))
+        (when (hash-table-p (lhash-table current))
+          (maphash #'(lambda (key value)
+                       (declare (ignore value))
+                       (if (gethash key key-levels)
+                           (pushnew key duplicates :test #'equal)
+                           (setf (gethash key key-levels) level)))
+                   (lhash-table current))))
+      duplicates))
+
+;;
+;; Combines unroll-array-functions and compute-upper-bound-with-numerical
+;;
+
+(defun extract-array-name-from-scalar-id (scalar-id)
+  "Extracts the array variable name from a generated scalar ID.
+   Scalar IDs are formatted as 'array_name_index', so we extract everything before the last underscore."
+  (let ((last-underscore-pos (position #\_ scalar-id :from-end t)))
+    (if last-underscore-pos
+        (subseq scalar-id 0 last-underscore-pos)
+        scalar-id)))
+
+(defun compute-upper-bound-on-unrolled-array-expr
+    (expr
+     array-vars-with-ranges
+     &optional
+       (precision 3)
+       (maxdepth 10)
+       min?
+       max?
+       dirvar)
+  "Given a PVS expression containing array-indexed function applications,
+   expands all array functions and replaces array indexing with scalar variables,
+   then computes an upper bound for the resulting expression.
+
+   EXPR: A PVS ground expression (as a string or expression object)
+   ARRAY-VARS-WITH-RANGES: A list of (array-var-name interval-spec) pairs
+     where array-var-name is the name of an array variable in the original expression
+     and interval-spec is its range (e.g., \"[|-1,1|]\")
+   PRECISION: Decimal precision for numerical solver (default 3)
+   MAXDEPTH: Maximum search depth for branch-and-bound (default 10)
+   MIN?, MAX?, DIRVAR: Optional parameters for compute-upper-bound-with-numerical
+
+   Returns: A concrete upper bound for the expanded expression, or NIL if unbounded."
+  (let ((*unroll-indexing-map* nil))
+    (let*((ia-expr (extra-get-expr expr))
+          (unrolled-expr (unroll-array-functions ia-expr)))
+      ;; Build a list of (scalar-var-name range) pairs from the generated scalar variables
+      ;; by looking up the range of their parent array in array-vars-with-ranges
+      (let ((generated-scalar-vars
+             (loop for (scalar-id . scalar-binding) in *unroll-indexing-map*
+                   for array-name = (extract-array-name-from-scalar-id scalar-id)
+                   for range-entry = (assoc array-name array-vars-with-ranges :test #'equal)
+                   when range-entry
+                   collect (list scalar-id (cadr range-entry)))))
+        ;; Combine original array variable ranges with generated scalar variable ranges
+        (let ((all-vars (append array-vars-with-ranges generated-scalar-vars)))
+          ;; Call compute-upper-bound-with-numerical with the unrolled expression
+          ;; and the complete variable ranges
+          (compute-upper-bound-with-numerical
+           unrolled-expr
+           all-vars
+           precision
+           maxdepth
+           min?
+           max?
+           dirvar))))))
+
+;; test
+;; (compute-upper-bound-on-unrolled-array-expr
+;;  "dot3(arr1, arr2)"
+;;  '(("arr1" "[|-1,1|]") ("arr2" "[|-1,1|]")))
+
+(defun compute-upper-bound-on-array-function-definition
+    (decl-id
+     theory-ref
+     &optional
+       (precision 3)
+       (maxdepth 10)
+       min?
+       max?
+       dirvar)
+  "Given a declaration ID and a theory reference,
+   extracts the definition, identifies array variables and their corresponding ranges,
+   and computes an upper bound for the unrolled array expression.
+
+   Array variables are matched to ranges using naming convention:
+   e.g., array variable r_x matches with range constant x_range
+
+   DECL-ID: Symbol ID of the constant to analyze (e.g., '|errorExpression|)
+   THEORY-REF: String reference to the theory containing the declaration
+   PRECISION, MAXDEPTH, MIN?, MAX?, DIRVAR: Parameters for compute-upper-bound-with-numerical
+
+   Returns: A concrete upper bound for the expression, or NIL if unbounded."
+  (let ((theory-id (multiple-value-bind (dir file th)
+                       (get-theory-ref theory-ref)
+                     (declare (ignore dir file))
+                     (makesym th))))
+    (let ((decl (get-referenced-declaration* decl-id '|const-decl| nil theory-id nil)))
+      (with-theory (th) theory-id
+        (let*((definition (definition decl))
+              ;; Collect all const-decl declarations from the theory
+              (all-decls (all-declarations th))
+              ;; Find range declarations by checking their type is Interval
+              (range-decls (loop for d in all-decls
+                                 when (and (const-decl? d)
+                                          (let*((d-type (type d))
+                                                (print-type (if (subtype? d-type)
+                                                                (let ((top-type (or (top-type d-type) (supertype d-type))))
+                                                                  (if top-type (print-type top-type) (print-type d-type)))
+                                                                (print-type d-type)))
+                                                (type-id (and print-type (id print-type))))
+                                            (eq type-id '|Interval|)))
+                                 collect d))
+              ;; Find VAR declarations (these are array variables)
+              (var-decls (loop for d in all-decls
+                               when (and (var-decl? d)
+                                        (let*((d-type (type d))
+                                              (print-type (if (subtype? d-type)
+                                                              (let ((top-type (or (top-type d-type) (supertype d-type))))
+                                                                (if top-type (print-type top-type) (print-type d-type)))
+                                                              (print-type d-type)))
+                                              (type-id (and print-type (id print-type))))
+                                          (eq type-id '|aarray|)))
+                               collect d))
+              ;; Build mapping from array variable names to their ranges
+              ;; Convention: r_x -> x_range
+              (array-vars-with-ranges
+               (loop for var-decl in var-decls
+                     for var-name = (id var-decl)
+                     for var-name-str = (string var-name)
+                     ;; Extract the suffix after "r_" (e.g., "x" from "r_x")
+                     for suffix = (if (> (length var-name-str) 2)
+                                      (subseq var-name-str 2)
+                                      nil)
+                     ;; Find corresponding range with pattern: <suffix>_range
+                     for range-decl = (when suffix
+                               (let((range-name (makesym (format nil "~a_range" suffix))))
+                                 (loop for rd in range-decls
+                                       when (eq (id rd) range-name)
+                                       return rd)))
+                     when range-decl
+                     ;; Format as ("var_name" range-expr-object)
+                     collect (list var-name-str (format nil "~a" (definition range-decl))))))
+          ;; Call compute-upper-bound-on-unrolled-array-expr with the extracted info
+          (let ((*unroll-indexing-map* nil))
+            (compute-upper-bound-on-unrolled-array-expr
+             definition
+             array-vars-with-ranges
+             precision
+             maxdepth
+             min?
+             max?
+             dirvar)))))))
+
+;; test
+;; (compute-upper-bound-on-array-function-definition
+;;  '|errorExpression|
+;;  "errorExpression")
+
+
+(defun setup-concrete-bound-generator (theory-ref)
+  (with-theory (th) theory-ref
+               (load-pvs-attachmets)
+               (red-strategies-files)))
+
+;;
+;; usage from command line
+;;
+;; pvs -raw -e "(with-theory (th) \"errorExpression\"
+;;                   (declare (ignore th))
+;;                   (load-pvs-attachments)
+;;                   (red-strategies-files)
+;;                   (compute-upper-bound-on-array-function-definition '|errorExpression| \"errorExpression\"))"

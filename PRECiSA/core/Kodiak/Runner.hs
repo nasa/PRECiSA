@@ -57,7 +57,6 @@ instance KodiakRunnable KodiakInput () KodiakResult where
       mapM_ (`run` pSys) varRanges
       pExpr <- run errorExpr variableMap
       minmax_system_maximize pSys pExpr
-      minmax_system_print pSys
       lb <- minmax_system_maximum_lower_bound pSys <&> (fromRational . toRational)
       ub <- minmax_system_maximum_upper_bound pSys <&> (fromRational . toRational)
       return $ KR { maximumLowerBound = lb,

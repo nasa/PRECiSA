@@ -26,6 +26,7 @@ data Options = Options
    , optAssumeStability      :: Bool
    , jsonOutput              :: Bool
    , optSMTOptimization      :: Bool
+   , optUsePVSio             :: Bool
    } deriving Show
 
 optionsParser :: Parser Options
@@ -96,6 +97,9 @@ optionsParser =
         <*> switch
           (  long "smt-optimization"
           <> help "Use SMT solvers to elimiate unfeasible cases" )
+        <*> switch
+          (  long "use-pvsio"
+          <> help "Use PVSio for error maximization instead of Kodiak" )
 
 parseOptions :: IO Options
 parseOptions = execParser parserOpts

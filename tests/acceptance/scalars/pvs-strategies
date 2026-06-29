@@ -1,0 +1,202 @@
+(defstep prove-symbolic-certificate (&optional unstable-case?)
+  (then
+   (skeep)
+   (if-match "abs(proj(%a(%%)) - %b(%%)) <= %c(%%)"
+             (then (expand "%a" :assert? none)
+                   (expand "%b" :assert? none)
+                   (expand "%c" :assert? none)
+                   (rewrite* ("ieee754_double_base.round_def "
+                              "ieee754_double_base.add_def " 
+                              "ieee754_double_base.sub_def " 
+                              "ieee754_double_base.mul_def " 
+                              "ieee754_double_base.div_def " 
+                              "ieee754_double_base.min_def " 
+                              "ieee754_double_base.max_def " 
+                              "ieee754_double_base.abs_def " 
+                              "ieee754_double_base.sqrt_def" 
+                              "ieee754_double_base.neg_def "
+                              "ieee754_double_base.sin_def "
+                              "ieee754_double_base.cos_def "
+                              "ieee754_double_base.atan_def "))
+                   (simplify-symbolic-bound unstable-case?))
+             (skip-messge "ERROR: Couldn't find expected PRECiSA certificate pattern")
+             :fnums 1))
+  "Proves a PRECiSA symbolic certificate."
+  "Proving certificate")
+
+(defun is-instance-of-pvs-type? (expr-str type-str)
+  "checks if the pvs expression in the string EXPR-STR is an instance of type pvs type denoted by TYPE-STR"
+  (tc-eq (type (pc-typecheck (pc-parse "x" 'expr))) (pc-typecheck (pc-parse "double" 'type-expr))))
+
+
+(defstrat apply-lemma-for-error-function (error-fun fp-fun aerr-lemma-subst &optional precision-name lemma-name)
+  (let ((aerr-lemma-name
+         (or lemma-name
+             (let ((underscore-pos (position #\_ fp-fun)))
+               (if underscore-pos
+                   (let ((op-name (subseq fp-fun 0 underscore-pos)))
+                     (format nil "aerr_ulp_~a_~a_th.aerr_ulp_~a_correct"
+                             precision-name
+                             op-name op-name))
+                   (format-if "*** ERROR: Unknown binary operator ~a" fp-fun))))))
+    (when aerr-lemma-name
+      (then
+       (expand error-fun :assert? none)
+       (rewrite-lemma aerr-lemma-name aerr-lemma-subst)
+       ;; if this rewrite didn't close the branch, we try to simplify again
+       (simplify-symbolic-bound)))) ;; at this point, all the instability has been handled, so the unstable-case? param is nil  
+  "PRECISION-NAME must be \"dp\" or \"sp\", but it's only taken into consideration if LEMMA-NAME is null.")
+
+(defstrat simplify-symbolic-bound (&optional unstable-case?)
+  (cond-match
+   ;; if-then-else
+   ("abs(proj(if %fpguard then %fpthen else %fpelse endif) - (if %rguard then %rthen else %relse endif)) <= max(%e1, %e2)"
+    (if unstable-case?
+        (spread (case "%fpguard") 
+                ((then 
+                  (replace -1 :hide? t)
+                  (spread (case "%rguard")
+                          ((then 
+                            (prop)
+                            (skip-msg "*** Error: branch %fpguard _and_ %rguard shouldn't need more work")
+                            (lisp (break "*** Error: branch %fpguard _and_ %rguard shouldn't need more work"))
+                            (fail))
+                           (then
+                            (comment "CASE: %fpguard _and_ _not_ %rguard")
+                            (replace 1 :hide? t)
+                            ;; deal with max(...)
+                            (spread (case "abs(proj(%fpthen)-%relse) <= %e2")
+                                    ((then
+                                      (EXPAND "max")
+                                      (LIFT-IF)
+                                      (spread
+                                       (SPLIT)
+                                       ;; TODO assert could be problematic if there are nested if-then-else statements
+                                       ((then (flatten) (ASSERT))
+                                        (then (flatten) (ASSERT)))))
+                                     (spread
+                                      (CASE "FORALL(fx,rx,ry: real, ex: nonneg_real): abs(fx-rx) <= ex IMPLIES abs(fx - ry) <= ex + abs(rx-ry)")
+                                      ((if-match "abs(%fx - %ry) <= %ex + abs(%rx - %ry)" :fnums +
+                                                 :step (then (inst -1 "%fx" "%rx" "%ry" "%ex")
+                                                             (spread
+                                                              (split -1)
+                                                              ((fail) ;; this branch should be closed automatically
+                                                               (simplify-symbolic-bound unstable-case?)))))
+                                       (then
+                                        (HIDE-ALL-BUT 1)
+                                        (SKEEP)
+                                        (LEMMA "abs_dist_other")
+                                        (INST -1 "fx" "ry" "rx" "ex")
+                                        (ASSERT)
+                                        (EXPAND "abs")
+                                        (GRIND-REALS))))))))))
+                 (then
+                  (replace 1 :hide? t)
+                  (spread (case "%rguard")
+                          ((then
+                            (comment "CASE: _not_ %fpguard _and_  %rguard")
+                            (replace -1 :hide? t)
+                            ;; deal with max(...)
+                            (spread (case "abs(proj(%fpelse)-%rthen) <= %e1")
+                                    ((then
+                                      (EXPAND "max")
+                                      (LIFT-IF)
+                                      (spread
+                                       (SPLIT)
+                                       ;; TODO assert could be problematic if there are nested if-then-else statements
+                                       ((then (flatten) (ASSERT))
+                                        (then (flatten)(ASSERT)))))
+                                     (spread
+                                      (CASE "FORALL(fx,rx,ry: real, ex: nonneg_real): abs(fx-rx) <= ex IMPLIES abs(fx - ry) <= ex + abs(rx-ry)")
+                                      ((if-match "abs(%fx - %ry) <= %ex + abs(%rx - %ry)" :fnums +
+                                                 :step (then (inst -1 "%fx" "%rx" "%ry" "%ex")
+                                                             (spread
+                                                              (split -1)
+                                                              ((fail) ;; this branch should be closed automatically
+                                                               (simplify-symbolic-bound unstable-case?)))))
+                                       (then
+                                        (HIDE-ALL-BUT 1)
+                                        (SKEEP)
+                                        (LEMMA "abs_dist_other")
+                                        (INST -1 "fx" "ry" "rx" "ex")
+                                        (ASSERT)
+                                        (EXPAND "abs")
+                                        (GRIND-REALS)))))))
+                           (then 
+                            (prop)
+                            (skip-msg "*** Error: branch _not_ %fpguard _and_ _not_ %rguard shouldn't need more work")
+                            (lisp (break "*** Error: branch %fpguard _and_ %rguard shouldn't need more work"))
+                            (fail)))))))
+        (spread (case "%fpguard") 
+                ((then 
+                  (replace -1 :hide? t)
+                  (spread (case "%rguard")
+                          ((then
+                            (comment "CASE: %fpguard _and_ %rguard")
+                            (replace -1 :hide? t)
+                            ;; TODO deal with max(...)
+                            (spread (case "abs(proj(%fpthen)-%rthen) <= %e1")
+                                    ((then
+                                      (EXPAND "max")
+                                      (LIFT-IF)
+                                      (spread
+                                       (SPLIT)
+                                       ;; TODO assert could be problematic if there are nested if-then-else statements
+                                       ((then (flatten) (ASSERT))
+                                        (then (ASSERT)))))
+                                     (simplify-symbolic-bound unstable-case?))))
+                           (then 
+                            (prop)
+                            (skip-msg "*** Error: branch %fpguard _and_ _not_ %rguard shouldn't need more work")
+                            (lisp (break "*** Error: branch %fpguard _and_ %rguard shouldn't need more work"))
+                            (fail)))))
+                 (then
+                  (replace 1 :hide? t)
+                  (spread (case "%rguard")
+                          ((then 
+                            (prop)
+                            (skip-msg "*** Error: branch _not_ %fpguard _and_ %rguard shouldn't need more work")
+                            (lisp (break "*** Error: branch %fpguard _and_ %rguard shouldn't need more work"))
+                            (fail))
+                           (then
+                            (comment "CASE: _not_ %fpguard _and_ _not_ %rguard")
+                            (replace 1 :hide? t)
+                            ;; TODO deal with max(...)
+                            (spread (case "abs(proj(%fpelse)-%relse) <= %e2")
+                                    ((then
+                                      (EXPAND "max")
+                                      (LIFT-IF)
+                                      (spread
+                                       (SPLIT)
+                                       ;; TODO assert could be problematic if there are nested if-then-else statements
+                                       ((then (ASSERT))
+                                        (then (FLATTEN) (ASSERT)))))
+                                     (simplify-symbolic-bound unstable-case?)))))))))))
+   ;; special cases for tighter bounds
+   ("abs(proj(mul_ieee754(round(%pow2a), %f)) - (*(%pow2b,%r))) <= aerr_ulp_dp_mul_p2l(%n, %e)"
+    (then
+     (spread (case-replace "%pow2a = exponentiation.^(2,%n)" :hide? t)
+             ((apply-lemma-for-error-function "aerr_ulp_dp_mul_p2l"
+                                              "mul_ieee754"
+                                              ("f1" "%f" "r1" "%r" "e1" "%e" "n1" "%n")
+                                              :lemma-name "aerr_ulp_mul_correct__pow2l")
+              (eval-formula 1)))))
+   ("abs(proj(mul_ieee754(%f, round(%pow2a))) - (*(%r,%pow2b))) <= aerr_ulp_dp_mul_p2r(%n, %e)"
+    (then
+     (spread (case-replace "%pow2a = exponentiation.^(2,%n)" :hide? t)
+             ((apply-lemma-for-error-function "aerr_ulp_dp_mul_p2r"
+                                              "mul_ieee754"
+                                              ("f1" "%f" "r1" "%r" "e1" "%e" "n1" "%n")
+                                              :lemma-name "aerr_ulp_mul_correct__pow2r")
+              (eval-formula 1)))))
+   ;; binary floating-point function
+   ("abs(proj(%fpfun(%fa, %fb)) - (%rfun(%ra,%rb))) <= %efun(%ra, %ea, %rb, %eb)"
+    (let ((precision-name (if (is-instance-of-pvs-type? "%fa" "double") "dp" "sp")))
+      (apply-lemma-for-error-function "%efun" "%fpfun" ("f1" "%fa" "f2" "%fb" "r1" "%ra" "r2" "%rb" "e1" "%ea" "e2" "%eb") :precision-name precision-name)))
+   ;; unary floating-point function
+   ("abs(proj(%fpfun(%fa)) - (%rfun(%ra))) <= %efun(%ra, %ea)"
+    (let ((precision-name (if (is-instance-of-pvs-type? "%fa" "double") "dp" "sp")))
+      (apply-lemma-for-error-function "%efun" "%fpfun" ("f1" "%fa" "r1" "%ra" "e1" "%ea") :precision-name precision-name)))
+   (else (skip-msg "*** ERROR: No formula denoting a symbolic bound was found in the sequent")))
+  "Applies lemma to simplify symbolic bounds of form abs(proj(fp_fun(..))-r_fun(..)) <= err_bound")
+

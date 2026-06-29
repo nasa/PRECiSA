@@ -30,6 +30,8 @@ common shared
     , ieee                 >= 0.7
     , aeson
     , bytestring
+    , raw-strings-qq       >= 1.1
+    , temporary            >= 1.3
     , uniplate
   extra-libraries:
     kodiak
@@ -70,6 +72,7 @@ library
     Common.ControlFlow
     Common.DecisionPath
     Common.ShowRational
+    ErrorResult
     FPCore.FPCorePrinter
     FreshVariables
     Kodiak.ErrorComputation
@@ -80,6 +83,8 @@ library
     Kodiak.PrettyPrint
     Kodiak.Runnable
     Kodiak.Runner
+    PVSio.Runner
+    PVSio.ErrorComputation
     MapFPCoreLangAST
     MapFPCoreSpecLangAST
     MapSpecLangAST

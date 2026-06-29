@@ -25,6 +25,8 @@ import Common.ControlFlow
 import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
+import Data.Ratio (numerator, denominator)
+import Numeric (showFFloat)
 import ErrM
 import FPCore.FPCorePrinter
 import Frontend.PVS.MapPVSLangAST (parseFileToProgram)
@@ -33,6 +35,9 @@ import PPExt
 import Kodiak.Runner
 import qualified Kodiak.Paver as KP
 import Kodiak.ErrorComputation (computeAllErrorsInKodiakMap)
+import qualified PVSio.Runner as PVSio
+import qualified PVSio.ErrorComputation as PVSioEC
+import ErrorResult ()
 import Prelude hiding ((<>))
 import Certificate.Numerical
 import Certificate.Real (genRealTheory)
@@ -75,7 +80,8 @@ parseAndAnalyze
           , optPrecision            = prec
           , optAssumeStability      = sta
           , jsonOutput              = jsonOut
-          , optSMTOptimization      = useSMT } = do
+          , optSMTOptimization      = useSMT
+          , optUsePVSio             = usePVSio } = do
 
   let noCollapsedStables = False
   errparseProg <- if parsefpcore
@@ -120,11 +126,18 @@ parseAndAnalyze
 
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
 
-  results <- computeAllErrorsInKodiakMap optUnfoldFuns decls semConf unfoldedPgmSem spec searchParams
+  (resultSummaryEither, numCertificate) <- if usePVSio
+    then do
+      pvsioResults <- PVSioEC.computeAllErrorsInPVSioMap optUnfoldFuns decls semConf unfoldedPgmSem spec searchParams
+      let summary = summarizeAllErrorsPVSio (getPVSioResults pvsioResults)
+      let cert = renderPVS $ genNumCertFile certFileName numCertFileName pvsioResults decls spec maxBBDepth prec False
+      return (Right summary, cert)
+    else do
+      kodiakResults <- computeAllErrorsInKodiakMap optUnfoldFuns decls semConf unfoldedPgmSem spec searchParams
+      let summary = summarizeAllErrors (getKodiakResults kodiakResults)
+      let cert = renderPVS $ genNumCertFile certFileName numCertFileName kodiakResults decls spec maxBBDepth prec False
+      return (Left summary, cert)
 
-  let resultSummary = summarizeAllErrors (getKodiakResults results)
-
-  let numCertificate = renderPVS $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
   writeFile numCertFile numCertificate
 
   when printfpcore $ do
@@ -140,13 +153,18 @@ parseAndAnalyze
 
   if jsonOut
   then do
+    let resultSummary = case resultSummaryEither of
+          Left kodiak -> kodiak
+          Right pvsio -> map (\(f,field,r,mr) -> (f,field,fromRational r, fmap fromRational mr)) pvsio
     let jsonRes = JSON.toJSONAnalysisResults resultSummary certFile numCertFile
     BS.putStr jsonRes
   else do
     putStrLn "**************************************************************************"
     putStrLn "********************************* PRECiSA ********************************"
     putStrLn ""
-    printAllErrors resultSummary
+    case resultSummaryEither of
+      Left kodiakSummary -> printAllErrors kodiakSummary
+      Right pvsioSummary -> printAllErrorsPVSio pvsioSummary
     putStrLn ("Symbolic lemmas and proofs in: " ++ certFile)
     putStrLn ("Numeric lemmas and proofs in: " ++ numCertFile)
 
@@ -183,6 +201,15 @@ getKodiakResult (f,_,_,funSem) = map getKodiakErrorField funSem
     getKodiakErrorField (field, fieldSem) = (f, field, map getKodiakError fieldSem)
     getKodiakError (_,_,cf,err,_,_,_) = (cf,err)
 
+getPVSioResults :: [(String,PVSType,[Arg],[(ResultField,[(Conditions, LDecisionPath,ControlFlow,PVSio.PVSioResult,AExpr,[FAExpr],[AExpr])])])] -> [(String, ResultField, [(ControlFlow,PVSio.PVSioResult)])]
+getPVSioResults = concatMap getPVSioResult
+
+getPVSioResult :: (String,PVSType,[Arg],[(ResultField, [(Conditions, LDecisionPath,ControlFlow,PVSio.PVSioResult,AExpr,[FAExpr],[AExpr])])]) -> [(String, ResultField, [(ControlFlow,PVSio.PVSioResult)])]
+getPVSioResult (f,_,_,funSem) = map getPVSioErrorField funSem
+  where
+    getPVSioErrorField (field, fieldSem) = (f, field, map getPVSioError fieldSem)
+    getPVSioError (_,_,cf,err,_,_,_) = (cf,err)
+
 summarizeAllErrors :: [(String, ResultField, [(ControlFlow, KodiakResult)])] -> [(String,ResultField, Double, Maybe Double)]
 summarizeAllErrors = map summarizeFunError
 
@@ -194,6 +221,24 @@ summarizeFunError (f, field, results) =
       , if null unstableCases then Nothing
         else Just $ maximum $ map (maximumUpperBound . snd) unstableCases)
 
+summarizeAllErrorsPVSio :: [(String, ResultField, [(ControlFlow, PVSio.PVSioResult)])] -> [(String,ResultField, Rational, Maybe Rational)]
+summarizeAllErrorsPVSio = map summarizeFunErrorPVSio
+
+summarizeFunErrorPVSio :: (String, ResultField, [(ControlFlow, PVSio.PVSioResult)]) -> (String, ResultField, Rational, Maybe Rational)
+summarizeFunErrorPVSio (f, field, results) =
+  let stableCases = filter ((== Stable) . fst) results in
+  let unstableCases = filter ((== Unstable) . fst) results in
+    (f, field, maximum $ map (PVSio.maximumValue . snd) stableCases
+      , if null unstableCases then Nothing
+        else Just $ maximum $ map (PVSio.maximumValue . snd) unstableCases)
+
+-- | Display error as both decimal and rational (for PVSio backend)
+prettyNumErrorWithRational :: Rational -> Doc
+prettyNumErrorWithRational rat =
+  text (showFFloat Nothing (fromRational rat :: Double) "")
+  <+> parens (text $ show (numerator rat) ++ " / " ++ show (denominator rat))
+
+-- | Print errors for Kodiak backend (Double results)
 printAllErrors :: [(String,ResultField,Double,Maybe Double)] -> IO ()
 printAllErrors = mapM_ printFunction
   where
@@ -206,6 +251,26 @@ printAllErrors = mapM_ printFunction
           putStrLn ""
           putStrLn "There are unstable conditionals leading to divergent real and floating-point control-flows."
           putStrLn $ "divergence <= " ++ render (prettyNumError divergence)
+      putStrLn ""
+      putStrLn "**************************************************************************"
+
+    printField ResValue = ""
+    printField (ResRecordField recField) = " field " ++ recField
+    printField (ResTupleIndex tupleIdx) = " index " ++ show tupleIdx
+
+-- | Print errors for PVSio backend (Rational results)
+printAllErrorsPVSio :: [(String,ResultField,Rational,Maybe Rational)] -> IO ()
+printAllErrorsPVSio = mapM_ printFunction
+  where
+    printFunction (f,field,stableErr, unstableErr) = do
+      putStrLn $ "Function " ++ f ++ printField field
+      putStrLn $ "|real - floating-point| <= " ++ render (prettyNumErrorWithRational stableErr)
+      case unstableErr of
+        Nothing -> return ()
+        Just divergence -> do
+          putStrLn ""
+          putStrLn "There are unstable conditionals leading to divergent real and floating-point control-flows."
+          putStrLn $ "divergence <= " ++ render (prettyNumErrorWithRational divergence)
       putStrLn ""
       putStrLn "**************************************************************************"
 

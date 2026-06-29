@@ -3,7 +3,7 @@
 % Rationale: simple if-then-else
 % Author: m3
 %
-double04: THEORY
+double4: THEORY
 BEGIN
 
   IMPORTING float_bounded_axiomatic@ieee754_double
@@ -15,4 +15,4 @@ BEGIN
        x + 2
     ENDIF
 
-END double04
+END double4

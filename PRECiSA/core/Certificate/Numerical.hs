@@ -7,6 +7,9 @@
 --
 -- Waiver and Indemnity:  RECIPIENT AGREES TO WAIVE ANY AND ALL CLAIMS AGAINST THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT.  IF RECIPIENT'S USE OF THE SUBJECT SOFTWARE RESULTS IN ANY LIABILITIES, DEMANDS, DAMAGES, EXPENSES OR LOSSES ARISING FROM SUCH USE, INCLUDING ANY DAMAGES FROM PRODUCTS BASED ON, OR RESULTING FROM, RECIPIENT'S USE OF THE SUBJECT SOFTWARE, RECIPIENT SHALL INDEMNIFY AND HOLD HARMLESS THE UNITED STATES GOVERNMENT, ITS CONTRACTORS AND SUBCONTRACTORS, AS WELL AS ANY PRIOR RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Certificate.Numerical where
 
 import AbsPVSLang hiding (fpGuardList,letExpr,varName)
@@ -15,7 +18,7 @@ import AbstractDomain
 import Certificate.Symbolic (f2r,prIsFinite,printFinitenessConditions)
 import Common.ControlFlow
 import Common.DecisionPath
-import Kodiak.Runner
+import ErrorResult
 import PPExt
 import Translation.Float2Real (fp2realArg)
 
@@ -41,10 +44,11 @@ genFpProgFile fp progFileName prog =
       importFPTheory FPDouble = text "IMPORTING float_bounded_axiomatic@ieee754_double"
       importFPTheory _ = emptyDoc
 
-genNumCertFile :: String
+genNumCertFile :: (HasErrorBound result errorType, PrettyError errorType)
+               => String
                -> String
                -> [(String,PVSType,[Arg]
-                  ,[(ResultField, [(Conditions,LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])])]
+                  ,[(ResultField, [(Conditions,LDecisionPath,ControlFlow,result,AExpr,[FAExpr],[AExpr])])])]
                -> [Decl]
                -> Spec
                -> Int
@@ -82,8 +86,9 @@ genNumCertFile certFileName numCertFileName kodiakResult decls (Spec specBinds) 
   $$
   text ("END " ++ numCertFileName)
 
-printNumCerts :: [(String,PVSType,[Arg]
-                  ,[(ResultField, [(Conditions,LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])])]
+printNumCerts :: (HasErrorBound result errorType, PrettyError errorType)
+              => [(String,PVSType,[Arg]
+                  ,[(ResultField, [(Conditions,LDecisionPath,ControlFlow,result,AExpr,[FAExpr],[AExpr])])])]
               -> [Decl]
               -> [SpecBind]
               -> Int
@@ -98,10 +103,11 @@ printNumCerts ((f,fp,args,fSem):res') decls spec maxBBDepth prec isTran =
   printNumCerts res' decls spec maxBBDepth prec isTran
 
 
-printNumCertsField :: String
+printNumCertsField :: (HasErrorBound result errorType, PrettyError errorType)
+              => String
               -> PVSType
               -> [Arg]
-              -> [(ResultField, [(Conditions,LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])]
+              -> [(ResultField, [(Conditions,LDecisionPath,ControlFlow,result,AExpr,[FAExpr],[AExpr])])]
               -> [Decl]
               -> [SpecBind]
               -> Int
@@ -132,11 +138,12 @@ printNumCertsField f t args ((field,res):res') decls spec maxBBDepth prec isTran
     fFP   = if isTran then f ++ "_fp" else f
     fReal = if isTran then f else f ++ "_real"
 
-printNumCertsFun :: String
+printNumCertsFun :: (HasErrorBound result errorType, PrettyError errorType)
+                 => String
                  -> String
                  -> ResultField
                  -> [Arg]
-                 -> [(Conditions,LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])]
+                 -> [(Conditions,LDecisionPath,ControlFlow,result,AExpr,[FAExpr],[AExpr])]
                  -> [VarBind]
                  -> Int
                  -> PVSType
@@ -159,7 +166,7 @@ printNumCertsFun f fReal field args ((cond, _, _, res, err, fpResult, _):result'
   where
     auxLemmaName = name field <> text "_err_" <> int n
     numLemma = name field <> text "_c_" <> int n
-    roundOffError = maximumUpperBound res
+    roundOffError = getErrorUpperBound res
     symbLemma = name field <> text "_" <> int n
     name ResValue = text f
     name (ResRecordField recField) = text f <> text "_" <> text recField
@@ -178,14 +185,15 @@ prPvsNumProof numLemma symbLemma prec maxBBDepth =
   $$ text "%|-" <+> parens (text "prove-concrete-lemma" <+> symbLemma <+> int prec <+> int maxBBDepth)
   $$ text "%|- QED\n"
 
-prPvsNumLemma :: Doc
+prPvsNumLemma :: PrettyError errorType
+                => Doc
                 -> String
                 -> String
                 -> ResultField
                 -> [Arg]
                 -> [FAExpr]
                 -> Conditions
-                -> Double
+                -> errorType
                 -> [VarBind]
                 -> PVSType
                 -> Maybe AExpr
@@ -255,8 +263,16 @@ printVarRange (VarBind x (ResRecordField field) _ lb ub) =
 printVarRange (VarBind x (ResTupleIndex idx) _ lb ub) =
   text "r_" <> text x <> text "`" <> integer idx <+> text "##" <+> text "[|" <> prettyDoc lb <> comma <> prettyDoc ub <> text "|]"
 
-prettyRatNumError :: RealFloat a => a -> Doc
-prettyRatNumError roundOffError = text $ showRational (toRational roundOffError )
+-- | Type class for pretty printing error bounds in PVS rational format
+-- Supports both Double (Kodiak) and Rational (PVSio) backends
+class PrettyError a where
+  prettyRatNumError :: a -> Doc
+
+instance PrettyError Double where
+  prettyRatNumError roundOffError = text $ showRational (toRational roundOffError)
+
+instance PrettyError Rational where
+  prettyRatNumError rat = text $ showRational rat
 
 prettyNumError :: RealFloat a => a -> Doc
 prettyNumError roundOffError = text $ showFFloat Nothing roundOffError "" -- (nextUp' roundOffError) ""
@@ -322,7 +338,7 @@ printSymbExprCert fp f faeVarList errVarList realVarList fae ae be symbErr n =
   $$ text "%|- QED"
   $$ text "\n"
 
-printNumExprCert :: PVSType -> String -> [FAExpr] -> [AExpr] -> FAExpr -> AExpr -> FBExpr -> Double -> [VarBind] -> Int -> Int -> Int -> Doc
+printNumExprCert :: PrettyError errorType => PVSType -> String -> [FAExpr] -> [AExpr] -> FAExpr -> AExpr -> FBExpr -> errorType -> [VarBind] -> Int -> Int -> Int -> Doc
 printNumExprCert fp f faeVarList realVarList fae ae be roundOffError ranges n maxBBDepth prec  =
   text f <> text "_expr_num_" <> int n <+> text ": LEMMA"
   $$ text "FORALL(" <>  hsep (punctuate comma $ map prettyVarWithType faeVarList)
@@ -351,13 +367,13 @@ printVarErrBound fp var@(FVar _ _) = text "abs(" <> f2r fp (prettyDoc var)
                                                  <> text ")<=" <> prettyDoc (errVar var)
 printVarErrBound _ ae = error $ "printVarErrBound: case " ++ show ae ++ " not expected."
 
-printExprFunCert :: Int -> Int -> PVSType -> (Decl, [(VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind])]) -> Doc
+printExprFunCert :: (PrettyError errorType, Show errorType) => Int -> Int -> PVSType -> (Decl, [(VarName,FAExpr,AExpr,FBExpr,EExpr,errorType,[FAExpr],[AExpr],[EExpr],[VarBind])]) -> Doc
 printExprFunCert maxDepth minPrec fp (Decl _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1 :: Int, 2 ..]
 printExprFunCert        _       _ _ (Pred _ TauMinus _ _ _, _) = emptyDoc
 printExprFunCert maxDepth minPrec fp (Pred _ _ f _ _, exprList) = vcat $ zipWith (printExprCert' maxDepth minPrec fp f) exprList [1 :: Int, 2 ..]
 printExprFunCert _ _ _ x = error $ "[printExprFunCert] Unhandled case: " ++ show x
 
-printExprCert' :: Int -> Int -> PVSType -> String -> (VarName,FAExpr,AExpr,FBExpr,EExpr,Double,[FAExpr],[AExpr],[EExpr],[VarBind]) -> Int -> Doc
+printExprCert' :: PrettyError errorType => Int -> Int -> PVSType -> String -> (VarName,FAExpr,AExpr,FBExpr,EExpr,errorType,[FAExpr],[AExpr],[EExpr],[VarBind]) -> Int -> Doc
 printExprCert' maxDepth minPrec fp f (_,fae, ae, be, symbErr, numErr, faeVarList, realVarList, errVarList,varBinds) n =
   printSymbExprCert fp f faeVarList errVarList realVarList fae ae be symbErr n
   $$

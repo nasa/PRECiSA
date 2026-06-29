@@ -2,7 +2,14 @@ interval_ulp_dp: theory
 begin
 
   importing float_bounded_axiomatic@ieee754_double_base
-  importing interval_ulp[double, safe_proj_double, RtoD, min_ulp_double, ulp_double]
+
+  % hack to evaluate ulp TODO fix this!
+  % importing interval_ulp[double, safe_proj_double, RtoD, min_ulp_double, ulp_double]
+  importing float_unbounded@ieee754dp
+  importing interval_ulp[double, safe_proj_double, RtoD, min_ulp_double, ulp_dp]
+
+  ulp_double_eq_ulp_dp: axiom % TODO change to lemma
+    ulp_double = ulp_dp 
 
   Ulp_dp(I:Interval): Interval =
     interval_ulp.Ulp(I)

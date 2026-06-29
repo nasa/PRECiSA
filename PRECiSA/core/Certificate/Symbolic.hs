@@ -9,7 +9,6 @@ import PPExt
 import           Data.List (intersperse,sort)
 import qualified Data.Map as Map
 import           Data.Maybe (fromMaybe)
-import           Debug.Trace (trace)
 import           Prelude hiding ((<>))
 
 genCertFile :: String -> String -> String -> Program -> Interpretation -> Doc
@@ -47,7 +46,7 @@ printErrorImportings (Program imps _) = vcat $ map text $ sort $ foldl f [] imps
       | "float_bounded_axiomatic@ieee754_double" <- imp = "IMPORTING float_bounded_axiomatic@aerr_ulp__double":acc
       | "float_bounded_axiomatic@ieee754_single" <- imp = "IMPORTING float_bounded_axiomatic@aerr_ulp__single":acc
       | "float_bounded_axiomatic@ieee754_double_base_array" <- imp = "IMPORTING float_bounded_axiomatic@aerr_ulp__double_array":acc
-      | "PRECiSA@ieee754_double" <- imp = trace ("[WARNING][printErrorImportings] the importing: " ++ imp ++ " is deprecated and should not be used") $ "IMPORTING float_bounded_axiomatic@aerr_ulp__double":acc
+      | "PRECiSA@ieee754_double" <- imp = "IMPORTING float_bounded_axiomatic@aerr_ulp__double":acc -- TODO: Deprecate this importing
       | otherwise = acc
 
 printCerts :: Interpretation -> Program -> Doc

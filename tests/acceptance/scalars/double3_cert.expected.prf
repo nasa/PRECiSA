@@ -1,0 +1,105 @@
+(|double3_cert|
+ (|example_0_TCC1| 0
+  (|example_0_TCC1-1| NIL 3975154083 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (|example_0| SUBTYPE "double3_cert.x" "(ieee754_data[2, 53, 1023].finite?)"
+    (22 9 22 10))))
+ (|example_0_TCC2| 0
+  (|example_0_TCC2-1| NIL 3975154083 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (|example_0| SUBTYPE "double3.example(double3_cert.x, double3_cert.y)"
+    "(ieee754_data[2, 53, 1023].finite?)" (24 9 24 22))))
+ (|example_0| 0
+  (|example_0-1| NIL 3975157669
+   ("" (SKEEP)
+    (("" (EXPAND "example" :ASSERT? NONE)
+      (("" (EXPAND "example_real" :ASSERT? NONE)
+        (("" (EXPAND "example_0_error" :ASSERT? NONE)
+          ((""
+            (REWRITE*
+             ("ieee754_double_base.round_def " "ieee754_double_base.add_def "
+              "ieee754_double_base.sub_def " "ieee754_double_base.mul_def "
+              "ieee754_double_base.div_def " "ieee754_double_base.min_def "
+              "ieee754_double_base.max_def " "ieee754_double_base.abs_def "
+              "ieee754_double_base.sqrt_def" "ieee754_double_base.neg_def "
+              "ieee754_double_base.sin_def " "ieee754_double_base.cos_def "
+              "ieee754_double_base.atan_def "))
+            (("" (EXPAND "aerr_ulp_dp_add" :ASSERT? NONE)
+              ((""
+                (REWRITE-LEMMA "aerr_ulp_dp_add_th.aerr_ulp_add_correct"
+                 ("f1" "sin_ieee754(y)" "f2" "cos_ieee754(y)" "r1" "sin(r_y)"
+                  "r2" "cos(r_y)" "e1" "aerr_ulp_dp_sin(r_y, e_y)" "e2"
+                  "aerr_ulp_dp_cos(r_y, e_y)"))
+                (("1" (EXPAND "aerr_ulp_dp_sin" :ASSERT? NONE)
+                  (("1"
+                    (REWRITE-LEMMA "aerr_ulp_dp_sin_th.aerr_ulp_sin_correct"
+                     ("f1" "y" "r1" "r_y" "e1" "e_y"))
+                    NIL NIL))
+                  NIL)
+                 ("2" (EXPAND "aerr_ulp_dp_cos" :ASSERT? NONE)
+                  (("2"
+                    (REWRITE-LEMMA "aerr_ulp_dp_cos_th.aerr_ulp_cos_correct"
+                     ("f1" "y" "r1" "r_y" "e1" "e_y"))
+                    NIL NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|real_minus_real_is_real| APPLICATION-JUDGEMENT "real" |reals| NIL)
+    (|example| CONST-DECL "double" |double3| NIL)
+    (|example_0_error| CONST-DECL "nonneg_real" |double3_cert| NIL)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|real_le_is_total_order| NAME-JUDGEMENT "(total_order?[real])"
+     |real_props| NIL)
+    (|real_plus_real_is_real| APPLICATION-JUDGEMENT "real" |reals| NIL)
+    (|aerr_ulp_add_correct| FORMULA-DECL NIL |aerr_ulp_add|
+     |float_bounded_axiomatic|)
+    (|finite?| CONST-DECL "bool" |ieee754_data| |float_bounded_axiomatic|)
+    (|sin_ieee754| CONST-DECL "[datum -> datum]" |ieee754_sin|
+     |float_bounded_axiomatic|)
+    (|cos_ieee754| CONST-DECL "[datum -> datum]" |ieee754_cos|
+     |float_bounded_axiomatic|)
+    (|number| NONEMPTY-TYPE-DECL NIL |numbers| NIL)
+    (|number_field_pred| CONST-DECL "[number -> boolean]" |number_fields| NIL)
+    (|number_field| NONEMPTY-TYPE-FROM-DECL NIL |number_fields| NIL)
+    (|real_pred| CONST-DECL "[number_field -> boolean]" |reals| NIL)
+    (|real| NONEMPTY-TYPE-FROM-DECL NIL |reals| NIL)
+    (|sin| CONST-DECL "real" |sincos_def| |trig|)
+    (|cos| CONST-DECL "real" |sincos_def| |trig|)
+    (>= CONST-DECL "bool" |reals| NIL)
+    (|nnreal| TYPE-EQ-DECL NIL |real_types| NIL)
+    (|aerr_ulp_dp_sin| CONST-DECL "nnreal" |aerr_ulp__double|
+     |float_bounded_axiomatic|)
+    (|nonneg_real| NONEMPTY-TYPE-EQ-DECL NIL |real_types| NIL)
+    (|aerr_ulp_dp_cos| CONST-DECL "nnreal" |aerr_ulp__double|
+     |float_bounded_axiomatic|)
+    (|aerr_ulp_sin_correct| FORMULA-DECL NIL |aerr_ulp_sin|
+     |float_bounded_axiomatic|)
+    (|aerr_ulp_cos_correct| FORMULA-DECL NIL |aerr_ulp_cos|
+     |float_bounded_axiomatic|)
+    (|aerr_ulp_dp_add| CONST-DECL "nnreal" |aerr_ulp__double|
+     |float_bounded_axiomatic|)
+    (|cos_double| CONST-DECL "binary64" |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|double| TYPE-EQ-DECL NIL |ieee754_double_base| |float_bounded_axiomatic|)
+    (|sin_double| CONST-DECL "binary64" |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|add_def| FORMULA-DECL NIL |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|sin_def| FORMULA-DECL NIL |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|cos_def| FORMULA-DECL NIL |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|boolean| NONEMPTY-TYPE-DECL NIL |booleans| NIL)
+    (|bool| NONEMPTY-TYPE-EQ-DECL NIL |booleans| NIL)
+    (TRUE CONST-DECL "bool" |booleans| NIL)
+    (|example_real| CONST-DECL "real" |double3_real| NIL)
+    (|sin_range| APPLICATION-JUDGEMENT "real_abs_le1" |sincos| |trig|)
+    (|cos_range| APPLICATION-JUDGEMENT "real_abs_le1" |sincos| |trig|))
+   SHOSTAK)))
+

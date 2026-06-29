@@ -1,0 +1,56 @@
+(|double2_cert|
+ (|example_0| 0
+  (|example_0-1| NIL 3975070303
+   ("" (SKEEP)
+    (("" (EXPAND "example" :ASSERT? NONE)
+      (("" (EXPAND "example_real" :ASSERT? NONE)
+        (("" (EXPAND "example_0_error" :ASSERT? NONE)
+          ((""
+            (REWRITE*
+             ("ieee754_double_base.round_def " "ieee754_double_base.add_def "
+              "ieee754_double_base.sub_def " "ieee754_double_base.mul_def "
+              "ieee754_double_base.div_def " "ieee754_double_base.min_def "
+              "ieee754_double_base.max_def " "ieee754_double_base.abs_def "
+              "ieee754_double_base.sqrt_def" "ieee754_double_base.neg_def "
+              "ieee754_double_base.sin_def " "ieee754_double_base.cos_def "
+              "ieee754_double_base.atan_def "))
+            (("" (EXPAND "aerr_ulp_dp_add" :ASSERT? NONE)
+              ((""
+                (REWRITE-LEMMA "aerr_ulp_dp_add_th.aerr_ulp_add_correct"
+                 ("f1" "x" "f2" "y" "r1" "r_x" "r2" "r_y" "e1" "e_x" "e2"
+                  "e_y"))
+                NIL NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|real_minus_real_is_real| APPLICATION-JUDGEMENT "real" |reals| NIL)
+    (|example| CONST-DECL "double" |double2| NIL)
+    (|example_0_error| CONST-DECL "nonneg_real" |double2_cert| NIL)
+    (|aerr_ulp_add_correct| FORMULA-DECL NIL |aerr_ulp_add|
+     |float_bounded_axiomatic|)
+    (|finite?| CONST-DECL "bool" |ieee754_data| |float_bounded_axiomatic|)
+    (|number| NONEMPTY-TYPE-DECL NIL |numbers| NIL)
+    (|number_field_pred| CONST-DECL "[number -> boolean]" |number_fields| NIL)
+    (|number_field| NONEMPTY-TYPE-FROM-DECL NIL |number_fields| NIL)
+    (|real_pred| CONST-DECL "[number_field -> boolean]" |reals| NIL)
+    (|real| NONEMPTY-TYPE-FROM-DECL NIL |reals| NIL)
+    (>= CONST-DECL "bool" |reals| NIL)
+    (|nnreal| TYPE-EQ-DECL NIL |real_types| NIL)
+    (|nonneg_real| NONEMPTY-TYPE-EQ-DECL NIL |real_types| NIL)
+    (|aerr_ulp_dp_add| CONST-DECL "nnreal" |aerr_ulp__double|
+     |float_bounded_axiomatic|)
+    (|double| TYPE-EQ-DECL NIL |ieee754_double_base| |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|add_def| FORMULA-DECL NIL |ieee754_double_base|
+     |float_bounded_axiomatic|)
+    (|boolean| NONEMPTY-TYPE-DECL NIL |booleans| NIL)
+    (|bool| NONEMPTY-TYPE-EQ-DECL NIL |booleans| NIL)
+    (TRUE CONST-DECL "bool" |booleans| NIL)
+    (|example_real| CONST-DECL "real" |double2_real| NIL))
+   SHOSTAK)))
+

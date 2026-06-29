@@ -81,7 +81,6 @@ buildKodiakInput unfoldFunCalls' decls config interp specBinds searchParams fnam
                  replaceFunCallErr True config interp emptyEnv locVars binds $ simplAExpr $ initAExpr err
                _ -> error $ "[computeAllErrorsInKodiakMap.runFunField] Function " ++ fname ++ " not found."
   errExpr' <- expandArrays errExpr
-  putStrLn $ "expanded to: "  ++ show errExpr'
   return $ KI { kiName = fname,
                 kiExpression = errExpr',
                 kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
