@@ -2123,6 +2123,7 @@ prettyAExpr f (BinaryOp ModOp   a1 a2) = text "mod" <> parens (f a1 <> comma <+>
 prettyAExpr f (BinaryOp ItModOp a1 a2) = text "Itmod" <> parens (f a1 <> comma <+> f a2)
 prettyAExpr f (BinaryOp PowOp   a1 a2) = f a1 <> text "^" <> lparen <> f a2 <> rparen
 prettyAExpr f (BinaryOp (ArrayDotOp n) a1 a2) = text ("rdot(" ++ show n ++ ")") <> parens (f a1 <> comma <+> f a2)
+prettyAExpr f (BinaryOp (ArrayDotFMAOp n) a1 a2) = text ("rdot(" ++ show n ++ ")") <> parens (f a1 <> comma <+> f a2)
 prettyAExpr f (BinaryOp (ArrayAddOp _) a1 a2) = parens (f a1 <+> text "+" <+> f a2)
 
 prettyAExpr f (UnaryOp NegOp   a) = text "-"     <> lparen <> f a <> rparen
@@ -2156,6 +2157,7 @@ prettyAExpr f (ErrBinOp AddOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ul
 prettyAExpr f (ErrBinOp AddOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_add" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp AddOp (ArrayOf n FPDouble) r1 e1 r2 e2) = printBinOpError f ("aerr_ulp_adp_add(" ++ show n ++")") r1 e1 r2 e2
 prettyAExpr f (ErrBinOp (ArrayDotOp n) FPDouble r1 e1 r2 e2) = printBinOpError f ("aerr_ulp_dpa_dot(" ++ show n ++ ")") r1 e1 r2 e2
+prettyAExpr f (ErrBinOp (ArrayDotFMAOp n) FPDouble r1 e1 r2 e2) = printBinOpError f ("aerr_ulp_dpa_dot_fma(" ++ show n ++ ")") r1 e1 r2 e2
 prettyAExpr f (ErrBinOp (ArrayAddOp n) FPDouble r1 e1 r2 e2) = printBinOpError f ("aerr_ulp_dpa_add(" ++ show n ++ ")") r1 e1 r2 e2
 prettyAExpr f (ErrBinOp SubOp FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_sub" r1 e1 r2 e2
 prettyAExpr f (ErrBinOp SubOp FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_sub" r1 e1 r2 e2
@@ -2406,6 +2408,7 @@ instance PPExt FAExpr where
   prettyDoc (BinaryFPOp AddOp   FPDouble a1 a2) = prettyDocBinaryOp "Dadd"  a1 a2
   prettyDoc (BinaryFPOp AddOp   (ArrayOf n FPDouble) a1 a2) = prettyDocBinaryOp ("ADadd(" ++ show n ++ ")")  a1 a2
   prettyDoc (BinaryFPOp (ArrayDotOp n) FPDouble a1 a2) = prettyDocBinaryOp ("dot_double(" ++ show n ++ ")") a1 a2
+  prettyDoc (BinaryFPOp (ArrayDotFMAOp n) FPDouble a1 a2) = prettyDocBinaryOp ("dotfma_double(" ++ show n ++ ")") a1 a2
   prettyDoc (BinaryFPOp (ArrayAddOp _) FPDouble a1 a2) = prettyDocInfixBinaryOp "+" a1 a2
   prettyDoc (BinaryFPOp SubOp   TInt     a1 a2) = prettyDocBinaryOp "Isub"  a1 a2
   prettyDoc (BinaryFPOp SubOp   FPSingle a1 a2) = prettyDocBinaryOp "Ssub"  a1 a2

@@ -26,6 +26,7 @@ data BinOp = AddOp
            | IDivOp
            | ItDivOp
            | ArrayDotOp Int
+           | ArrayDotFMAOp Int
            | ArrayAddOp Int
   deriving (Eq, Ord, Show, Read, Data, Typeable)
 

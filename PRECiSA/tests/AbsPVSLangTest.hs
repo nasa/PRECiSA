@@ -75,6 +75,11 @@ prettyFAExpr__tests = testGroup "prettyFAExpr" $
                           (FVar (ArrayOf 3 FPDouble) "x")
                           (FVar (ArrayOf 3 FPDouble) "y")))
       @?= "dot_double(3)(x, y)"
+  , testCase "prettyDoc BinaryFPOp ArrayDotFMAOp" $
+      render (prettyDoc (BinaryFPOp (ArrayDotFMAOp 2) FPDouble
+                          (FVar (ArrayOf 2 FPDouble) "x")
+                          (FVar (ArrayOf 2 FPDouble) "y")))
+      @?= "dotfma_double(2)(x, y)"
   , testCase "prettyDoc BinaryFPOp ArrayAddOp" $
       render (prettyDoc (BinaryFPOp (ArrayAddOp 3) FPDouble
                           (FVar (ArrayOf 3 FPDouble) "x")
@@ -99,6 +104,16 @@ prettyAExpr__tests = testGroup "prettyAExpr" $
                           (Int 0) (Int 0)
                           (Int 1) (Int 1)))
       @?= "aerr_ulp_dpa_dot(3)(0, 0, 1, 1)"
+  , testCase "prettyDoc BinaryOp ArrayDotFMAOp" $
+      render (prettyDoc (BinaryOp (ArrayDotFMAOp 2)
+                          (Var (ArrayOf 2 FPDouble) "x")
+                          (Var (ArrayOf 2 FPDouble) "y")))
+      @?= "rdot(2)(x, y)"
+  , testCase "prettyDoc ErrBinOp ArrayDotFMAOp FPDouble" $
+      render (prettyDoc (ErrBinOp (ArrayDotFMAOp 3) FPDouble
+                          (Int 0) (Int 0)
+                          (Int 1) (Int 1)))
+      @?= "aerr_ulp_dpa_dot_fma(3)(0, 0, 1, 1)"
   , testCase "prettyDoc BinaryOp ArrayAddOp" $
       render (prettyDoc (BinaryOp (ArrayAddOp 3)
                           (Var (ArrayOf 3 FPDouble) "x")
@@ -1228,6 +1243,7 @@ funCallListFAExpr__tests = testGroup "funCallListFAExpr tests"
   ,funCallListFAExpr__test6
   ,funCallListFAExpr__test7
   ,funCallListFAExpr__test8
+  ,funCallListFAExpr__test9
   ]
 
 funCallListFAExpr__test1 = testCase "funCallList of 8 is []" $
@@ -1262,6 +1278,11 @@ funCallListFAExpr__test7 = testCase "funCallList of if(f(X)<0) then 1 else 2 is 
 
 funCallListFAExpr__test8 = testCase "funCallList of dot_double(3)(x,y) is []" $
   funCallListFAExpr (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
+  @?=
+  []
+
+funCallListFAExpr__test9 = testCase "funCallList of dotfma_double(2)(x,y) is []" $
+  funCallListFAExpr (BinaryFPOp (ArrayDotFMAOp 2) FPDouble (FVar (ArrayOf 2 FPDouble) "x") (FVar (ArrayOf 2 FPDouble) "y"))
   @?=
   []
 
@@ -1363,6 +1384,7 @@ noRoundOffErrorInAExpr__tests = testGroup "noRoundOffErrorInAExpr tests"
   ,noRoundOffErrorInAExpr__test13
   ,noRoundOffErrorInAExpr__test14
   ,noRoundOffErrorInAExpr__test15
+  ,noRoundOffErrorInAExpr__test16
   ]
 
 noRoundOffErrorInAExpr__test1 = testCase "9 has no round-off error" $
@@ -1410,6 +1432,9 @@ noRoundOffErrorInAExpr__test14 = testCase "dot_double(3)(x,y) has round-off erro
 noRoundOffErrorInAExpr__test15 = testCase "fma_double(x,y,z) has round-off error" $
     noRoundOffErrorInAExpr (FFma FPDouble (FVar FPDouble "x") (FVar FPDouble "y") (FVar FPDouble "z")) @?= False
 
+noRoundOffErrorInAExpr__test16 = testCase "dotfma_double(2)(x,y) has round-off error" $
+    noRoundOffErrorInAExpr (BinaryFPOp (ArrayDotFMAOp 2) FPDouble (FVar (ArrayOf 2 FPDouble) "x") (FVar (ArrayOf 2 FPDouble) "y")) @?= False
+
 varList__tests = testGroup "varList tests"
   [varList__test1
   ,varList__test2
@@ -1425,6 +1450,7 @@ varList__tests = testGroup "varList tests"
   ,varList__test12
   ,varList__test13
   ,varList__test14
+  ,varList__test15
   ]
 
 varList__test1 = testCase "varList of constant 0.1 is []" $
@@ -1482,6 +1508,10 @@ varList__test13 = testCase "varList of dot_double(3)(x,y) is [x,y]" $
 varList__test14 = testCase "varList of fma_double(x,y,z) is [z,y,x]" $
     varList (FFma FPDouble (FVar FPDouble "x") (FVar FPDouble "y") (FVar FPDouble "z"))
     @?= [FVar FPDouble "z", FVar FPDouble "y", FVar FPDouble "x"]
+
+varList__test15 = testCase "varList of dotfma_double(2)(x,y) is [x,y]" $
+    varList (BinaryFPOp (ArrayDotFMAOp 2) FPDouble (FVar (ArrayOf 2 FPDouble) "x") (FVar (ArrayOf 2 FPDouble) "y"))
+    @?= [FVar (ArrayOf 2 FPDouble) "x", FVar (ArrayOf 2 FPDouble) "y"]
 
 
 equivModuloIndex__tests = testGroup "equivModuloIndex tests"
@@ -1645,6 +1675,7 @@ isArithExpr__tests = testGroup "isArithExpr tests"
   ,isArithExpr__test4
   ,isArithExpr__test5
   ,isArithExpr__test6
+  ,isArithExpr__test7
   ]
 
 isArithExpr__test1 = testCase "2 + (-1) is an arithmetic expression" $
@@ -1669,6 +1700,10 @@ isArithExpr__test5 = testCase "x + (-1) is an arithmetic expression" $
 
 isArithExpr__test6 = testCase "dot_double(3)(x,y) is an arithmetic expression" $
     isArithExpr (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
+    @?= True
+
+isArithExpr__test7 = testCase "dotfma_double(2)(x,y) is an arithmetic expression" $
+    isArithExpr (BinaryFPOp (ArrayDotFMAOp 2) FPDouble (FVar (ArrayOf 2 FPDouble) "x") (FVar (ArrayOf 2 FPDouble) "y"))
     @?= True
 
 isListArithExprs__tests = testGroup "isListArithExprs tests"

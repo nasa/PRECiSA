@@ -1,0 +1,12 @@
+array7: THEORY
+BEGIN
+
+ IMPORTING float_bounded_axiomatic@ieee754_double_base_array
+
+ % @fp-function
+ dot(x,y,z: fparray64(2)): double = dot_double(2)(x,y)
+
+ % @fp-function
+ dotFMA(x,y,z: fparray64(2)): double = dotfma_double(2)(x,y)
+
+END array7

@@ -529,6 +529,11 @@ raw2FAExprM e
         e1' <- raw2FAExprM e1
         e2' <- raw2FAExprM e2
         pure (PVS.BinaryFPOp (Op.ArrayDotOp (fromInteger n)) FPDouble e1' e2')
+  | Raw.Call (Raw.Call (Raw.ExprId (Raw.Id "dotfma_double")) [Raw.Int n]) [e1,e2] <- e
+    = do
+        e1' <- raw2FAExprM e1
+        e2' <- raw2FAExprM e2
+        pure (PVS.BinaryFPOp (Op.ArrayDotFMAOp (fromInteger n)) FPDouble e1' e2')
   | Raw.Call (Raw.Call (Raw.ExprId (Raw.Id "adda_double")) [Raw.Int n]) [e1,e2] <- e
     = do
         e1' <- raw2FAExprM e1

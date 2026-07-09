@@ -112,6 +112,7 @@ expandArrays' (ArrayElem ty var idxs) = do
   error $ "[expandArrays'] ArrayElem should not be used: " ++ show (ArrayElem ty var idxs)
 expandArrays' (ErrBinOp (ArrayAddOp n) FPDouble r1 e1 r2 e2) = expandArrayAddOp (toInteger n) r1 e1 r2 e2
 expandArrays' (ErrBinOp (ArrayDotOp n) FPDouble r1 e1 r2 e2) = expandArrayDotOp (toInteger n) r1 e1 r2 e2
+expandArrays' (ErrBinOp (ArrayDotFMAOp n) FPDouble r1 e1 r2 e2) = expandArrayDotFMAOp (toInteger n) r1 e1 r2 e2
 expandArrays' (HalfUlp (RealMark var ResValue) (ArrayOf _ FPDouble)) = do
   let maxRM = RealMark (projName 0 var) ResValue
   return $ HalfUlp maxRM FPDouble
@@ -156,6 +157,34 @@ expandArrayDotOp' idx maxIdx r1 e1 r2 e2
             r2'
             e2' )
   | otherwise = error $ "[expandArrayDotOp'] not implemented. idx: " ++ show idx ++ ", maxIdx: " ++ show maxIdx ++ ", r1: " ++ show r1 ++ ", e1: " ++ show e1 ++ ", r2: " ++ show r2 ++ ", e2: " ++ show e2
+
+expandArrayDotFMAOp :: Integer -> AExpr -> AExpr -> AExpr -> AExpr -> IO AExpr
+expandArrayDotFMAOp n r1 e1 r2 e2
+  | n == 0 = error "not reachable"
+  | otherwise =
+      do
+        (_res,err) <- expandArrayDotFMAOp' 0 (n - 1) r1 e1 r2 e2
+        return err
+
+expandArrayDotFMAOp' :: Integer -> Integer -> AExpr -> AExpr -> AExpr -> AExpr -> IO (AExpr,AExpr)
+expandArrayDotFMAOp' idx maxIdx r1 e1 r2 e2
+  | idx == maxIdx
+      = return
+          ( BinaryOp MulOp (r1 `mkProj` idx) (r2 `mkProj` idx)
+          , ErrBinOp MulOp FPDouble (r1 `mkProj` idx) e1 (r2 `mkProj` idx) e2 )
+  | idx < maxIdx = do
+      (r1', e1') <- expandArrayDotFMAOp' idx       idx    r1 e1 r2 e2
+      (r2', e2') <- expandArrayDotFMAOp' (idx + 1) maxIdx r1 e1 r2 e2
+      return
+        ( BinaryOp AddOp r1' r2'
+        , ErrBinOp
+            AddOp
+            FPDouble
+            r1'
+            e1'
+            r2'
+            e2' )
+  | otherwise = error $ "[expandArrayDotFMAOp'] not implemented. idx: " ++ show idx ++ ", maxIdx: " ++ show maxIdx ++ ", r1: " ++ show r1 ++ ", e1: " ++ show e1 ++ ", r2: " ++ show r2 ++ ", e2: " ++ show e2
 
 mkProj :: AExpr -> Integer -> AExpr
 mkProj e i

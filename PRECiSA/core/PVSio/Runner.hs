@@ -79,10 +79,12 @@ containsArrayTypes :: EExpr -> Bool
 containsArrayTypes expr = case expr of
   ArrayElem _ _ _ -> True
   BinaryOp (ArrayDotOp _) _ _ -> True
+  BinaryOp (ArrayDotFMAOp _) _ _ -> True
   BinaryOp (ArrayAddOp _) _ _ -> True
   BinaryOp _ e1 e2 -> containsArrayTypes e1 || containsArrayTypes e2
   UnaryOp _ e -> containsArrayTypes e
   ErrBinOp (ArrayDotOp _) _ _ _ _ _ -> True
+  ErrBinOp (ArrayDotFMAOp _) _ _ _ _ _ -> True
   ErrBinOp (ArrayAddOp _) _ _ _ _ _ -> True
   ErrBinOp _ _ _ e1 _ e2 -> containsArrayTypes e1 || containsArrayTypes e2
   ErrFun fname _ _ _ _ _ -> "array" `isInfixOf` fname || "dot" `isInfixOf` fname || "dpa" `isInfixOf` fname
