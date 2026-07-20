@@ -561,16 +561,17 @@
                                                 (type-id (and print-type (id print-type))))
                                             (eq type-id '|Interval|)))
                                  collect d))
-              ;; Find VAR declarations (these are array variables)
+              ;; Find VAR declarations for arrays or reals
               (var-decls (loop for d in all-decls
                                when (and (var-decl? d)
-                                        (let*((d-type (type d))
-                                              (print-type (if (subtype? d-type)
-                                                              (let ((top-type (or (top-type d-type) (supertype d-type))))
-                                                                (if top-type (print-type top-type) (print-type d-type)))
-                                                              (print-type d-type)))
-                                              (type-id (and print-type (id print-type))))
-                                          (eq type-id '|aarray|)))
+                                        (let((d-type (type d)))
+                                          (or (and (print-type d-type) (eq (id (print-type d-type)) '|real|))
+                                              (let*((print-type (if (subtype? d-type)
+                                                                   (let ((top-type (or (top-type d-type) (supertype d-type))))
+                                                                     (if top-type (print-type top-type) (print-type d-type)))
+                                                                   (print-type d-type)))
+                                                   (type-id (and print-type (id print-type))))
+                                                (eq type-id '|aarray|)))))
                                collect d))
               ;; Build mapping from array variable names to their ranges
               ;; Convention: r_x -> x_range
