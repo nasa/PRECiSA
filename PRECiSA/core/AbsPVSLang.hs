@@ -2065,6 +2065,11 @@ printUnaryOpError :: (AExpr -> Doc) -> String -> AExpr -> AExpr -> Doc
 printUnaryOpError f nameErrFun r e = text nameErrFun <> (text "(" <>  prettyError' f r <> comma
                                             <+> prettyError' f e <> text ")")
 
+printFmaError :: (AExpr -> Doc) -> String -> AExpr -> AExpr -> AExpr -> AExpr -> AExpr -> AExpr -> Doc
+printFmaError f nameErrFun r1 e1 r2 e2 r3 e3 =
+    text nameErrFun <> (text "(" <>  prettyError' f r1 <> comma <+> prettyError' f e1 <> comma
+                                 <+> prettyError' f r2 <> comma <+> prettyError' f e2 <> comma
+                                 <+> prettyError' f r3 <> comma <+> prettyError' f e3 <> text ")")
 
 printNameWithField :: Doc -> ResultField -> Doc
 printNameWithField g ResValue = g
@@ -2168,6 +2173,7 @@ prettyAExpr f (ErrBinOp ModOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_in
 prettyAExpr f (ErrBinOp PowOp TInt     r1 e1 r2 e2) = printBinOpError f "aerr_int_pow" r1 e1 r2 e2
 prettyAExpr f (ErrSubSternenz FPSingle r1 e1 r2 e2) = printBinOpError f "aerr_ulp_sp_subt" r1 e1 r2 e2
 prettyAExpr f (ErrSubSternenz FPDouble r1 e1 r2 e2) = printBinOpError f "aerr_ulp_dp_subt" r1 e1 r2 e2
+prettyAExpr f (ErrFma FPDouble r1 e1 r2 e2 r3 e3) = printFmaError f "aerr_ulp_dp_fma" r1 e1 r2 e2 r3 e3
 prettyAExpr f (ErrMulPow2L fp n e) = text nameErrFun <> (text "(" <> parens (integer n <> text ":: nat" ) <> comma
                                                  <+> prettyAExpr f e <> text ")")
     where

@@ -80,6 +80,12 @@ prettyFAExpr__tests = testGroup "prettyFAExpr" $
                           (FVar (ArrayOf 3 FPDouble) "x")
                           (FVar (ArrayOf 3 FPDouble) "y")))
       @?= "(x + y)"
+  , testCase "prettyDoc FFma FPDouble" $
+      render (prettyDoc (FFma FPDouble
+                          (FVar FPDouble "x")
+                          (FVar FPDouble "y")
+                          (FVar FPDouble "z")))
+      @?= "fma_double(x, y, z)"
   ]
 
 prettyAExpr__tests = testGroup "prettyAExpr" $
@@ -103,6 +109,12 @@ prettyAExpr__tests = testGroup "prettyAExpr" $
                           (Int 0) (Int 0)
                           (Int 1) (Int 1)))
       @?= "aerr_ulp_dpa_add(3)(0, 0, 1, 1)"
+  , testCase "prettyDoc ErrFma FPDouble" $
+      render (prettyDoc (ErrFma FPDouble
+                          (RealMark "x" ResValue) (ErrorMark "x" ResValue FPDouble)
+                          (RealMark "y" ResValue) (ErrorMark "y" ResValue FPDouble)
+                          (RealMark "z" ResValue) (ErrorMark "z" ResValue FPDouble)))
+      @?= "aerr_ulp_dp_fma(r_x, e_x, r_y, e_y, r_z, e_z)"
   ]
 
 subExpressions__tests = testGroup "subExpressions__tests" $ [
@@ -1350,6 +1362,7 @@ noRoundOffErrorInAExpr__tests = testGroup "noRoundOffErrorInAExpr tests"
   ,noRoundOffErrorInAExpr__test12
   ,noRoundOffErrorInAExpr__test13
   ,noRoundOffErrorInAExpr__test14
+  ,noRoundOffErrorInAExpr__test15
   ]
 
 noRoundOffErrorInAExpr__test1 = testCase "9 has no round-off error" $
@@ -1394,6 +1407,9 @@ noRoundOffErrorInAExpr__test13 = testCase "int fun has no round-off error" $
 noRoundOffErrorInAExpr__test14 = testCase "dot_double(3)(x,y) has round-off error" $
     noRoundOffErrorInAExpr (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y")) @?= False
 
+noRoundOffErrorInAExpr__test15 = testCase "fma_double(x,y,z) has round-off error" $
+    noRoundOffErrorInAExpr (FFma FPDouble (FVar FPDouble "x") (FVar FPDouble "y") (FVar FPDouble "z")) @?= False
+
 varList__tests = testGroup "varList tests"
   [varList__test1
   ,varList__test2
@@ -1408,6 +1424,7 @@ varList__tests = testGroup "varList tests"
   ,varList__test11
   ,varList__test12
   ,varList__test13
+  ,varList__test14
   ]
 
 varList__test1 = testCase "varList of constant 0.1 is []" $
@@ -1461,6 +1478,10 @@ varList__test12 = testCase "varList of a RtoD(DtoR(x + y)) is [x,y]" $
 varList__test13 = testCase "varList of dot_double(3)(x,y) is [x,y]" $
     varList (BinaryFPOp (ArrayDotOp 3) FPDouble (FVar (ArrayOf 3 FPDouble) "x") (FVar (ArrayOf 3 FPDouble) "y"))
     @?= [FVar (ArrayOf 3 FPDouble) "x", FVar (ArrayOf 3 FPDouble) "y"]
+
+varList__test14 = testCase "varList of fma_double(x,y,z) is [z,y,x]" $
+    varList (FFma FPDouble (FVar FPDouble "x") (FVar FPDouble "y") (FVar FPDouble "z"))
+    @?= [FVar FPDouble "z", FVar FPDouble "y", FVar FPDouble "x"]
 
 
 equivModuloIndex__tests = testGroup "equivModuloIndex tests"

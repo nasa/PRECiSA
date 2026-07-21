@@ -1,0 +1,8 @@
+double11: THEORY
+BEGIN
+
+  IMPORTING float_bounded_axiomatic@ieee754_double
+
+  example(x:double , y: double, z: double): double = fma_double(x,y,z)
+
+END double11

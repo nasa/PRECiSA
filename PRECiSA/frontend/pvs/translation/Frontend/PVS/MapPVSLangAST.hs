@@ -534,6 +534,12 @@ raw2FAExprM e
         e1' <- raw2FAExprM e1
         e2' <- raw2FAExprM e2
         pure (PVS.BinaryFPOp (Op.ArrayAddOp (fromInteger n)) FPDouble e1' e2')
+  | Raw.Call (Raw.ExprId (Raw.Id "fma_double")) [e1,e2,e3] <- e
+    = do
+        e1' <- raw2FAExprM e1
+        e2' <- raw2FAExprM e2
+        e3' <- raw2FAExprM e3
+        pure (PVS.FFma FPDouble e1' e2' e3')
   | Raw.Call (Raw.ExprId (Raw.Id f)) args <- e
     = do
         env  <- askVarTypeEnv
