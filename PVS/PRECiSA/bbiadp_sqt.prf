@@ -1,1805 +1,1464 @@
-(bbiadp_sqt
- (aeb_sqt_pre2_predondition_j 0
-  (aeb_sqt_pre2_predondition_j-1 nil 3684857137
-   ("" (judgement-tcc) nil nil)
-   ((boolean nonempty-type-decl nil booleans nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (NOT const-decl "[bool -> bool]" booleans nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (Interval type-eq-decl nil interval interval_arith)
-    (Proper? const-decl "bool" interval interval_arith)
-    (ProperInterval type-eq-decl nil interval interval_arith)
-    (real_minus_real_is_real application-judgement "real" reals nil)
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (ge_realorder name-judgement "RealOrder" real_orders reals)
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (le_realorder name-judgement "RealOrder" real_orders reals)
-    (<< const-decl "bool" interval interval_arith)
-    (Ge const-decl "bool" interval interval_arith)
-    (NonNeg? const-decl "bool" interval interval_arith)
-    ([\|\|] const-decl "Interval" interval interval_arith)
-    (Sub const-decl "Interval" interval interval_arith)
-    (aeb_sqt_pre2 const-decl "bool" bbiadp_sqt nil)
-    (Precondition2? const-decl "bool" interval interval_arith))
-   nil
-   (aeb_sqt_pre2_predondition_j subtype "bbiadp_sqt.aeb_sqt_pre2"
-    "(interval.Precondition2?)")))
- (aebounddp_sqt_safe_TCC1 0
-  (aebounddp_sqt_safe_TCC1-1 nil 3909296790 ("" (subtype-tcc) nil nil)
-   ((boolean nonempty-type-decl nil booleans nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (NOT const-decl "[bool -> bool]" booleans nil)
-    (number nonempty-type-decl nil numbers nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (real_plus_real_is_real application-judgement "real" reals nil)
-    (real_minus_real_is_real application-judgement "real" reals nil)
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (ge_realorder name-judgement "RealOrder" real_orders reals))
-   nil
-   (aebounddp_sqt_safe subtype "bbiadp_sqt.e"
-    "{e1: real_types.nnreal | reals.>=((number_fields.+)(e1, bbiadp_sqt.r), 0)}")))
- (AEB_SQT_inclusion_j 0
-  (AEB_SQT_inclusion_j-4 nil 3699610284
+(|bbiadp_sqt|
+ (|aeb_sqt_pre2_predondition_j| 0
+  (|aeb_sqt_pre2_predondition_j-1| NIL 3684857137 ("" (JUDGEMENT-TCC) NIL NIL)
+   ((|Precondition2?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|[\|\|]| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|)
+    (<< CONST-DECL "bool" |interval| |interval_arith|)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|ProperInterval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Proper?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|))
+   NIL
+   (|aeb_sqt_pre2_predondition_j| SUBTYPE "aeb_sqt_pre2"
+    "(interval.Precondition2?)" (16 4 16 16))))
+ (|aebounddp_sqt_safe_TCC1| 0
+  (|aebounddp_sqt_safe_TCC1-1| NIL 3909296790 ("" (SUBTYPE-TCC) NIL NIL)
+   ((|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)) NIL
+   (|aebounddp_sqt_safe| SUBTYPE "e"
+    "{e1: real_types.nnreal | reals.>=((number_fields.+)(e1, bbiadp_sqt.r), 0)}"
+    (30 24 30 25))))
+ (|AEB_SQT_inclusion_j| 0
+  (|AEB_SQT_inclusion_j-5| NIL 3993638001
    (""
-    (install-rewrites :rewrites
-     ("aeb_sqt_pre2" "axm_bnd@ieee754_sqt.sqrt"))
-    (("" (prove-inclusion-judgement)
-      (("1" (grind) nil nil) ("2" (grind) nil nil)
-       ("3" (grind) nil nil))
-      nil))
-    nil)
-   ((Inclusion2? const-decl "bool" interval interval_arith)
-    (boolean nonempty-type-decl nil booleans nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (TRUE const-decl "bool" booleans nil)
-    (aeb_sqt_pre2 const-decl "bool" bbiadp_sqt nil)
-    (Any_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (aeb_sqt_pre2_predondition_j name-judgement "(Precondition2?)"
-     bbiadp_sqt nil)
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (ge_realorder name-judgement "RealOrder" real_orders reals)
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (aebounddp_sqt_safe const-decl "real" bbiadp_sqt nil)
-    (aebounddp_sqt_ia const-decl "Interval" bbiadp_sqt nil)
-    (- const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (numfield nonempty-type-eq-decl nil number_fields nil)
-    (>= const-decl "bool" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number nonempty-type-decl nil numbers nil)
-    (AND const-decl "[bool, bool -> bool]" booleans nil)
-    (real_minus_real_is_real application-judgement "real" reals nil)
-    (aerr_ulp_sqt const-decl "nnreal" aerr_ulp_sqt axm_bnd)
-    (Add_inclusion formula-decl nil interval interval_arith)
-    (posreal_div_posreal_is_posreal application-judgement "posreal"
-     real_types nil)
-    (real_plus_real_is_real application-judgement "real" reals nil)
-    (x2 skolem-const-decl "real" bbiadp_sqt nil)
-    (x1 skolem-const-decl "real" bbiadp_sqt nil)
-    (+ const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (Interval type-eq-decl nil interval interval_arith)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (NonNeg? const-decl "bool" interval interval_arith)
-    (Sqrt const-decl "(NonNeg?)" interval_sqrt interval_arith)
-    (Any? const-decl "bool" interval interval_arith)
-    (Div const-decl "Interval" interval interval_arith)
-    (Ulp_dp const-decl "Interval" interval_ulp_dp nil)
-    (Add const-decl "Interval" interval interval_arith)
-    ([\|\|] const-decl "Interval" interval interval_arith)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (nnreal type-eq-decl nil real_types nil)
-    (= const-decl "[T, T -> boolean]" equalities nil)
-    (* const-decl "[numfield, numfield -> numfield]" number_fields nil)
-    (sqrt const-decl "{nnz: nnreal | nnz * nnz = nnx}" sqrt reals)
-    (/= const-decl "boolean" notequal nil)
-    (nznum nonempty-type-eq-decl nil number_fields nil)
-    (/ const-decl "[numfield, nznum -> numfield]" number_fields nil)
-    (> const-decl "bool" reals nil)
-    (posreal nonempty-type-eq-decl nil real_types nil)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (Sqrt_inclusion formula-decl nil interval_sqrt interval_arith)
-    (nnreal_plus_posreal_is_posreal application-judgement "posreal"
-     real_types nil)
-    (Ulp_dp_Inclusion name-judgement
+    (INSTALL-REWRITES :REWRITES
+     ("aeb_sqt_pre2" "float_bounded_axiomatic@ieee754_sqt.sqrt"))
+    (("" (EXPAND "Inclusion2?")
+      (("" (SKEEP* :PREDS? T)
+        (("" (MATCH "real_pred(%%)" STEP (HIDE $1N))
+          (("" (MATCH "real_pred(%%)" STEP (HIDE $1N))
+            (("" (ASSERT)
+              (("" (EXPAND "aebounddp_sqt_safe" :ASSERT? NONE)
+                (("" (EXPAND "aebounddp_sqt_ia")
+                  (("" (CASE "x1 - x2 >= 0 AND x2 >= 0")
+                    ((#A((1) BASE-CHAR . "1") (REPLACE -1)
+                      ((#A((1) BASE-CHAR . "1")
+                        (EXPAND "aerr_ulp_sqt" :ASSERT? NONE)
+                        ((#A((1) BASE-CHAR . "1")
+                          (MATCH 1 "%1+%2 ## Add(%3,%4) " STEP
+                                 (LET ((END-STEPS
+                                        (PROVE-INTERVAL-INCLUSION--APPLY-LEMMA
+                                         1 "Add_inclusion " "%3" "%4" "%1"
+                                         "%2")))
+                                   END-STEPS))
+                          ((#A((1) BASE-CHAR . "1") (FLATTEN)
+                            ((#A((1) BASE-CHAR . "1") (EXPAND "NonNeg?")
+                              ((#A((1) BASE-CHAR . "1") (GRIND) NIL NIL)) NIL))
+                            NIL)
+                           (#A((1) BASE-CHAR . "2") (GRIND) NIL NIL))
+                          NIL))
+                        NIL))
+                      NIL)
+                     (#A((1) BASE-CHAR . "2") (HIDE 2)
+                      ((#A((1) BASE-CHAR . "2") (GRIND) NIL NIL)) NIL))
+                    NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|boolean| NONEMPTY-TYPE-DECL NIL |booleans| NIL)
+    (|bool| NONEMPTY-TYPE-EQ-DECL NIL |booleans| NIL)
+    (TRUE CONST-DECL "bool" |booleans| NIL)
+    (|aebounddp_sqt_safe| CONST-DECL "real" |bbiadp_sqt| NIL)
+    (- CONST-DECL "[numfield, numfield -> numfield]" |number_fields| NIL)
+    (|numfield| NONEMPTY-TYPE-EQ-DECL NIL |number_fields| NIL)
+    (>= CONST-DECL "bool" |reals| NIL)
+    (|real| NONEMPTY-TYPE-FROM-DECL NIL |reals| NIL)
+    (|real_pred| CONST-DECL "[number_field -> boolean]" |reals| NIL)
+    (|number_field| NONEMPTY-TYPE-FROM-DECL NIL |number_fields| NIL)
+    (|number_field_pred| CONST-DECL "[number -> boolean]" |number_fields| NIL)
+    (|number| NONEMPTY-TYPE-DECL NIL |numbers| NIL)
+    (AND CONST-DECL "[bool, bool -> bool]" |booleans| NIL)
+    (|real_minus_real_is_real| APPLICATION-JUDGEMENT "real" |reals| NIL)
+    (|aerr_ulp_sqt| CONST-DECL "nnreal" |aerr_ulp_sqt|
+     |float_bounded_axiomatic|)
+    (|even_times_int_is_even| APPLICATION-JUDGEMENT "even_int" |integers| NIL)
+    (|int_minus_int_is_int| APPLICATION-JUDGEMENT "int" |integers| NIL)
+    (|posint_plus_nnint_is_posint| APPLICATION-JUDGEMENT "posint" |integers|
+     NIL)
+    (|posint_exp| APPLICATION-JUDGEMENT "posint" |exponentiation| NIL)
+    (|posrat_exp| APPLICATION-JUDGEMENT "posrat" |exponentiation| NIL)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|)
+    (|[\|\|]| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp_dp_inclusion| FORMULA-DECL NIL |interval_ulp_dp| NIL)
+    (|##| CONST-DECL "bool" |interval| |interval_arith|)
+    (|lb_r2i| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|ub_r2i| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|real_le_is_total_order| NAME-JUDGEMENT "(total_order?[real])"
+     |real_props| NIL)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|bijective?| CONST-DECL "bool" |functions| NIL)
+    (|id| CONST-DECL "(bijective?[T, T])" |identity| NIL)
+    (|Div_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Sqrt_inclusion| FORMULA-DECL NIL |interval_sqrt| |interval_arith|)
+    (|ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|posreal| NONEMPTY-TYPE-EQ-DECL NIL |real_types| NIL)
+    (> CONST-DECL "bool" |reals| NIL)
+    (/ CONST-DECL "[numfield, nznum -> numfield]" |number_fields| NIL)
+    (|nznum| NONEMPTY-TYPE-EQ-DECL NIL |number_fields| NIL)
+    (/= CONST-DECL "boolean" |notequal| NIL)
+    (* CONST-DECL "[numfield, numfield -> numfield]" |number_fields| NIL)
+    (= CONST-DECL "[T, T -> boolean]" |equalities| NIL)
+    (|nnreal| TYPE-EQ-DECL NIL |real_types| NIL)
+    (|nonneg_real| NONEMPTY-TYPE-EQ-DECL NIL |real_types| NIL)
+    (|[\|\|]| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Add| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp_dp| CONST-DECL "Interval" |interval_ulp_dp| NIL)
+    (|Div| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Any?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sqrt| CONST-DECL "(NonNeg?)" |interval_sqrt| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|nat| NONEMPTY-TYPE-EQ-DECL NIL |naturalnumbers| NIL)
+    (|int| NONEMPTY-TYPE-EQ-DECL NIL |integers| NIL)
+    (|integer_pred| CONST-DECL "[rational -> boolean]" |integers| NIL)
+    (|rational| NONEMPTY-TYPE-FROM-DECL NIL |rationals| NIL)
+    (|rational_pred| CONST-DECL "[real -> boolean]" |rationals| NIL)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (+ CONST-DECL "[numfield, numfield -> numfield]" |number_fields| NIL)
+    (|x1| SKOLEM-CONST-DECL "real" |bbiadp_sqt| NIL)
+    (|x2| SKOLEM-CONST-DECL "real" |bbiadp_sqt| NIL)
+    (|nnreal_plus_posreal_is_posreal| APPLICATION-JUDGEMENT "posreal"
+     |real_types| NIL)
+    (|Ulp_dp_Inclusion| NAME-JUDGEMENT
      "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
-     interval_ulp_dp nil)
-    (Ulp_dp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_dp nil)
-    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
-    (r2i_Proper application-judgement "ProperInterval" interval
-     interval_arith)
-    (sqrt const-decl "{nnz: nnreal | nnz * nnz = nnx}" ieee754_sqt
-          axm_bnd)
-    (Div_inclusion formula-decl nil interval interval_arith)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (bijective? const-decl "bool" functions nil)
-    (|##| const-decl "bool" interval interval_arith)
-    (le_realorder name-judgement "RealOrder" real_orders reals)
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (ub_r2i formula-decl nil interval interval_arith)
-    (lb_r2i formula-decl nil interval interval_arith)
-    (Ulp_dp_inclusion formula-decl nil interval_ulp_dp nil)
-    (Sub const-decl "Interval" interval interval_arith)
-    (Ge const-decl "bool" interval interval_arith)
-    ([\|\|] const-decl "Interval" interval interval_arith))
-   nil
-   (AEB_SQT_inclusion_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"))
-  (AEB_SQT_inclusion_j-3 nil 3699285748
-   ("" (expand "Inclusion2?")
-    (("" (skeep*)
-      (("" (expand "aebounddp_sqt_ia")
-        (("" (expand "aebounddp_sqt_safe")
-          (("" (lift-if)
-            (("" (split)
-              (("1" (flatten)
-                (("1" (expand "aerr_ulp_sqt")
-                  (("1" (use "Add_inclusion")
-                    (("1" (assert)
-                      (("1" (hide 2)
-                        (("1" (split)
-                          (("1" (expand "sqt_aerr_bound")
-                            (("1" (use "Sqrt_inclusion")
-                              (("1"
-                                (assert)
-                                (("1"
-                                  (hide 2)
-                                  (("1"
-                                    (typepred "X2")
+     |interval_ulp_dp| NIL)
+    (|Ulp_dp_Fundamental| NAME-JUDGEMENT "(Fundamental?(PreTrue))"
+     |interval_ulp_dp| NIL)
+    (|r2i_Pos| APPLICATION-JUDGEMENT "(Pos?)" |interval| |interval_arith|)
+    (|r2i_Proper| APPLICATION-JUDGEMENT "ProperInterval" |interval|
+     |interval_arith|)
+    (|sqrt| CONST-DECL "{nnz: nnreal | nnz * nnz = nnx}" |ieee754_sqt|
+     |float_bounded_axiomatic|)
+    (|minus_nzint_is_nzint| APPLICATION-JUDGEMENT "nzint" |integers| NIL)
+    (|real_plus_real_is_real| APPLICATION-JUDGEMENT "real" |reals| NIL)
+    (|posreal_div_posreal_is_posreal| APPLICATION-JUDGEMENT "posreal"
+     |real_types| NIL)
+    (|Add_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|aebounddp_sqt_ia| CONST-DECL "Interval" |bbiadp_sqt| NIL)
+    (|real_ge_is_total_order| NAME-JUDGEMENT "(total_order?[real])"
+     |real_props| NIL)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|NonNeg_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|aeb_sqt_pre2_predondition_j| NAME-JUDGEMENT "(Precondition2?)"
+     |bbiadp_sqt| NIL)
+    (|Any_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|aeb_sqt_pre2| CONST-DECL "bool" |bbiadp_sqt| NIL)
+    (|Inclusion2?| CONST-DECL "bool" |interval| |interval_arith|))
+   NIL
+   (|AEB_SQT_inclusion_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"
+    (34 4 34 20)))
+  (|AEB_SQT_inclusion_j-4| NIL 3699610284
+   ("" (INSTALL-REWRITES :REWRITES ("aeb_sqt_pre2" "axm_bnd@ieee754_sqt.sqrt"))
+    (("" (PROVE-INCLUSION-JUDGEMENT)
+      (("1" (GRIND) NIL NIL) ("2" (GRIND) NIL NIL) ("3" (GRIND) NIL NIL)) NIL))
+    NIL)
+   ((|Inclusion2?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Any_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|NonNeg_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|aerr_ulp_sqt| CONST-DECL "nnreal" |aerr_ulp_sqt|
+     |float_bounded_axiomatic|)
+    (|Add_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sqrt| CONST-DECL "(NonNeg?)" |interval_sqrt| |interval_arith|)
+    (|Any?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Div| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp_dp| CONST-DECL "Interval" |interval_ulp_dp| NIL)
+    (|Add| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|sqrt| CONST-DECL "{nnz: nnreal | nnz * nnz = nnx}" |sqrt| |reals|)
+    (|ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|Sqrt_inclusion| FORMULA-DECL NIL |interval_sqrt| |interval_arith|)
+    (|Ulp_dp_Inclusion| NAME-JUDGEMENT
+     "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
+     |interval_ulp_dp| NIL)
+    (|Ulp_dp_Fundamental| NAME-JUDGEMENT "(Fundamental?(PreTrue))"
+     |interval_ulp_dp| NIL)
+    (|r2i_Pos| APPLICATION-JUDGEMENT "(Pos?)" |interval| |interval_arith|)
+    (|r2i_Proper| APPLICATION-JUDGEMENT "ProperInterval" |interval|
+     |interval_arith|)
+    (|sqrt| CONST-DECL "{nnz: nnreal | nnz * nnz = nnx}" |ieee754_sqt|
+     |float_bounded_axiomatic|)
+    (|Div_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|##| CONST-DECL "bool" |interval| |interval_arith|)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|ub_r2i| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|lb_r2i| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Ulp_dp_inclusion| FORMULA-DECL NIL |interval_ulp_dp| NIL)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|))
+   NIL
+   (|AEB_SQT_inclusion_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"
+    (34 4 34 20)))
+  (|AEB_SQT_inclusion_j-3| NIL 3699285748
+   ("" (EXPAND "Inclusion2?")
+    (("" (SKEEP*)
+      (("" (EXPAND "aebounddp_sqt_ia")
+        (("" (EXPAND "aebounddp_sqt_safe")
+          (("" (LIFT-IF)
+            (("" (SPLIT)
+              (("1" (FLATTEN)
+                (("1" (EXPAND "aerr_ulp_sqt")
+                  (("1" (USE "Add_inclusion")
+                    (("1" (ASSERT)
+                      (("1" (HIDE 2)
+                        (("1" (SPLIT)
+                          (("1" (EXPAND "sqt_aerr_bound")
+                            (("1" (USE "Sqrt_inclusion")
+                              (("1" (ASSERT)
+                                (("1" (HIDE 2)
+                                  (("1" (TYPEPRED "X2")
+                                    (("1" (EXPAND "aeb_sqt_pre2")
+                                      (("1" (PROPAX) NIL NIL)) NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL)
+                           ("2" (USE "Div_inclusion")
+                            (("2" (ASSERT)
+                              (("2" (HIDE 2)
+                                (("2" (SPLIT)
+                                  (("1" (LEMMA "Ulp_dp_inclusion")
                                     (("1"
-                                      (expand "aeb_sqt_pre2")
-                                      (("1" (propax) nil nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil)
-                           ("2" (use "Div_inclusion")
-                            (("2" (assert)
-                              (("2"
-                                (hide 2)
-                                (("2"
-                                  (split)
-                                  (("1"
-                                    (lemma "Ulp_dp_inclusion")
-                                    (("1"
-                                      (inst
-                                       -1
+                                      (INST -1
                                        "Add(Abs(Sqrt(n)(X1)), Sqrt(n)(X2))"
                                        "sqt_ulp_bound(x1, x2)")
-                                      (("1"
-                                        (assert)
-                                        (("1"
-                                          (hide 2)
-                                          (("1"
-                                            (expand "sqt_ulp_bound")
-                                            (("1"
-                                              (use "Add_inclusion")
-                                              (("1"
-                                                (assert)
-                                                (("1"
-                                                  (hide 2)
-                                                  (("1"
-                                                    (split)
+                                      (("1" (ASSERT)
+                                        (("1" (HIDE 2)
+                                          (("1" (EXPAND "sqt_ulp_bound")
+                                            (("1" (USE "Add_inclusion")
+                                              (("1" (ASSERT)
+                                                (("1" (HIDE 2)
+                                                  (("1" (SPLIT)
                                                     (("1"
-                                                      (lemma
-                                                       "Abs_inclusion")
+                                                      (LEMMA "Abs_inclusion")
                                                       (("1"
-                                                        (inst
-                                                         -1
-                                                         "Sqrt(n)(X1)"
+                                                        (INST -1 "Sqrt(n)(X1)"
                                                          "sqrt(x1)")
-                                                        (("1"
-                                                          (assert)
-                                                          (("1"
-                                                            (hide 2)
+                                                        (("1" (ASSERT)
+                                                          (("1" (HIDE 2)
                                                             (("1"
-                                                              (use
+                                                              (USE
                                                                "Sqrt_inclusion")
-                                                              (("1"
-                                                                (assert)
-                                                                (("1"
-                                                                  (hide
-                                                                   2)
+                                                              (("1" (ASSERT)
+                                                                (("1" (HIDE 2)
                                                                   (("1"
-                                                                    (typepred
+                                                                    (TYPEPRED
                                                                      "X2")
                                                                     (("1"
-                                                                      (expand
+                                                                      (EXPAND
                                                                        "aeb_sqt_pre2")
                                                                       (("1"
-                                                                        (flatten)
+                                                                        (FLATTEN)
                                                                         (("1"
-                                                                          (assert)
+                                                                          (ASSERT)
                                                                           (("1"
-                                                                            (hide
+                                                                            (HIDE
                                                                              -3
                                                                              -4
                                                                              -5
                                                                              -6)
                                                                             (("1"
-                                                                              (grind)
-                                                                              nil
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil)
+                                                                              (GRIND)
+                                                                              NIL
+                                                                              NIL))
+                                                                            NIL))
+                                                                          NIL))
+                                                                        NIL))
+                                                                      NIL))
+                                                                    NIL))
+                                                                  NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL)
                                                      ("2"
-                                                      (use
-                                                       "Sqrt_inclusion")
-                                                      (("2"
-                                                        (assert)
-                                                        (("2"
-                                                          (hide 2)
-                                                          (("2"
-                                                            (hide
-                                                             -1
-                                                             -2
-                                                             -3)
+                                                      (USE "Sqrt_inclusion")
+                                                      (("2" (ASSERT)
+                                                        (("2" (HIDE 2)
+                                                          (("2" (HIDE -1 -2 -3)
                                                             (("2"
-                                                              (typepred
-                                                               "X2")
+                                                              (TYPEPRED "X2")
                                                               (("2"
-                                                                (expand
+                                                                (EXPAND
                                                                  "aeb_sqt_pre2")
-                                                                (("2"
-                                                                  (propax)
-                                                                  nil
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil)
-                                   ("2" (eval-formula) nil nil)
-                                   ("3" (eval-formula) nil nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil)
-                     ("2" (assert) nil nil))
-                    nil))
-                  nil))
-                nil)
-               ("2" (flatten)
-                (("2" (hide 2)
-                  (("2" (assert)
-                    (("2" (split)
-                      (("1" (typepred "X2")
-                        (("1" (expand "aeb_sqt_pre2")
-                          (("1" (grind) nil nil)) nil))
-                        nil)
-                       ("2" (typepred "X2") (("2" (grind) nil nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil))
-              nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
-   ((Inclusion2? const-decl "bool" interval interval_arith)
-    (|##| const-decl "bool" interval interval_arith)
-    (le_realorder name-judgement "RealOrder" real_orders reals)
-    (Add_inclusion formula-decl nil interval interval_arith)
-    (Abs const-decl "(NonNeg?)" interval interval_arith)
-    (Add const-decl "Interval" interval interval_arith)
-    (Ulp_dp const-decl "Interval" interval_ulp_dp nil)
-    (Div const-decl "Interval" interval interval_arith)
-    (Any? const-decl "bool" interval interval_arith)
-    (Sqrt const-decl "(NonNeg?)" interval_sqrt interval_arith)
-    (NonNeg? const-decl "bool" interval interval_arith)
-    (Interval type-eq-decl nil interval interval_arith)
-    (ge_realorder name-judgement "RealOrder" real_orders reals)
-    (gt_realorder name-judgement "RealOrder" real_orders reals)
-    (Div_inclusion formula-decl nil interval interval_arith)
-    (Ulp_dp_inclusion formula-decl nil interval_ulp_dp nil)
-    (Sub const-decl "Interval" interval interval_arith)
-    (Ge const-decl "bool" interval interval_arith)
-    (Abs_inclusion formula-decl nil interval interval_arith)
-    (sqrt const-decl "{nnz: nnreal | nnz * nnz = nnx}" sqrt reals)
-    (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (Sqrt_inclusion formula-decl nil interval_sqrt interval_arith)
-    (Ulp_dp_Inclusion name-judgement
+                                                                (("2" (PROPAX)
+                                                                  NIL NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL)
+                                   ("2" (EVAL-FORMULA) NIL NIL)
+                                   ("3" (EVAL-FORMULA) NIL NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL)
+                     ("2" (ASSERT) NIL NIL))
+                    NIL))
+                  NIL))
+                NIL)
+               ("2" (FLATTEN)
+                (("2" (HIDE 2)
+                  (("2" (ASSERT)
+                    (("2" (SPLIT)
+                      (("1" (TYPEPRED "X2")
+                        (("1" (EXPAND "aeb_sqt_pre2") (("1" (GRIND) NIL NIL))
+                          NIL))
+                        NIL)
+                       ("2" (TYPEPRED "X2") (("2" (GRIND) NIL NIL)) NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|Inclusion2?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|##| CONST-DECL "bool" |interval| |interval_arith|)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|Add_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Abs| CONST-DECL "(NonNeg?)" |interval| |interval_arith|)
+    (|Add| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp_dp| CONST-DECL "Interval" |interval_ulp_dp| NIL)
+    (|Div| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Any?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sqrt| CONST-DECL "(NonNeg?)" |interval_sqrt| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|gt_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|Div_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Ulp_dp_inclusion| FORMULA-DECL NIL |interval_ulp_dp| NIL)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Abs_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|sqrt| CONST-DECL "{nnz: nnreal | nnz * nnz = nnx}" |sqrt| |reals|)
+    (|Zeroless_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|NonNeg_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|Sqrt_inclusion| FORMULA-DECL NIL |interval_sqrt| |interval_arith|)
+    (|Ulp_dp_Inclusion| NAME-JUDGEMENT
      "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
-     interval_ulp_dp nil)
-    (Ulp_dp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_dp nil)
-    (NonNeg_Add application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (r2i_Nneg application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (r2i_Pos application-judgement "(Pos?)" interval interval_arith))
-   nil
-   (AEB_SQT_inclusion_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"))
-  (AEB_SQT_inclusion_j-2 nil 3684857165
-   ("" (expand "Inclusion2?")
-    (("" (skeep*)
-      (("" (expand "aebounddp_sqt_ia")
-        (("" (expand "aebounddp_sqt_safe")
-          (("" (lift-if)
-            (("" (split)
-              (("1" (flatten)
-                (("1" (expand "aerr_ulp_sqt")
-                  (("1" (use "Add_inclusion")
-                    (("1" (assert)
-                      (("1" (hide 2)
-                        (("1" (split)
-                          (("1" (expand "sqt_aerr_bound")
-                            (("1" (use "Sqrt_inclusion")
-                              (("1"
-                                (assert)
-                                (("1"
-                                  (hide 2)
-                                  (("1"
-                                    (typepred "X2")
+     |interval_ulp_dp| NIL)
+    (|Ulp_dp_Fundamental| NAME-JUDGEMENT "(Fundamental?(PreTrue))"
+     |interval_ulp_dp| NIL)
+    (|NonNeg_Add| APPLICATION-JUDGEMENT "(NonNeg?)" |interval|
+     |interval_arith|)
+    (|r2i_Nneg| APPLICATION-JUDGEMENT "(NonNeg?)" |interval| |interval_arith|)
+    (|r2i_Pos| APPLICATION-JUDGEMENT "(Pos?)" |interval| |interval_arith|))
+   NIL
+   (|AEB_SQT_inclusion_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"
+    (34 4 34 20)))
+  (|AEB_SQT_inclusion_j-2| NIL 3684857165
+   ("" (EXPAND "Inclusion2?")
+    (("" (SKEEP*)
+      (("" (EXPAND "aebounddp_sqt_ia")
+        (("" (EXPAND "aebounddp_sqt_safe")
+          (("" (LIFT-IF)
+            (("" (SPLIT)
+              (("1" (FLATTEN)
+                (("1" (EXPAND "aerr_ulp_sqt")
+                  (("1" (USE "Add_inclusion")
+                    (("1" (ASSERT)
+                      (("1" (HIDE 2)
+                        (("1" (SPLIT)
+                          (("1" (EXPAND "sqt_aerr_bound")
+                            (("1" (USE "Sqrt_inclusion")
+                              (("1" (ASSERT)
+                                (("1" (HIDE 2)
+                                  (("1" (TYPEPRED "X2")
+                                    (("1" (EXPAND "aeb_sqt_pre2")
+                                      (("1" (PROPAX) NIL NIL)) NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL)
+                           ("2" (USE "Div_inclusion")
+                            (("2" (ASSERT)
+                              (("2" (HIDE 2)
+                                (("2" (SPLIT)
+                                  (("1" (LEMMA "Ulp_inclusion")
                                     (("1"
-                                      (expand "aeb_sqt_pre2")
-                                      (("1" (propax) nil nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil)
-                           ("2" (use "Div_inclusion")
-                            (("2" (assert)
-                              (("2"
-                                (hide 2)
-                                (("2"
-                                  (split)
-                                  (("1"
-                                    (lemma "Ulp_inclusion")
-                                    (("1"
-                                      (inst
-                                       -1
+                                      (INST -1
                                        "Add(Abs(Sqrt(n)(X1)), Sqrt(n)(X2))"
                                        "sqt_ulp_bound(x1, x2)")
-                                      (("1"
-                                        (assert)
-                                        (("1"
-                                          (hide 2)
-                                          (("1"
-                                            (expand "sqt_ulp_bound")
-                                            (("1"
-                                              (use "Add_inclusion")
-                                              (("1"
-                                                (assert)
-                                                (("1"
-                                                  (hide 2)
-                                                  (("1"
-                                                    (split)
+                                      (("1" (ASSERT)
+                                        (("1" (HIDE 2)
+                                          (("1" (EXPAND "sqt_ulp_bound")
+                                            (("1" (USE "Add_inclusion")
+                                              (("1" (ASSERT)
+                                                (("1" (HIDE 2)
+                                                  (("1" (SPLIT)
                                                     (("1"
-                                                      (lemma
-                                                       "Abs_inclusion")
+                                                      (LEMMA "Abs_inclusion")
                                                       (("1"
-                                                        (inst
-                                                         -1
-                                                         "Sqrt(n)(X1)"
+                                                        (INST -1 "Sqrt(n)(X1)"
                                                          "sqrt(x1)")
-                                                        (("1"
-                                                          (assert)
-                                                          (("1"
-                                                            (hide 2)
+                                                        (("1" (ASSERT)
+                                                          (("1" (HIDE 2)
                                                             (("1"
-                                                              (use
+                                                              (USE
                                                                "Sqrt_inclusion")
-                                                              (("1"
-                                                                (assert)
-                                                                (("1"
-                                                                  (hide
-                                                                   2)
+                                                              (("1" (ASSERT)
+                                                                (("1" (HIDE 2)
                                                                   (("1"
-                                                                    (typepred
+                                                                    (TYPEPRED
                                                                      "X2")
                                                                     (("1"
-                                                                      (expand
+                                                                      (EXPAND
                                                                        "aeb_sqt_pre2")
                                                                       (("1"
-                                                                        (flatten)
+                                                                        (FLATTEN)
                                                                         (("1"
-                                                                          (assert)
+                                                                          (ASSERT)
                                                                           (("1"
-                                                                            (hide
+                                                                            (HIDE
                                                                              -3
                                                                              -4
                                                                              -5
                                                                              -6)
                                                                             (("1"
-                                                                              (grind)
-                                                                              nil
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil)
+                                                                              (GRIND)
+                                                                              NIL
+                                                                              NIL))
+                                                                            NIL))
+                                                                          NIL))
+                                                                        NIL))
+                                                                      NIL))
+                                                                    NIL))
+                                                                  NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL)
                                                      ("2"
-                                                      (use
-                                                       "Sqrt_inclusion")
-                                                      (("2"
-                                                        (assert)
-                                                        (("2"
-                                                          (hide 2)
-                                                          (("2"
-                                                            (hide
-                                                             -1
-                                                             -2
-                                                             -3)
+                                                      (USE "Sqrt_inclusion")
+                                                      (("2" (ASSERT)
+                                                        (("2" (HIDE 2)
+                                                          (("2" (HIDE -1 -2 -3)
                                                             (("2"
-                                                              (typepred
-                                                               "X2")
+                                                              (TYPEPRED "X2")
                                                               (("2"
-                                                                (expand
+                                                                (EXPAND
                                                                  "aeb_sqt_pre2")
-                                                                (("2"
-                                                                  (propax)
-                                                                  nil
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil)
-                                   ("2" (eval-formula) nil nil)
-                                   ("3" (eval-formula) nil nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil)
-                     ("2" (assert) nil nil))
-                    nil))
-                  nil))
-                nil)
-               ("2" (flatten)
-                (("2" (hide 2)
-                  (("2" (assert)
-                    (("2" (split)
-                      (("1" (typepred "X2")
-                        (("1" (expand "aeb_sqt_pre2")
-                          (("1" (grind) nil nil)) nil))
-                        nil)
-                       ("2" (typepred "X2") (("2" (grind) nil nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil))
-              nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
-   ((r2i_Pos application-judgement "(Pos?)" interval interval_arith)
-    (r2i_Nneg application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (NonNeg_Add application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (Sqrt_inclusion formula-decl nil interval_sqrt interval_arith)
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (sqrt const-decl "{nnz: nnreal | nnz * nnz = nnx}" sqrt reals)
-    (Abs_inclusion formula-decl nil interval interval_arith)
-    (Ge const-decl "bool" interval interval_arith)
-    (Sub const-decl "Interval" interval interval_arith)
-    (Ulp_inclusion formula-decl nil interval_ulp nil)
-    (Div_inclusion formula-decl nil interval interval_arith)
-    (gt_realorder name-judgement "RealOrder" real_orders reals)
-    (ge_realorder name-judgement "RealOrder" real_orders reals)
-    (Interval type-eq-decl nil interval interval_arith)
-    (NonNeg? const-decl "bool" interval interval_arith)
-    (Sqrt const-decl "(NonNeg?)" interval_sqrt interval_arith)
-    (Any? const-decl "bool" interval interval_arith)
-    (Div const-decl "Interval" interval interval_arith)
-    (Ulp const-decl "Interval" interval_ulp nil)
-    (Add const-decl "Interval" interval interval_arith)
-    (Abs const-decl "(NonNeg?)" interval interval_arith)
-    (Add_inclusion formula-decl nil interval interval_arith)
-    (le_realorder name-judgement "RealOrder" real_orders reals)
-    (|##| const-decl "bool" interval interval_arith)
-    (Inclusion2? const-decl "bool" interval interval_arith))
-   nil
-   (AEB_SQT_inclusion_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"))
-  (AEB_SQT_inclusion_j-1 nil 3684857137 ("" (judgement-tcc) nil nil)
-   nil nil
-   (AEB_SQT_inclusion_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))")))
- (AEB_SQT_fundmental_j 0
-  (AEB_SQT_fundmental_j-5 nil 3699610385
-   ("" (skeep*)
-    (("" (expand "Fundamental2?")
-      (("" (skeep)
-        (("" (expand "aebounddp_sqt_ia")
-          (("" (lift-if)
-            (("" (split)
-              (("1" (flatten)
-                (("1" (use "Add_fundamental")
-                  (("1" (assert)
-                    (("1" (hide 2)
-                      (("1" (split)
-                        (("1" (use "Sqrt_fundamental")
-                          (("1" (assert)
-                            (("1" (hide 2)
-                              (("1"
-                                (expand "aeb_sqt_pre2")
-                                (("1"
-                                  (flatten)
-                                  (("1"
-                                    (typepred "Y")
-                                    (("1"
-                                      (expand "aeb_sqt_pre2")
-                                      (("1" (propax) nil nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil)
-                         ("2" (use "Div_fundamental")
-                          (("2" (assert)
-                            (("2" (hide 2)
-                              (("2"
-                                (split)
-                                (("1"
-                                  (use "Ulp_dp_proper")
-                                  (("1"
-                                    (assert)
-                                    (("1"
-                                      (hide 2)
-                                      (("1"
-                                        (lemma "Proper_Sqrt")
-                                        (("1"
-                                          (inst?)
-                                          (("1" (flatten) nil nil)
-                                           ("2"
-                                            (expand "aeb_sqt_pre2")
-                                            (("2"
-                                              (flatten)
-                                              (("2"
-                                                (hide-all-but
-                                                 (-1 -2 1))
-                                                (("2" (grind) nil nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil)
-                                 ("2"
-                                  (use "Ulp_dp_fundamental")
-                                  (("2"
-                                    (assert)
-                                    (("2"
-                                      (hide 2)
-                                      (("2"
-                                        (split)
-                                        (("1"
-                                          (lemma "Proper_Sqrt")
-                                          (("1"
-                                            (inst?)
-                                            (("1" (assert) nil nil)
-                                             ("2"
-                                              (hide 2)
-                                              (("2"
-                                                (expand "aeb_sqt_pre2")
-                                                (("2"
-                                                  (flatten)
+                                                                (("2" (PROPAX)
+                                                                  NIL NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL)
+                                   ("2" (EVAL-FORMULA) NIL NIL)
+                                   ("3" (EVAL-FORMULA) NIL NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL)
+                     ("2" (ASSERT) NIL NIL))
+                    NIL))
+                  NIL))
+                NIL)
+               ("2" (FLATTEN)
+                (("2" (HIDE 2)
+                  (("2" (ASSERT)
+                    (("2" (SPLIT)
+                      (("1" (TYPEPRED "X2")
+                        (("1" (EXPAND "aeb_sqt_pre2") (("1" (GRIND) NIL NIL))
+                          NIL))
+                        NIL)
+                       ("2" (TYPEPRED "X2") (("2" (GRIND) NIL NIL)) NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|r2i_Pos| APPLICATION-JUDGEMENT "(Pos?)" |interval| |interval_arith|)
+    (|r2i_Nneg| APPLICATION-JUDGEMENT "(NonNeg?)" |interval| |interval_arith|)
+    (|NonNeg_Add| APPLICATION-JUDGEMENT "(NonNeg?)" |interval|
+     |interval_arith|)
+    (|Sqrt_inclusion| FORMULA-DECL NIL |interval_sqrt| |interval_arith|)
+    (|NonNeg_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|Zeroless_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|sqrt| CONST-DECL "{nnz: nnreal | nnz * nnz = nnx}" |sqrt| |reals|)
+    (|Abs_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp_inclusion| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|Div_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|gt_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sqrt| CONST-DECL "(NonNeg?)" |interval_sqrt| |interval_arith|)
+    (|Any?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Div| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp| CONST-DECL "Interval" |interval_ulp| NIL)
+    (|Add| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Abs| CONST-DECL "(NonNeg?)" |interval| |interval_arith|)
+    (|Add_inclusion| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|##| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Inclusion2?| CONST-DECL "bool" |interval| |interval_arith|))
+   NIL
+   (|AEB_SQT_inclusion_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"
+    (34 4 34 20)))
+  (|AEB_SQT_inclusion_j-1| NIL 3684857137 ("" (JUDGEMENT-TCC) NIL NIL) NIL NIL
+   (|AEB_SQT_inclusion_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe))"
+    (34 4 34 20))))
+ (|AEB_SQT_fundmental_j| 0
+  (|AEB_SQT_fundmental_j-5| NIL 3699610385
+   ("" (SKEEP*)
+    (("" (EXPAND "Fundamental2?")
+      (("" (SKEEP)
+        (("" (EXPAND "aebounddp_sqt_ia")
+          (("" (LIFT-IF)
+            (("" (SPLIT)
+              (("1" (FLATTEN)
+                (("1" (USE "Add_fundamental")
+                  (("1" (ASSERT)
+                    (("1" (HIDE 2)
+                      (("1" (SPLIT)
+                        (("1" (USE "Sqrt_fundamental")
+                          (("1" (ASSERT)
+                            (("1" (HIDE 2)
+                              (("1" (EXPAND "aeb_sqt_pre2")
+                                (("1" (FLATTEN)
+                                  (("1" (TYPEPRED "Y")
+                                    (("1" (EXPAND "aeb_sqt_pre2")
+                                      (("1" (PROPAX) NIL NIL)) NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL)
+                         ("2" (USE "Div_fundamental")
+                          (("2" (ASSERT)
+                            (("2" (HIDE 2)
+                              (("2" (SPLIT)
+                                (("1" (USE "Ulp_dp_proper")
+                                  (("1" (ASSERT)
+                                    (("1" (HIDE 2)
+                                      (("1" (LEMMA "Proper_Sqrt")
+                                        (("1" (INST?)
+                                          (("1" (FLATTEN) NIL NIL)
+                                           ("2" (EXPAND "aeb_sqt_pre2")
+                                            (("2" (FLATTEN)
+                                              (("2" (HIDE-ALL-BUT (-1 -2 1))
+                                                (("2" (GRIND) NIL NIL)) NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL)
+                                 ("2" (USE "Ulp_dp_fundamental")
+                                  (("2" (ASSERT)
+                                    (("2" (HIDE 2)
+                                      (("2" (SPLIT)
+                                        (("1" (LEMMA "Proper_Sqrt")
+                                          (("1" (INST?)
+                                            (("1" (ASSERT) NIL NIL)
+                                             ("2" (HIDE 2)
+                                              (("2" (EXPAND "aeb_sqt_pre2")
+                                                (("2" (FLATTEN)
                                                   (("2"
-                                                    (hide-all-but
-                                                     (-1 -2 1))
+                                                    (HIDE-ALL-BUT (-1 -2 1))
+                                                    (("2" (GRIND) NIL NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL)
+                                         ("2" (USE "Sqrt_fundamental")
+                                          (("2" (ASSERT)
+                                            (("2" (HIDE 2)
+                                              (("2" (EXPAND "aeb_sqt_pre2")
+                                                (("2" (FLATTEN)
+                                                  (("2" (TYPEPRED "Y")
                                                     (("2"
-                                                      (grind)
-                                                      nil
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil)
-                                         ("2"
-                                          (use "Sqrt_fundamental")
-                                          (("2"
-                                            (assert)
-                                            (("2"
-                                              (hide 2)
-                                              (("2"
-                                                (expand "aeb_sqt_pre2")
-                                                (("2"
-                                                  (flatten)
-                                                  (("2"
-                                                    (typepred "Y")
-                                                    (("2"
-                                                      (expand
-                                                       "aeb_sqt_pre2")
-                                                      (("2"
-                                                        (flatten)
-                                                        (("2"
-                                                          (split 1)
+                                                      (EXPAND "aeb_sqt_pre2")
+                                                      (("2" (FLATTEN)
+                                                        (("2" (SPLIT 1)
                                                           (("1"
-                                                            (hide-all-but
+                                                            (HIDE-ALL-BUT
                                                              (-1 -2 1))
-                                                            (("1"
-                                                              (grind)
-                                                              nil
-                                                              nil))
-                                                            nil)
+                                                            (("1" (GRIND) NIL
+                                                              NIL))
+                                                            NIL)
                                                            ("2"
-                                                            (use
+                                                            (USE
                                                              "Add_fundamental")
-                                                            (("2"
-                                                              (assert)
-                                                              nil
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil)
-                                 ("3" (eval-formula) nil nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil)
-               ("2" (flatten)
-                (("2" (hide 2)
-                  (("2" (expand "aeb_sqt_pre2")
-                    (("2" (split)
-                      (("1" (typepred "Y")
-                        (("1" (expand "aeb_sqt_pre2")
-                          (("1" (flatten)
-                            (("1" (hide -2 -3)
-                              (("1"
-                                (use "NonNeg_Incl")
-                                (("1"
-                                  (typepred "Y1")
-                                  (("1" (assert) nil nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil)
-                       ("2" (typepred "X1")
-                        (("2" (typepred "Y1")
-                          (("2" (typepred "Y")
-                            (("2" (expand "aeb_sqt_pre2")
-                              (("2"
-                                (flatten)
-                                (("2"
-                                  (use "NonNeg_Incl")
-                                  (("2"
-                                    (assert)
-                                    (("2"
-                                      (split)
-                                      (("1" (grind) nil nil)
-                                       ("2"
-                                        (hide 2)
-                                        (("2"
-                                          (hide -4 -5 -6)
-                                          (("2"
-                                            (hide -3)
-                                            (("2" (grind) nil nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil))
-              nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
-   ((Fundamental2? const-decl "bool" interval interval_arith)
-    (aebounddp_sqt_ia const-decl "Interval" bbiadp_sqt nil)
-    (Add_fundamental formula-decl nil interval interval_arith)
-    ([\|\|] const-decl "Interval" interval interval_arith)
-    (Add const-decl "Interval" interval interval_arith)
-    (Ulp_dp const-decl "Interval" interval_ulp_dp nil)
-    (Div const-decl "Interval" interval interval_arith)
-    (ProperInterval type-eq-decl nil interval interval_arith)
-    (Proper? const-decl "bool" interval interval_arith)
-    (Any? const-decl "bool" interval interval_arith)
-    (aeb_sqt_pre2 const-decl "bool" bbiadp_sqt nil)
-    (Sqrt const-decl "(NonNeg?)" interval_sqrt interval_arith)
-    (NonNeg? const-decl "bool" interval interval_arith)
-    (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (>= const-decl "bool" reals nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (integer_pred const-decl "[rational -> boolean]" integers nil)
-    (rational nonempty-type-from-decl nil rationals nil)
-    (rational_pred const-decl "[real -> boolean]" rationals nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number nonempty-type-decl nil numbers nil)
-    (Interval type-eq-decl nil interval interval_arith)
-    (real nonempty-type-from-decl nil reals nil)
-    (Div_fundamental formula-decl nil interval interval_arith)
-    (bijective? const-decl "bool" functions nil)
-    (id const-decl "(bijective?[T, T])" identity nil)
-    (Ulp_dp_fundamental formula-decl nil interval_ulp_dp nil)
-    (Ulp_dp_proper formula-decl nil interval_ulp_dp nil)
-    (X1 skolem-const-decl "ProperInterval" bbiadp_sqt nil)
-    (Y1 skolem-const-decl "ProperInterval" bbiadp_sqt nil)
-    (NonNegInterval type-eq-decl nil proper_arith interval_arith)
-    (real_minus_real_is_real application-judgement "real" reals nil)
-    (Proper_Sub application-judgement "ProperInterval" interval
-     interval_arith)
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (ge_realorder name-judgement "RealOrder" real_orders reals)
-    (real_plus_real_is_real application-judgement "real" reals nil)
-    ([\|\|] const-decl "Interval" interval interval_arith)
-    (Ge const-decl "bool" interval interval_arith)
-    (Sub const-decl "Interval" interval interval_arith)
-    (Proper_Sqrt judgement-tcc nil interval_sqrt interval_arith)
-    (Incl_reflx formula-decl nil interval interval_arith)
-    (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (Sqrt_fundamental formula-decl nil interval_sqrt interval_arith)
-    (NOT const-decl "[bool -> bool]" booleans nil)
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (aeb_sqt_pre2_predondition_j name-judgement "(Precondition2?)"
-     bbiadp_sqt nil)
-    (Ulp_dp_Inclusion name-judgement
+                                                            (("2" (ASSERT) NIL
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL)
+                                 ("3" (EVAL-FORMULA) NIL NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL)
+               ("2" (FLATTEN)
+                (("2" (HIDE 2)
+                  (("2" (EXPAND "aeb_sqt_pre2")
+                    (("2" (SPLIT)
+                      (("1" (TYPEPRED "Y")
+                        (("1" (EXPAND "aeb_sqt_pre2")
+                          (("1" (FLATTEN)
+                            (("1" (HIDE -2 -3)
+                              (("1" (USE "NonNeg_Incl")
+                                (("1" (TYPEPRED "Y1") (("1" (ASSERT) NIL NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL)
+                       ("2" (TYPEPRED "X1")
+                        (("2" (TYPEPRED "Y1")
+                          (("2" (TYPEPRED "Y")
+                            (("2" (EXPAND "aeb_sqt_pre2")
+                              (("2" (FLATTEN)
+                                (("2" (USE "NonNeg_Incl")
+                                  (("2" (ASSERT)
+                                    (("2" (SPLIT)
+                                      (("1" (GRIND) NIL NIL)
+                                       ("2" (HIDE 2)
+                                        (("2" (HIDE -4 -5 -6)
+                                          (("2" (HIDE -3)
+                                            (("2" (GRIND) NIL NIL)) NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|Fundamental2?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sqrt| CONST-DECL "(NonNeg?)" |interval_sqrt| |interval_arith|)
+    (|Any?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Proper?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|ProperInterval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Div| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp_dp| CONST-DECL "Interval" |interval_ulp_dp| NIL)
+    (|Add| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|[\|\|]| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Add_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Div_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Ulp_dp_fundamental| FORMULA-DECL NIL |interval_ulp_dp| NIL)
+    (|Ulp_dp_proper| FORMULA-DECL NIL |interval_ulp_dp| NIL)
+    (|NonNegInterval| TYPE-EQ-DECL NIL |proper_arith| |interval_arith|)
+    (|Proper_Sub| APPLICATION-JUDGEMENT "ProperInterval" |interval|
+     |interval_arith|)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|)
+    (|[\|\|]| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Proper_Sqrt| JUDGEMENT-TCC NIL |interval_sqrt| |interval_arith|)
+    (|Incl_reflx| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Zeroless_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|Sqrt_fundamental| FORMULA-DECL NIL |interval_sqrt| |interval_arith|)
+    (|NonNeg_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|Ulp_dp_Inclusion| NAME-JUDGEMENT
      "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
-     interval_ulp_dp nil)
-    (Ulp_dp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_dp nil)
-    (Proper_Add application-judgement "ProperInterval" interval
-     interval_arith)
-    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
-    (r2i_Proper application-judgement "ProperInterval" interval
-     interval_arith)
-    (NonNeg_Incl formula-decl nil interval interval_arith)
-    (<< const-decl "bool" interval interval_arith)
-    (le_realorder name-judgement "RealOrder" real_orders reals)
-    (real_le_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (TRUE const-decl "bool" booleans nil))
-   nil
-   (AEB_SQT_fundmental_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"))
-  (AEB_SQT_fundmental_j-4 nil 3699610321
-   ("" (expand "Inclusion2?")
-    (("" (skeep*)
-      (("" (expand "aebounddp_sqt_ia")
-        (("" (expand "aebounddp_sqt_safe")
-          (("" (lift-if)
-            (("" (split)
-              (("1" (flatten)
-                (("1" (expand "aerr_ulp_sqt")
-                  (("1" (use "Add_inclusion")
-                    (("1" (assert)
-                      (("1" (hide 2)
-                        (("1" (split)
-                          (("1" (expand "sqt_aerr_bound")
-                            (("1" (use "Sqrt_inclusion")
-                              (("1"
-                                (assert)
-                                (("1"
-                                  (hide 2)
-                                  (("1"
-                                    (typepred "X2")
+     |interval_ulp_dp| NIL)
+    (|Ulp_dp_Fundamental| NAME-JUDGEMENT "(Fundamental?(PreTrue))"
+     |interval_ulp_dp| NIL)
+    (|Proper_Add| APPLICATION-JUDGEMENT "ProperInterval" |interval|
+     |interval_arith|)
+    (|r2i_Pos| APPLICATION-JUDGEMENT "(Pos?)" |interval| |interval_arith|)
+    (|r2i_Proper| APPLICATION-JUDGEMENT "ProperInterval" |interval|
+     |interval_arith|)
+    (|NonNeg_Incl| FORMULA-DECL NIL |interval| |interval_arith|)
+    (<< CONST-DECL "bool" |interval| |interval_arith|)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|))
+   NIL
+   (|AEB_SQT_fundmental_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"
+    (45 4 45 20)))
+  (|AEB_SQT_fundmental_j-4| NIL 3699610321
+   ("" (EXPAND "Inclusion2?")
+    (("" (SKEEP*)
+      (("" (EXPAND "aebounddp_sqt_ia")
+        (("" (EXPAND "aebounddp_sqt_safe")
+          (("" (LIFT-IF)
+            (("" (SPLIT)
+              (("1" (FLATTEN)
+                (("1" (EXPAND "aerr_ulp_sqt")
+                  (("1" (USE "Add_inclusion")
+                    (("1" (ASSERT)
+                      (("1" (HIDE 2)
+                        (("1" (SPLIT)
+                          (("1" (EXPAND "sqt_aerr_bound")
+                            (("1" (USE "Sqrt_inclusion")
+                              (("1" (ASSERT)
+                                (("1" (HIDE 2)
+                                  (("1" (TYPEPRED "X2")
+                                    (("1" (EXPAND "aeb_sqt_pre2")
+                                      (("1" (PROPAX) NIL)))))))))))))
+                           ("2" (USE "Div_inclusion")
+                            (("2" (ASSERT)
+                              (("2" (HIDE 2)
+                                (("2" (SPLIT)
+                                  (("1" (LEMMA "Ulp_dp_inclusion")
                                     (("1"
-                                      (expand "aeb_sqt_pre2")
-                                      (("1" (propax) nil)))))))))))))
-                           ("2" (use "Div_inclusion")
-                            (("2" (assert)
-                              (("2"
-                                (hide 2)
-                                (("2"
-                                  (split)
-                                  (("1"
-                                    (lemma "Ulp_dp_inclusion")
-                                    (("1"
-                                      (inst
-                                       -1
-                                       "Sqrt(n)(Add(X1,X2))"
+                                      (INST -1 "Sqrt(n)(Add(X1,X2))"
                                        "sqt_ulp_bound(x1, x2)")
-                                      (("1"
-                                        (assert)
-                                        (("1"
-                                          (hide 2)
-                                          (("1"
-                                            (expand "sqt_ulp_bound")
-                                            (("1"
-                                              (use "Sqrt_inclusion")
-                                              (("1"
-                                                (assert)
-                                                (("1"
-                                                  (hide 2)
-                                                  (("1"
-                                                    (split 1)
-                                                    (("1"
-                                                      (typepred "X2")
+                                      (("1" (ASSERT)
+                                        (("1" (HIDE 2)
+                                          (("1" (EXPAND "sqt_ulp_bound")
+                                            (("1" (USE "Sqrt_inclusion")
+                                              (("1" (ASSERT)
+                                                (("1" (HIDE 2)
+                                                  (("1" (SPLIT 1)
+                                                    (("1" (TYPEPRED "X2")
                                                       (("1"
-                                                        (expand
-                                                         "aeb_sqt_pre2")
-                                                        (("1"
-                                                          (flatten)
-                                                          (("1"
-                                                            (assert)
-                                                            (("1"
-                                                              (grind)
-                                                              nil)))))))))
-                                                     ("2"
-                                                      (use
-                                                       "Add_inclusion")
-                                                      (("2"
-                                                        (assert)
-                                                        nil)))))))))))))))))))))
-                                   ("2" (eval-formula) nil)
-                                   ("3"
-                                    (eval-formula)
-                                    nil)))))))))))))))
-                     ("2" (assert) nil)))))))
-               ("2" (flatten)
-                (("2" (hide 2)
-                  (("2" (assert)
-                    (("2" (split)
-                      (("1" (typepred "X2")
-                        (("1" (expand "aeb_sqt_pre2")
-                          (("1" (grind) nil)))))
-                       ("2" (typepred "X2")
-                        (("2" (grind) nil))))))))))))))))))))))
-    nil)
-   nil nil
-   (AEB_SQT_fundmental_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"))
-  (AEB_SQT_fundmental_j-3 nil 3699285775
-   ("" (skeep*)
-    (("" (expand "Fundamental2?")
-      (("" (skeep)
-        (("" (expand "aebounddp_sqt_ia")
-          (("" (lift-if)
-            (("" (split)
-              (("1" (flatten)
-                (("1" (use "Add_fundamental")
-                  (("1" (assert)
-                    (("1" (hide 2)
-                      (("1" (split)
-                        (("1" (use "Sqrt_fundamental")
-                          (("1" (assert)
-                            (("1" (hide 2)
-                              (("1"
-                                (expand "aeb_sqt_pre2")
-                                (("1"
-                                  (flatten)
-                                  (("1"
-                                    (typepred "Y")
-                                    (("1"
-                                      (expand "aeb_sqt_pre2")
-                                      (("1" (propax) nil nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil)
-                         ("2" (use "Div_fundamental")
-                          (("2" (assert)
-                            (("2" (hide 2)
-                              (("2"
-                                (split)
-                                (("1"
-                                  (use "Ulp_dp_proper")
-                                  (("1"
-                                    (assert)
-                                    (("1"
-                                      (hide 2)
-                                      (("1"
-                                        (use "Proper_Add")
-                                        (("1"
-                                          (lemma "Proper_Sqrt")
-                                          (("1"
-                                            (inst -1 "Y1" "n")
-                                            (("1" (flatten) nil nil)
-                                             ("2"
-                                              (expand "aeb_sqt_pre2")
-                                              (("2" (flatten) nil nil))
-                                              nil))
-                                            nil))
-                                          nil)
-                                         ("2"
-                                          (lemma "Proper_Abs")
-                                          (("2"
-                                            (inst -1 "Sqrt(n)(X1)")
-                                            (("2"
-                                              (lemma "Proper_Sqrt")
-                                              (("2"
-                                                (inst -1 "X1" "n")
-                                                (("1"
-                                                  (flatten)
-                                                  nil
-                                                  nil)
-                                                 ("2"
-                                                  (expand
-                                                   "aeb_sqt_pre2")
-                                                  (("2"
-                                                    (flatten)
+                                                        (EXPAND "aeb_sqt_pre2")
+                                                        (("1" (FLATTEN)
+                                                          (("1" (ASSERT)
+                                                            (("1" (GRIND)
+                                                              NIL)))))))))
+                                                     ("2" (USE "Add_inclusion")
+                                                      (("2" (ASSERT)
+                                                        NIL)))))))))))))))))))))
+                                   ("2" (EVAL-FORMULA) NIL)
+                                   ("3" (EVAL-FORMULA) NIL)))))))))))))))
+                     ("2" (ASSERT) NIL)))))))
+               ("2" (FLATTEN)
+                (("2" (HIDE 2)
+                  (("2" (ASSERT)
+                    (("2" (SPLIT)
+                      (("1" (TYPEPRED "X2")
+                        (("1" (EXPAND "aeb_sqt_pre2") (("1" (GRIND) NIL)))))
+                       ("2" (TYPEPRED "X2")
+                        (("2" (GRIND) NIL))))))))))))))))))))))
+    NIL)
+   NIL NIL
+   (|AEB_SQT_fundmental_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"
+    (45 4 45 20)))
+  (|AEB_SQT_fundmental_j-3| NIL 3699285775
+   ("" (SKEEP*)
+    (("" (EXPAND "Fundamental2?")
+      (("" (SKEEP)
+        (("" (EXPAND "aebounddp_sqt_ia")
+          (("" (LIFT-IF)
+            (("" (SPLIT)
+              (("1" (FLATTEN)
+                (("1" (USE "Add_fundamental")
+                  (("1" (ASSERT)
+                    (("1" (HIDE 2)
+                      (("1" (SPLIT)
+                        (("1" (USE "Sqrt_fundamental")
+                          (("1" (ASSERT)
+                            (("1" (HIDE 2)
+                              (("1" (EXPAND "aeb_sqt_pre2")
+                                (("1" (FLATTEN)
+                                  (("1" (TYPEPRED "Y")
+                                    (("1" (EXPAND "aeb_sqt_pre2")
+                                      (("1" (PROPAX) NIL NIL)) NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL)
+                         ("2" (USE "Div_fundamental")
+                          (("2" (ASSERT)
+                            (("2" (HIDE 2)
+                              (("2" (SPLIT)
+                                (("1" (USE "Ulp_dp_proper")
+                                  (("1" (ASSERT)
+                                    (("1" (HIDE 2)
+                                      (("1" (USE "Proper_Add")
+                                        (("1" (LEMMA "Proper_Sqrt")
+                                          (("1" (INST -1 "Y1" "n")
+                                            (("1" (FLATTEN) NIL NIL)
+                                             ("2" (EXPAND "aeb_sqt_pre2")
+                                              (("2" (FLATTEN) NIL NIL)) NIL))
+                                            NIL))
+                                          NIL)
+                                         ("2" (LEMMA "Proper_Abs")
+                                          (("2" (INST -1 "Sqrt(n)(X1)")
+                                            (("2" (LEMMA "Proper_Sqrt")
+                                              (("2" (INST -1 "X1" "n")
+                                                (("1" (FLATTEN) NIL NIL)
+                                                 ("2" (EXPAND "aeb_sqt_pre2")
+                                                  (("2" (FLATTEN)
                                                     (("2"
-                                                      (hide-all-but
-                                                       (-1 -2 1))
-                                                      (("2"
-                                                        (grind)
-                                                        nil
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil)
-                                 ("2"
-                                  (use "Ulp_dp_fundamental")
-                                  (("2"
-                                    (assert)
-                                    (("2"
-                                      (hide 2)
-                                      (("2"
-                                        (split)
-                                        (("1"
-                                          (use "Proper_Add")
-                                          (("1"
-                                            (assert)
-                                            (("1"
-                                              (hide 2)
-                                              (("1"
-                                                (lemma "Proper_Sqrt")
-                                                (("1"
-                                                  (inst -1 "Y1" "n")
-                                                  (("1"
-                                                    (assert)
-                                                    nil
-                                                    nil)
-                                                   ("2"
-                                                    (hide 2)
+                                                      (HIDE-ALL-BUT (-1 -2 1))
+                                                      (("2" (GRIND) NIL NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL)
+                                 ("2" (USE "Ulp_dp_fundamental")
+                                  (("2" (ASSERT)
+                                    (("2" (HIDE 2)
+                                      (("2" (SPLIT)
+                                        (("1" (USE "Proper_Add")
+                                          (("1" (ASSERT)
+                                            (("1" (HIDE 2)
+                                              (("1" (LEMMA "Proper_Sqrt")
+                                                (("1" (INST -1 "Y1" "n")
+                                                  (("1" (ASSERT) NIL NIL)
+                                                   ("2" (HIDE 2)
                                                     (("2"
-                                                      (expand
-                                                       "aeb_sqt_pre2")
-                                                      (("2"
-                                                        (assert)
-                                                        nil
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil)
-                                           ("2"
-                                            (hide 2)
-                                            (("2"
-                                              (lemma "Proper_Abs")
-                                              (("2"
-                                                (inst -1 "Sqrt(n)(X1)")
-                                                (("2"
-                                                  (hide 2)
-                                                  (("2"
-                                                    (lemma
-                                                     "Proper_Sqrt")
-                                                    (("2"
-                                                      (inst
-                                                       -1
-                                                       "X1"
-                                                       "n")
-                                                      (("1"
-                                                        (assert)
-                                                        nil
-                                                        nil)
-                                                       ("2"
-                                                        (hide 2)
+                                                      (EXPAND "aeb_sqt_pre2")
+                                                      (("2" (ASSERT) NIL NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL)
+                                           ("2" (HIDE 2)
+                                            (("2" (LEMMA "Proper_Abs")
+                                              (("2" (INST -1 "Sqrt(n)(X1)")
+                                                (("2" (HIDE 2)
+                                                  (("2" (LEMMA "Proper_Sqrt")
+                                                    (("2" (INST -1 "X1" "n")
+                                                      (("1" (ASSERT) NIL NIL)
+                                                       ("2" (HIDE 2)
                                                         (("2"
-                                                          (expand
+                                                          (EXPAND
                                                            "aeb_sqt_pre2")
-                                                          (("2"
-                                                            (flatten)
-                                                            (("2"
-                                                              (grind)
-                                                              nil
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil)
-                                         ("2"
-                                          (use "Add_fundamental")
-                                          (("2"
-                                            (assert)
-                                            (("2"
-                                              (hide 2)
-                                              (("2"
-                                                (split)
-                                                (("1"
-                                                  (use
-                                                   "Abs_fundamental")
-                                                  (("1"
-                                                    (assert)
-                                                    (("1"
-                                                      (hide 2)
-                                                      (("1"
-                                                        (split)
+                                                          (("2" (FLATTEN)
+                                                            (("2" (GRIND) NIL
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL)
+                                         ("2" (USE "Add_fundamental")
+                                          (("2" (ASSERT)
+                                            (("2" (HIDE 2)
+                                              (("2" (SPLIT)
+                                                (("1" (USE "Abs_fundamental")
+                                                  (("1" (ASSERT)
+                                                    (("1" (HIDE 2)
+                                                      (("1" (SPLIT)
                                                         (("1"
-                                                          (lemma
-                                                           "Proper_Sqrt")
+                                                          (LEMMA "Proper_Sqrt")
                                                           (("1"
-                                                            (inst
-                                                             -1
-                                                             "X1"
-                                                             "n")
-                                                            (("1"
-                                                              (assert)
-                                                              nil
-                                                              nil)
-                                                             ("2"
-                                                              (hide 2)
+                                                            (INST -1 "X1" "n")
+                                                            (("1" (ASSERT) NIL
+                                                              NIL)
+                                                             ("2" (HIDE 2)
                                                               (("2"
-                                                                (expand
+                                                                (EXPAND
                                                                  "aeb_sqt_pre2")
-                                                                (("2"
-                                                                  (flatten)
-                                                                  (("2"
-                                                                    (grind)
-                                                                    nil
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil)
+                                                                (("2" (FLATTEN)
+                                                                  (("2" (GRIND)
+                                                                    NIL NIL))
+                                                                  NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL)
                                                          ("2"
-                                                          (use
+                                                          (USE
                                                            "Sqrt_fundamental")
-                                                          (("2"
-                                                            (assert)
-                                                            (("2"
-                                                              (hide 2)
+                                                          (("2" (ASSERT)
+                                                            (("2" (HIDE 2)
                                                               (("2"
-                                                                (expand
+                                                                (EXPAND
                                                                  "aeb_sqt_pre2")
-                                                                (("2"
-                                                                  (flatten)
+                                                                (("2" (FLATTEN)
                                                                   (("2"
-                                                                    (typepred
+                                                                    (TYPEPRED
                                                                      "Y")
                                                                     (("2"
-                                                                      (expand
+                                                                      (EXPAND
                                                                        "aeb_sqt_pre2")
                                                                       (("2"
-                                                                        (flatten)
+                                                                        (FLATTEN)
                                                                         (("2"
-                                                                          (hide
+                                                                          (HIDE
                                                                            -3)
                                                                           (("2"
-                                                                            (hide
+                                                                            (HIDE
                                                                              -4
                                                                              -5)
                                                                             (("2"
-                                                                              (hide
+                                                                              (HIDE
                                                                                -3)
                                                                               (("2"
-                                                                                (grind)
-                                                                                nil
-                                                                                nil))
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil)
-                                                 ("2"
-                                                  (use
-                                                   "Sqrt_fundamental")
-                                                  (("2"
-                                                    (assert)
-                                                    (("2"
-                                                      (hide 2)
+                                                                                (GRIND)
+                                                                                NIL
+                                                                                NIL))
+                                                                              NIL))
+                                                                            NIL))
+                                                                          NIL))
+                                                                        NIL))
+                                                                      NIL))
+                                                                    NIL))
+                                                                  NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL)
+                                                 ("2" (USE "Sqrt_fundamental")
+                                                  (("2" (ASSERT)
+                                                    (("2" (HIDE 2)
                                                       (("2"
-                                                        (expand
-                                                         "aeb_sqt_pre2")
-                                                        (("2"
-                                                          (flatten)
-                                                          (("2"
-                                                            (typepred
-                                                             "Y")
+                                                        (EXPAND "aeb_sqt_pre2")
+                                                        (("2" (FLATTEN)
+                                                          (("2" (TYPEPRED "Y")
                                                             (("2"
-                                                              (expand
+                                                              (EXPAND
                                                                "aeb_sqt_pre2")
-                                                              (("2"
-                                                                (propax)
-                                                                nil
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil)
-                                 ("3" (eval-formula) nil nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil)
-               ("2" (flatten)
-                (("2" (hide 2)
-                  (("2" (expand "aeb_sqt_pre2")
-                    (("2" (split)
-                      (("1" (typepred "Y")
-                        (("1" (expand "aeb_sqt_pre2")
-                          (("1" (flatten)
-                            (("1" (hide -2 -3)
-                              (("1"
-                                (use "NonNeg_Incl")
-                                (("1"
-                                  (typepred "Y1")
-                                  (("1" (assert) nil nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil)
-                       ("2" (typepred "X1")
-                        (("2" (typepred "Y1")
-                          (("2" (typepred "Y")
-                            (("2" (expand "aeb_sqt_pre2")
-                              (("2"
-                                (flatten)
-                                (("2"
-                                  (use "NonNeg_Incl")
-                                  (("2"
-                                    (assert)
-                                    (("2"
-                                      (split)
-                                      (("1" (grind) nil nil)
-                                       ("2"
-                                        (hide 2)
-                                        (("2"
-                                          (hide -4 -5 -6)
-                                          (("2"
-                                            (hide -3)
-                                            (("2" (grind) nil nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil))
-              nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
-   ((NonNeg_Incl formula-decl nil interval interval_arith)
-    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
-    (r2i_Nneg application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (NonNeg_Add application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (Ulp_dp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_dp nil)
-    (Ulp_dp_Inclusion name-judgement
+                                                              (("2" (PROPAX)
+                                                                NIL NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL)
+                                 ("3" (EVAL-FORMULA) NIL NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL)
+               ("2" (FLATTEN)
+                (("2" (HIDE 2)
+                  (("2" (EXPAND "aeb_sqt_pre2")
+                    (("2" (SPLIT)
+                      (("1" (TYPEPRED "Y")
+                        (("1" (EXPAND "aeb_sqt_pre2")
+                          (("1" (FLATTEN)
+                            (("1" (HIDE -2 -3)
+                              (("1" (USE "NonNeg_Incl")
+                                (("1" (TYPEPRED "Y1") (("1" (ASSERT) NIL NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL)
+                       ("2" (TYPEPRED "X1")
+                        (("2" (TYPEPRED "Y1")
+                          (("2" (TYPEPRED "Y")
+                            (("2" (EXPAND "aeb_sqt_pre2")
+                              (("2" (FLATTEN)
+                                (("2" (USE "NonNeg_Incl")
+                                  (("2" (ASSERT)
+                                    (("2" (SPLIT)
+                                      (("1" (GRIND) NIL NIL)
+                                       ("2" (HIDE 2)
+                                        (("2" (HIDE -4 -5 -6)
+                                          (("2" (HIDE -3)
+                                            (("2" (GRIND) NIL NIL)) NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|NonNeg_Incl| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|r2i_Pos| APPLICATION-JUDGEMENT "(Pos?)" |interval| |interval_arith|)
+    (|r2i_Nneg| APPLICATION-JUDGEMENT "(NonNeg?)" |interval| |interval_arith|)
+    (|NonNeg_Add| APPLICATION-JUDGEMENT "(NonNeg?)" |interval|
+     |interval_arith|)
+    (|Ulp_dp_Fundamental| NAME-JUDGEMENT "(Fundamental?(PreTrue))"
+     |interval_ulp_dp| NIL)
+    (|Ulp_dp_Inclusion| NAME-JUDGEMENT
      "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
-     interval_ulp_dp nil)
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (Sqrt_fundamental formula-decl nil interval_sqrt interval_arith)
-    (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (Incl_reflx formula-decl nil interval interval_arith)
-    (Proper_Add judgement-tcc nil interval interval_arith)
-    (NonNegInterval type-eq-decl nil proper_arith interval_arith)
-    (Proper_Sqrt judgement-tcc nil interval_sqrt interval_arith)
-    (Proper_Sub application-judgement "ProperInterval" interval
-     interval_arith)
-    (ge_realorder name-judgement "RealOrder" real_orders reals)
-    (Ge const-decl "bool" interval interval_arith)
-    (Sub const-decl "Interval" interval interval_arith)
-    (Proper_Abs judgement-tcc nil interval interval_arith)
-    (Ulp_dp_proper formula-decl nil interval_ulp_dp nil)
-    (<< const-decl "bool" interval interval_arith)
-    (le_realorder name-judgement "RealOrder" real_orders reals)
-    (Abs_fundamental formula-decl nil interval interval_arith)
-    (Ulp_dp_fundamental formula-decl nil interval_ulp_dp nil)
-    (Div_fundamental formula-decl nil interval interval_arith)
-    (Interval type-eq-decl nil interval interval_arith)
-    (NonNeg? const-decl "bool" interval interval_arith)
-    (Sqrt const-decl "(NonNeg?)" interval_sqrt interval_arith)
-    (Any? const-decl "bool" interval interval_arith)
-    (Proper? const-decl "bool" interval interval_arith)
-    (ProperInterval type-eq-decl nil interval interval_arith)
-    (Div const-decl "Interval" interval interval_arith)
-    (Ulp_dp const-decl "Interval" interval_ulp_dp nil)
-    (Add const-decl "Interval" interval interval_arith)
-    (Abs const-decl "(NonNeg?)" interval interval_arith)
-    (Add_fundamental formula-decl nil interval interval_arith)
-    (Fundamental2? const-decl "bool" interval interval_arith))
-   nil
-   (AEB_SQT_fundmental_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"))
-  (AEB_SQT_fundmental_j-2 nil 3684857320
-   ("" (skeep*)
-    (("" (expand "Fundamental2?")
-      (("" (skeep)
-        (("" (expand "aebounddp_sqt_ia")
-          (("" (lift-if)
-            (("" (split)
-              (("1" (flatten)
-                (("1" (use "Add_fundamental")
-                  (("1" (assert)
-                    (("1" (hide 2)
-                      (("1" (split)
-                        (("1" (use "Sqrt_fundamental")
-                          (("1" (assert)
-                            (("1" (hide 2)
-                              (("1"
-                                (expand "aeb_sqt_pre2")
-                                (("1"
-                                  (flatten)
-                                  (("1"
-                                    (typepred "Y")
-                                    (("1"
-                                      (expand "aeb_sqt_pre2")
-                                      (("1" (propax) nil nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil)
-                         ("2" (use "Div_fundamental")
-                          (("2" (assert)
-                            (("2" (hide 2)
-                              (("2"
-                                (split)
-                                (("1"
-                                  (use "Ulp_proper")
-                                  (("1"
-                                    (assert)
-                                    (("1"
-                                      (hide 2)
-                                      (("1"
-                                        (use "Proper_Add")
-                                        (("1"
-                                          (lemma "Proper_Sqrt")
-                                          (("1"
-                                            (inst -1 "Y1" "n")
-                                            (("1" (flatten) nil nil)
-                                             ("2"
-                                              (expand "aeb_sqt_pre2")
-                                              (("2" (flatten) nil nil))
-                                              nil))
-                                            nil))
-                                          nil)
-                                         ("2"
-                                          (lemma "Proper_Abs")
-                                          (("2"
-                                            (inst -1 "Sqrt(n)(X1)")
-                                            (("2"
-                                              (lemma "Proper_Sqrt")
-                                              (("2"
-                                                (inst -1 "X1" "n")
-                                                (("1"
-                                                  (flatten)
-                                                  nil
-                                                  nil)
-                                                 ("2"
-                                                  (expand
-                                                   "aeb_sqt_pre2")
-                                                  (("2"
-                                                    (flatten)
+     |interval_ulp_dp| NIL)
+    (|NonNeg_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|Sqrt_fundamental| FORMULA-DECL NIL |interval_sqrt| |interval_arith|)
+    (|Zeroless_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|Incl_reflx| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Proper_Add| JUDGEMENT-TCC NIL |interval| |interval_arith|)
+    (|NonNegInterval| TYPE-EQ-DECL NIL |proper_arith| |interval_arith|)
+    (|Proper_Sqrt| JUDGEMENT-TCC NIL |interval_sqrt| |interval_arith|)
+    (|Proper_Sub| APPLICATION-JUDGEMENT "ProperInterval" |interval|
+     |interval_arith|)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Proper_Abs| JUDGEMENT-TCC NIL |interval| |interval_arith|)
+    (|Ulp_dp_proper| FORMULA-DECL NIL |interval_ulp_dp| NIL)
+    (<< CONST-DECL "bool" |interval| |interval_arith|)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|Abs_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Ulp_dp_fundamental| FORMULA-DECL NIL |interval_ulp_dp| NIL)
+    (|Div_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sqrt| CONST-DECL "(NonNeg?)" |interval_sqrt| |interval_arith|)
+    (|Any?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Proper?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|ProperInterval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Div| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp_dp| CONST-DECL "Interval" |interval_ulp_dp| NIL)
+    (|Add| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Abs| CONST-DECL "(NonNeg?)" |interval| |interval_arith|)
+    (|Add_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Fundamental2?| CONST-DECL "bool" |interval| |interval_arith|))
+   NIL
+   (|AEB_SQT_fundmental_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"
+    (45 4 45 20)))
+  (|AEB_SQT_fundmental_j-2| NIL 3684857320
+   ("" (SKEEP*)
+    (("" (EXPAND "Fundamental2?")
+      (("" (SKEEP)
+        (("" (EXPAND "aebounddp_sqt_ia")
+          (("" (LIFT-IF)
+            (("" (SPLIT)
+              (("1" (FLATTEN)
+                (("1" (USE "Add_fundamental")
+                  (("1" (ASSERT)
+                    (("1" (HIDE 2)
+                      (("1" (SPLIT)
+                        (("1" (USE "Sqrt_fundamental")
+                          (("1" (ASSERT)
+                            (("1" (HIDE 2)
+                              (("1" (EXPAND "aeb_sqt_pre2")
+                                (("1" (FLATTEN)
+                                  (("1" (TYPEPRED "Y")
+                                    (("1" (EXPAND "aeb_sqt_pre2")
+                                      (("1" (PROPAX) NIL NIL)) NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL)
+                         ("2" (USE "Div_fundamental")
+                          (("2" (ASSERT)
+                            (("2" (HIDE 2)
+                              (("2" (SPLIT)
+                                (("1" (USE "Ulp_proper")
+                                  (("1" (ASSERT)
+                                    (("1" (HIDE 2)
+                                      (("1" (USE "Proper_Add")
+                                        (("1" (LEMMA "Proper_Sqrt")
+                                          (("1" (INST -1 "Y1" "n")
+                                            (("1" (FLATTEN) NIL NIL)
+                                             ("2" (EXPAND "aeb_sqt_pre2")
+                                              (("2" (FLATTEN) NIL NIL)) NIL))
+                                            NIL))
+                                          NIL)
+                                         ("2" (LEMMA "Proper_Abs")
+                                          (("2" (INST -1 "Sqrt(n)(X1)")
+                                            (("2" (LEMMA "Proper_Sqrt")
+                                              (("2" (INST -1 "X1" "n")
+                                                (("1" (FLATTEN) NIL NIL)
+                                                 ("2" (EXPAND "aeb_sqt_pre2")
+                                                  (("2" (FLATTEN)
                                                     (("2"
-                                                      (hide-all-but
-                                                       (-1 -2 1))
-                                                      (("2"
-                                                        (grind)
-                                                        nil
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil)
-                                 ("2"
-                                  (use "Ulp_fundamental")
-                                  (("2"
-                                    (assert)
-                                    (("2"
-                                      (hide 2)
-                                      (("2"
-                                        (split)
-                                        (("1"
-                                          (use "Proper_Add")
-                                          (("1"
-                                            (assert)
-                                            (("1"
-                                              (hide 2)
-                                              (("1"
-                                                (lemma "Proper_Sqrt")
-                                                (("1"
-                                                  (inst -1 "Y1" "n")
-                                                  (("1"
-                                                    (assert)
-                                                    nil
-                                                    nil)
-                                                   ("2"
-                                                    (hide 2)
+                                                      (HIDE-ALL-BUT (-1 -2 1))
+                                                      (("2" (GRIND) NIL NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL)
+                                 ("2" (USE "Ulp_fundamental")
+                                  (("2" (ASSERT)
+                                    (("2" (HIDE 2)
+                                      (("2" (SPLIT)
+                                        (("1" (USE "Proper_Add")
+                                          (("1" (ASSERT)
+                                            (("1" (HIDE 2)
+                                              (("1" (LEMMA "Proper_Sqrt")
+                                                (("1" (INST -1 "Y1" "n")
+                                                  (("1" (ASSERT) NIL NIL)
+                                                   ("2" (HIDE 2)
                                                     (("2"
-                                                      (expand
-                                                       "aeb_sqt_pre2")
-                                                      (("2"
-                                                        (assert)
-                                                        nil
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil)
-                                           ("2"
-                                            (hide 2)
-                                            (("2"
-                                              (lemma "Proper_Abs")
-                                              (("2"
-                                                (inst -1 "Sqrt(n)(X1)")
-                                                (("2"
-                                                  (hide 2)
-                                                  (("2"
-                                                    (lemma
-                                                     "Proper_Sqrt")
-                                                    (("2"
-                                                      (inst
-                                                       -1
-                                                       "X1"
-                                                       "n")
-                                                      (("1"
-                                                        (assert)
-                                                        nil
-                                                        nil)
-                                                       ("2"
-                                                        (hide 2)
+                                                      (EXPAND "aeb_sqt_pre2")
+                                                      (("2" (ASSERT) NIL NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL)
+                                           ("2" (HIDE 2)
+                                            (("2" (LEMMA "Proper_Abs")
+                                              (("2" (INST -1 "Sqrt(n)(X1)")
+                                                (("2" (HIDE 2)
+                                                  (("2" (LEMMA "Proper_Sqrt")
+                                                    (("2" (INST -1 "X1" "n")
+                                                      (("1" (ASSERT) NIL NIL)
+                                                       ("2" (HIDE 2)
                                                         (("2"
-                                                          (expand
+                                                          (EXPAND
                                                            "aeb_sqt_pre2")
-                                                          (("2"
-                                                            (flatten)
-                                                            (("2"
-                                                              (grind)
-                                                              nil
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil)
-                                         ("2"
-                                          (use "Add_fundamental")
-                                          (("2"
-                                            (assert)
-                                            (("2"
-                                              (hide 2)
-                                              (("2"
-                                                (split)
-                                                (("1"
-                                                  (use
-                                                   "Abs_fundamental")
-                                                  (("1"
-                                                    (assert)
-                                                    (("1"
-                                                      (hide 2)
-                                                      (("1"
-                                                        (split)
+                                                          (("2" (FLATTEN)
+                                                            (("2" (GRIND) NIL
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL)
+                                         ("2" (USE "Add_fundamental")
+                                          (("2" (ASSERT)
+                                            (("2" (HIDE 2)
+                                              (("2" (SPLIT)
+                                                (("1" (USE "Abs_fundamental")
+                                                  (("1" (ASSERT)
+                                                    (("1" (HIDE 2)
+                                                      (("1" (SPLIT)
                                                         (("1"
-                                                          (lemma
-                                                           "Proper_Sqrt")
+                                                          (LEMMA "Proper_Sqrt")
                                                           (("1"
-                                                            (inst
-                                                             -1
-                                                             "X1"
-                                                             "n")
-                                                            (("1"
-                                                              (assert)
-                                                              nil
-                                                              nil)
-                                                             ("2"
-                                                              (hide 2)
+                                                            (INST -1 "X1" "n")
+                                                            (("1" (ASSERT) NIL
+                                                              NIL)
+                                                             ("2" (HIDE 2)
                                                               (("2"
-                                                                (expand
+                                                                (EXPAND
                                                                  "aeb_sqt_pre2")
-                                                                (("2"
-                                                                  (flatten)
-                                                                  (("2"
-                                                                    (grind)
-                                                                    nil
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil)
+                                                                (("2" (FLATTEN)
+                                                                  (("2" (GRIND)
+                                                                    NIL NIL))
+                                                                  NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL)
                                                          ("2"
-                                                          (use
+                                                          (USE
                                                            "Sqrt_fundamental")
-                                                          (("2"
-                                                            (assert)
-                                                            (("2"
-                                                              (hide 2)
+                                                          (("2" (ASSERT)
+                                                            (("2" (HIDE 2)
                                                               (("2"
-                                                                (expand
+                                                                (EXPAND
                                                                  "aeb_sqt_pre2")
-                                                                (("2"
-                                                                  (flatten)
+                                                                (("2" (FLATTEN)
                                                                   (("2"
-                                                                    (typepred
+                                                                    (TYPEPRED
                                                                      "Y")
                                                                     (("2"
-                                                                      (expand
+                                                                      (EXPAND
                                                                        "aeb_sqt_pre2")
                                                                       (("2"
-                                                                        (flatten)
+                                                                        (FLATTEN)
                                                                         (("2"
-                                                                          (hide
+                                                                          (HIDE
                                                                            -3)
                                                                           (("2"
-                                                                            (hide
+                                                                            (HIDE
                                                                              -4
                                                                              -5)
                                                                             (("2"
-                                                                              (hide
+                                                                              (HIDE
                                                                                -3)
                                                                               (("2"
-                                                                                (grind)
-                                                                                nil
-                                                                                nil))
-                                                                              nil))
-                                                                            nil))
-                                                                          nil))
-                                                                        nil))
-                                                                      nil))
-                                                                    nil))
-                                                                  nil))
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil)
-                                                 ("2"
-                                                  (use
-                                                   "Sqrt_fundamental")
-                                                  (("2"
-                                                    (assert)
-                                                    (("2"
-                                                      (hide 2)
+                                                                                (GRIND)
+                                                                                NIL
+                                                                                NIL))
+                                                                              NIL))
+                                                                            NIL))
+                                                                          NIL))
+                                                                        NIL))
+                                                                      NIL))
+                                                                    NIL))
+                                                                  NIL))
+                                                                NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL)
+                                                 ("2" (USE "Sqrt_fundamental")
+                                                  (("2" (ASSERT)
+                                                    (("2" (HIDE 2)
                                                       (("2"
-                                                        (expand
-                                                         "aeb_sqt_pre2")
-                                                        (("2"
-                                                          (flatten)
-                                                          (("2"
-                                                            (typepred
-                                                             "Y")
+                                                        (EXPAND "aeb_sqt_pre2")
+                                                        (("2" (FLATTEN)
+                                                          (("2" (TYPEPRED "Y")
                                                             (("2"
-                                                              (expand
+                                                              (EXPAND
                                                                "aeb_sqt_pre2")
-                                                              (("2"
-                                                                (propax)
-                                                                nil
-                                                                nil))
-                                                              nil))
-                                                            nil))
-                                                          nil))
-                                                        nil))
-                                                      nil))
-                                                    nil))
-                                                  nil))
-                                                nil))
-                                              nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil)
-                                 ("3" (eval-formula) nil nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil)
-               ("2" (flatten)
-                (("2" (hide 2)
-                  (("2" (expand "aeb_sqt_pre2")
-                    (("2" (split)
-                      (("1" (typepred "Y")
-                        (("1" (expand "aeb_sqt_pre2")
-                          (("1" (flatten)
-                            (("1" (hide -2 -3)
-                              (("1"
-                                (use "NonNeg_Incl")
-                                (("1"
-                                  (typepred "Y1")
-                                  (("1" (assert) nil nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil)
-                       ("2" (typepred "X1")
-                        (("2" (typepred "Y1")
-                          (("2" (typepred "Y")
-                            (("2" (expand "aeb_sqt_pre2")
-                              (("2"
-                                (flatten)
-                                (("2"
-                                  (use "NonNeg_Incl")
-                                  (("2"
-                                    (assert)
-                                    (("2"
-                                      (split)
-                                      (("1" (grind) nil nil)
-                                       ("2"
-                                        (hide 2)
-                                        (("2"
-                                          (hide -4 -5 -6)
-                                          (("2"
-                                            (hide -3)
-                                            (("2" (grind) nil nil))
-                                            nil))
-                                          nil))
-                                        nil))
-                                      nil))
-                                    nil))
-                                  nil))
-                                nil))
-                              nil))
-                            nil))
-                          nil))
-                        nil))
-                      nil))
-                    nil))
-                  nil))
-                nil))
-              nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
-   ((Fundamental2? const-decl "bool" interval interval_arith)
-    (Add_fundamental formula-decl nil interval interval_arith)
-    (Abs const-decl "(NonNeg?)" interval interval_arith)
-    (Add const-decl "Interval" interval interval_arith)
-    (Ulp const-decl "Interval" interval_ulp nil)
-    (Div const-decl "Interval" interval interval_arith)
-    (ProperInterval type-eq-decl nil interval interval_arith)
-    (Proper? const-decl "bool" interval interval_arith)
-    (Any? const-decl "bool" interval interval_arith)
-    (Sqrt const-decl "(NonNeg?)" interval_sqrt interval_arith)
-    (NonNeg? const-decl "bool" interval interval_arith)
-    (Interval type-eq-decl nil interval interval_arith)
-    (Div_fundamental formula-decl nil interval interval_arith)
-    (Ulp_fundamental formula-decl nil interval_ulp nil)
-    (Abs_fundamental formula-decl nil interval interval_arith)
-    (le_realorder name-judgement "RealOrder" real_orders reals)
-    (<< const-decl "bool" interval interval_arith)
-    (Ulp_proper formula-decl nil interval_ulp nil)
-    (Proper_Abs judgement-tcc nil interval interval_arith)
-    (Sub const-decl "Interval" interval interval_arith)
-    (Ge const-decl "bool" interval interval_arith)
-    (ge_realorder name-judgement "RealOrder" real_orders reals)
-    (Proper_Sub application-judgement "ProperInterval" interval
-     interval_arith)
-    (Proper_Sqrt judgement-tcc nil interval_sqrt interval_arith)
-    (NonNegInterval type-eq-decl nil proper_arith interval_arith)
-    (Proper_Add judgement-tcc nil interval interval_arith)
-    (Incl_reflx formula-decl nil interval interval_arith)
-    (Zeroless_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (Sqrt_fundamental formula-decl nil interval_sqrt interval_arith)
-    (NonNeg_Precondition name-judgement "(Precondition?)" interval
-     interval_arith)
-    (NonNeg_Add application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (r2i_Nneg application-judgement "(NonNeg?)" interval
-     interval_arith)
-    (r2i_Pos application-judgement "(Pos?)" interval interval_arith)
-    (NonNeg_Incl formula-decl nil interval interval_arith))
-   nil
-   (AEB_SQT_fundmental_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"))
-  (AEB_SQT_fundmental_j-1 nil 3684857137 ("" (judgement-tcc) nil nil)
-   nil nil
-   (AEB_SQT_fundmental_j subtype
-    "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))")))
+                                                              (("2" (PROPAX)
+                                                                NIL NIL))
+                                                              NIL))
+                                                            NIL))
+                                                          NIL))
+                                                        NIL))
+                                                      NIL))
+                                                    NIL))
+                                                  NIL))
+                                                NIL))
+                                              NIL))
+                                            NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL)
+                                 ("3" (EVAL-FORMULA) NIL NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL)
+               ("2" (FLATTEN)
+                (("2" (HIDE 2)
+                  (("2" (EXPAND "aeb_sqt_pre2")
+                    (("2" (SPLIT)
+                      (("1" (TYPEPRED "Y")
+                        (("1" (EXPAND "aeb_sqt_pre2")
+                          (("1" (FLATTEN)
+                            (("1" (HIDE -2 -3)
+                              (("1" (USE "NonNeg_Incl")
+                                (("1" (TYPEPRED "Y1") (("1" (ASSERT) NIL NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL)
+                       ("2" (TYPEPRED "X1")
+                        (("2" (TYPEPRED "Y1")
+                          (("2" (TYPEPRED "Y")
+                            (("2" (EXPAND "aeb_sqt_pre2")
+                              (("2" (FLATTEN)
+                                (("2" (USE "NonNeg_Incl")
+                                  (("2" (ASSERT)
+                                    (("2" (SPLIT)
+                                      (("1" (GRIND) NIL NIL)
+                                       ("2" (HIDE 2)
+                                        (("2" (HIDE -4 -5 -6)
+                                          (("2" (HIDE -3)
+                                            (("2" (GRIND) NIL NIL)) NIL))
+                                          NIL))
+                                        NIL))
+                                      NIL))
+                                    NIL))
+                                  NIL))
+                                NIL))
+                              NIL))
+                            NIL))
+                          NIL))
+                        NIL))
+                      NIL))
+                    NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|Fundamental2?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Add_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Abs| CONST-DECL "(NonNeg?)" |interval| |interval_arith|)
+    (|Add| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ulp| CONST-DECL "Interval" |interval_ulp| NIL)
+    (|Div| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|ProperInterval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Proper?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Any?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Sqrt| CONST-DECL "(NonNeg?)" |interval_sqrt| |interval_arith|)
+    (|NonNeg?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Div_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Ulp_fundamental| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|Abs_fundamental| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|le_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (<< CONST-DECL "bool" |interval| |interval_arith|)
+    (|Ulp_proper| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|Proper_Abs| JUDGEMENT-TCC NIL |interval| |interval_arith|)
+    (|Sub| CONST-DECL "Interval" |interval| |interval_arith|)
+    (|Ge| CONST-DECL "bool" |interval| |interval_arith|)
+    (|ge_realorder| NAME-JUDGEMENT "RealOrder" |real_orders| |reals|)
+    (|Proper_Sub| APPLICATION-JUDGEMENT "ProperInterval" |interval|
+     |interval_arith|)
+    (|Proper_Sqrt| JUDGEMENT-TCC NIL |interval_sqrt| |interval_arith|)
+    (|NonNegInterval| TYPE-EQ-DECL NIL |proper_arith| |interval_arith|)
+    (|Proper_Add| JUDGEMENT-TCC NIL |interval| |interval_arith|)
+    (|Incl_reflx| FORMULA-DECL NIL |interval| |interval_arith|)
+    (|Zeroless_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|Sqrt_fundamental| FORMULA-DECL NIL |interval_sqrt| |interval_arith|)
+    (|NonNeg_Precondition| NAME-JUDGEMENT "(Precondition?)" |interval|
+     |interval_arith|)
+    (|NonNeg_Add| APPLICATION-JUDGEMENT "(NonNeg?)" |interval|
+     |interval_arith|)
+    (|r2i_Nneg| APPLICATION-JUDGEMENT "(NonNeg?)" |interval| |interval_arith|)
+    (|r2i_Pos| APPLICATION-JUDGEMENT "(Pos?)" |interval| |interval_arith|)
+    (|NonNeg_Incl| FORMULA-DECL NIL |interval| |interval_arith|))
+   NIL
+   (|AEB_SQT_fundmental_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"
+    (45 4 45 20)))
+  (|AEB_SQT_fundmental_j-1| NIL 3684857137 ("" (JUDGEMENT-TCC) NIL NIL) NIL NIL
+   (|AEB_SQT_fundmental_j| SUBTYPE "aebounddp_sqt_ia(n)"
+    "(interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2))"
+    (45 4 45 20))))
  (AEB_SQT_TCC1 0
-  (AEB_SQT_TCC1-1 nil 3684079971 ("" (subtype-tcc) nil nil)
-   ((AEB_SQT_fundmental_j application-judgement
-     "(Fundamental2?(Any?, aeb_sqt_pre2))" bbiadp_sqt nil)
-    (AEB_SQT_inclusion_j application-judgement
-     "(Inclusion2?(Any?, aeb_sqt_pre2, aebounddp_sqt_safe))" bbiadp_sqt
-     nil))
-   nil
-   (AEB_SQT subtype "bbiadp_sqt.aebounddp_sqt_ia(bbiadp_sqt.n)"
-    "{F: [[interval.Interval, interval.Interval] -> interval.Interval] | booleans.AND(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe)(F), interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2)(F))}"))))
+  (AEB_SQT_TCC1-1 NIL 3684079971 ("" (SUBTYPE-TCC) NIL NIL) NIL NIL
+   (AEB_SQT SUBTYPE "aebounddp_sqt_ia(n)"
+    "{F: [[interval.Interval, interval.Interval] -> interval.Interval] | booleans.AND(interval.Inclusion2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2, bbiadp_sqt.aebounddp_sqt_safe)(F), interval.Fundamental2?(interval.Any?, bbiadp_sqt.aeb_sqt_pre2)(F))}"
+    (52 2 52 21)))))
 

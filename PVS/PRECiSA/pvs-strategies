@@ -223,7 +223,9 @@
 		 "bbiadp_atn_t.AEB_ATN_T"
 		 "bbiadp_neg.AEB_NEG"
 		 "bbiadp_mul.AEB_MUL_P2L"
-		 "bbiadp_mul.AEB_MUL_P2R" ))
+		 "bbiadp_mul.AEB_MUL_P2R"
+		 "bbiadp_fma.AEB_FMA"
+                 ))
     ("div_safe" "IntervalExpr_adt.DIV")
     ("ulp_sp" "interval_ulp_sp.ULP_SP" "PRECiSA@bbiasp.PrecisaSP__")
     ("aeboundsp_add" "bbiasp_add.AEB_ADD" "PRECiSA@bbiasp.PrecisaSP__")
@@ -256,6 +258,7 @@
     ("aerr_ulp_exp" ("bbiadp_exp.AEB_EXP") "PRECiSA@bbiasp.PrecisaSP__")
     ("aerr_ulp_ln"  ("bbiadp_ln.AEB_LN")  "PRECiSA@bbiadp.PrecisaDP__")
     ("aerr_ulp_neg" "bbiadp_neg.AEB_NEG" "PRECiSA@bbiadp.PrecisaDP__")
+    ("aerr_ulp_fma" "bbiadp_fma.AEB_FMA" "PRECiSA@bbiadp.PrecisaDP__")
     ("aerr_ulp_mul_p2l"
      ("bbiadp_mul.AEB_MUL_P2L"
       (lambda (args translator)

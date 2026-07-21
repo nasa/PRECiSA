@@ -1,17 +1,20 @@
 bbiasp: THEORY
 BEGIN
 
-  IMPORTING bbiasp_add,
-  	        bbiasp_mul,
-  	        bbiasp_sub,
-  	        bbiasp_div,
-	          bbiasp_flr,
-	          bbiasp_sqt,
-	          bbiasp_neg,
-	          bbiasp_sin,
-	          bbiasp_cos,
-	          bbiasp_atn,
-  	        interval_arith@strategies
+  importing bbiasp_add
+  importing bbiasp_mul
+  importing bbiasp_sub
+  importing bbiasp_div
+  importing bbiasp_flr
+  importing bbiasp_sqt
+  importing bbiasp_neg
+  importing bbiasp_sin
+  importing bbiasp_cos
+  importing bbiasp_atn
+  importing bbiasp_exp
+  importing bbiasp_ln
+  importing bbiasp_fma
+  importing interval_arith@strategies
 
   % The following constant is used by the strategies to check if all the re-
   % quired theories have been imported in the current context.

@@ -29,12 +29,12 @@ BEGIN
     HAS_TYPE (Inclusion4?( Any?,
     	     		   pre1to2b(NonNeg?),
 			   Any3?,
-			   pre1to4d(NonNeg?),
+			   pre1to4b(NonNeg?),
 			   aeboundsp_sub_safe ))
 
   AEB_SUB_fundmental_j: JUDGEMENT
     aeboundsp_sub_ia
-    HAS_TYPE (Fundamental4?(Any?,pre1to2b(NonNeg?), Any3?,pre1to4d(NonNeg?)))
+    HAS_TYPE (Fundamental4?(Any?,pre1to2b(NonNeg?), Any3?,pre1to4b(NonNeg?)))
 
 %|- AEB_SUB_fundmental_j : PROOF
 %|- (prove-fundamental-judgement)
@@ -46,13 +46,13 @@ BEGIN
              	   Inclusion4?( Any?,
     	     		   	pre1to2b(NonNeg?),
 			   	Any3?,
-			   	pre1to4d(NonNeg?),
+			   	pre1to4b(NonNeg?),
 			   	aeboundsp_sub_safe ) (F)
                    AND Fundamental4?( Any?, pre1to2b(NonNeg?), Any3?,
-		       		      pre1to4d(NonNeg?) ) (F)}
+		       		      pre1to4b(NonNeg?) ) (F)}
 
   AEB_SUB(re1,re2,re3,re4):  RealExpr =
-    FUN4(Any?,pre1to2b(NonNeg?),Any3?,pre1to4d(NonNeg?),
+    FUN4(Any?,pre1to2b(NonNeg?),Any3?,pre1to4b(NonNeg?),
 	 aeboundsp_sub_safe,
 	 aeboundsp_sub_ia,
 	 re1,re2,re3,re4)

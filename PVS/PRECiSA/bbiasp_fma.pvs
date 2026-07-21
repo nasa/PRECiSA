@@ -1,0 +1,68 @@
+bbiasp_fma: THEORY
+BEGIN
+
+  importing interval_ulp_sp
+  importing float_bounded_axiomatic@aerr_ulp__single
+
+  R1,E1,R2,E2,R3,E3: VAR Interval
+
+  aebounddp_fma_ia(R1,E1,R2,E2,R3,E3): Interval =
+    If NonNeg?(E1) AND NonNeg?(E2) AND NonNeg?(E3)
+    THEN Add(Add(Add(Add(Mult(Abs(R1),E2),Mult(Abs(R2),E1)),Mult(E1,E2)),E3),
+             Div(Ulp_sp(
+                  Add(
+                    Add(Add(Add( Abs(Add(Mult(R1,R2),R3))  ,Mult(Abs(R1),E2)),Mult(Abs(R2),E1)),Mult(E1,E2)),
+                    E3)
+                   ),
+                   [|2|]))
+    ELSE EmptyInterval
+    ENDIF
+
+  re1,re2,re3,re4,re5,re6: VAR RealExpr
+
+  x1,x2,x3,x4,x5,x6: VAR real
+
+  aebounddp_fma_safe(x1,x2,x3,x4,x5,x6): real =
+    IF x2 >= 0 AND x4 >= 0 AND x6 >= 0
+    THEN aerr_ulp_fma(x1,x2,x3,x4,x5,x6)
+    ELSE 1
+    ENDIF
+
+  %|-   AEB_FMA_inclusion_j : PROOF
+  %|- (branch (prove-inclusion-judgement)  ((grind)))
+  %|- QED   AEB_FMA_inclusion_j
+  AEB_FMA_inclusion_j: JUDGEMENT
+    aebounddp_fma_ia
+    HAS_TYPE (Inclusion6?( Any?,
+    	     		     pre1to2b(NonNeg?),
+			     Any3?,
+			     pre1to4b(NonNeg?),
+			     Any5?,
+			     pre1to6b(NonNeg?),
+			     aebounddp_fma_safe ))
+
+  AEB_FMA_fundmental_j: JUDGEMENT
+    aebounddp_fma_ia
+    HAS_TYPE (Fundamental6?(Any?,pre1to2b(NonNeg?),Any3?,pre1to4b(NonNeg?),Any5?,pre1to6b(NonNeg?)))
+
+  AEB_FMA_j: JUDGEMENT
+    aebounddp_fma_ia
+    HAS_TYPE {F: [[Interval, Interval, Interval, Interval, Interval, Interval] -> Interval] |
+             	   Inclusion6?( Any?,
+    	     		   	pre1to2b(NonNeg?),
+			   	Any3?,
+			   	pre1to4b(NonNeg?),
+			   	Any5?,
+			   	pre1to6b(NonNeg?),
+			   	aebounddp_fma_safe ) (F)
+                   AND Fundamental6?( Any?, pre1to2b(NonNeg?), Any3?,
+			             pre1to4b(NonNeg?), Any5?, pre1to6b(NonNeg?) ) (F)}
+
+  AEB_FMA(re1,re2,re3,re4,re5,re6):  RealExpr =
+    FUN6(Any?,pre1to2b(NonNeg?),Any3?,pre1to4b(NonNeg?),Any5?,pre1to6b(NonNeg?),
+	 aebounddp_fma_safe,
+	 aebounddp_fma_ia,
+	 re1,re2,re3,re4,re5,re6)
+
+END bbiasp_fma
+

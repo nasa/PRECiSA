@@ -6,10 +6,11 @@ begin
   % hack to evaluate ulp TODO fix this!
   % importing interval_ulp[double, safe_proj_double, RtoD, min_ulp_double, ulp_double]
   importing float_unbounded@ieee754dp
+  ulp_double_eq_ulp_dp: axiom % TODO change to lemma
+    ulp_double = ulp_dp
+    
   importing interval_ulp[double, safe_proj_double, RtoD, min_ulp_double, ulp_dp]
 
-  ulp_double_eq_ulp_dp: axiom % TODO change to lemma
-    ulp_double = ulp_dp 
 
   Ulp_dp(I:Interval): Interval =
     interval_ulp.Ulp(I)

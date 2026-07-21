@@ -1,19 +1,20 @@
 bbiadp: THEORY
 BEGIN
 
-  IMPORTING bbiadp_add,
-  	        bbiadp_mul,
-  	        bbiadp_sub,
-  	        bbiadp_div,
-	          bbiadp_flr,
-	          bbiadp_sqt,
-	          bbiadp_neg,
-	          bbiadp_sin,
-	          bbiadp_cos,
-	          bbiadp_atn,
-	          bbiadp_exp,
-	          bbiadp_ln,
-  	        interval_arith@strategies
+  importing bbiadp_add
+  importing bbiadp_mul
+  importing bbiadp_sub
+  importing bbiadp_div
+  importing bbiadp_flr
+  importing bbiadp_sqt
+  importing bbiadp_neg
+  importing bbiadp_sin
+  importing bbiadp_cos
+  importing bbiadp_atn
+  importing bbiadp_exp
+  importing bbiadp_ln
+  importing bbiadp_fma
+  importing interval_arith@strategies
 
   % The following constant is used by the strategies to check if all the re-
   % quired theories have been imported in the current context.

@@ -565,7 +565,10 @@
               (var-decls (loop for d in all-decls
                                when (and (var-decl? d)
                                         (let((d-type (type d)))
-                                          (or (and (print-type d-type) (eq (id (print-type d-type)) '|real|))
+                                          (or (let ((ptd (print-type d-type)))
+                                                (and ptd
+                                                     (print-type-name? ptd)
+                                                     (eq (id ptd) '|real|)))
                                               (let*((print-type (if (subtype? d-type)
                                                                    (let ((top-type (or (top-type d-type) (supertype d-type))))
                                                                      (if top-type (print-type top-type) (print-type d-type)))
@@ -612,7 +615,7 @@
 (defun setup-concrete-bound-generator (theory-ref)
   (with-theory (th) theory-ref
                (load-pvs-attachmets)
-               (red-strategies-files)))
+               (read-strategies-files)))
 
 ;;
 ;; usage from command line
@@ -620,5 +623,5 @@
 ;; pvs -raw -e "(with-theory (th) \"errorExpression\"
 ;;                   (declare (ignore th))
 ;;                   (load-pvs-attachments)
-;;                   (red-strategies-files)
-;;                   (compute-upper-bound-on-array-function-definition '|errorExpression| \"errorExpression\"))"
+;;                   (read-strategies-files)
+;;                   (print (compute-upper-bound-on-array-function-definition '|errorExpression| \"errorExpression\")))"

@@ -1,331 +1,244 @@
-(interval_ulp_sp
- (IMP_interval_ulp_TCC1 0
-  (IMP_interval_ulp_TCC2-1 nil 3909153896 ("" (assuming-tcc) nil nil)
-   ((boolean nonempty-type-decl nil booleans nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (NOT const-decl "[bool -> bool]" booleans nil)
-    (number nonempty-type-decl nil numbers nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (rat_max application-judgement "{s: rat | s >= q AND s >= r}"
-     real_defs nil)
-    (int_max application-judgement "{k: int | i <= k AND j <= k}"
-     real_defs nil)
-    (real_ge_is_total_order name-judgement "(total_order?[real])"
-     real_props nil)
-    (real_lt_is_strict_total_order name-judgement
-     "(strict_total_order?[real])" real_props nil)
-    (^ const-decl "real" exponentiation nil)
-    (log_gt1 const-decl "[{r | r >= 1} -> nnreal]" nn_log power)
-    (inverse const-decl "D" function_inverse nil)
-    (nn_log const-decl "nnreal" nn_log power)
-    (log const-decl "real" log power)
-    (int_abs_is_nonneg application-judgement "{j: nonneg_int | j >= i}"
-     real_defs nil)
-    (abs const-decl "{n: nonneg_real | n >= m AND n >= -m}" real_defs
-         nil)
-    (even_minus_odd_is_odd application-judgement "odd_int" integers
-     nil)
-    (posrat_exp application-judgement "posrat" exponentiation nil)
-    (posrat_div_posrat_is_posrat application-judgement "posrat"
-     rationals nil)
-    (posnat_expt application-judgement "posnat" exponentiation nil)
-    (emin const-decl "negint" ieee754_domain axm_bnd)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd))
-   nil
-   (IMP_interval_ulp assuming
-    "interval_ulp[ieee754_single_base.single, ieee754_semantics[2, 24, 127].safe_proj, LAMBDA (r: reals.real): ieee754_semantics[2, 24, 127].round(r), ieee754_domain[2, 24, 127].min_ulp, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 24, 127].ulp(r)].interval_ulp"
-    "ulp_abs: ASSUMPTION interval_ulp.ulp(real_defs.abs(interval_ulp.r1)) = interval_ulp.ulp(interval_ulp.r1)")))
- (IMP_interval_ulp_TCC2 0
-  (IMP_interval_ulp_TCC3-1 nil 3909153896
-   ("" (skeep)
-    (("" (expand "ulp_single") (("" (rewrite "ulp_monotone") nil nil))
-      nil))
-    nil)
-   ((ulp_monotone formula-decl nil ieee754_domain axm_bnd)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil))
-   nil
-   (IMP_interval_ulp assuming
-    "interval_ulp[ieee754_single_base.single, ieee754_semantics[2, 24, 127].safe_proj, LAMBDA (r: reals.real): ieee754_semantics[2, 24, 127].round(r), ieee754_domain[2, 24, 127].min_ulp, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 24, 127].ulp(r)].interval_ulp"
-    "ulp_monotone: ASSUMPTION booleans.IMPLIES(booleans.AND(reals.<=(0, interval_ulp.r1), reals.<=(interval_ulp.r1, interval_ulp.r2)), reals.<=(interval_ulp.ulp(interval_ulp.r1), interval_ulp.ulp(interval_ulp.r2)))")))
- (IMP_interval_ulp_TCC3 0
-  (IMP_interval_ulp_TCC4-1 nil 3909153896
-   ("" (skeep)
-    (("" (expand "ulp_single")
-      (("" (expand "min_ulp_single") (("" (rewrite "ulp_min") nil nil))
-        nil))
-      nil))
-    nil)
-   ((ulp_min formula-decl nil ieee754_domain axm_bnd)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil))
-   nil
-   (IMP_interval_ulp assuming
-    "interval_ulp[ieee754_single_base.single, ieee754_semantics[2, 24, 127].safe_proj, LAMBDA (r: reals.real): ieee754_semantics[2, 24, 127].round(r), ieee754_domain[2, 24, 127].min_ulp, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 24, 127].ulp(r)].interval_ulp"
-    "ulp_min: ASSUMPTION reals.<=(interval_ulp.min_ulp, interval_ulp.ulp(interval_ulp.r1))")))
- (Ulp_sp_proper 0
-  (Ulp_sp_proper-2 nil 3909207087
-   ("" (expand "Ulp_sp") (("" (use "Ulp_proper") nil nil)) nil)
-   ((Ulp_proper formula-decl nil interval_ulp nil)
-    (datum nonempty-type-decl nil ieee754_data axm_bnd)
-    (single type-eq-decl nil ieee754_single_base axm_bnd)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (safe_proj const-decl "real" ieee754_semantics axm_bnd)
-    (round const-decl "datum" ieee754_semantics axm_bnd)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (>= const-decl "bool" reals nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (> const-decl "bool" reals nil)
-    (posreal nonempty-type-eq-decl nil real_types nil)
-    (min_ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (Ulp_sp const-decl "Interval" interval_ulp_sp nil))
-   nil)
-  (Ulp_sp_proper-1 nil 3699283228
-   ("" (expand "Ulp_sp") (("" (use "Ulp_proper") nil nil)) nil)
-   ((Ulp_proper formula-decl nil interval_ulp nil)
-    (int nonempty-type-eq-decl nil integers nil)
-    (nat nonempty-type-eq-decl nil naturalnumbers nil)
-    (above nonempty-type-eq-decl nil integers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (number nonempty-type-decl nil numbers nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (>= const-decl "bool" reals nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (Ulp_sp const-decl "Interval" interval_ulp_sp nil))
-   shostak))
- (Ulp_sp_inclusion 0
-  (Ulp_sp_inclusion-1 nil 3699272340
-   ("" (expand "Ulp_sp") (("" (use "Ulp_inclusion") nil nil)) nil)
-   ((Ulp_inclusion formula-decl nil interval_ulp nil)
-    (datum nonempty-type-decl nil ieee754_data axm_bnd)
-    (single type-eq-decl nil ieee754_single_base axm_bnd)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (safe_proj const-decl "real" ieee754_semantics axm_bnd)
-    (round const-decl "datum" ieee754_semantics axm_bnd)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (>= const-decl "bool" reals nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (> const-decl "bool" reals nil)
-    (posreal nonempty-type-eq-decl nil real_types nil)
-    (min_ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (Ulp_sp const-decl "Interval" interval_ulp_sp nil))
-   shostak))
- (Ulp_sp_Inclusion 0
-  (Ulp_sp_Inclusion-2 nil 3699270609
-   ("" (expand "Inclusion?")
-    (("" (skeep)
-      (("" (use "Ulp_inclusion")
-        (("" (assert)
-          (("" (expand "Ulp_sp") (("" (propax) nil nil)) nil)) nil))
-        nil))
-      nil))
-    nil)
-   ((Ulp_sp const-decl "Interval" interval_ulp_sp nil)
-    (PreTrue const-decl "(Precondition?)" interval_expr interval_arith)
-    (Precondition? const-decl "bool" interval interval_arith)
-    (PRED type-eq-decl nil defined_types nil)
-    (Interval type-eq-decl nil interval interval_arith)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (min_ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (posreal nonempty-type-eq-decl nil real_types nil)
-    (> const-decl "bool" reals nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (>= const-decl "bool" reals nil)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (round const-decl "datum" ieee754_semantics axm_bnd)
-    (safe_proj const-decl "real" ieee754_semantics axm_bnd)
-    (real nonempty-type-from-decl nil reals nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number nonempty-type-decl nil numbers nil)
-    (single type-eq-decl nil ieee754_single_base axm_bnd)
-    (datum nonempty-type-decl nil ieee754_data axm_bnd)
-    (Ulp_inclusion formula-decl nil interval_ulp nil)
-    (Inclusion? const-decl "bool" interval interval_arith))
-   nil
-   (Ulp_sp_Inclusion subtype "interval_ulp_sp.Ulp_sp"
-    "(interval.Inclusion?(interval_expr.PreTrue, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 24, 127].ulp(r)))"))
-  (Ulp_sp_Inclusion-1 nil 3699269065 ("" (judgement-tcc) nil nil) nil
-   nil
-   (Ulp_sp_Inclusion subtype "interval_ulp_sp.Ulp_sp"
-    "(interval.Inclusion?(interval_expr.PreTrue, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 24, 127].ulp(r)))")))
- (Ulp_sp_fundamental 0
-  (Ulp_sp_fundamental-1 nil 3699272434
-   ("" (expand "Ulp_sp") (("" (use "Ulp_fundamental") nil nil)) nil)
-   ((Ulp_fundamental formula-decl nil interval_ulp nil)
-    (datum nonempty-type-decl nil ieee754_data axm_bnd)
-    (single type-eq-decl nil ieee754_single_base axm_bnd)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (safe_proj const-decl "real" ieee754_semantics axm_bnd)
-    (round const-decl "datum" ieee754_semantics axm_bnd)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (>= const-decl "bool" reals nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (> const-decl "bool" reals nil)
-    (posreal nonempty-type-eq-decl nil real_types nil)
-    (min_ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (Ulp_sp const-decl "Interval" interval_ulp_sp nil))
-   shostak))
- (Ulp_sp_Fundamental 0
-  (Ulp_sp_Fundamental-2 nil 3699270653
-   ("" (expand "Fundamental?")
-    (("" (skeep)
-      (("" (expand "Ulp_sp")
-        (("" (use "Ulp_fundamental") (("" (assert) nil nil)) nil))
-        nil))
-      nil))
-    nil)
-   ((Ulp_fundamental formula-decl nil interval_ulp nil)
-    (datum nonempty-type-decl nil ieee754_data axm_bnd)
-    (single type-eq-decl nil ieee754_single_base axm_bnd)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (safe_proj const-decl "real" ieee754_semantics axm_bnd)
-    (round const-decl "datum" ieee754_semantics axm_bnd)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (>= const-decl "bool" reals nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (> const-decl "bool" reals nil)
-    (posreal nonempty-type-eq-decl nil real_types nil)
-    (min_ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (Interval type-eq-decl nil interval interval_arith)
-    (Proper? const-decl "bool" interval interval_arith)
-    (ProperInterval type-eq-decl nil interval interval_arith)
-    (PRED type-eq-decl nil defined_types nil)
-    (Precondition? const-decl "bool" interval interval_arith)
-    (PreTrue const-decl "(Precondition?)" interval_expr interval_arith)
-    (Ulp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp))"
-     interval_ulp_sp nil)
-    (Ulp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp nil)
-    (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
-    (Fundamental? const-decl "bool" interval interval_arith))
-   nil
-   (Ulp_sp_Fundamental subtype "interval_ulp_sp.Ulp_sp"
-    "(interval.Fundamental?(interval_expr.PreTrue))"))
-  (Ulp_sp_Fundamental-1 nil 3699269065 ("" (judgement-tcc) nil nil) nil
-   nil
-   (Ulp_sp_Fundamental subtype "interval_ulp_sp.Ulp_sp"
-    "(interval.Fundamental?(interval_expr.PreTrue))")))
+(|interval_ulp_sp|
+ (|IMP_interval_ulp_TCC1| 0
+  (|IMP_interval_ulp_TCC1-1| NIL 3909209915
+   ("" (EXPAND "ulp_sp") (("" (SKEEP) (("" (USE "ulp_abs") NIL NIL)) NIL)) NIL)
+   ((|single_precision_format| CONST-DECL "Format" |ieee754dp|
+     |float_unbounded|)
+    (|Format| TYPE-EQ-DECL NIL |float| |float_unbounded|)
+    (|ulp_abs| FORMULA-DECL NIL |float| |float_unbounded|)
+    (|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|))
+   NIL
+   (|IMP_interval_ulp| ASSUMING
+    "interval_ulp[single, safe_proj[2, 53, 1023], LAMBDA (r: real): round_single(r), min_ulp[2, 53, 1023], ulp_sp]"
+    "ulp_abs: ASSUMPTION interval_ulp.ulp(real_defs.abs(interval_ulp.r1)) = interval_ulp.ulp(interval_ulp.r1)"
+    (12 12 12 80))))
+ (|IMP_interval_ulp_TCC2| 0
+  (|IMP_interval_ulp_TCC2-1| NIL 3909209915
+   ("" (SKEEP)
+    (("" (EXPAND "ulp_sp")
+      (("" (LEMMA "float[2].ulp_monotone")
+        (("" (INST?) (("" (ASSERT) NIL NIL)) NIL)) NIL))
+      NIL))
+    NIL)
+   ((|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|)
+    (|Format| TYPE-EQ-DECL NIL |float| |float_unbounded|)
+    (|single_precision_format| CONST-DECL "Format" |ieee754dp|
+     |float_unbounded|)
+    (|ulp_monotone| FORMULA-DECL NIL |float| |float_unbounded|))
+   NIL
+   (|IMP_interval_ulp| ASSUMING
+    "interval_ulp[single, safe_proj[2, 53, 1023], LAMBDA (r: real): round_single(r), min_ulp[2, 53, 1023], ulp_sp]"
+    "ulp_monotone: ASSUMPTION booleans.IMPLIES(booleans.AND(reals.<=(0, interval_ulp.r1), reals.<=(interval_ulp.r1, interval_ulp.r2)), reals.<=(interval_ulp.ulp(interval_ulp.r1), interval_ulp.ulp(interval_ulp.r2)))"
+    (12 12 12 80))))
+ (|IMP_interval_ulp_TCC3| 0
+  (|IMP_interval_ulp_TCC3-1| NIL 3909209915
+   ("" (SKEEP)
+    (("" (USE "ulp_single_eq_ulp_sp")
+      (("" (REPLACE -1 :HIDE? T :DIR RL)
+        (("" (LEMMA "ulp_min")
+          (("" (INST -1 "r1") (("" (ASSERT) NIL NIL)) NIL)) NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|ulp_min| FORMULA-DECL NIL |ieee754_domain| |float_bounded_axiomatic|))
+   NIL
+   (|IMP_interval_ulp| ASSUMING
+    "interval_ulp[single, safe_proj[2, 53, 1023], LAMBDA (r: real): round_single(r), min_ulp[2, 53, 1023], ulp_sp]"
+    "ulp_min: ASSUMPTION reals.<=(interval_ulp.min_ulp, interval_ulp.ulp(interval_ulp.r1))"
+    (12 12 12 80))))
+ (|Ulp_sp_proper| 0
+  (|Ulp_sp_proper-1| |nil| 3699285101
+   ("" (EXPAND "Ulp_sp") (("" (USE "Ulp_proper") NIL NIL)) NIL)
+   ((|Ulp_proper| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|single| TYPE-EQ-DECL NIL |ieee754_single_base| |float_bounded_axiomatic|)
+    (|safe_proj| CONST-DECL "real" |ieee754_semantics|
+     |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|round_single| CONST-DECL "[real -> binary64]" |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|min_ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|))
+   SHOSTAK))
+ (|Ulp_sp_inclusion| 0
+  (|Ulp_sp_inclusion-1| |nil| 3699285121
+   ("" (EXPAND "Ulp_sp")
+    (("" (USE "Ulp_inclusion")
+      (("" (SKEEP)
+        (("" (INST?)
+          (("" (ASSERT)
+            (("" (USE "ulp_single_eq_ulp_sp")
+              (("" (REPLACE -1 :HIDE? T :DIR RL) (("" (ASSERT) NIL NIL)) NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|Ulp_inclusion| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|single| TYPE-EQ-DECL NIL |ieee754_single_base| |float_bounded_axiomatic|)
+    (|safe_proj| CONST-DECL "real" |ieee754_semantics|
+     |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|round_single| CONST-DECL "[real -> binary64]" |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|min_ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|))
+   SHOSTAK))
+ (|Ulp_sp_Inclusion| 0
+  (|Ulp_sp_Inclusion-1| NIL 3699042916
+   ("" (EXPAND "Inclusion?")
+    (("" (SKEEP)
+      (("" (USE "Ulp_inclusion")
+        (("" (ASSERT)
+          (("" (EXPAND "Ulp_sp")
+            (("" (USE "ulp_single_eq_ulp_sp")
+              (("" (REPLACE -1 :HIDE? T :DIR RL) (("" (ASSERT) NIL NIL)) NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|)
+    (|min_ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|round_single| CONST-DECL "[real -> binary64]" |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|safe_proj| CONST-DECL "real" |ieee754_semantics|
+     |float_bounded_axiomatic|)
+    (|single| TYPE-EQ-DECL NIL |ieee754_single_base| |float_bounded_axiomatic|)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|Ulp_inclusion| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|PreTrue| CONST-DECL "(Precondition?)" |interval_expr| |interval_arith|)
+    (|Precondition?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Inclusion?| CONST-DECL "bool" |interval| |interval_arith|))
+   NIL
+   (|Ulp_sp_Inclusion| SUBTYPE "Ulp_sp"
+    "(interval.Inclusion?(interval_expr.PreTrue, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 53, 1023].ulp(r)))"
+    (28 4 28 10))))
+ (|Ulp_sp_fundamental| 0
+  (|Ulp_sp_fundamental-1| |nil| 3699285138
+   ("" (EXPAND "Ulp_sp") (("" (USE "Ulp_fundamental") NIL NIL)) NIL)
+   ((|Ulp_fundamental| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|single| TYPE-EQ-DECL NIL |ieee754_single_base| |float_bounded_axiomatic|)
+    (|safe_proj| CONST-DECL "real" |ieee754_semantics|
+     |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|round_single| CONST-DECL "[real -> binary64]" |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|min_ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|))
+   SHOSTAK))
+ (|Ulp_sp_Fundamental| 0
+  (|Ulp_sp_Fundamental-1| NIL 3699042916
+   ("" (EXPAND "Fundamental?")
+    (("" (SKEEP)
+      (("" (EXPAND "Ulp_sp")
+        (("" (USE "Ulp_fundamental") (("" (ASSERT) NIL NIL)) NIL)) NIL))
+      NIL))
+    NIL)
+   ((|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Proper?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|ProperInterval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Precondition?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|PreTrue| CONST-DECL "(Precondition?)" |interval_expr| |interval_arith|)
+    (|Ulp_fundamental| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|single| TYPE-EQ-DECL NIL |ieee754_single_base| |float_bounded_axiomatic|)
+    (|safe_proj| CONST-DECL "real" |ieee754_semantics|
+     |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|round_single| CONST-DECL "[real -> binary64]" |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|min_ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|)
+    (|Fundamental?| CONST-DECL "bool" |interval| |interval_arith|))
+   NIL
+   (|Ulp_sp_Fundamental| SUBTYPE "Ulp_sp"
+    "(interval.Fundamental?(interval_expr.PreTrue))" (34 4 34 10))))
  (ULP_SP_TCC1 0
-  (ULP_SP_TCC1-2 nil 3909567691
-   ("" (skeep)
-    (("" (split 1)
-      (("1" (expand "Inclusion?")
-        (("1" (skeep)
-          (("1" (use "Ulp_inclusion")
-            (("1" (assert)
-              (("1" (expand "Ulp_sp") (("1" (propax) nil nil)) nil))
-              nil))
-            nil))
-          nil))
-        nil)
-       ("2" (expand "Fundamental?")
-        (("2" (skeep)
-          (("2" (use "Ulp_fundamental")
-            (("2" (expand "Ulp_sp") (("2" (assert) nil nil)) nil))
-            nil))
-          nil))
-        nil))
-      nil))
-    nil)
-   ((Fundamental? const-decl "bool" interval interval_arith)
-    (Ulp_fundamental formula-decl nil interval_ulp nil)
-    (Proper? const-decl "bool" interval interval_arith)
-    (ProperInterval type-eq-decl nil interval interval_arith)
-    (Ulp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp nil)
-    (Ulp_Inclusion name-judgement "(Inclusion?(PreTrue, ulp))"
-     interval_ulp_sp nil)
-    (Inclusion? const-decl "bool" interval interval_arith)
-    (Ulp_inclusion formula-decl nil interval_ulp nil)
-    (datum nonempty-type-decl nil ieee754_data axm_bnd)
-    (single type-eq-decl nil ieee754_single_base axm_bnd)
-    (number nonempty-type-decl nil numbers nil)
-    (boolean nonempty-type-decl nil booleans nil)
-    (number_field_pred const-decl "[number -> boolean]" number_fields
-     nil)
-    (number_field nonempty-type-from-decl nil number_fields nil)
-    (real_pred const-decl "[number_field -> boolean]" reals nil)
-    (real nonempty-type-from-decl nil reals nil)
-    (safe_proj const-decl "real" ieee754_semantics axm_bnd)
-    (round const-decl "datum" ieee754_semantics axm_bnd)
-    (bool nonempty-type-eq-decl nil booleans nil)
-    (>= const-decl "bool" reals nil)
-    (nonneg_real nonempty-type-eq-decl nil real_types nil)
-    (> const-decl "bool" reals nil)
-    (posreal nonempty-type-eq-decl nil real_types nil)
-    (min_ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (ulp const-decl "posreal" ieee754_domain axm_bnd)
-    (Interval type-eq-decl nil interval interval_arith)
-    (PRED type-eq-decl nil defined_types nil)
-    (Precondition? const-decl "bool" interval interval_arith)
-    (PreTrue const-decl "(Precondition?)" interval_expr interval_arith)
-    (Ulp_sp const-decl "Interval" interval_ulp_sp nil)
-    (Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp nil)
-    (Ulp_sp_Inclusion name-judgement
+  (ULP_SP_TCC1-1 NIL 3699041021
+   ("" (SKEEP)
+    (("" (SPLIT 1)
+      ((#A((1) BASE-CHAR . "1") (EXPAND "Inclusion?")
+        ((#A((1) BASE-CHAR . "1") (SKEEP)
+          ((#A((1) BASE-CHAR . "1") (USE "Ulp_inclusion")
+            ((#A((1) BASE-CHAR . "1") (ASSERT)
+              ((#A((1) BASE-CHAR . "1") (EXPAND "Ulp_sp")
+                ((#A((1) BASE-CHAR . "1") (USE "ulp_single_eq_ulp_sp")
+                  ((#A((1) BASE-CHAR . "1") (REPLACE -1 :HIDE? T :DIR RL)
+                    ((#A((1) BASE-CHAR . "1") (ASSERT) NIL NIL)) NIL))
+                  NIL))
+                NIL))
+              NIL))
+            NIL))
+          NIL))
+        NIL)
+       (#A((1) BASE-CHAR . "2") (EXPAND "Fundamental?")
+        ((#A((1) BASE-CHAR . "2") (SKEEP)
+          ((#A((1) BASE-CHAR . "2") (USE "Ulp_fundamental")
+            ((#A((1) BASE-CHAR . "2") (EXPAND "Ulp_sp")
+              ((#A((1) BASE-CHAR . "2") (ASSERT) NIL NIL)) NIL))
+            NIL))
+          NIL))
+        NIL))
+      NIL))
+    NIL)
+   ((|Ulp_sp_Inclusion| NAME-JUDGEMENT
      "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
-     interval_ulp_sp nil))
-   nil
-   (ULP_SP subtype "interval_ulp_sp.Ulp_sp"
-    "{F: [interval.Interval -> interval.Interval] | booleans.AND(interval.Inclusion?(interval_expr.PreTrue, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 24, 127].ulp(r))(F), interval.Fundamental?(interval_expr.PreTrue)(F))}"))
-  (ULP_SP_TCC1-1 nil 3699269065 ("" (subtype-tcc) nil nil)
-   ((Ulp_sp_Fundamental name-judgement "(Fundamental?(PreTrue))"
-     interval_ulp_sp nil)
-    (Ulp_sp_Inclusion name-judgement
-     "(Inclusion?(PreTrue, LAMBDA (r: real) -> nonneg_real: ulp(r)))"
-     interval_ulp_sp nil))
-   nil
-   (ULP_SP subtype "interval_ulp_sp.Ulp_sp"
-    "{F: [interval.Interval -> interval.Interval] | booleans.AND(interval.Inclusion?(interval_expr.PreTrue, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 24, 127].ulp(r))(F), interval.Fundamental?(interval_expr.PreTrue)(F))}"))))
+     |interval_ulp_sp| NIL)
+    (|Ulp_sp_Fundamental| NAME-JUDGEMENT "(Fundamental?(PreTrue))"
+     |interval_ulp_sp| NIL)
+    (|ulp_single_eq_ulp_sp| FORMULA-DECL NIL |interval_ulp_sp| NIL)
+    (|Ulp_Fundamental| NAME-JUDGEMENT "(Fundamental?(PreTrue))"
+     |interval_ulp_sp| NIL)
+    (|Ulp_Inclusion| NAME-JUDGEMENT "(Inclusion?(PreTrue, ulp))"
+     |interval_ulp_sp| NIL)
+    (|Ulp_sp| CONST-DECL "Interval" |interval_ulp_sp| NIL)
+    (|ulp_sp| CONST-DECL "nonneg_real" |ieee754dp| |float_unbounded|)
+    (|min_ulp| CONST-DECL "posreal" |ieee754_domain| |float_bounded_axiomatic|)
+    (|posreal| NONEMPTY-TYPE-EQ-DECL NIL |real_types| NIL)
+    (> CONST-DECL "bool" |reals| NIL)
+    (|nonneg_real| NONEMPTY-TYPE-EQ-DECL NIL |real_types| NIL)
+    (>= CONST-DECL "bool" |reals| NIL)
+    (|bool| NONEMPTY-TYPE-EQ-DECL NIL |booleans| NIL)
+    (|round_single| CONST-DECL "[real -> binary64]" |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|binary64| TYPE-EQ-DECL NIL |ieee754_single_base|
+     |float_bounded_axiomatic|)
+    (|safe_proj| CONST-DECL "real" |ieee754_semantics|
+     |float_bounded_axiomatic|)
+    (|real| NONEMPTY-TYPE-FROM-DECL NIL |reals| NIL)
+    (|real_pred| CONST-DECL "[number_field -> boolean]" |reals| NIL)
+    (|number_field| NONEMPTY-TYPE-FROM-DECL NIL |number_fields| NIL)
+    (|number_field_pred| CONST-DECL "[number -> boolean]" |number_fields| NIL)
+    (|boolean| NONEMPTY-TYPE-DECL NIL |booleans| NIL)
+    (|number| NONEMPTY-TYPE-DECL NIL |numbers| NIL)
+    (|single| TYPE-EQ-DECL NIL |ieee754_single_base| |float_bounded_axiomatic|)
+    (|datum| NONEMPTY-TYPE-DECL NIL |ieee754_data| |float_bounded_axiomatic|)
+    (|Ulp_inclusion| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|PreTrue| CONST-DECL "(Precondition?)" |interval_expr| |interval_arith|)
+    (|Precondition?| CONST-DECL "bool" |interval| |interval_arith|)
+    (PRED TYPE-EQ-DECL NIL |defined_types| NIL)
+    (|Interval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|minus_nzint_is_nzint| APPLICATION-JUDGEMENT "nzint" |integers| NIL)
+    (|Inclusion?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|Ulp_fundamental| FORMULA-DECL NIL |interval_ulp| NIL)
+    (|Proper?| CONST-DECL "bool" |interval| |interval_arith|)
+    (|ProperInterval| TYPE-EQ-DECL NIL |interval| |interval_arith|)
+    (|Fundamental?| CONST-DECL "bool" |interval| |interval_arith|))
+   NIL
+   (ULP_SP SUBTYPE "Ulp_sp"
+    "{F: [interval.Interval -> interval.Interval] | booleans.AND(interval.Inclusion?(interval_expr.PreTrue, LAMBDA (r: reals.real) -> nonneg_real: ieee754_domain[2, 53, 1023].ulp(r))(F), interval.Fundamental?(interval_expr.PreTrue)(F))}"
+    (36 61 36 67)))))
 

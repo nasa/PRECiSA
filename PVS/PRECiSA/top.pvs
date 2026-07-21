@@ -16,6 +16,7 @@ BEGIN
 	    bbiasp_atn,
 	    bbiasp_ln,
 	    bbiasp_exp,
+	    bbiasp_fma,
 	    bbiasp,
             % Double Precision
 	    interval_ulp_dp,  % Extension for the Branch and Bound algorithm
@@ -31,6 +32,7 @@ BEGIN
 	    bbiadp_atn,
 	    bbiadp_ln,
 	    bbiadp_exp,
+	    bbiadp_fma,
 	    bbiadp,
             strategies
 
