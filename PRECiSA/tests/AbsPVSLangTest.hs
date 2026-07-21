@@ -102,7 +102,7 @@ prettyAExpr__tests = testGroup "prettyAExpr" $
       render (prettyDoc (ErrBinOp (ArrayAddOp 3) FPDouble
                           (Int 0) (Int 0)
                           (Int 1) (Int 1)))
-      @?= "aerr_ulp_dpa_dot(3)(0, 0, 1, 1)"
+      @?= "aerr_ulp_dpa_add(3)(0, 0, 1, 1)"
   ]
 
 subExpressions__tests = testGroup "subExpressions__tests" $ [
