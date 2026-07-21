@@ -83,8 +83,9 @@ library
     Kodiak.PrettyPrint
     Kodiak.Runnable
     Kodiak.Runner
-    PVSio.Runner
+    PVSio.Debug
     PVSio.ErrorComputation
+    PVSio.Runner
     MapFPCoreLangAST
     MapFPCoreSpecLangAST
     MapSpecLangAST
