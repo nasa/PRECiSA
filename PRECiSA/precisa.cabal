@@ -50,6 +50,10 @@ library frontend-pvs
     Frontend.PVS.ParRawPVSLang
   build-depends:
       precisa
+  build-tool-depends:
+    alex:alex >= 3.2,
+    happy:happy >= 1.19
+
 
 library
   import: shared

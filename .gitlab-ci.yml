@@ -1,0 +1,51 @@
+default:
+  image: precisa-ci:latest
+
+before_script:
+  - whoami
+  - git submodule update --init --recursive
+  - . ~/.ghcup/env
+  - mkdir -p Kodiak/build
+  - cd Kodiak/build
+  - FILIB_ROOT=/filibsrc cmake ..
+  - cmake --build . -j
+  - export KODIAK_LIB_DIR="$(pwd)"
+  - export LD_LIBRARY_PATH="$KODIAK_LIB_DIR:$LD_LIBRARY_PATH"
+  - cd $CI_PROJECT_DIR
+  - |-
+    cat > cabal.project.local <<EOF
+    optimization: True
+
+    package precisa
+      extra-lib-dirs: $KODIAK_LIB_DIR
+    EOF
+  - cat cabal.project.local
+  - cabal install all --overwrite-policy=always
+
+stages:
+  - test
+
+unit_tests:
+  stage: test
+  script:
+    - cabal run precisaTests -j -- --hide-successes --ansi-tricks=false
+
+collection_tests:
+  stage: test
+  script:
+    - |-
+      cat > pvs <<EOF
+      #!/bin/bash
+      /PVS/pvs -image precisa-ready "$@"
+      EOF
+    # - chmod +x pvs
+    # - export PATH="$(dirname $(readlink -f pvs)):$PATH"
+    # EXCEPTION - precisa tests/acceptance/scalars/double12.pvs tests/acceptance/scalars/double12.input --use-pvsio
+    - precisa tests/acceptance/collections/array1.pvs tests/acceptance/collections/array1.input --use-pvsio
+    - precisa tests/acceptance/collections/array2.pvs tests/acceptance/collections/array2.input --use-pvsio
+    # EXCEPTION - precisa tests/acceptance/collections/array3.pvs tests/acceptance/collections/array3.input --use-pvsio
+    - precisa tests/acceptance/collections/array4.pvs tests/acceptance/collections/array4.input --use-pvsio
+    - precisa tests/acceptance/collections/array5.pvs tests/acceptance/collections/array5.input --use-pvsio
+    # EXCEPTION - precisa tests/acceptance/collections/array6.pvs tests/acceptance/collections/array6.input --use-pvsio
+    # EXCEPTION (it works standalone) - precisa tests/acceptance/collections/array7.pvs tests/acceptance/collections/array7.input --use-pvsio
+    # EXCEPTION - precisa tests/acceptance/collections/array8.pvs tests/acceptance/collections/array8.input --use-pvsio
