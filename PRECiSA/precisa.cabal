@@ -8,6 +8,7 @@ maintainer:          laura.titolo@nasa.gov
                      marco.feliu@nasa.gov
 category:            Language
 build-type:          Simple
+tested-with:         GHC == 9.6.7
 
 
 common shared
@@ -41,7 +42,6 @@ common shared
     extra-libraries: c++
   else
     extra-libraries: stdc++
-  tested-with: GHC == 9.6.7
 
 library
   import: shared
