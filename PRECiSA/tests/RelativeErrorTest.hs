@@ -26,6 +26,7 @@ testRelativeError = testGroup "Relative Error"
   ,testIsZeroError
   ,testRatioExpr
   ,testLiteralDenomContainsZero
+  ,testOneLineMessage
   ,testComputeRelError
   ,testRelErrorJSON
   ,testFunSummaryJSON
@@ -79,6 +80,42 @@ testLiteralDenomContainsZero = testGroup "literalDenomContainsZero"
      literalDenomContainsZero (Interval (-1) 2) @?= True
   ,testCase "a strictly positive interval does not" $
      literalDenomContainsZero (Interval 1 2) @?= False
+  ]
+
+-- The failure message ends up verbatim in the JSON field
+-- relativeStableErrorFailure, which the VSCode extension shows to a user, so
+-- it must be one line and must not name a source location: 'show' on an
+-- 'ErrorCall' appends the HasCallStack backtrace, and the file:line in it goes
+-- stale the moment the file it names changes.
+--
+-- Tested on the formatter directly rather than through 'computeRelError' so
+-- the pin does not depend on a Kodiak run, on which constructors
+-- 'Kodiak.Runner.run'' happens to lack a case for, or on GHC's exact backtrace
+-- layout.
+testOneLineMessage = testGroup "oneLineMessage"
+  [testCase "a call stack is stripped, the message kept" $
+     oneLineMessage
+       ("KodiakRunnable instance for AExpr, VariableMap and PReal undefined\n"
+     ++ "CallStack (from HasCallStack):\n"
+     ++ "  error, called at src/Kodiak/Runner.hs:504:20 in precisa:Kodiak.Runner")
+       @?= "KodiakRunnable instance for AExpr, VariableMap and PReal undefined"
+
+  -- The Kodiak shim's own messages are already one line and carry the only
+  -- diagnostic detail there is; nothing may be trimmed off them.
+  ,testCase "a single-line message is left alone" $
+     oneLineMessage "Kodiak (eval): sqrt expects a nonnegative interval"
+       @?= "Kodiak (eval): sqrt expects a nonnegative interval"
+
+  ,testCase "no newline survives a multi-line message" $
+     assertBool "a newline leaked through"
+       (not ("\n" `isInfixOf` oneLineMessage "first\nsecond\nthird"))
+
+  ,testCase "surrounding whitespace is trimmed" $
+     oneLineMessage "  spaced out \t\r\nCallStack (from HasCallStack):\n  error"
+       @?= "spaced out"
+
+  ,testCase "an empty message stays empty" $
+     oneLineMessage "" @?= ""
   ]
 
 params :: SearchParameters
@@ -158,6 +195,10 @@ testComputeRelError = testGroup "computeRelError"
      case r of
        Left msg -> do assertBool msg ("relative error unavailable" `isInfixOf` msg)
                       assertBool msg ("EFun" `isInfixOf` msg)
+                      -- and the whole way through, not just in the formatter:
+                      -- no backtrace and no newline reach the JSON field
+                      assertBool msg (not ("CallStack" `isInfixOf` msg))
+                      assertBool msg (not ("\n" `isInfixOf` msg))
        other    -> assertFailure ("expected Left, got " ++ show other)
 
   -- ... and the process really is still usable afterwards, which is the whole

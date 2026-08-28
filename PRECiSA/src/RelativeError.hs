@@ -100,6 +100,8 @@ import AbsPVSLang
 import AbsSpecLang
 import Control.Exception (SomeAsyncException, SomeException, catch, evaluate,
                           fromException, throwIO)
+import Data.Char (isSpace)
+import Data.List (dropWhileEnd)
 import Kodiak.Kodiak (KodiakStatus(..))
 import Kodiak.Paver (SearchParameters(..))
 import Kodiak.Runner
@@ -169,6 +171,26 @@ literalDenomContainsZero (Rat q) = q == 0
 literalDenomContainsZero (Interval lb ub) = lb <= 0 && 0 <= ub
 literalDenomContainsZero _       = False
 
+-- | Reduce a rendered exception to its FIRST LINE, trimmed.
+--
+--   WHY, and not merely for tidiness: this string is USER FACING -- it is the
+--   whole value of the JSON field @relativeStableErrorFailure@ that the VSCode
+--   extension displays. 'show' on an 'ErrorCall' raised by 'error' appends the
+--   'HasCallStack' backtrace, so without this the field carried
+--   @"CallStack (from HasCallStack): error, called at src\/Kodiak\/Runner.hs:504:20 ..."@.
+--   A source file and line number is noise to whoever reads the field, and it
+--   ROTS SILENTLY: nothing recomputes it, so the moment 'Kodiak.Runner' gains
+--   or loses a line the message points at the wrong place. The embedded
+--   newlines are their own problem for a consumer parsing a JSON string field.
+--
+--   Only the RENDERING changes. A message that is already one line -- every
+--   'Kodiak.Kodiak.KodiakError' from the shim, e.g.
+--   @"Kodiak (eval): sqrt expects a nonnegative interval"@ -- comes back
+--   unchanged, so no diagnostic detail Kodiak itself reported is lost.
+oneLineMessage :: String -> String
+oneLineMessage = trim . takeWhile (/= '\n')
+  where trim = dropWhileEnd isSpace . dropWhile isSpace
+
 -- | Bound the relative error of one decision path.
 --
 --   The error expression MUST be the same processed expression the absolute
@@ -224,13 +246,16 @@ computeRelError searchParams fname varBinds err reals
                                          ++ "returned Left KodiakOk, which cannot happen."
 
     -- Every synchronous exception becomes a failure MESSAGE on the existing
-    -- 'AnalysisResult.RelErrorFailed' channel. An asynchronous one (a Ctrl-C,
-    -- a timeout) is not ours to swallow and is re-thrown unchanged.
+    -- 'AnalysisResult.RelErrorFailed' channel, kept to one line by
+    -- 'oneLineMessage' because the channel ends up in user-facing JSON. An
+    -- asynchronous exception (a Ctrl-C, a timeout) is not ours to swallow and
+    -- is re-thrown unchanged.
     softFail :: SomeException -> IO (Either String RelError)
     softFail e =
       case fromException e :: Maybe SomeAsyncException of
         Just asyncExc -> throwIO asyncExc
-        Nothing       -> return $ Left ("relative error unavailable: " ++ show e)
+        Nothing       -> return $ Left ("relative error unavailable: "
+                                        ++ oneLineMessage (show e))
 
     kodiakInput = KI { kiName       = fname ++ "_rel"
                      , kiExpression = ratioExpr err reals
