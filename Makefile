@@ -1,6 +1,14 @@
 KODIAK_PATH ?= $(CURDIR)/Kodiak
 KODIAK_LIBRARY_DIR = $(BUILD_FOLDER)/kodiak/
+# Where Codiak.h lives. cbits/kodiak_shim.cpp includes it, so this is a
+# COMPILE-time dependency of the library, not just a link-time one. It is
+# passed as extra-include-dirs, the project-file counterpart of
+# extra-lib-dirs; a package stanza's include-dirs is silently ignored.
+KODIAK_INCLUDE_DIR = $(KODIAK_PATH)/src/Adapters
 PRECISA_PATH ?= $(CURDIR)/PRECiSA
+# cabal.project.local is only read from the project root, i.e. next to
+# cabal.project, which lives at the repository root.
+PROJECT_ROOT ?= $(CURDIR)
 JOBS ?= 4
 BUILD_FOLDER ?= $(CURDIR)/build
 CABAL ?= cabal
@@ -41,8 +49,8 @@ all: build-precisa
 	@echo "all"
 
 clean:
-	@rm -f PRECiSA/cabal.project.local
-	@rm -fR PRECiSA/dist-newstyle/
+	@rm -f cabal.project.local
+	@rm -fR dist-newstyle/
 	@rm -fR build/
 
 checkout-submodules:
@@ -56,9 +64,10 @@ build-precisa: configure-precisa
 
 configure-precisa: build-kodiak
 	@( \
-		cd $(PRECISA_PATH); \
+		cd $(PROJECT_ROOT); \
 		echo "package precisa" > cabal.project.local; \
 		echo "  extra-lib-dirs: $(KODIAK_LIBRARY_DIR)" >> cabal.project.local; \
+		echo "  extra-include-dirs: $(KODIAK_INCLUDE_DIR)" >> cabal.project.local; \
 		echo "  ghc-options: -optl=-Wl,-rpath,$(KODIAK_LIBRARY_DIR)" >> cabal.project.local; \
 	)
 

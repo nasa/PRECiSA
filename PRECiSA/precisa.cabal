@@ -99,7 +99,12 @@ library
     Utils
   cxx-sources:   cbits/kodiak_shim.cpp
   cxx-options:   -std=c++17 -Wall -Wextra
-  include-dirs:  ../Kodiak/src/Adapters
+  -- Codiak.h is NOT named here: the directory holding it is outside this
+  -- package, so an include-dirs entry for it is a relative path outside the
+  -- source tree -- rejected by `cabal check`, and broken in an sdist tarball
+  -- or against a Kodiak vendored elsewhere. `make configure-precisa` writes it
+  -- into cabal.project.local at the project root instead, as
+  -- extra-include-dirs, alongside the extra-lib-dirs for the built library.
   ghc-options: -Wall -Werror
 
 executable precisa
