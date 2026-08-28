@@ -1,0 +1,4 @@
+# Baseline certificate files are intentionally committed even though the
+# repo-root .gitignore excludes *_cert.pvs / num_cert.pvs elsewhere.
+!*.pvs
+!*.json

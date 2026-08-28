@@ -1,0 +1,1 @@
+{"results":[{"function":"azimuth","stableError":1.3215014169705957e-13,"unstableError":null}],"certFile":"benchmarks/FPBench/azimuth_cert.pvs","numCertFile":"benchmarks/FPBench/azimuth_num_cert.pvs"}

@@ -54,6 +54,11 @@
 						"type": "string",
 						"default": "",
 						"description": "Kodiak library path"
+					},
+					"precisa.relativeError": {
+						"type": "boolean",
+						"default": false,
+						"description": "Also bound the relative error |real - fp| / |real|. Adds one global optimization per decision path, so analysis is slower."
 					}
 				}
 			}

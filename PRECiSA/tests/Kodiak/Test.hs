@@ -212,6 +212,30 @@ testMinMax = testGroup "MinMax" $
             return $ (kmmoMinimumLowerBound res == 10)
                 && (kmmoMaximumUpperBound res == 11)
         @? failLabel
+    -- Kodiak throws from inside the branch-and-bound evaluation for
+    -- 1 / abs(X) over a box containing zero. Unguarded, that exception
+    -- escapes the FFI and takes the whole test process down with SIGABRT, so
+    -- this case reaching its assertion at all is half of what it checks.
+    ,testCase "minmaxGuarded reports a divisor enclosure containing zero" $
+        do p <- do name <- newCString "GuardedDivByZero"
+                   minmax_system_create name
+           vName <- do var <- newCString "X"
+                       lb <- interval_create (-1) (-1)
+                       ub <- interval_create 1 1
+                       minmax_system_register_variable p var lb ub
+                       return var
+           minmax_system_set_maxdepth p 2
+           minmax_system_set_precision p (-2)
+           v <- real_create_variable 0 vName
+           absV <- real_create_absolute_value v
+           one <- interval_create 1 1 >>= real_create_value
+           -- Construction must succeed: the divisor is a variable, so Kodiak's
+           -- constant folding cannot reduce it to a zero-containing literal
+           -- and the construction-time guard does not fire here.
+           built <- realCreateDivision one absV
+           case built of
+             Left status -> assertFailure $ "could not build 1/abs(X): " ++ show status
+             Right eDiv  -> minmaxGuarded p eDiv >>= (@?= Left KodiakDivByZero)
     ]
 
 testPaver :: TestTree

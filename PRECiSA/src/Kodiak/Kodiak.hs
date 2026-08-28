@@ -369,3 +369,148 @@ foreign import ccall unsafe ""
 
 foreign import ccall unsafe ""
   paver_save_paving :: PPaver -> CString -> IO ()
+
+{----------------------------------------------------------------------}
+{-                                                                    -}
+{- PRECiSA C++ shim over Kodiak (see cbits/kodiak_shim.cpp)           -}
+{-                                                                    -}
+{----------------------------------------------------------------------}
+
+-- Kodiak reports failures by throwing @kodiak::Growl@. A C++ exception cannot
+-- be caught from Haskell, so it escapes the FFI boundary and terminates the
+-- process. The entry points below go through a PRECiSA-owned C++ wrapper that
+-- catches it and reports a status code plus the exception message.
+--
+-- The @c_precisa_*@ foreign imports are the raw boundary and are not meant to
+-- be called directly: the guarded wrappers underneath are the intended API.
+-- They exist to enforce, structurally rather than by comment, the contract
+-- that a failed system must never be read from or reused (see below).
+
+-- | Outcome of a Kodiak call made through the shim.
+--
+-- Division by an interval that contains zero is singled out because it is a
+-- legitimate mathematical outcome (an unbounded result), not a failure. Every
+-- other Kodiak exception is a genuine error carrying its message, and the two
+-- must never be conflated: reporting a real failure as an unbounded bound
+-- would turn a crash into a plausible-looking answer.
+data KodiakStatus = KodiakOk | KodiakDivByZero | KodiakError String
+  deriving (Show, Eq)
+
+-- | Size of the buffer handed to the shim for the exception message.
+kodiakErrorBufferSize :: Int
+kodiakErrorBufferSize = 256
+
+-- | Allocate the message buffer, run a shim call, and decode its status code.
+withKodiakStatus :: (CString -> CInt -> IO CInt) -> IO KodiakStatus
+withKodiakStatus call =
+  allocaBytes kodiakErrorBufferSize $ \errBuf -> do
+    status <- call errBuf (fromIntegral kodiakErrorBufferSize)
+    case status of
+      0 -> return KodiakOk
+      1 -> return KodiakDivByZero
+      2 -> KodiakError <$> peekCString errBuf
+      _ -> error $ "Kodiak.Kodiak: unexpected status code " ++ show status
+                ++ " from the PRECiSA Kodiak shim (cbits/kodiak_shim.cpp);"
+                ++ " the C and Haskell sides have drifted."
+
+-- | Run a shim call, producing its result only when the call succeeded.
+kodiakGuarded :: (CString -> CInt -> IO CInt) -> IO a -> IO (Either KodiakStatus a)
+kodiakGuarded call readResult = do
+  status <- withKodiakStatus call
+  case status of
+    KodiakOk -> Right <$> readResult
+    _        -> return (Left status)
+
+foreign import ccall unsafe "precisa_minmax_system_maximize"
+  c_precisa_minmax_system_maximize
+    :: PMinMaxSystem -> PReal -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "precisa_minmax_system_minmax"
+  c_precisa_minmax_system_minmax
+    :: PMinMaxSystem -> PReal -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "precisa_real_create_division"
+  c_precisa_real_create_division
+    :: PReal -> PReal -> Ptr (Ptr ()) -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "precisa_minmax_system_maximum_lower_bound"
+  c_precisa_minmax_system_maximum_lower_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "precisa_minmax_system_maximum_upper_bound"
+  c_precisa_minmax_system_maximum_upper_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "precisa_minmax_system_minimum_lower_bound"
+  c_precisa_minmax_system_minimum_lower_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "precisa_minmax_system_minimum_upper_bound"
+  c_precisa_minmax_system_minimum_upper_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+-- | Maximize @pExpr@ over the system's box.
+--
+-- @Left 'KodiakDivByZero'@ means Kodiak's divisor guard fired: a legitimate
+-- unbounded result. @Left ('KodiakError' msg)@ is a genuine failure.
+--
+-- On either failure the system is DEAD and is deliberately not returned:
+--
+--   * its bounds cover only part of the box (branch-and-bound aborted
+--     mid-recursion) and are not a valid enclosure, so they must not be read;
+--   * reusing it is silently unsound, because @MinMaxSystem::acc_@ (the
+--     pruning accumulator) is never reset by @minmax()@, so a second run
+--     prunes against stale bounds and reports a too-small maximum with no
+--     diagnostic.
+--
+-- Simply dropping it is safe: Kodiak is value-typed with intrusively
+-- refcounted @Real@ nodes.
+maximizeGuarded :: PMinMaxSystem -> PReal -> IO (Either KodiakStatus ())
+maximizeGuarded pSys pExpr =
+  kodiakGuarded (c_precisa_minmax_system_maximize pSys pExpr) (return ())
+
+-- | Minimize AND maximize @pExpr@ over the system's box in a single run, so
+-- that both the minimum's lower bound and the maximum's upper bound become
+-- readable afterwards.
+--
+-- Statuses mean exactly what they mean for 'maximizeGuarded', and the failure
+-- contract is identical: this is the same branch-and-bound evaluation, so on a
+-- non-'KodiakOk' status the system is DEAD -- its partial bounds are not an
+-- enclosure and its @acc_@ pruning accumulator is stale -- and it is
+-- deliberately not returned.
+minmaxGuarded :: PMinMaxSystem -> PReal -> IO (Either KodiakStatus ())
+minmaxGuarded pSys pExpr =
+  kodiakGuarded (c_precisa_minmax_system_minmax pSys pExpr) (return ())
+
+-- | Build a division expression, catching the construction-time divisor guard
+-- (@Real.cpp:214@) that fires when the divisor is a literal interval
+-- containing zero.
+realCreateDivision :: PReal -> PReal -> IO (Either KodiakStatus PReal)
+realCreateDivision num den =
+  alloca $ \pOut ->
+    kodiakGuarded (c_precisa_real_create_division num den pOut)
+                  (PReal <$> peek pOut)
+
+-- | Read a bound through the shim. The four @MinMax@ getters throw whenever
+-- the corresponding point set is empty, which is exactly the state left behind
+-- by a failed maximization -- and also by an infeasible box on the success
+-- path -- so they cannot be called raw.
+kodiakBound :: (PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt)
+            -> PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+kodiakBound cCall pSys = alloca $ \pOut -> kodiakGuarded (cCall pSys pOut) (peek pOut)
+
+maximumLowerBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+maximumLowerBoundGuarded = kodiakBound c_precisa_minmax_system_maximum_lower_bound
+
+maximumUpperBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+maximumUpperBoundGuarded = kodiakBound c_precisa_minmax_system_maximum_upper_bound
+
+-- | Read the minimum's lower bound, as the min-max path does after
+-- 'minmaxGuarded'.
+minimumLowerBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+minimumLowerBoundGuarded = kodiakBound c_precisa_minmax_system_minimum_lower_bound
+
+-- | Unused today, wrapped pre-emptively for symmetry with the maximum
+-- getters. See the note above @PRECISA_WRAP_BOUND@ in @cbits/kodiak_shim.cpp@.
+minimumUpperBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+minimumUpperBoundGuarded = kodiakBound c_precisa_minmax_system_minimum_upper_bound

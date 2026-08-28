@@ -1,0 +1,10 @@
+{
+  "name": "sqroot-relative",
+  "comment": "Runs on its OWN copy of the benchmark under relative-error-benchmarks/, not on benchmarks/FPBench/sqroot.pvs: PRECiSA writes sqroot_cert.pvs and sqroot_num_cert.pvs next to the input file, so sharing the input with sqroot.test.json would have this run overwrite the byte-for-byte regression baseline in tests/relative-error-baseline/ with --relative-error content. NOTE: --typecheck would hand the resulting *_rel_* lemmas and proof scripts to proveit; those are UNVERIFIED and have never been typechecked or proved, so a --typecheck run of this descriptor is expected to be inconclusive at best. Unknown fields such as this one are ignored by testAcceptance.sh, which reads only the keys it names.",
+  "pvsFile": "relative-error-benchmarks/sqroot.pvs",
+  "inputFile": "relative-error-benchmarks/sqroot.input",
+  "flags": "--relative-error",
+  "stableError": 6.83481049534862E-16,
+  "unstableError": null,
+  "relativeStableError": 8.176221900977789E-16
+}

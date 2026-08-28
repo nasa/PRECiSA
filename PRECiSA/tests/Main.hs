@@ -25,6 +25,7 @@ import MapPVSLangASTTest
 import MapRealPVSLangASTTest
 import MapFPCoreLangASTTest
 import FunctionCallErrorAbstractionTest
+import RelativeErrorTest
 
 main :: IO ()
 main = defaultMain unitTests
@@ -45,4 +46,5 @@ unitTests = testGroup "Unit tests"
   ,testMapPVSLangAST
   ,testMapRealPVSLangAST
   ,testMapFPCoreLangAST
+  ,testRelativeError
   ]

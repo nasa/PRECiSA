@@ -32,6 +32,15 @@ common shared
     ,bytestring
   extra-libraries:
     kodiak
+  -- cbits/kodiak_shim.cpp catches C++ exceptions, so anything linking this
+  -- package needs the C++ runtime for __cxa_begin_catch / __cxa_end_catch /
+  -- __gxx_personality_v0. GHC links via gcc, not g++, so it must be requested
+  -- explicitly; libkodiak's own dependency does not supply it when the
+  -- Haskell side is linked statically.
+  if os(darwin)
+    extra-libraries: c++
+  else
+    extra-libraries: stdc++
   tested-with: GHC == 9.6.7
 
 library
@@ -46,6 +55,7 @@ library
     AbsSpecLang
     AbstractDomain
     AbstractSemantics
+    AnalysisResult
     Common.ControlFlow
     Common.DecisionPath
     Common.ShowRational
@@ -80,12 +90,16 @@ library
     Parser.Parser
     PPExt
     PVSCert
+    RelativeError
     SMT.GenerateSMTModel
     SMT.PrettyPrinter
     SMT.SMT
     Translation.Float2Real
     Translation.Real2Float
     Utils
+  cxx-sources:   cbits/kodiak_shim.cpp
+  cxx-options:   -std=c++17 -Wall -Wextra
+  include-dirs:  ../Kodiak/src/Adapters
   ghc-options: -Wall -Werror
 
 executable precisa
@@ -134,6 +148,7 @@ test-suite precisaTests
     MapPVSLangASTTest
     MapRealPVSLangASTTest
     MapFPCoreLangASTTest
+    RelativeErrorTest
     SMT.PrettyPrinterTest
     SMT.Test
     TestUtils

@@ -1,0 +1,9 @@
+sqroot: THEORY
+BEGIN
+IMPORTING PRECiSA@ieee754_double
+
+% @fp-function
+sqroot(Y: double):double =
+  1 + 0.5 * Y - 0.125 * Y * Y + 0.0625 * Y * Y * Y - 0.0390625 * Y * Y * Y * Y
+
+END sqroot

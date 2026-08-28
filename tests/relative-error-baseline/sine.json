@@ -1,0 +1,1 @@
+{"results":[{"function":"sine","stableError":1.1296729607621835e-15,"unstableError":null}],"certFile":"benchmarks/FPBench/sine_cert.pvs","numCertFile":"benchmarks/FPBench/sine_num_cert.pvs"}

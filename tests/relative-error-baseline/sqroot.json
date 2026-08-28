@@ -1,0 +1,1 @@
+{"results":[{"function":"sqroot","stableError":6.83481049534862e-16,"unstableError":null}],"certFile":"benchmarks/FPBench/sqroot_cert.pvs","numCertFile":"benchmarks/FPBench/sqroot_num_cert.pvs"}

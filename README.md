@@ -167,6 +167,8 @@ $ ./precisa "example.pvs" "example.input"
 
 - `--unfold-fun-calls` if this option is activated, the body of each function call is unfolded in the error expression before it is globally optimized. This option may lead to more accurate results.
 
+- `--relative-error` if this option is activated, in addition to the absolute round-off error, PRECiSA bounds the relative error `|real - fp| / |real|`. This adds one global optimization per decision path, therefore it is off by default. When the divisor's interval enclosure contains zero, the relative error is reported as `+infinity`, which is a sound bound. The symbolic relative-error certificate is still generated for such a path -- it is range free and bounds the error by a universally quantified `rel` -- but the numeric one is not, since there is no finite constant to instantiate `rel` with.
+
 <!-- - `--smt-optimization` if this option is activated, PRECiSA checks the satisfiability of each path condition by calling an external SMT solver through the FPRoCK tool. In this way, it is possible to detect and remove the spurious execution paths, improving the accuracy of the round-off error estimation. -->
 
 An example of how to execute PRECiSA by manually setting some options is the following:

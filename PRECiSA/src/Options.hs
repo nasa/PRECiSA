@@ -26,6 +26,7 @@ data Options = Options
    , optAssumeStability      :: Bool
    , jsonOutput              :: Bool
    , optSMTOptimization      :: Bool
+   , optRelativeError        :: Bool
    } deriving Show
 
 optionsParser :: Parser Options
@@ -96,6 +97,9 @@ optionsParser =
         <*> switch
           (  long "smt-optimization"
           <> help "Use SMT solvers to elimiate unfeasible cases" )
+        <*> switch
+          (  long "relative-error"
+          <> help "Also bound the relative error |real - fp| / |real|. Adds one global optimization per decision path." )
 
 parseOptions :: IO Options
 parseOptions = execParser parserOpts

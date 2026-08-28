@@ -23,6 +23,7 @@ import AbsPVSLang
 import AbsSpecLang
 import AbstractSemantics
 import AbstractDomain
+import AnalysisResult
 import Common.DecisionPath
 import Common.ControlFlow
 import Control.Monad (when)
@@ -39,6 +40,7 @@ import qualified Kodiak.Paver as KP
 import Prelude hiding ((<>))
 import PVSCert
 import Parser.Parser
+import RelativeError (RelError(..), computeRelError)
 import SMT.SMT
 import System.Directory
 import System.FilePath
@@ -78,7 +80,8 @@ parseAndAnalyze
           , optPrecision            = prec
           , optAssumeStability      = sta
           , jsonOutput              = jsonOut
-          , optSMTOptimization      = useSMT } = do
+          , optSMTOptimization      = useSMT
+          , optRelativeError        = relErr } = do
 
   let noCollapsedStables = False
   errparseProg <- if parsefpcore
@@ -107,7 +110,7 @@ parseAndAnalyze
 
   -------------
   let progSem = fixpointSemantics decls (botInterp decls) 3 semConf dps
-  let symbCertificates = renderPVS $ genCertFile inputFileName certFileName realProgFileName decls progSem
+  let symbCertificates = renderPVS $ genCertFile inputFileName certFileName realProgFileName decls progSem relErr
   writeFile certFile symbCertificates
   let realProgDoc = genRealProgFile inputFileName  realProgFileName (fp2realProg decls)
   writeFile realProgFile (renderPVS realProgDoc)
@@ -123,13 +126,13 @@ parseAndAnalyze
 
   let unfoldedPgmSem = unfoldSemantics filteredPgmSemUlp
 
-  results <- computeAllErrorsInKodiakMap optUnfoldFuns decls semConf unfoldedPgmSem spec searchParams
+  results <- computeAllErrorsInKodiakMap optUnfoldFuns relErr decls semConf unfoldedPgmSem spec searchParams
 
   -- results <- if optUnfoldFuns
   --             then computeAllErrorsInKodiakMap unfoldedPgmSem spec searchParams
   --             else computeAllErrorsInKodiak sta unfoldedPgmSem spec searchParams
 
-  let resultSummary = summarizeAllErrors (getKodiakResults results)
+  let resultSummary = summarizeAllErrors results
 
   let numCertificate = renderPVS $ genNumCertFile certFileName numCertFileName results decls spec maxBBDepth prec False
   writeFile numCertFile numCertificate
@@ -181,40 +184,49 @@ parseAndAnalyze
       realProgFileName = inputFileName ++ "_real"
       generatePavingFilename pvsFilename functionName = pvsFilename ++ "." ++ functionName ++ ".paving"
 
-getKodiakResults :: [(String,PVSType,[Arg],[(ResultField,[(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])])] -> [(String, ResultField, [(ControlFlow,KodiakResult)])]
-getKodiakResults = concatMap getKodiakResult
+summarizeAllErrors :: [FunResult] -> [FunSummary]
+summarizeAllErrors = concatMap summarizeFun
 
-getKodiakResult :: (String,PVSType,[Arg],[(ResultField, [(Conditions, LDecisionPath,ControlFlow,KodiakResult,AExpr,[FAExpr],[AExpr])])]) -> [(String, ResultField, [(ControlFlow,KodiakResult)])]
-getKodiakResult (f,_,_,funSem) = map getKodiakErrorField funSem
+summarizeFun :: FunResult -> [FunSummary]
+summarizeFun fr = map summarizeField (frFields fr)
   where
-    getKodiakErrorField (field, fieldSem) = (f, field, map getKodiakError fieldSem)
-    getKodiakError (_,_,cf,err,_,_,_) = (cf,err)
+    summarizeField (field, prs) =
+      let stables   = filter ((== Stable)   . prFlow) prs
+          unstables = filter ((== Unstable) . prFlow) prs
+      in FunSummary
+           { fsName        = frName fr
+           , fsField       = field
+           , fsStable      = maximum $ map (maximumUpperBound . prKodiak) stables
+           , fsUnstable    = if null unstables then Nothing
+                             else Just $ maximum $ map (maximumUpperBound . prKodiak) unstables
+           , fsRelStable   = worstRelError stables
+           , fsRelUnstable = worstRelError unstables
+           }
 
-summarizeAllErrors :: [(String, ResultField, [(ControlFlow, KodiakResult)])] -> [(String,ResultField, Double, Maybe Double)]
-summarizeAllErrors = map summarizeFunError
-
-summarizeFunError :: (String, ResultField, [(ControlFlow, KodiakResult)]) -> (String, ResultField, Double, Maybe Double)
-summarizeFunError (f, field, results) =
-  let stableCases = filter ((== Stable) . fst) results in
-  let unstableCases = filter ((== Unstable) . fst) results in
-    (f, field, maximum $ map (maximumUpperBound . snd) stableCases
-      , if null unstableCases then Nothing
-        else Just $ maximum $ map (maximumUpperBound . snd) unstableCases)
-
-printAllErrors :: [(String,ResultField,Double,Maybe Double)] -> IO ()
+printAllErrors :: [FunSummary] -> IO ()
 printAllErrors = mapM_ printFunction
   where
-    printFunction (f,field,stableErr, unstableErr) = do
-      putStrLn $ "Function " ++ f ++ printField field
-      putStrLn $ "|real - floating-point| <= " ++ render (prettyNumError stableErr)
-      case unstableErr of
+    printFunction fs = do
+      putStrLn $ "Function " ++ fsName fs ++ printField (fsField fs)
+      putStrLn $ "|real - floating-point| <= " ++ render (prettyNumError (fsStable fs))
+      printRel (fsRelStable fs)
+      case fsUnstable fs of
         Nothing -> return ()
         Just divergence -> do
           putStrLn ""
           putStrLn "There are unstable conditionals leading to divergent real and floating-point control-flows."
           putStrLn $ "divergence <= " ++ render (prettyNumError divergence)
+          printRel (fsRelUnstable fs)
       putStrLn ""
       putStrLn "**************************************************************************"
+
+    printRel RelErrorOff = return ()
+    printRel (RelErrorBound (RelFinite ub)) =
+      putStrLn $ "|real - floating-point| / |real| <= " ++ render (prettyNumError ub)
+    printRel (RelErrorBound RelInfinite) =
+      putStrLn "|real - floating-point| / |real| <= +infinity (the real result could not be shown to be bounded away from zero)"
+    printRel (RelErrorFailed msg) =
+      putStrLn $ "relative error could not be computed: " ++ msg
 
     printField ResValue = ""
     printField (ResRecordField recField) = " field " ++ recField
@@ -224,22 +236,14 @@ printAllErrors = mapM_ printFunction
 
 computeAllErrorsInKodiakMap ::
   Bool
+  -> Bool
   -> [Decl]
   -> SemanticConfiguration
   -> Interpretation
   -> Spec
   -> KP.SearchParameters
-  -> IO [(String
-         ,PVSType
-         ,[Arg]
-         ,[(ResultField, [(Conditions
-                          ,LDecisionPath
-                          ,ControlFlow
-                          ,KodiakResult
-                          ,AExpr
-                          ,[FAExpr]
-                          ,[AExpr])])])]
-computeAllErrorsInKodiakMap unfoldFunCalls' decls config interp (Spec specBinds) searchParams = mapM runFunction functionNames
+  -> IO [FunResult]
+computeAllErrorsInKodiakMap unfoldFunCalls' relErrEnabled decls config interp (Spec specBinds) searchParams = mapM runFunction functionNames
   where
     declInterps = Map.filter isNumericalInterp interp
     functionNames = Map.keys declInterps
@@ -252,39 +256,59 @@ computeAllErrorsInKodiakMap unfoldFunCalls' decls config interp (Spec specBinds)
       let fSem = frt4 funInfo
       let fields = Map.keys fSem
       results <- mapM (runFunField fname fSem) fields
-      return (fname, fprec, args, results)
+      return FunResult { frName = fname, frType = fprec, frArgs = args, frFields = results }
       where
         errorMsg = error $ "computeAllErrorsInKodiakMap: function " ++ fname ++ " not found."
 
 
     runFunField fname sem field = do
       let funErrExprs = fromMaybe errorMsgField (Map.lookup field sem)
-      let functionErrorExpressionsMap = map aceb2PathFlowErrorTuple funErrExprs
+      let functionErrorExpressionsMap = map aceb2PathInput funErrExprs
       fieldResults <- mapM runErrorExpression functionErrorExpressionsMap
       return (field, fieldResults)
         where
           errorMsgField = error $ "runFunction: function " ++ show fname ++ " not found in input bound specification."
-          aceb2PathFlowErrorTuple aceb = (conds aceb, decisionPath aceb, cFlow aceb,
-                 fromJust $ eExpr aceb, fDeclRes $ fpExprs aceb, rDeclRes $ rExprs aceb)
+          aceb2PathInput aceb = PathInput
+            { piConds = conds aceb, piPath = decisionPath aceb
+            , piFlow = cFlow aceb, piErrExpr = fromJust $ eExpr aceb
+            , piFpExprs = fDeclRes $ fpExprs aceb
+            , piRealExprs = rDeclRes $ rExprs aceb }
 
-          runErrorExpression (conditions :: Conditions,path :: LDecisionPath, flow, err, fpes, res) = do
-            ki <- kodiakInput
-            result <- run ki ()
-            return (conditions, path, flow, result, initAExpr err, fpes, res)
+          runErrorExpression pathInput = do
+            errExpr <- processedErrExpr
+            result  <- run (kodiakInput errExpr) ()
+            relError <- if relErrEnabled
+                        then toRelErrorResult <$> computeRelError searchParams fname
+                               binds errExpr (piRealExprs pathInput)
+                        else return RelErrorOff
+            return PathResult { prConds     = piConds pathInput
+                              , prPath      = piPath pathInput
+                              , prFlow      = piFlow pathInput
+                              , prKodiak    = result
+                              , prErrExpr   = initAExpr err
+                              , prFpExprs   = piFpExprs pathInput
+                              , prRealExprs = piRealExprs pathInput
+                              , prRelError  = relError }
               where
-                kodiakInput = do
-                  let binds = fromJust $ findInSpec fname specBinds
-                  errExpr <- if unfoldFunCalls'
-                             then return $ simplAExpr $ initAExpr err
-                             else case findInDecls fname decls of
-                               Just (_,_,AExprBody funBody) -> do
-                                 let locVars = localVarsWithType funBody
-                                 replaceFunCallErr True config interp emptyEnv locVars binds $ simplAExpr $ initAExpr err
-                               _ -> error $ "[computeAllErrorsInKodiakMap.runFunField] Function " ++ fname ++ " not found."
-                  return $ KI { kiName = fname,
+                err = piErrExpr pathInput
+                binds = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
+                                  (lookup fname functionBindingsMap)
+                -- The processed error expression, computed once and shared by
+                -- the absolute and the relative Kodiak runs. The relative error
+                -- must be the ratio of exactly the quantity the absolute
+                -- certificate bounds, so both runs must see the same expression.
+                processedErrExpr =
+                  if unfoldFunCalls'
+                  then return $ simplAExpr $ initAExpr err
+                  else case findInDecls fname decls of
+                    Just (_,_,AExprBody funBody) -> do
+                      let locVars = localVarsWithType funBody
+                      replaceFunCallErr True config interp emptyEnv locVars binds $ simplAExpr $ initAExpr err
+                    _ -> error $ "[computeAllErrorsInKodiakMap.runFunField] Function " ++ fname ++ " not found."
+                kodiakInput errExpr =
+                  KI { kiName = fname,
                        kiExpression = errExpr,
-                       kiBindings = fromMaybe (error $ "runFunction: function " ++ show fname ++ " not found.")
-                                            (lookup fname functionBindingsMap),
+                       kiBindings = binds,
                        kiMaxDepth  = KP.maximumDepth searchParams,
                        kiPrecision = KP.minimumPrecision searchParams
                      }

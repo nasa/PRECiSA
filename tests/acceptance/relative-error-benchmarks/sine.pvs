@@ -1,0 +1,9 @@
+sine: THEORY
+BEGIN
+IMPORTING PRECiSA@ieee754_double
+
+% @fp-function
+sine(X: double):double =
+  X - (X*X*X)/6 + (X*X*X*X*X)/120 - (X*X*X*X*X*X*X)/5040
+
+END sine
