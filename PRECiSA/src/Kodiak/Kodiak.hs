@@ -449,6 +449,14 @@ foreign import ccall unsafe "precisa_minmax_system_minimum_upper_bound"
   c_precisa_minmax_system_minimum_upper_bound
     :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
 
+foreign import ccall unsafe "precisa_paver_pave"
+  c_precisa_paver_pave
+    :: PPaver -> PBool -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "precisa_paver_save_paving"
+  c_precisa_paver_save_paving
+    :: PPaver -> CString -> CString -> CInt -> IO CInt
+
 -- | Maximize @pExpr@ over the system's box.
 --
 -- @Left 'KodiakDivByZero'@ means Kodiak's divisor guard fired: a legitimate
@@ -514,3 +522,32 @@ minimumLowerBoundGuarded = kodiakBound c_precisa_minmax_system_minimum_lower_bou
 -- getters. See the note above @PRECISA_WRAP_BOUND@ in @cbits/kodiak_shim.cpp@.
 minimumUpperBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
 minimumUpperBoundGuarded = kodiakBound c_precisa_minmax_system_minimum_upper_bound
+
+-- | Pave the paver's box with @pExpr@, the boolean formula describing the
+-- unstable region.
+--
+-- The paver is a DIFFERENT evaluator from the min-max system -- its own
+-- branch-and-bound over its own @Bool@ formula -- but it evaluates the same
+-- @Real@ nodes, so it throws for the same reasons and had the same
+-- consequence: raw @paver_pave@ aborted PRECiSA with SIGABRT whenever
+-- @--paving@ was asked for a program whose unstable condition divides by an
+-- enclosure containing zero.
+--
+-- On a non-'KodiakOk' status the paver is DEAD, exactly as a failed min-max
+-- system is: @Paver::pave@ clears the paving and refills it from
+-- branch-and-bound, so an aborted run holds a paving of only the part of the
+-- box that was explored before the throw. It must not be saved -- that would
+-- write a well-formed @.paving@ file describing a region nobody asked about.
+paveGuarded :: PPaver -> PBool -> IO (Either KodiakStatus ())
+paveGuarded pSys pExpr =
+  kodiakGuarded (c_precisa_paver_pave pSys pExpr) (return ())
+
+-- | Write the paving computed by 'paveGuarded' to @cFilename@.
+--
+-- Wrapped as its own entry point rather than folded into 'paveGuarded' because
+-- the two fail for unrelated reasons -- this one writes a file, and says
+-- nothing about whether the formula could be evaluated -- so callers must be
+-- able to report which of the two went wrong.
+savePavingGuarded :: PPaver -> CString -> IO (Either KodiakStatus ())
+savePavingGuarded pSys cFilename =
+  kodiakGuarded (c_precisa_paver_save_paving pSys cFilename) (return ())

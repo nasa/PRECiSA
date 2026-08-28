@@ -49,6 +49,43 @@
 //                               leaves mm_ empty on the success path too, so
 //                               this is a pre-existing crash path independent of
 //                               division.
+//   paver_pave               -- Growl from Node.cpp:584 during evaluation, for
+//                               exactly the reason minmax_system_maximize
+//                               throws. The paver is a SEPARATE driver -- its
+//                               own branch-and-bound (Paver.cpp:524) over its
+//                               own Bool formula (NewPaver.hpp:evaluate) -- but
+//                               it evaluates the same Real nodes, so a divisor
+//                               whose enclosure contains zero aborts its
+//                               recursion just as readily. Reached only with
+//                               --paving.
+//   paver_save_paving        -- writes the paving out (Paving::save,
+//                               Paver.cpp:343). It evaluates nothing, so it
+//                               raises no Growl of its own; it is wrapped
+//                               because it is the paver's other exit and can
+//                               still fail (allocation while formatting the
+//                               boxes), and because a caller has to be able to
+//                               tell a failed WRITE from a failed PAVING. The
+//                               two have nothing in common: one is a filesystem
+//                               or memory problem, the other says the formula
+//                               could not be evaluated over the box.
+//
+// Paver entry points deliberately NOT wrapped, because they cannot throw:
+//
+//   paver_create             -- `new NewPaver(name)` and, for an empty name, an
+//                               ostringstream for the default ID. No Kodiak
+//                               check runs.
+//   paver_register_variable  -- System::var (System.cpp:132) computes a
+//                               resolution and pushes; there is no check to
+//                               fail.
+//   paver_set_maxdepth       -- a plain assignment
+//                               (BranchAndBoundDF.hpp:47-49).
+//   paver_set_precision      -- System::set_precision (System.hpp:74) calls
+//                               set_tolerance, which DOES Growl -- but only for
+//                               a negative tolerance (System.cpp:28-36), and the
+//                               tolerance it passes is pow(10, precision),
+//                               positive for every int. The corresponding
+//                               min-max setters are unwrapped for the same
+//                               reason.
 //
 // ---------------------------------------------------------------------------
 // Caller contract on a nonzero status from minmax_system_maximize or
@@ -68,6 +105,18 @@
 //
 // The Haskell wrappers in Kodiak/Kodiak.hs enforce (1) and (2) structurally by
 // refusing to hand back a usable handle on the failure path.
+//
+// ---------------------------------------------------------------------------
+// Caller contract on a nonzero status from paver_pave
+// ---------------------------------------------------------------------------
+//
+// The Paver is DEAD in the same sense: Paver::pave clears paving_ and then
+// fills it from branch-and-bound (Paver.cpp:524-534), so an aborted run leaves
+// a paving covering only the part of the box that was explored before the
+// throw, and never reaches set_varbox/set_type. Saving it would write out a
+// plausible-looking .paving file that is not a paving of the box the user
+// asked about. So a failed pave must not be followed by a save; Kodiak.Paver
+// enforces that by throwing before it gets there.
 
 #include "Codiak.h"
 
@@ -182,3 +231,30 @@ PRECISA_WRAP_BOUND(minmax_system_minimum_lower_bound)
 PRECISA_WRAP_BOUND(minmax_system_minimum_upper_bound)
 
 #undef PRECISA_WRAP_BOUND
+
+// The paver. See the header comment for why only these two of the seven paver
+// entry points are wrapped, and for the caller contract on a failed pave.
+
+extern "C" int precisa_paver_pave(CPaver p, CBool e,
+                                  char *errbuf, int errbuflen) {
+    try {
+        paver_pave(p, e);
+        return PRECISA_KODIAK_OK;
+    } catch (const std::exception &ex) {
+        return precisa_classify(ex.what(), errbuf, errbuflen);
+    } catch (...) {
+        return precisa_unknown(errbuf, errbuflen);
+    }
+}
+
+extern "C" int precisa_paver_save_paving(CPaver p, CString filename,
+                                         char *errbuf, int errbuflen) {
+    try {
+        paver_save_paving(p, filename);
+        return PRECISA_KODIAK_OK;
+    } catch (const std::exception &ex) {
+        return precisa_classify(ex.what(), errbuf, errbuflen);
+    } catch (...) {
+        return precisa_unknown(errbuf, errbuflen);
+    }
+}

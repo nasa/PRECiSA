@@ -293,6 +293,48 @@ testPaver = testGroup "Paver" $
            paver_save_paving p name
            return True
         @? failLabel
+    -- The guarded route. Kodiak throws from inside the PAVER's own
+    -- branch-and-bound for 1/abs(X) >= 1/2 over a box containing zero.
+    -- Unguarded, that exception escapes the FFI and takes the whole test
+    -- process down with SIGABRT, so this case reaching its assertion at all is
+    -- half of what it checks -- the same bargain as the minmaxGuarded case
+    -- above.
+    ,testCase "paveGuarded reports a divisor enclosure containing zero" $
+        do p <- do name <- newCString "GuardedPaveDivByZero"
+                   paver_create name
+           vName <- do var <- newCString "X"
+                       lb <- interval_create (-1) (-1)
+                       ub <- interval_create 1 1
+                       paver_register_variable p var lb ub
+                       return var
+           paver_set_maxdepth p 2
+           paver_set_precision p (-1)
+           v <- real_create_variable 0 vName
+           absV <- real_create_absolute_value v
+           one <- interval_create 1 1 >>= real_create_value
+           -- Construction must succeed: the divisor is a variable, so Kodiak's
+           -- constant folding cannot reduce it to a zero-containing literal
+           -- and the construction-time guard does not fire here.
+           built <- realCreateDivision one absV
+           case built of
+             Left status -> assertFailure $ "could not build 1/abs(X): " ++ show status
+             Right eDiv  ->
+               do half <- interval_create_from_rational 1 2 >>= real_create_value
+                  boolExp <- bool_create_greater_than_or_equal_to eDiv half
+                  paveGuarded p boolExp >>= (@?= Left KodiakDivByZero)
+    -- The success path through the same two wrappers, so that guarding is not
+    -- only shown to catch a failure but also to still pave and still write the
+    -- file. Reuses the filename of the unguarded save case above rather than
+    -- leaving a second stray file behind.
+    ,testCase "paveGuarded and savePavingGuarded succeed on a paveable formula" $
+        do p <- createPaver
+           vName <- createVariable p
+           boolExp <- createBool vName
+           paver_set_maxdepth p 2
+           paver_set_precision p (-1)
+           paveGuarded p boolExp >>= (@?= Right ())
+           name <- newCString "test-paving.eraseme"
+           savePavingGuarded p name >>= (@?= Right ())
     ]
 
 testBooleanExpressionKodiakRunnable :: TestTree

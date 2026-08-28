@@ -15,6 +15,7 @@ module Kodiak.Paver where
 
 import qualified Foreign.C as C
 import Data.Maybe (fromMaybe)
+import Control.Exception (Exception,throwIO)
 import Control.Monad (foldM)
 import Control.Monad.Except (runExcept)
 
@@ -41,6 +42,54 @@ newtype Output = Output { filename :: FilePath } deriving (Eq,Show)
 
 type FunName = String
 
+-- | Kodiak could not PAVE the box: an evaluation-time failure, thrown from
+--   inside the paver's branch-and-bound loop.
+--
+--   The paver's counterpart of 'Kodiak.Runner.KodiakMaximizeFailed', and a
+--   separate type for the same reason that the min-max failure is: this is a
+--   different evaluator answering a different question -- which subregions of
+--   the input box are unstable, not how large the error is -- so its failures
+--   need their own message to be diagnosable.
+--
+--   Kodiak signals such failures by throwing a C++ exception, which escapes the
+--   FFI and kills the process (SIGABRT); going through 'paveGuarded' and
+--   re-throwing the decoded status turns that abort into a Haskell exception
+--   callers can catch and the top level can print.
+newtype KodiakPaveFailed = KodiakPaveFailed KodiakStatus
+
+-- | Written out rather than derived because this string is what PRECiSA prints
+--   when the exception reaches the top level: GHC's default handler SHOWS the
+--   exception, so 'show' is the user-facing message and has to read like one.
+instance Show KodiakPaveFailed where
+  show (KodiakPaveFailed status) =
+    "Kodiak failed while paving the regions of unstability: " ++ describeStatus status
+
+instance Exception KodiakPaveFailed
+
+-- | The paving could not be WRITTEN to its file.
+--
+--   Deliberately distinct from 'KodiakPaveFailed': the paving itself succeeded
+--   and the failure is in saving it, so the two point at completely different
+--   causes -- an unwritable path or an allocation failure while formatting the
+--   boxes, versus a formula that could not be evaluated over the box. Reporting
+--   one as the other would send the reader looking in the wrong place.
+data KodiakSavePavingFailed = KodiakSavePavingFailed FilePath KodiakStatus
+
+-- | Hand-written for the same reason as 'Show' 'KodiakPaveFailed'. Names the
+--   file, because that is the first thing to check when a write fails.
+instance Show KodiakSavePavingFailed where
+  show (KodiakSavePavingFailed file status) =
+    "Kodiak failed while writing the paving to " ++ file ++ ": " ++ describeStatus status
+
+instance Exception KodiakSavePavingFailed
+
+-- | Shared by both 'Show' instances above, so that a paving failure and a save
+--   failure describe the same status identically.
+describeStatus :: KodiakStatus -> String
+describeStatus KodiakOk          = "reported success (should not happen)"
+describeStatus KodiakDivByZero   = "division by an interval that contains zero"
+describeStatus (KodiakError msg) = msg
+
 instance KR.KodiakRunnable Input () Output where
   run Input { name, expression, bindings, maxDepth, precision } _ = do
     let variableMap   = KR.variableMapFromBinds bindings
@@ -50,10 +99,14 @@ instance KR.KodiakRunnable Input () Output where
     paver_set_precision pSys (negate (fromInteger $ toInteger precision))
     pExpr <- KR.run expression variableMap
     mapM_ (`KR.run` pSys) bindings
-    paver_pave pSys pExpr
+    -- A failed pave leaves a paving of only the part of the box explored
+    -- before Kodiak threw, so throwing here is also what stops the save below
+    -- from writing that partial paving out as if it were the real one.
+    paveGuarded pSys pExpr >>= either (throwIO . KodiakPaveFailed) return
     let outputFile = name
     cFilename <- C.newCString outputFile
-    paver_save_paving pSys cFilename
+    savePavingGuarded pSys cFilename
+      >>= either (throwIO . KodiakSavePavingFailed outputFile) return
     return $ Output outputFile
 
 paveUnstabilityConditions :: [(FunName,ResultField,K.BExpr)] -> Spec -> SearchParameters -> (String -> String) -> IO [(String,ResultField,FilePath)]

@@ -78,9 +78,10 @@ module RelativeError where
 -- 'setupSystem' with the other two, so all three configure Kodiak identically;
 -- an abstraction run at a different depth or precision would bound a different
 -- quantity than the analysis it feeds.  Every min-max entry point PRECiSA
--- calls is now guarded; the PAVER ('Kodiak.Paver', reached only with
--- --paving) is a separate, still-unwrapped evaluator and is out of this
--- shim's scope.
+-- calls is now guarded.  So is the PAVER ('Kodiak.Paver', reached only with
+-- --paving), a separate evaluator with its own shim entry points and its own
+-- exceptions ('KodiakPaveFailed', 'KodiakSavePavingFailed'); it has nothing to
+-- do with relative error but shared the same crash.
 --
 -- The PVS certificate states the bound MULTIPLICATIVELY,
 -- abs(fp - r) <= rel * abs(r), never as a quotient.  Division in PVS emits a
