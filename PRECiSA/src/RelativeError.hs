@@ -15,7 +15,9 @@ module RelativeError where
 --
 -- Relative error is bounded by maximizing the RATIO E(x) / abs(r(x)) in one
 -- Kodiak run, where E is the absolute error expression and r the program's
--- exact real-valued result.
+-- exact real-valued result.  When Kodiak will not perform that division, a
+-- FALLBACK bounds abs(r) from below instead and divides the absolute bound by
+-- the floor; see "The fallback" below.
 --
 -- Why the ratio and not max E / min abs(r).  Branch-and-bound evaluates
 -- numerator and denominator on the SAME sub-box, so their correlation
@@ -26,9 +28,10 @@ module RelativeError where
 -- while the decoupled quotient gives 1000.
 --
 -- The bound is a TOTAL function into [0, +infinity].  It is 0 when the
--- absolute error is identically zero, and +infinity when the divisor's
--- interval enclosure contains zero.  +infinity is a sound bound, not a
--- failure.
+-- absolute error is identically zero, and +infinity when NEITHER route gives a
+-- finite ratio: the divisor's interval enclosure contains zero, so Kodiak will
+-- not divide, and no positive floor on abs(r) could be proved either.
+-- +infinity is a sound bound, not a failure.
 --
 -- A Kodiak FAILURE is not a bound.  'RelError' deliberately has no
 -- constructor for it and 'computeRelError' returns 'Either String RelError',
@@ -36,7 +39,43 @@ module RelativeError where
 -- sqrt of a negative interval, an allocation failure -- cannot be presented as
 -- a proved result on any output path.  Kodiak throws for 45 distinct
 -- conditions; only the two whose message ends "division by an interval that
--- contains zero" mean +infinity.
+-- contains zero" are not failures -- those are the ones that hand over to the
+-- fallback.
+--
+-- The FALLBACK.  Kodiak's division guard tests the divisor's interval
+-- ENCLOSURE on the current box, and it fires on the TOP box, before
+-- branch-and-bound subdivides anything, so raising --max-depth cannot rescue
+-- the ratio.  But the enclosure is not the true minimum: when a variable occurs
+-- several times in r, interval dependency widens the enclosure far past the
+-- range of values r actually takes, and the widened enclosure can straddle zero
+-- for an r that is nowhere near it.  kepler0 with every input in [4, 6.36] is
+-- the clean case -- the naive enclosure of r is [-93.93, 93.93], while the true
+-- minimum of abs(r) is 20.86.
+--
+-- Minimizing abs(r) involves no division, so it cannot trip the guard, and,
+-- unlike the guard, it DOES profit from subdivision -- subdividing is exactly
+-- what breaks up the interval dependency.  So on a division refusal,
+-- 'computeRelError' minimizes 'absExpr' of each alternative real result, takes
+-- the smallest of the floors (the bound must hold whichever alternative the
+-- path realizes), and reports maxE / d for a floor d > 0, where maxE is the
+-- absolute bound the same path's absolute run produced.  Sound because
+-- abs(r - fp) <= maxE and abs(r) >= d > 0 bound the numerator ABOVE and the
+-- denominator BELOW, and both inequalities push the quotient up, so maxE / d
+-- dominates the quotient at every point of the box ('relFromFloor').
+--
+-- The floor is a branch-and-bound result, so its quality tracks --max-depth and
+-- the fallback only pays off above the default.  Measured floors: kepler0 gets
+-- 0.0 at depth 7 and 20.2 at depth 14; kepler1 3.71 at depth 14; kepler2 0.0 at
+-- depths 7 and 14, 5.33 at 18, 91.19 at 22.  At the default depth 7 all three
+-- still report +infinity, and that is expected, not a bug to work around: no
+-- new flag exists for the fallback, it uses the --max-depth and --precision the
+-- rest of the analysis uses, so the floor is proved over exactly the box and at
+-- exactly the resolution the reported bound covers.
+--
+-- maxE / d is formed over 'Rational' and converted to 'Double' rounding UP
+-- ('safeQuotient').  Hardware division rounds to nearest and so can land one
+-- ulp BELOW the exact quotient, and a value below the exact quotient is not a
+-- bound -- the same constant is emitted as the PVS lemma's rel.
 --
 -- Nothing here tries to PREDICT Kodiak.  Two attempts were made and both were
 -- wrong, in the same way:
@@ -46,7 +85,11 @@ module RelativeError where
 --     q(x) = x*x - x + 1 on [0,1], Kodiak's own minimization proves
 --     min abs(q) = 0.75 > 0, yet evaluating 1/abs(q) still aborts because the
 --     enclosure at the top box is [0,2].  So a positive floor on the
---     denominator does not make division safe, and computing one buys nothing.
+--     denominator does not make DIVISION safe, and no test on the PRECiSA AST
+--     can decide in advance whether Kodiak will divide.  (Such a floor is worth
+--     computing, though -- just not for that.  It bounds the ratio WITHOUT
+--     dividing, which is the fallback described above; what does not work is
+--     using it to predict or unlock the ratio run.)
 --
 --   * Predicting the constant folding.  Kodiak folds far more aggressively
 --     than 'simplAExpr' (Abs(val) -> val, -(val) -> val, empty polynomial ->
@@ -85,10 +128,13 @@ module RelativeError where
 --
 -- The PVS certificate states the bound MULTIPLICATIVELY,
 -- abs(fp - r) <= rel * abs(r), never as a quotient.  Division in PVS emits a
--- TCC requiring a nonzero divisor, and discharging it would require proving
--- the real result bounded away from zero -- reintroducing the floor this
--- design exists without.  The multiplicative form has no TCC, the
--- zero-error case reads 0 <= 0, and +infinity is simply no lemma emitted.
+-- TCC requiring a nonzero divisor, and discharging it would mean proving the
+-- real result bounded away from zero inside PVS.  The multiplicative form has
+-- no TCC, the zero-error case reads 0 <= 0, and +infinity is simply no lemma
+-- emitted.  This is also why the fallback needs NO new lemma and no
+-- denominator lemma: the obligation is already division-free and is discharged
+-- by E <= maxE and abs(r) >= d giving rel * abs(r) >= maxE >= E, so only the
+-- constant differs from a ratio-derived certificate.
 --
 -- Known gap: 'unfoldFunCallInCeb' rewrites 'conds' and 'eExpr' but never
 -- 'rExprs', so with --unfold-fun-calls off a path containing a function call
