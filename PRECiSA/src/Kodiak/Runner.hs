@@ -296,6 +296,26 @@ instance KodiakRunnable KodiakMinMaxInput () KodiakMinMaxResult where
     minmaxAndReadBounds (minMaxInputAsKodiakInput kInput)
       >>= either (throwIO . KodiakMinMaxFailed) return
 
+-- | The min-max sibling of 'runMaximizeGuarded': enclose the expression like
+--   the 'KodiakRunnable' instance above, but report Kodiak's failures as a
+--   status instead of throwing, so a caller that can carry on without an
+--   enclosure is left standing.
+--
+--   Used by 'RelativeError.computeRelError' to MINIMIZE @abs(r)@ when the
+--   relative-error ratio itself could not be maximized. That run must not be
+--   able to abort the process either -- it is a second, opportunistic attempt
+--   after a first one already failed -- so it goes through the same shim, and,
+--   exactly like 'runMaximizeGuarded', it catches both the exception thrown
+--   while BUILDING the expression ('KodiakBuildFailed') and the statuses
+--   returned while enclosing it or reading its bounds.
+runMinMaxGuarded :: KodiakMinMaxInput -> IO (Either KodiakStatus KodiakMinMaxResult)
+runMinMaxGuarded kInput =
+  do
+    result <- try (minmaxAndReadBounds (minMaxInputAsKodiakInput kInput))
+    case result of
+      Left (KodiakBuildFailed status) -> return (Left status)
+      Right statusOrBounds            -> return statusOrBounds
+
 lookup' :: String -> VariableMap -> CUInt
 lookup' str (VMap mappings) = fromMaybe (error $ "lookup': tried to search \"" ++ str ++ "\" in \"" ++ show mappings ++ "\"")
                                         (lookup str mappings)

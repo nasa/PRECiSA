@@ -105,12 +105,15 @@ import Data.List (dropWhileEnd)
 import Kodiak.Kodiak (KodiakStatus(..))
 import Kodiak.Paver (SearchParameters(..))
 import Kodiak.Runner
+import Numeric.IEEE (succIEEE)
 import Operators
 
 -- | A sound over-approximation of |r - fp| / |r| over the input ranges.
 --
---   'RelInfinite' is a sound bound, not a failure: it means the divisor's
---   interval enclosure contains zero, so no finite ratio can be certified.
+--   'RelInfinite' is a sound bound, not a failure: it means neither route to a
+--   ratio worked: the divisor's interval enclosure contains zero, so Kodiak
+--   will not divide, AND no positive lower bound on @abs(r)@ could be proved
+--   either, so neither 'ratioExpr' nor 'relFromFloor' yields a finite ratio.
 --   A Kodiak *failure* is deliberately NOT representable here — that is an
 --   analysis error, not a relative error value, and callers must keep the two
 --   apart.
@@ -144,6 +147,77 @@ ratioExpr err rs  = MaxErr (map (ratio err) rs)
 
 ratio :: EExpr -> AExpr -> EExpr
 ratio err r = BinaryOp DivOp err (UnaryOp AbsOp r)
+
+-- | The expression a FALLBACK run minimizes: the magnitude of one real-result
+--   alternative.
+--
+--   It contains NO DIVISION, which is the whole point -- Kodiak's
+--   construction- and evaluation-time guards fire only on division, so
+--   minimizing this cannot trip them however close to zero the enclosure of
+--   @r@ comes. And unlike the guard, a minimization BENEFITS from
+--   branch-and-bound: subdividing the box breaks up the interval dependency
+--   that made the naive enclosure straddle zero in the first place.
+absExpr :: AExpr -> EExpr
+absExpr = UnaryOp AbsOp
+
+-- | The smallest 'Double' that is greater than or equal to the EXACT quotient
+--   @n / d@.
+--
+--   ROUNDING UP IS MANDATORY FOR SOUNDNESS, and this is why the quotient is not
+--   simply @n / d@ in 'Double'. The value returned here is reported as a bound
+--   on the relative error and is emitted as the constant @rel@ of the PVS
+--   lemma @abs(fp - r) <= rel * abs(r)@. Hardware division rounds to NEAREST,
+--   so it can round DOWN, producing a constant strictly below the real quotient
+--   @maxE / d@ -- and a bound that is one ulp too small is not a bound. The
+--   exact quotient is therefore formed over 'Rational', where no rounding
+--   happens at all, and only the final conversion to 'Double' is rounded, in
+--   the one direction that keeps the inequality: upwards.
+--
+--   Overflow needs no special case: 'fromRational' gives an infinity, which
+--   'classifyRatio' turns into 'RelInfinite' -- still sound, just uninformative.
+safeQuotient :: Double -> Double -> Double
+safeQuotient n d = roundUpFromRational (toRational n / toRational d)
+
+-- | Convert a 'Rational' to the smallest 'Double' not less than it.
+--
+--   'fromRational' rounds to nearest and so may land BELOW the exact value;
+--   when it does, the next representable 'Double' above is the smallest one
+--   that is not, and 'succIEEE' is exactly that step. A non-finite result is
+--   returned as is: an infinity already dominates the exact value, and there is
+--   no exact value to compare a NaN against.
+roundUpFromRational :: Rational -> Double
+roundUpFromRational q
+  | isNaN nearest || isInfinite nearest = nearest
+  | toRational nearest >= q             = nearest
+  | otherwise                           = succIEEE nearest
+  where
+    nearest = fromRational q :: Double
+
+-- | The relative bound implied by an absolute bound @maxE@ on the error and a
+--   proven floor @d@ on the magnitude of the exact result.
+--
+--   SOUNDNESS. On every point of the box @abs(r - fp) <= maxE@ and
+--   @abs(r) >= d > 0@, so
+--
+--   > abs(r - fp) / abs(r) <= maxE / d
+--
+--   -- the numerator is bounded above and the denominator below, and both
+--   inequalities push the quotient UP, so the quotient of the two extremes
+--   dominates the quotient at every point. 'safeQuotient' then makes sure the
+--   floating-point rendering of @maxE / d@ does not undo that.
+--
+--   A floor that is not STRICTLY positive proves nothing about the quotient, so
+--   it yields 'RelInfinite'; so does a floor that is not finite, which is not a
+--   floor at all but a sign that the minimization returned nonsense.
+relFromFloor :: Double -> Double -> RelError
+relFromFloor maxE d
+  | not (isFiniteDouble d) || d <= 0 = RelInfinite
+  | not (isFiniteDouble maxE)        = RelInfinite
+  | otherwise                        = classifyRatio (safeQuotient maxE d)
+
+-- | True for a 'Double' that is neither a NaN nor an infinity.
+isFiniteDouble :: Double -> Bool
+isFiniteDouble x = not (isNaN x) && not (isInfinite x)
 
 -- | True when a real-result alternative is syntactically a LITERAL whose value
 --   interval contains zero.
@@ -199,9 +273,20 @@ oneLineMessage = trim . takeWhile (/= '\n')
 --   expression would certify a different quantity than the absolute
 --   certificate.
 --
+--   @maxE@ MUST be the absolute error bound the same path's absolute run
+--   produced -- the 'Kodiak.Runner.maximumUpperBound' of that run, the very
+--   number the report and the certificate carry -- because the fallback below
+--   divides it by a floor on the exact result, and dividing a DIFFERENT
+--   absolute bound would certify a relative bound for a quantity nothing else
+--   in the analysis mentions. It is only read on the fallback path; when the
+--   ratio maximization succeeds, the bound comes from Kodiak and @maxE@ is
+--   unused.
+--
 --   Returns 'Left' for a Kodiak FAILURE, which is an analysis error and must
---   never be reported as a relative error value. Only 'KodiakDivByZero'
---   becomes 'RelInfinite'.
+--   never be reported as a relative error value. 'KodiakDivByZero' is not a
+--   failure: it triggers the denominator-floor fallback below, which minimizes
+--   'absExpr' of each real result and either proves a positive floor -- turned
+--   into a bound by 'relFromFloor' -- or settles for 'RelInfinite'.
 --
 --   THE RELATIVE PATH FAILS SOFT. Relative error is opt-in and must never sink
 --   an otherwise-successful absolute analysis, so ANY Haskell exception raised
@@ -221,8 +306,8 @@ oneLineMessage = trim . takeWhile (/= '\n')
 --   or the runner about those constructors is a separate design question; not
 --   aborting the run is not.
 computeRelError :: SearchParameters -> FunName -> [VarBind]
-                -> EExpr -> [AExpr] -> IO (Either String RelError)
-computeRelError searchParams fname varBinds err reals
+                -> EExpr -> Double -> [AExpr] -> IO (Either String RelError)
+computeRelError searchParams fname varBinds err maxE reals
   | isZeroError err = return $ Right (RelFinite 0)
   -- A path with no real result has nothing to divide by; that is an analysis
   -- error, not an unbounded ratio, and it must not abort the whole run.
@@ -238,12 +323,57 @@ computeRelError searchParams fname varBinds err reals
     -- site, long after the handler is gone.
     maximizeRatio = do
       result <- runMaximizeGuarded kodiakInput
-      forceRelResult $ case result of
-        Right kr                 -> Right $ classifyRatio (maximumUpperBound kr)
-        Left KodiakDivByZero     -> Right RelInfinite
-        Left (KodiakError msg)   -> Left msg
-        Left KodiakOk            -> error $ "computeRelError: the guarded Kodiak API "
-                                         ++ "returned Left KodiakOk, which cannot happen."
+      case result of
+        Right kr               -> forceRelResult $ Right
+                                    $ classifyRatio (maximumUpperBound kr)
+        -- Not a failure and no longer the end of the road: Kodiak would not
+        -- divide, so try the division-free route instead.
+        Left KodiakDivByZero   -> denominatorFloorBound >>= forceRelResult
+        Left (KodiakError msg) -> forceRelResult $ Left msg
+        Left KodiakOk          -> forceRelResult
+                                    $ error $ "computeRelError: the guarded Kodiak API "
+                                           ++ "returned Left KodiakOk, which cannot happen."
+
+    -- The FALLBACK, reached only when Kodiak refused to divide.
+    --
+    -- Kodiak's division guard tests the divisor's interval ENCLOSURE on the
+    -- current box, and it fires on the TOP box, before branch-and-bound
+    -- subdivides -- so a deeper search cannot rescue the ratio. Minimizing
+    -- @abs(r)@ has no division in it, cannot trip the guard, and DOES profit
+    -- from subdivision, because subdividing is what breaks up the interval
+    -- dependency that made the enclosure straddle zero. With a proven floor
+    -- @d > 0@ on @abs(r)@, @maxE / d@ bounds the relative error (see
+    -- 'relFromFloor').
+    --
+    -- One minimization per ALTERNATIVE real result, and the floor is the
+    -- MINIMUM of theirs: the bound has to hold whichever alternative the path
+    -- actually realizes, so the smallest floor is the only sound choice. A
+    -- minimization that fails itself contributes no floor, and without a floor
+    -- for every alternative there is nothing sound to divide by, so the whole
+    -- fallback settles for 'RelInfinite' -- never for a 'Left', because
+    -- Kodiak's refusal to divide was not an analysis failure and must not be
+    -- reported as one.
+    denominatorFloorBound = do
+      floors <- mapM minimizeAbsReal reals
+      return $ Right $ case sequence floors of
+        Nothing -> RelInfinite
+        Just ds -> relFromFloor maxE (minimum ds)
+
+    minimizeAbsReal r = do
+      result <- runMinMaxGuarded (minMaxInput r)
+      return $ case result of
+        Right kmm -> Just (kmmoMinimumLowerBound kmm)
+        Left _    -> Nothing
+
+    -- The same box, depth and precision as the ratio run, so the floor is
+    -- proved over exactly the region the reported bound covers.
+    minMaxInput r = KodiakMinMaxInput
+                     { kmmiName       = fname ++ "_rel_denominator"
+                     , kmmiExpression = absExpr r
+                     , kmmiBindings   = varBinds
+                     , kmmiMaxDepth   = maximumDepth searchParams
+                     , kmmiPrecision  = minimumPrecision searchParams
+                     }
 
     -- Every synchronous exception becomes a failure MESSAGE on the existing
     -- 'AnalysisResult.RelErrorFailed' channel, kept to one line by

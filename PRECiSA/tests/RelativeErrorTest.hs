@@ -6,6 +6,8 @@ import Test.Tasty.HUnit
 import Data.Aeson (encode, toJSON)
 import Data.ByteString.Lazy.Char8 (unpack)
 import Data.List (isInfixOf, isPrefixOf)
+import Data.Ratio ((%))
+import Numeric.IEEE (succIEEE)
 
 import AbsPVSLang
 import AbsSpecLang
@@ -27,6 +29,7 @@ testRelativeError = testGroup "Relative Error"
   ,testRatioExpr
   ,testLiteralDenomContainsZero
   ,testOneLineMessage
+  ,testSafeQuotient
   ,testComputeRelError
   ,testRelErrorJSON
   ,testFunSummaryJSON
@@ -118,37 +121,118 @@ testOneLineMessage = testGroup "oneLineMessage"
      oneLineMessage "" @?= ""
   ]
 
+-- The quotient maxE / d is a REPORTED BOUND and the constant of a PVS lemma, so
+-- it may never be rounded down: a bound one ulp below the true quotient is not
+-- a bound. 1/3 is the witness that hardware division is not good enough -- it
+-- rounds to nearest, and for 1/3 nearest is BELOW the exact value.
+testSafeQuotient = testGroup "safeQuotient"
+  [testCase "1/3 rounds down in Double, so the helper must step up" $ do
+     -- the premise of the test: plain division really does land below 1/3
+     assertBool "premise broken: 1/3 does not round down in this Double"
+                (toRational (1/3 :: Double) < (1 % 3))
+     assertBool ("expected a value above the Double quotient, got "
+                 ++ show (safeQuotient 1 3))
+                (safeQuotient 1 3 > (1/3 :: Double))
+
+  ,testCase "the result is never below the exact quotient" $
+     assertBool "the returned Double is below the exact quotient"
+                (toRational (safeQuotient 1 3) >= (1 % 3))
+
+  ,testCase "it steps up by exactly one ulp, not more" $
+     safeQuotient 1 3 @?= succIEEE (1/3 :: Double)
+
+  -- ... and an exactly representable quotient is left alone: rounding up an
+  -- exact value would loosen every bound that did not need it.
+  ,testCase "an exact quotient is returned unchanged" $
+     safeQuotient 1 4 @?= 0.25
+
+  ,testCase "an exact quotient of realistic magnitudes is unchanged" $
+     safeQuotient 1.0e-13 2 @?= 5.0e-14
+
+  ,testCase "the exact-value check is inclusive, not strict" $
+     assertBool "an exact quotient was stepped up anyway"
+                (toRational (safeQuotient 3 8) == (3 % 8))
+  ]
+
 params :: SearchParameters
 params = SP { maximumDepth = 7, minimumPrecision = 14 }
 
 binds :: Integer -> Integer -> [VarBind]
 binds lo hi = [VarBind "x" ResValue FPDouble (LBInt lo) (UBInt hi)]
 
+-- | @q(x) = x*x - x + 1@, whose true minimum on [0,1] is 0.75 but whose naive
+--   interval enclosure there is [0,2] -- x occurs twice, so the enclosure
+--   straddles zero even though q does not come near it. Kodiak will not divide
+--   by it; that is exactly what the denominator-floor fallback is for.
+q :: AExpr
+q = BinaryOp AddOp (BinaryOp SubOp (BinaryOp MulOp (Var Real "x") (Var Real "x"))
+                                   (Var Real "x"))
+                   (Int 1)
+
 testComputeRelError = testGroup "computeRelError"
   [testCase "zero error short-circuits without running Kodiak" $ do
-     r <- computeRelError params "f" (binds 2 3) (Int 0) [Var Real "x"]
+     r <- computeRelError params "f" (binds 2 3) (Int 0) 0 [Var Real "x"]
      r @?= Right (RelFinite 0)
 
   ,testCase "denominator bounded away from zero gives a finite bound" $ do
      -- max (1 / abs x) over x in [2,4] = 0.5
-     r <- computeRelError params "f" (binds 2 4) (Int 1) [Var Real "x"]
+     r <- computeRelError params "f" (binds 2 4) (Int 1) 1 [Var Real "x"]
      case r of
        Right (RelFinite ub) -> assertBool ("expected ~0.5, got " ++ show ub)
                                           (ub >= 0.5 && ub <= 0.6)
        other -> assertFailure ("expected a finite bound, got " ++ show other)
 
-  ,testCase "divisor enclosure containing zero gives RelInfinite" $ do
-     r <- computeRelError params "f" (binds (-1) 1) (Int 1) [Var Real "x"]
+  -- Both routes fail here, and that is right: abs(x) really does reach zero
+  -- inside [-1,1], so the divisor enclosure contains zero AND no positive floor
+  -- exists for the fallback to divide by. A finite bound here would be unsound.
+  ,testCase "a divisor that genuinely reaches zero gives RelInfinite" $ do
+     r <- computeRelError params "f" (binds (-1) 1) (Int 1) 1 [Var Real "x"]
+     r @?= Right RelInfinite
+
+  -- The DENOMINATOR-FLOOR FALLBACK. q(x) = x*x - x + 1 is nowhere zero on
+  -- [0,1] -- its true minimum is 0.75 -- but each x occurs more than once, so
+  -- the naive interval enclosure at the TOP box is [0,2] and Kodiak refuses to
+  -- divide by it. Minimizing abs(q) involves no division, cannot trip that
+  -- guard, and does profit from subdivision, so it proves a positive floor and
+  -- maxE / floor is reported: 1 / 0.75 = 1.333...
+  ,testCase "a floor on the denominator rescues a ratio Kodiak would not divide" $ do
+     r <- computeRelError params "f" (binds 0 1) (Int 1) 1 [q]
+     case r of
+       Right (RelFinite ub) -> assertBool ("expected 1.33 <= ub <= 2, got " ++ show ub)
+                                          (ub >= 1.33 && ub <= 2)
+       other -> assertFailure ("expected a finite bound from the fallback, got "
+                               ++ show other)
+
+  -- The fallback divides the ABSOLUTE bound it is handed, so the bound it
+  -- reports must scale with it. Same box, same floor, ten times the numerator.
+  ,testCase "the fallback bound scales with the absolute bound it is given" $ do
+     r1 <- computeRelError params "f" (binds 0 1) (Int 1) 1 [q]
+     r2 <- computeRelError params "f" (binds 0 1) (Int 1) 10 [q]
+     case (r1, r2) of
+       (Right (RelFinite a), Right (RelFinite b)) ->
+         assertBool ("expected b ~ 10*a, got " ++ show (a,b))
+                    (b >= 9.9 * a && b <= 10.1 * a)
+       other -> assertFailure ("expected two finite bounds, got " ++ show other)
+
+  -- A floor of zero proves nothing about the quotient. abs(q) does reach zero
+  -- on [-1,1] (q(x) = x*x - x - 1 has a root there), so the minimization
+  -- succeeds and returns a NON-POSITIVE floor -- which must stay 'RelInfinite'
+  -- rather than become a division by (or near) zero.
+  ,testCase "a floor that is not positive keeps the bound infinite" $ do
+     r <- computeRelError params "f" (binds (-1) 1) (Int 1) 1
+            [BinaryOp SubOp (BinaryOp SubOp (BinaryOp MulOp (Var Real "x") (Var Real "x"))
+                                            (Var Real "x"))
+                            (Int 1)]
      r @?= Right RelInfinite
 
   ,testCase "literal zero denominator gives RelInfinite without aborting" $ do
-     r <- computeRelError params "f" (binds 2 4) (Int 1) [Int 0]
+     r <- computeRelError params "f" (binds 2 4) (Int 1) 1 [Int 0]
      r @?= Right RelInfinite
 
   ,testCase "correlated numerator and denominator stay tight" $ do
      -- E = x, r = x*x over [1,1000]. Jointly max (x / x^2) = 1 at x=1.
      -- Bounding separately would give max x / min x^2 = 1000.
-     r <- computeRelError params "f" (binds 1 1000) (Var Real "x")
+     r <- computeRelError params "f" (binds 1 1000) (Var Real "x") 1000
                           [BinaryOp MulOp (Var Real "x") (Var Real "x")]
      case r of
        -- The lower bound matters too: a bug that collapses the numerator would
@@ -159,13 +243,13 @@ testComputeRelError = testGroup "computeRelError"
 
   ,testCase "a Kodiak failure is an error, not RelInfinite" $ do
      r <- computeRelError params "f" (binds 2 4)
-            (UnaryOp SqrtOp (UnaryOp NegOp (Var Real "x"))) [Var Real "x"]
+            (UnaryOp SqrtOp (UnaryOp NegOp (Var Real "x"))) 1 [Var Real "x"]
      case r of
        Left msg -> assertBool msg ("sqrt" `isInfixOf` msg)
        other    -> assertFailure ("expected Left, got " ++ show other)
 
   ,testCase "no real expression for the path is an error, not a bound" $ do
-     r <- computeRelError params "f" (binds 2 4) (Int 1) []
+     r <- computeRelError params "f" (binds 2 4) (Int 1) 1 []
      r @?= Left "no real expression for this path"
 
   -- Regression: Kodiak folds these divisors to a value interval containing
@@ -174,12 +258,12 @@ testComputeRelError = testGroup "computeRelError"
   -- builder is what keeps the process alive. Before that fix both aborted the
   -- test process with SIGABRT.
   ,testCase "a divisor Kodiak folds to zero gives RelInfinite, no abort" $ do
-     r <- computeRelError params "f" (binds 2 4) (Int 1)
+     r <- computeRelError params "f" (binds 2 4) (Int 1) 1
                           [BinaryOp SubOp (Var Real "x") (Var Real "x")]
      r @?= Right RelInfinite
 
   ,testCase "a negated zero literal divisor gives RelInfinite, no abort" $ do
-     r <- computeRelError params "f" (binds 2 4) (Int 1) [UnaryOp NegOp (Rat 0)]
+     r <- computeRelError params "f" (binds 2 4) (Int 1) 1 [UnaryOp NegOp (Rat 0)]
      r @?= Right RelInfinite
 
   -- Regression: real result expressions reach 'computeRelError' RAW -- they
@@ -190,7 +274,7 @@ testComputeRelError = testGroup "computeRelError"
   -- process still standing. Before the fix this killed precisa outright on any
   -- program with a function call and --unfold-fun-calls off.
   ,testCase "an unsupported real expression is a soft failure, not a crash" $ do
-     r <- computeRelError params "f" (binds 2 4) (Int 1)
+     r <- computeRelError params "f" (binds 2 4) (Int 1) 1
             [EFun "g" ResValue Real [Var Real "x"]]
      case r of
        Left msg -> do assertBool msg ("relative error unavailable" `isInfixOf` msg)
@@ -204,9 +288,9 @@ testComputeRelError = testGroup "computeRelError"
   -- ... and the process really is still usable afterwards, which is the whole
   -- point of failing soft rather than aborting.
   ,testCase "a later path still computes after an unsupported one failed" $ do
-     _ <- computeRelError params "f" (binds 2 4) (Int 1)
+     _ <- computeRelError params "f" (binds 2 4) (Int 1) 1
             [EFun "g" ResValue Real [Var Real "x"]]
-     r <- computeRelError params "f" (binds 2 4) (Int 1) [Var Real "x"]
+     r <- computeRelError params "f" (binds 2 4) (Int 1) 1 [Var Real "x"]
      case r of
        Right (RelFinite ub) -> assertBool ("expected ~0.5, got " ++ show ub)
                                           (ub >= 0.5 && ub <= 0.6)

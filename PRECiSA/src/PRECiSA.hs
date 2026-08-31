@@ -277,9 +277,16 @@ computeAllErrorsInKodiakMap unfoldFunCalls' relErrEnabled decls config interp (S
           runErrorExpression pathInput = do
             errExpr <- processedErrExpr
             result  <- run (kodiakInput errExpr) ()
+            -- The absolute bound is handed to the relative run rather than
+            -- recomputed: it is read off the very 'KodiakResult' whose
+            -- 'maximumUpperBound' becomes the absolute error in the report and
+            -- in the certificate, so when the relative run falls back to
+            -- dividing it by a floor on the exact result, the two bounds in the
+            -- output are about the same number.
             relError <- if relErrEnabled
                         then toRelErrorResult <$> computeRelError searchParams fname
-                               binds errExpr (piRealExprs pathInput)
+                               binds errExpr (maximumUpperBound result)
+                               (piRealExprs pathInput)
                         else return RelErrorOff
             return PathResult { prConds     = piConds pathInput
                               , prPath      = piPath pathInput
