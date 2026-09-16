@@ -369,3 +369,186 @@ foreign import ccall unsafe ""
 
 foreign import ccall unsafe ""
   paver_save_paving :: PPaver -> CString -> IO ()
+
+{----------------------------------------------------------------------}
+{-                                                                    -}
+{- Kodiak guarded API (Kodiak v2.1.0+)                                -}
+{-                                                                    -}
+{----------------------------------------------------------------------}
+
+-- Kodiak reports failures by throwing @kodiak::Growl@. A C++ exception cannot
+-- be caught from Haskell, so it escapes the FFI boundary and terminates the
+-- process. The entry points below call Kodiak's *_guarded API functions which
+-- catch exceptions internally and return status codes plus exception messages.
+--
+-- The @c_precisa_*@ foreign imports are the raw FFI boundary and are not meant
+-- to be called directly: the guarded wrappers underneath are the intended API.
+-- They exist to enforce, structurally rather than by comment, the contract
+-- that a failed system must never be read from or reused (see below).
+
+-- | Outcome of a Kodiak guarded call.
+--
+-- Division by an interval that contains zero is singled out because it is a
+-- legitimate mathematical outcome (an unbounded result), not a failure. Every
+-- other Kodiak exception is a genuine error carrying its message, and the two
+-- must never be conflated: reporting a real failure as an unbounded bound
+-- would turn a crash into a plausible-looking answer.
+data KodiakStatus = KodiakOk | KodiakDivByZero | KodiakError String
+  deriving (Show, Eq)
+
+-- | Size of the buffer handed to Kodiak for exception messages.
+kodiakErrorBufferSize :: Int
+kodiakErrorBufferSize = 256
+
+-- | Allocate the message buffer, run a guarded call, and decode its status code.
+withKodiakStatus :: (CString -> CInt -> IO CInt) -> IO KodiakStatus
+withKodiakStatus call =
+  allocaBytes kodiakErrorBufferSize $ \errBuf -> do
+    status <- call errBuf (fromIntegral kodiakErrorBufferSize)
+    case status of
+      0 -> return KodiakOk
+      1 -> return KodiakDivByZero
+      2 -> KodiakError <$> peekCString errBuf
+      _ -> error $ "Kodiak.Kodiak: unexpected status code " ++ show status
+                ++ " from Kodiak's guarded API (Kodiak v2.1.0+);"
+                ++ " the Kodiak C API and Haskell FFI bindings have drifted."
+
+-- | Run a guarded call, producing its result only when the call succeeded.
+kodiakGuarded :: (CString -> CInt -> IO CInt) -> IO a -> IO (Either KodiakStatus a)
+kodiakGuarded call readResult = do
+  status <- withKodiakStatus call
+  case status of
+    KodiakOk -> Right <$> readResult
+    _        -> return (Left status)
+
+-- FFI imports to Kodiak's guarded API (v2.1.0+)
+foreign import ccall unsafe "minmax_system_maximize_guarded"
+  c_precisa_minmax_system_maximize
+    :: PMinMaxSystem -> PReal -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "minmax_system_minmax_guarded"
+  c_precisa_minmax_system_minmax
+    :: PMinMaxSystem -> PReal -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "real_create_division_guarded"
+  c_precisa_real_create_division
+    :: PReal -> PReal -> Ptr (Ptr ()) -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "minmax_system_maximum_lower_bound_guarded"
+  c_precisa_minmax_system_maximum_lower_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "minmax_system_maximum_upper_bound_guarded"
+  c_precisa_minmax_system_maximum_upper_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "minmax_system_minimum_lower_bound_guarded"
+  c_precisa_minmax_system_minimum_lower_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "minmax_system_minimum_upper_bound_guarded"
+  c_precisa_minmax_system_minimum_upper_bound
+    :: PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "paver_pave_guarded"
+  c_precisa_paver_pave
+    :: PPaver -> PBool -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe "paver_save_paving_guarded"
+  c_precisa_paver_save_paving
+    :: PPaver -> CString -> CString -> CInt -> IO CInt
+
+-- | Maximize @pExpr@ over the system's box.
+--
+-- @Left 'KodiakDivByZero'@ means Kodiak's divisor guard fired: a legitimate
+-- unbounded result. @Left ('KodiakError' msg)@ is a genuine failure.
+--
+-- On either failure the system is DEAD and is deliberately not returned:
+--
+--   * its bounds cover only part of the box (branch-and-bound aborted
+--     mid-recursion) and are not a valid enclosure, so they must not be read;
+--   * reusing it is silently unsound, because @MinMaxSystem::acc_@ (the
+--     pruning accumulator) is never reset by @minmax()@, so a second run
+--     prunes against stale bounds and reports a too-small maximum with no
+--     diagnostic.
+--
+-- Simply dropping it is safe: Kodiak is value-typed with intrusively
+-- refcounted @Real@ nodes.
+maximizeGuarded :: PMinMaxSystem -> PReal -> IO (Either KodiakStatus ())
+maximizeGuarded pSys pExpr =
+  kodiakGuarded (c_precisa_minmax_system_maximize pSys pExpr) (return ())
+
+-- | Minimize AND maximize @pExpr@ over the system's box in a single run, so
+-- that both the minimum's lower bound and the maximum's upper bound become
+-- readable afterwards.
+--
+-- Statuses mean exactly what they mean for 'maximizeGuarded', and the failure
+-- contract is identical: this is the same branch-and-bound evaluation, so on a
+-- non-'KodiakOk' status the system is DEAD -- its partial bounds are not an
+-- enclosure and its @acc_@ pruning accumulator is stale -- and it is
+-- deliberately not returned.
+minmaxGuarded :: PMinMaxSystem -> PReal -> IO (Either KodiakStatus ())
+minmaxGuarded pSys pExpr =
+  kodiakGuarded (c_precisa_minmax_system_minmax pSys pExpr) (return ())
+
+-- | Build a division expression, catching the construction-time divisor guard
+-- (@Real.cpp:214@) that fires when the divisor is a literal interval
+-- containing zero.
+realCreateDivision :: PReal -> PReal -> IO (Either KodiakStatus PReal)
+realCreateDivision num den =
+  alloca $ \pOut ->
+    kodiakGuarded (c_precisa_real_create_division num den pOut)
+                  (PReal <$> peek pOut)
+
+-- | Read a bound through the guarded API. The four @MinMax@ getters throw
+-- whenever the corresponding point set is empty, which is exactly the state
+-- left behind by a failed maximization -- and also by an infeasible box on the
+-- success path -- so they cannot be called raw.
+kodiakBound :: (PMinMaxSystem -> Ptr CDouble -> CString -> CInt -> IO CInt)
+            -> PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+kodiakBound cCall pSys = alloca $ \pOut -> kodiakGuarded (cCall pSys pOut) (peek pOut)
+
+maximumLowerBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+maximumLowerBoundGuarded = kodiakBound c_precisa_minmax_system_maximum_lower_bound
+
+maximumUpperBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+maximumUpperBoundGuarded = kodiakBound c_precisa_minmax_system_maximum_upper_bound
+
+-- | Read the minimum's lower bound, as the min-max path does after
+-- 'minmaxGuarded'.
+minimumLowerBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+minimumLowerBoundGuarded = kodiakBound c_precisa_minmax_system_minimum_lower_bound
+
+-- | Unused today, wrapped pre-emptively for symmetry with the maximum
+-- getters.
+minimumUpperBoundGuarded :: PMinMaxSystem -> IO (Either KodiakStatus CDouble)
+minimumUpperBoundGuarded = kodiakBound c_precisa_minmax_system_minimum_upper_bound
+
+-- | Pave the paver's box with @pExpr@, the boolean formula describing the
+-- unstable region.
+--
+-- The paver is a DIFFERENT evaluator from the min-max system -- its own
+-- branch-and-bound over its own @Bool@ formula -- but it evaluates the same
+-- @Real@ nodes, so it throws for the same reasons and had the same
+-- consequence: raw @paver_pave@ aborted PRECiSA with SIGABRT whenever
+-- @--paving@ was asked for a program whose unstable condition divides by an
+-- enclosure containing zero.
+--
+-- On a non-'KodiakOk' status the paver is DEAD, exactly as a failed min-max
+-- system is: @Paver::pave@ clears the paving and refills it from
+-- branch-and-bound, so an aborted run holds a paving of only the part of the
+-- box that was explored before the throw. It must not be saved -- that would
+-- write a well-formed @.paving@ file describing a region nobody asked about.
+paveGuarded :: PPaver -> PBool -> IO (Either KodiakStatus ())
+paveGuarded pSys pExpr =
+  kodiakGuarded (c_precisa_paver_pave pSys pExpr) (return ())
+
+-- | Write the paving computed by 'paveGuarded' to @cFilename@.
+--
+-- Wrapped as its own entry point rather than folded into 'paveGuarded' because
+-- the two fail for unrelated reasons -- this one writes a file, and says
+-- nothing about whether the formula could be evaluated -- so callers must be
+-- able to report which of the two went wrong.
+savePavingGuarded :: PPaver -> CString -> IO (Either KodiakStatus ())
+savePavingGuarded pSys cFilename =
+  kodiakGuarded (c_precisa_paver_save_paving pSys cFilename) (return ())
