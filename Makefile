@@ -1,6 +1,12 @@
 KODIAK_PATH ?= $(CURDIR)/Kodiak
 KODIAK_LIBRARY_DIR = $(BUILD_FOLDER)/kodiak/
+# Kodiak header location. FFI bindings in Kodiak.hs require Kodiak.h at compile
+# time. Passed via extra-include-dirs in cabal.project.local (package-level
+# include-dirs would be rejected by cabal check as a relative path outside tree).
+KODIAK_INCLUDE_DIR = $(KODIAK_PATH)/src/Adapters
 PRECISA_PATH ?= $(CURDIR)/PRECiSA
+# cabal.project.local must live at project root (next to cabal.project).
+PROJECT_ROOT ?= $(CURDIR)
 JOBS ?= 4
 BUILD_FOLDER ?= $(CURDIR)/build
 CABAL ?= cabal
@@ -41,8 +47,8 @@ all: build-precisa
 	@echo "all"
 
 clean:
-	@rm -f PRECiSA/cabal.project.local
-	@rm -fR PRECiSA/dist-newstyle/
+	@rm -f cabal.project.local
+	@rm -fR dist-newstyle/
 	@rm -fR build/
 
 checkout-submodules:
@@ -55,14 +61,12 @@ build-precisa: configure-precisa
 	)
 
 configure-precisa: build-kodiak
-	@(                                                                    \
-	    (                                                                 \
-	        echo "optimization: True";                                    \
-	        echo "";                                                      \
-	        echo "package precisa";                                       \
-	        echo "  extra-lib-dirs: $(KODIAK_LIBRARY_DIR)";               \
-	        echo "  ghc-options: -optl=-Wl,-rpath,$(KODIAK_LIBRARY_DIR)"; \
-	    ) > cabal.project.local;                                          \
+	@( \
+		cd $(PROJECT_ROOT); \
+		echo "package precisa" > cabal.project.local; \
+		echo "  extra-lib-dirs: $(KODIAK_LIBRARY_DIR)" >> cabal.project.local; \
+		echo "  extra-include-dirs: $(KODIAK_INCLUDE_DIR)" >> cabal.project.local; \
+		echo "  ghc-options: -optl=-Wl,-rpath,$(KODIAK_LIBRARY_DIR)" >> cabal.project.local; \
 	)
 
 .PHONY=update-pvs-grammar
