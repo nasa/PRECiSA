@@ -3,5 +3,6 @@
   "pvsFile": "../../benchmarks/FPBench/doppler2.pvs",
   "inputFile": "../../benchmarks/FPBench/doppler2.input",
   "stableError": 4.14E-13,
-  "unstableError": null
+  "unstableError": null,
+  "baselineCertFile": "../baseline/doppler2_cert.pvs"
 }

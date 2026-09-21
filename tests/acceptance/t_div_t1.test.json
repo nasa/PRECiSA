@@ -3,5 +3,6 @@
   "pvsFile": "../../benchmarks/FPBench/t_div_t1.pvs",
   "inputFile": "../../benchmarks/FPBench/t_div_t1.input",
   "stableError": 5.72E-14,
-  "unstableError": null
+  "unstableError": null,
+  "baselineCertFile": "../baseline/t_div_t1_cert.pvs"
 }

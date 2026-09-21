@@ -3,5 +3,6 @@
   "pvsFile": "../../benchmarks/FPBench/kepler0.pvs",
   "inputFile": "../../benchmarks/FPBench/kepler0.input",
   "stableError": 1.10E-13,
-  "unstableError": null
+  "unstableError": null,
+  "baselineCertFile": "../baseline/kepler0_cert.pvs"
 }

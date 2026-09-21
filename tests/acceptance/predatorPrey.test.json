@@ -3,5 +3,6 @@
   "pvsFile": "../../benchmarks/FPBench/predatorPrey.pvs",
   "inputFile": "../../benchmarks/FPBench/predatorPrey.input",
   "stableError": 1.84E-16,
-  "unstableError": null
+  "unstableError": null,
+  "baselineCertFile": "../baseline/predatorPrey_cert.pvs"
 }

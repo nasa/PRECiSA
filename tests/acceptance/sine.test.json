@@ -3,5 +3,6 @@
   "pvsFile": "../../benchmarks/FPBench/sine.pvs",
   "inputFile": "../../benchmarks/FPBench/sine.input",
   "stableError": 1.13E-15,
-  "unstableError": null
+  "unstableError": null,
+  "baselineCertFile": "../baseline/sine_cert.pvs"
 }

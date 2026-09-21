@@ -3,5 +3,6 @@
   "pvsFile": "../../benchmarks/FPBench/rigidBody2.pvs",
   "inputFile": "../../benchmarks/FPBench/rigidBody2.input",
   "stableError": 3.61E-11,
-  "unstableError": null
+  "unstableError": null,
+  "baselineCertFile": "../baseline/rigidBody2_cert.pvs"
 }

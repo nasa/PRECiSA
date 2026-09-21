@@ -3,5 +3,6 @@
   "pvsFile": "../../benchmarks/FPBench/turbine1.pvs",
   "inputFile": "../../benchmarks/FPBench/turbine1.input",
   "stableError": 2.59E-14,
-  "unstableError": null
+  "unstableError": null,
+  "baselineCertFile": "../baseline/turbine1_cert.pvs"
 }
