@@ -1,0 +1,10 @@
+{
+  "name": "sqroot-relative",
+  "comment": "Tests relative-error analysis. Certificates include relative error lemmas (*_rel_* lemmas). NOTE: --typecheck would hand the resulting *_rel_* lemmas and proof scripts to proveit; those are UNVERIFIED and have never been typechecked or proved, so a --typecheck run of this descriptor is expected to be inconclusive at best.",
+  "pvsFile": "../../benchmarks/FPBench/sqroot.pvs",
+  "inputFile": "../../benchmarks/FPBench/sqroot.input",
+  "flags": "--relative-error",
+  "stableError": 6.83481049534862E-16,
+  "unstableError": null,
+  "relativeStableError": 8.176221900977789E-16
+}

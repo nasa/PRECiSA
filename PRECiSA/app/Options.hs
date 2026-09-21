@@ -26,6 +26,7 @@ data Options = Options
    , optAssumeStability      :: Bool
    , jsonOutput              :: Bool
    , optSMTOptimization      :: Bool
+   , optRelativeError        :: Bool
    , optUsePVSio             :: Bool
    } deriving Show
 
@@ -97,6 +98,9 @@ optionsParser =
         <*> switch
           (  long "smt-optimization"
           <> help "Use SMT solvers to elimiate unfeasible cases" )
+        <*> switch
+          (  long "relative-error"
+          <> help "Also bound the relative error |real - fp| / |real|. Adds one global optimization per decision path." )
         <*> switch
           (  long "use-pvsio"
           <> help "Use PVSio for error maximization instead of Kodiak" )

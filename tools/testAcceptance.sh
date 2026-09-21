@@ -27,6 +27,7 @@ pvsFile=$(jq -r '.pvsFile' $test)
 inputFile=$(jq -r '.inputFile' $test)
 stableError=$(jq '.stableError' $test)
 unstableError=$(jq '.unstableError' $test)
+relativeStableError=$(jq -r '.relativeStableError' $test)
 extraFlags=$(jq -r '.flags // ""' $test)
 
 # Extract baseline paths for PVS files (optional fields)
@@ -65,6 +66,7 @@ fi
 
 cd $test_folder
 
+# Run PRECiSA to generate JSON output and certificates
 precisa --json $extraFlags $pvsFile $inputFile > $results
 
 sutStableError=$(jq '.results.[0].stableError' $results)
@@ -84,7 +86,19 @@ else
     status2=0
 fi
 
-if ! [[ $status1 -eq 0 && $status2 -eq 0 ]]; then
+if [ "$relativeStableError" != "null" ]; then
+    sutRelativeStableError=$(jq -r '.results.[0].relativeStableError' $results)
+    if [ "$relativeStableError" = "infinity" ] || [ "$sutRelativeStableError" = "infinity" ]; then
+        if [ "$relativeStableError" = "$sutRelativeStableError" ]; then status3=0; else status3=1; fi
+    else
+        $CHECKER $relativeStableError $sutRelativeStableError 2>/dev/null
+        status3=$?
+    fi
+else
+    status3=0
+fi
+
+if ! [[ $status1 -eq 0 && $status2 -eq 0 && $status3 -eq 0 ]]; then
     echo "$name failed:"
     echo "  reference:"
     echo "$(jq . $test | sed 's/^/    /')"

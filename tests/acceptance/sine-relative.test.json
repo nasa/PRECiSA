@@ -1,0 +1,10 @@
+{
+  "name": "sine-relative",
+  "comment": "Tests relative-error analysis. Certificates include relative error lemmas (*_rel_* lemmas). NOTE: --typecheck would hand the resulting *_rel_* lemmas and proof scripts to proveit; those are UNVERIFIED and have never been typechecked or proved, so a --typecheck run of this descriptor is expected to be inconclusive at best.",
+  "pvsFile": "../../benchmarks/FPBench/sine.pvs",
+  "inputFile": "../../benchmarks/FPBench/sine.input",
+  "flags": "--relative-error",
+  "stableError": 1.1296729607621835E-15,
+  "unstableError": null,
+  "relativeStableError": "infinity"
+}

@@ -52,6 +52,7 @@ export class PrecisaClient {
 	// paths to executables and libs
 	protected precisaPath: string;
 	protected kodiakPath: string;
+	protected relativeError: boolean;
 
 	// precisa options
 	protected precision: number = DEFAULT_PRECISION;
@@ -74,6 +75,9 @@ export class PrecisaClient {
 	}
 	protected getKodiakPath (): string {
 		return vscodeUtils.getConfiguration("precisa.xlib.kodiak");
+	}
+	protected getRelativeError (): boolean {
+		return vscodeUtils.getConfigurationFlag("precisa.relativeError");
 	}
 
 	/**
@@ -141,9 +145,11 @@ export class PrecisaClient {
 				// re-initialise pvs if the executable is different
 				const precisaPath: string = vscodeUtils.getConfiguration("precisa.path");
 				const kodiakPath: string = vscodeUtils.getConfiguration("precisa.xlib.kodiak");
-				if (this.precisaPath !== precisaPath || this.kodiakPath !== kodiakPath) {
+				const relativeError: boolean = this.getRelativeError();
+				if (this.precisaPath !== precisaPath || this.kodiakPath !== kodiakPath || this.relativeError !== relativeError) {
 					this.precisaPath = precisaPath;
 					this.kodiakPath = kodiakPath;
+					this.relativeError = relativeError;
 					// print debugging info
 					let msg: string = `Restarting PRECiSA from ${this.precisaPath}`;
 					if (this.kodiakPath) { msg += `\nKodiak: ${this.kodiakPath}`; }
@@ -151,7 +157,8 @@ export class PrecisaClient {
 					// start server
 					const req: StartPrecisaRequest = {
 						precisaPath: this.precisaPath,
-						kodiakPath: this.kodiakPath
+						kodiakPath: this.kodiakPath,
+						relativeError: this.relativeError
 					};
 					this.client.sendRequest(PrecisaServerCommands.startServer, req);
 				}
@@ -160,9 +167,11 @@ export class PrecisaClient {
 			// start precisa server
 			this.precisaPath = this.getPrecisaPath();
 			this.kodiakPath = this.getKodiakPath();
+			this.relativeError = this.getRelativeError();
 			const req: StartPrecisaRequest = {
 				precisaPath: this.precisaPath,
-				kodiakPath: this.kodiakPath
+				kodiakPath: this.kodiakPath,
+				relativeError: this.relativeError
 			};
 			this.client.sendRequest(PrecisaServerCommands.startServer, req);
 		});

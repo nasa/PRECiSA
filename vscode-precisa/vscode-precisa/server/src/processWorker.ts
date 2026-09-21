@@ -47,7 +47,9 @@ import { Connection } from "vscode-languageserver";
 export interface PrecisaJsonResult {
     function: string,
     stableError: number,
-    unstableError?: number
+    unstableError?: number,
+    relativeStableError?: number | "infinity",
+    relativeUnstableError?: number | "infinity"
 };
 
 /**
@@ -56,9 +58,10 @@ export interface PrecisaJsonResult {
  * ./precisa ../benchmarks/analysis/FPBench/carbonGas.pvs ../benchmarks/analysis/FPBench/carbonGas.input
  * ./precisa --paving --json ../benchmarks/analysis/FPBench/carbonGas.pvs ../benchmarks/analysis/FPBench/carbonGas.input`
  */
-export async function execPrecisa (req: PrecisaAnalysisRequest, config: { precisaPath: string, kodiakPath: string }, opt?: { paving?: boolean, connection?: Connection }): Promise<string | null> {
+export async function execPrecisa (req: PrecisaAnalysisRequest, config: { precisaPath: string, kodiakPath: string }, opt?: { paving?: boolean, relativeError?: boolean, connection?: Connection }): Promise<string | null> {
     opt = opt || {};
-    const options: string = opt.paving ? "--paving" : "--json";
+    const options: string = (opt.paving ? "--paving" : "--json")
+                          + (opt.relativeError ? " --relative-error" : "");
     const precisa: string = path.join(config?.precisaPath, 'precisa');
 
     // create temporary files in a dedicated folder under the temp dir

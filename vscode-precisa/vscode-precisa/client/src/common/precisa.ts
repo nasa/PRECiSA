@@ -109,7 +109,8 @@ export declare interface ComparativeAnalysisResponse extends PrecisaAnalysisResp
     compared: { // results for the compared function
         input: PrecisaInputData[],
         errorBound: string,
-        unstableErrorBound?: string
+        unstableErrorBound?: string,
+        relativeErrorBound?: string
     }
 }
 /**
@@ -117,7 +118,8 @@ export declare interface ComparativeAnalysisResponse extends PrecisaAnalysisResp
  */
 export declare interface StartPrecisaRequest {
     precisaPath: string, 
-    kodiakPath: string
+    kodiakPath: string,
+    relativeError?: boolean
 }
 /**
  * Request sent to precisa server to save results
@@ -134,6 +136,7 @@ export declare interface PrecisaSaveResultsResponse {
 export declare interface PrecisaAnalysisResponse extends PrecisaAnalysisRequest {
     errorBound: string,
     unstableErrorBound?: string,
+    relativeErrorBound?: string,
     diag?: Diagnostic
 }
 /**

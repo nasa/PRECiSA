@@ -1,0 +1,48 @@
+% Generic lemmas supporting PRECiSA's relative error certificates.
+%
+% UNVERIFIED: written without a PVS installation available. The proof scripts
+% below have NOT been run. Typecheck and prove before relying on them.
+relative_error : THEORY
+BEGIN
+
+  r, fp, e, rel : VAR real
+
+  % The lemma every generated relative error certificate instantiates.
+  % The first hypothesis is supplied by the absolute error lemma PRECiSA
+  % already generates; the second is discharged numerically.
+  relative_error_bound: LEMMA
+        abs(fp - r) <= e
+    AND e <= rel * abs(r)
+    IMPLIES abs(fp - r) <= rel * abs(r)
+
+%|- relative_error_bound : PROOF
+%|- (then (skeep) (flatten) (assert))
+%|- QED relative_error_bound
+
+  % Documentation only: never cited by a generated proof. Records that the
+  % multiplicative form above really does bound the relative error, which is
+  % the quantity PRECiSA reports to the user.
+  relative_error_quotient: LEMMA
+        r /= 0
+    AND abs(fp - r) <= rel * abs(r)
+    IMPLIES abs(fp - r) / abs(r) <= rel
+
+%|- relative_error_quotient : PROOF
+%|- (then (skeep) (flatten)
+%|-  (spread (case "abs(r) > 0")
+%|-   ((then (div-by -3 "abs(r)") (assert))
+%|-    (then (expand "abs") (assert)))))
+%|- QED relative_error_quotient
+
+  % The quotient in relative_error_quotient makes PVS emit a division TCC
+  % obliging abs(r) /= 0. It follows from that lemma's own r /= 0 hypothesis,
+  % which (skeep) brings into the sequent for (assert) to close. This is the
+  % ONLY TCC in this theory, so the wildcard cannot capture anything else.
+  %
+  % UNVERIFIED: this script has not been run.
+
+%|- *_TCC* : PROOF
+%|- (then (skeep) (assert))
+%|- QED
+
+END relative_error

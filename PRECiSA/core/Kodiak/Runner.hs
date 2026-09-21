@@ -184,8 +184,6 @@ maximizeAndReadBounds kInput =
 --   before still produces the same bound.
 instance KodiakRunnable KodiakInput () KodiakResult where
   run kInput _ =
-    -- putStrLn ""
-    -- putStrLn $ "   " ++ show kInput
     maximizeAndReadBounds kInput
       >>= either (throwIO . KodiakMaximizeFailed) return
 

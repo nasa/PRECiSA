@@ -11,6 +11,7 @@ import AbsPVSLang
 import AbsSpecLang
 import AbstractDomain
 import AbstractSemantics
+import AnalysisResult
 import Common.ControlFlow
 import Common.DecisionPath
 import Data.Generics.Uniplate.Data (transformM)
@@ -18,56 +19,68 @@ import FunctionCallErrorAbstraction
 import qualified Kodiak.Paver as KP
 import Kodiak.Runnable
 import Kodiak.Runner
+import RelativeError (computeRelError)
 import Utils (snd4, trd4, frt4)
 
 import Data.Maybe (fromMaybe, fromJust)
 import qualified Data.Map as Map
 
-type FieldErrorResult = (Conditions, LDecisionPath, ControlFlow, KodiakResult, AExpr, [FAExpr], [AExpr])
-
 computeAllErrorsInKodiakMap ::
   Bool
+  -> Bool
   -> [Decl]
   -> SemanticConfiguration
   -> Interpretation
   -> Spec
   -> KP.SearchParameters
-  -> IO [(String
-         ,PVSType
-         ,[Arg]
-         ,[(ResultField, [FieldErrorResult])])]
-computeAllErrorsInKodiakMap unfoldFunCalls' decls config interp (Spec specBinds) searchParams =
-  mapM (runFunction unfoldFunCalls' decls config interp specBinds searchParams) functionNames
+  -> IO [FunResult]
+computeAllErrorsInKodiakMap unfoldFunCalls' relErrEnabled decls config interp (Spec specBinds) searchParams =
+  mapM (runFunction unfoldFunCalls' relErrEnabled decls config interp specBinds searchParams) functionNames
   where
     declInterps = Map.filter isNumericalInterp interp
     functionNames = Map.keys declInterps
 
-runFunction :: Bool -> [Decl] -> SemanticConfiguration -> Interpretation -> [SpecBind] -> KP.SearchParameters -> String -> IO (String, PVSType, [Arg], [(ResultField, [FieldErrorResult])])
-runFunction unfoldFunCalls' decls config interp specBinds searchParams fname = do
+runFunction :: Bool -> Bool -> [Decl] -> SemanticConfiguration -> Interpretation -> [SpecBind] -> KP.SearchParameters -> String -> IO FunResult
+runFunction unfoldFunCalls' relErrEnabled decls config interp specBinds searchParams fname = do
   let funInfo = fromMaybe errorMsg $ Map.lookup fname interp
   let fprec = snd4 funInfo
   let args = trd4 funInfo
   let fSem = frt4 funInfo
   let fields = Map.keys fSem
-  results <- mapM (runFunField unfoldFunCalls' decls config interp specBinds searchParams fname fSem) fields
-  return (fname, fprec, args, results)
+  results <- mapM (runFunField unfoldFunCalls' relErrEnabled decls config interp specBinds searchParams fname fSem) fields
+  return FunResult { frName = fname, frType = fprec, frArgs = args, frFields = results }
   where
     errorMsg = error $ "computeAllErrorsInKodiakMap: function " ++ fname ++ " not found."
 
-runFunField :: Bool -> [Decl] -> SemanticConfiguration -> Interpretation -> [SpecBind] -> KP.SearchParameters -> String -> Map.Map ResultField [ACeb] -> ResultField -> IO (ResultField, [FieldErrorResult])
-runFunField unfoldFunCalls' decls config interp specBinds searchParams fname sem field = do
+runFunField :: Bool -> Bool -> [Decl] -> SemanticConfiguration -> Interpretation -> [SpecBind] -> KP.SearchParameters -> String -> Map.Map ResultField [ACeb] -> ResultField -> IO (ResultField, [PathResult])
+runFunField unfoldFunCalls' relErrEnabled decls config interp specBinds searchParams fname sem field = do
   let funErrExprs = fromMaybe errorMsgField (Map.lookup field sem)
   let functionErrorExpressionsMap = map aceb2PathFlowErrorTuple funErrExprs
-  fieldResults <- mapM (runErrorExpression unfoldFunCalls' decls config interp specBinds searchParams fname) functionErrorExpressionsMap
+  fieldResults <- mapM (runErrorExpression unfoldFunCalls' relErrEnabled decls config interp specBinds searchParams fname) functionErrorExpressionsMap
   return (field, fieldResults)
   where
     errorMsgField = error $ "runFunction: function " ++ show fname ++ " not found in input bound specification."
 
-runErrorExpression :: Bool -> [Decl] -> SemanticConfiguration -> Interpretation -> [SpecBind] -> KP.SearchParameters -> String -> (Conditions, LDecisionPath, ControlFlow, EExpr, [FAExpr], [AExpr]) -> IO FieldErrorResult
-runErrorExpression unfoldFunCalls' decls config interp specBinds searchParams fname (conditions, path, flow, err, fpes, res) = do
+runErrorExpression :: Bool -> Bool -> [Decl] -> SemanticConfiguration -> Interpretation -> [SpecBind] -> KP.SearchParameters -> String -> (Conditions, LDecisionPath, ControlFlow, EExpr, [FAExpr], [AExpr]) -> IO PathResult
+runErrorExpression unfoldFunCalls' relErrEnabled decls config interp specBinds searchParams fname (conditions, path, flow, err, fpes, res) = do
   ki <- buildKodiakInput unfoldFunCalls' decls config interp specBinds searchParams fname err
   result <- run ki ()
-  return (conditions, path, flow, result, initAExpr err, fpes, res)
+  let errExpr = initAExpr err
+  relError <- if relErrEnabled
+              then toRelErrorResult <$> computeRelError searchParams fname binds errExpr (maximumUpperBound result) res
+              else return RelErrorOff
+  return PathResult
+    { prConds = conditions
+    , prPath = path
+    , prFlow = flow
+    , prKodiak = result
+    , prErrExpr = errExpr
+    , prFpExprs = fpes
+    , prRealExprs = res
+    , prRelError = relError
+    }
+  where
+    binds = fromJust $ findInSpec fname specBinds
 
 buildKodiakInput :: Bool -> [Decl] -> SemanticConfiguration -> Interpretation -> [SpecBind] -> KP.SearchParameters -> String -> EExpr -> IO KodiakInput
 buildKodiakInput unfoldFunCalls' decls config interp specBinds searchParams fname err = do

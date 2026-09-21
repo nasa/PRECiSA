@@ -65,6 +65,7 @@ export interface Settings {
  */
 export declare interface PrecisaDiagnostic extends Diagnostic {
     unstableErrorBound?: string,
+    relativeErrorBound?: string,
     errorBound?: string
 };
 
@@ -77,7 +78,9 @@ export declare interface PrecisaResult {
 	results: {
 		function: string,
 		unstableError?: string,
-		stableError?: string
+		stableError?: string,
+		relativeStableError?: number | "infinity",
+		relativeUnstableError?: number | "infinity"
 	}[]
 };
 
@@ -108,6 +111,8 @@ export class VSCodePrecisaServer {
 	protected precisaPath: string;
   	// path to kodiak
 	protected kodiakPath: string;
+	// whether precisa should also bound the relative error
+	protected relativeError: boolean;
 	// connection to the client
 	protected connection: Connection;
 	// list of documents opened in the editor
@@ -226,6 +231,7 @@ export class VSCodePrecisaServer {
 			this.connection.onRequest(PrecisaServerCommands.startServer, async (req: StartPrecisaRequest) => {
 				this.precisaPath = fsUtils.tildeExpansion(req?.precisaPath);
                 this.kodiakPath = fsUtils.tildeExpansion(req?.kodiakPath);
+				this.relativeError = !!req?.relativeError;
 				// create service providers
 				this.createServiceProviders();
 			});
@@ -330,7 +336,7 @@ export class VSCodePrecisaServer {
 	 */
 	protected async computeErrorBounds (req: PrecisaAnalysisRequest): Promise<Diagnostic> {
 		if (req) {
-            const msg: string = await execPrecisa(req, { precisaPath: this.precisaPath, kodiakPath: this.kodiakPath }, { connection: this.connection });
+            const msg: string = await execPrecisa(req, { precisaPath: this.precisaPath, kodiakPath: this.kodiakPath }, { relativeError: this.relativeError, connection: this.connection });
             if (msg) {
 				console.log(msg);
 				try {
@@ -346,6 +352,14 @@ export class VSCodePrecisaServer {
 						};
 						// match = /\bunstable\s*paths\s*:\s*(.*)/g.exec(msg);
 						const unstableErrorBound: string = jsonRes.results[0].unstableError; //(match && match.length > 1) ? Number.parseFloat(match[1]).toExponential() : null;
+
+						const relativeStableErrorRaw = jsonRes.results[0].relativeStableError;
+						// JSON shape is not verified at runtime; coerce and validate defensively.
+						const relativeErrorBound: string | undefined =
+							relativeStableErrorRaw === null || relativeStableErrorRaw === undefined ? undefined
+							: relativeStableErrorRaw === "infinity" ? "+infinity"
+							: Number.isFinite(Number(relativeStableErrorRaw)) ? Number(relativeStableErrorRaw).toExponential()
+							: undefined;
 
 						// match = /Numeric lemmas and proofs in: (.*)/g.exec(msg);
 						const numeric_certificate_file: string = jsonRes.numCertFile;//(match && match.length > 1) ? match[1] : null;
@@ -383,7 +397,8 @@ export class VSCodePrecisaServer {
 							// use diagnostic-related array to point to the pvs proof files
 							relatedInformation: [ numericProofFile, symbolicProofFile ],
 							errorBound,
-							unstableErrorBound
+							unstableErrorBound,
+							relativeErrorBound
 						};
 						return res;
 					}
@@ -473,6 +488,7 @@ export class VSCodePrecisaServer {
 				...req,
 				errorBound: diag?.errorBound,
 				unstableErrorBound: diag?.unstableErrorBound,
+				relativeErrorBound: diag?.relativeErrorBound,
 				//@ts-ignore
 				diag
 			};
@@ -558,6 +574,7 @@ export class VSCodePrecisaServer {
 				...req,
 				errorBound: diag2?.errorBound,
 				unstableErrorBound: diag2?.unstableErrorBound,
+				relativeErrorBound: diag2?.relativeErrorBound,
 				//@ts-ignore
 				diag: diag2
 			};
@@ -566,6 +583,7 @@ export class VSCodePrecisaServer {
 				...req,
 				errorBound: diag1?.errorBound,
 				unstableErrorBound: diag1?.unstableErrorBound,
+				relativeErrorBound: diag1?.relativeErrorBound,
 				//@ts-ignore
 				diag: diag1,
 				compared

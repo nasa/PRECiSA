@@ -30,6 +30,7 @@ build
 
 # Test artifacts
 *.eraseme
+tests/differential-results/
 
 # VSCode
 .vscode

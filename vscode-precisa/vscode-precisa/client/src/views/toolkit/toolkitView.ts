@@ -945,6 +945,7 @@ export class ToolkitView extends Backbone.Model {
             // % @fp-error 5.773159728050815e-15 (instability 2.1000244140625007e+1) when X in [ 2, 4 ], Y in [ 5, 5 ] (p=7, d=14)
             const message: string = `% ${annotations.fp_error} ${Number.parseFloat(desc.errorBound).toExponential()}`
                 + `${desc.unstableErrorBound ? " (instability " + Number.parseFloat(desc.unstableErrorBound).toExponential() + ")" : ""}`
+                + `${desc.relativeErrorBound ? " (relative " + desc.relativeErrorBound + ")" : ""}`
                 + ` when ${precisaRangeToString(desc)} (p=${desc.options.precision}, d=${desc.options.depth})\n`;
             // TODO: check if we want to remove previous annotations
             edit.insert(uri, position, message);

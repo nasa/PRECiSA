@@ -70,6 +70,7 @@ library
     AbsSpecLang
     AbstractDomain
     AbstractSemantics
+    AnalysisResult
     Certificate.Numerical
     Certificate.Real
     Certificate.Symbolic
@@ -79,6 +80,7 @@ library
     ErrorResult
     FPCore.FPCorePrinter
     FreshVariables
+    JSON
     Kodiak.ErrorComputation
     Kodiak.Expression
     Kodiak.Generator
@@ -101,6 +103,7 @@ library
     Parser.ParFPCoreLang
     Parser.ParRawSpecLang
     Parser.Parser
+    RelativeError
     SMT.GenerateSMTModel
     SMT.PrettyPrinter
     SMT.SMT
@@ -117,7 +120,6 @@ executable precisa
     , frontend-pvs
   hs-source-dirs: app/
   other-modules:
-    JSON,
     Options,
     PRECiSA
   main-is:
@@ -162,6 +164,7 @@ test-suite precisaTests
     MapPVSLangASTTest
     MapRealPVSLangASTTest
     MapFPCoreLangASTTest
+    RelativeErrorTest
     SMT.PrettyPrinterTest
     SMT.Test
     TestUtils
