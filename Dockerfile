@@ -33,6 +33,7 @@ RUN apt install -yq    \
       cmake            \
       git              \
       g++-multilib     \
+      jq               \
       locales          \
       make             \
       vim              \

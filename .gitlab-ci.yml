@@ -30,6 +30,11 @@ unit_tests:
   script:
     - cabal run precisaTests -j -- --hide-successes --ansi-tricks=false
 
+acceptance_tests:
+  stage: test
+  script:
+    - tools/testAllAcceptance.sh --check-certificates
+
 collection_tests:
   stage: test
   script:

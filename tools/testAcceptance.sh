@@ -69,8 +69,8 @@ cd $test_folder
 # Run PRECiSA to generate JSON output and certificates
 precisa --json $extraFlags $pvsFile $inputFile > $results
 
-sutStableError=$(jq '.results.[0].stableError' $results)
-sutUnstableError=$(jq '.results.[0].unstableError' $results)
+sutStableError=$(jq '.results[0].stableError' $results)
+sutUnstableError=$(jq '.results[0].unstableError' $results)
 
 if ! [ $stableError = "null" ]; then
     $CHECKER $stableError $sutStableError 2>/dev/null
@@ -87,7 +87,7 @@ else
 fi
 
 if [ "$relativeStableError" != "null" ]; then
-    sutRelativeStableError=$(jq -r '.results.[0].relativeStableError' $results)
+    sutRelativeStableError=$(jq -r '.results[0].relativeStableError' $results)
     if [ "$relativeStableError" = "infinity" ] || [ "$sutRelativeStableError" = "infinity" ]; then
         if [ "$relativeStableError" = "$sutRelativeStableError" ]; then status3=0; else status3=1; fi
     else
