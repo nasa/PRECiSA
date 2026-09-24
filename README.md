@@ -210,7 +210,7 @@ $ proveit -sc num_cert_example.pvs
 
 ## Version
 
-*PRECiSA v-4.1.0* (July 2026)
+*PRECiSA v-4.2.0* (September 2026)
 
 ## Contact information
 If you have any question or problem, please contact:
