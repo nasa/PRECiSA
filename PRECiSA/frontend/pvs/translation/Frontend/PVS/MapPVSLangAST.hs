@@ -413,6 +413,54 @@ raw2FAExpr tc env fenv x = runM defaultEnv (raw2FAExprM x)
           typeContext = tc
         }
 
+unaryBuiltins :: [(String, Expr -> M FAExpr)]
+unaryBuiltins =
+  [ ("floor",  unaryFPOp Op.FloorOp Nothing)
+  , ("Sfloor", unaryFPOp Op.FloorOp (Just FPSingle))
+  , ("Dfloor", unaryFPOp Op.FloorOp (Just FPDouble))
+  , ("abs",    unaryFPOp Op.AbsOp   Nothing)
+  , ("Sabs",   unaryFPOp Op.AbsOp   (Just FPSingle))
+  , ("Dabs",   unaryFPOp Op.AbsOp   (Just FPDouble))
+  , ("sqrt",   unaryFPOp Op.SqrtOp  Nothing)
+  , ("Ssqrt",  unaryFPOp Op.SqrtOp  (Just FPSingle))
+  , ("Dsqrt",  unaryFPOp Op.SqrtOp  (Just FPDouble))
+  , ("sin",    unaryFPOp Op.SinOp   Nothing)
+  , ("Ssin",   unaryFPOp Op.SinOp   (Just FPSingle))
+  , ("Dsin",   unaryFPOp Op.SinOp   (Just FPDouble))
+  , ("cos",    unaryFPOp Op.CosOp   Nothing)
+  , ("Scos",   unaryFPOp Op.CosOp   (Just FPSingle))
+  , ("Dcos",   unaryFPOp Op.CosOp   (Just FPDouble))
+  , ("tan",    unaryFPOp Op.TanOp   Nothing)
+  , ("Stan",   unaryFPOp Op.TanOp   (Just FPSingle))
+  , ("Dtan",   unaryFPOp Op.TanOp   (Just FPDouble))
+  , ("asin",   unaryFPOp Op.AsinOp  Nothing)
+  , ("Sasin",  unaryFPOp Op.AsinOp  (Just FPSingle))
+  , ("Dasin",  unaryFPOp Op.AsinOp  (Just FPDouble))
+  , ("acos",   unaryFPOp Op.AcosOp  Nothing)
+  , ("Sacos",  unaryFPOp Op.AcosOp  (Just FPSingle))
+  , ("Dacos",  unaryFPOp Op.AcosOp  (Just FPDouble))
+  , ("atan",   unaryFPOp Op.AtanOp  Nothing)
+  , ("Satan",  unaryFPOp Op.AtanOp  (Just FPSingle))
+  , ("Datan",  unaryFPOp Op.AtanOp  (Just FPDouble))
+  , ("ln",     unaryFPOp Op.LnOp    Nothing)
+  , ("Sln",    unaryFPOp Op.LnOp    (Just FPSingle))
+  , ("Dln",    unaryFPOp Op.LnOp    (Just FPDouble))
+  , ("exp",    unaryFPOp Op.ExpoOp  Nothing)
+  , ("Sexp",   unaryFPOp Op.ExpoOp  (Just FPSingle))
+  , ("Dexp",   unaryFPOp Op.ExpoOp  (Just FPDouble))
+  , ("Ineg",   unaryFPOp Op.NegOp   (Just TInt))
+  , ("Sneg",   unaryFPOp Op.NegOp   (Just FPSingle))
+  , ("Dneg",   unaryFPOp Op.NegOp   (Just FPDouble))
+  , ("RtoS",   pure . realToFP FPSingle)
+  , ("RtoD",   pure . realToFP FPDouble)
+  , ("ItoS",   pure . intToFP  FPSingle)
+  , ("ItoD",   pure . intToFP  FPDouble)
+  ]
+  where
+    unaryFPOp op ty fae = do
+      fae' <- raw2FAExprM fae
+      pure (UnaryFPOp op (fromMaybe (getPVSType fae') ty) fae')
+
 raw2FAExprM :: Expr -> M FAExpr
 raw2FAExprM e
   | Raw.Int n     <- e = pure (PVS.FInt n)
@@ -438,51 +486,8 @@ raw2FAExprM e
           case lookup i env of
             Just fp -> pure (PVS.FVar fp i)
             Nothing -> error $ "Identifier " ++ show i ++ "not found." ++ " in env: " ++ show env ++ " ,nor in fenv: " ++ show fenv
-  | Raw.Call (Raw.ExprId (Raw.Id f)) [fae] <- e = do
-    fae' <- raw2FAExprM fae
-    let fp = getPVSType fae'
-    pure $ case f of
-      "floor"  -> AbsPVSLang.UnaryFPOp Op.FloorOp fp       fae'
-      "Sfloor" -> AbsPVSLang.UnaryFPOp Op.FloorOp FPSingle fae'
-      "Dfloor" -> AbsPVSLang.UnaryFPOp Op.FloorOp FPDouble fae'
-      "abs"    -> AbsPVSLang.UnaryFPOp Op.AbsOp   fp       fae'
-      "Sabs"   -> AbsPVSLang.UnaryFPOp Op.AbsOp   FPSingle fae'
-      "Dabs"   -> AbsPVSLang.UnaryFPOp Op.AbsOp   FPDouble fae'
-      "sqrt"   -> AbsPVSLang.UnaryFPOp Op.SqrtOp  fp       fae'
-      "Ssqrt"  -> AbsPVSLang.UnaryFPOp Op.SqrtOp  FPSingle fae'
-      "Dsqrt"  -> AbsPVSLang.UnaryFPOp Op.SqrtOp  FPDouble fae'
-      "sin"    -> AbsPVSLang.UnaryFPOp Op.SinOp   fp       fae'
-      "Ssin"   -> AbsPVSLang.UnaryFPOp Op.SinOp   FPSingle fae'
-      "Dsin"   -> AbsPVSLang.UnaryFPOp Op.SinOp   FPDouble fae'
-      "cos"    -> AbsPVSLang.UnaryFPOp Op.CosOp   fp       fae'
-      "Scos"   -> AbsPVSLang.UnaryFPOp Op.CosOp   FPSingle fae'
-      "Dcos"   -> AbsPVSLang.UnaryFPOp Op.CosOp   FPDouble fae'
-      "tan"    -> AbsPVSLang.UnaryFPOp Op.TanOp   fp       fae'
-      "Stan"   -> AbsPVSLang.UnaryFPOp Op.TanOp   FPSingle fae'
-      "Dtan"   -> AbsPVSLang.UnaryFPOp Op.TanOp   FPDouble fae'
-      "asin"   -> AbsPVSLang.UnaryFPOp Op.AsinOp  fp       fae'
-      "Sasin"  -> AbsPVSLang.UnaryFPOp Op.AsinOp  FPSingle fae'
-      "Dasin"  -> AbsPVSLang.UnaryFPOp Op.AsinOp  FPDouble fae'
-      "acos"   -> AbsPVSLang.UnaryFPOp Op.AcosOp  fp       fae'
-      "Sacos"  -> AbsPVSLang.UnaryFPOp Op.AcosOp  FPSingle fae'
-      "Dacos"  -> AbsPVSLang.UnaryFPOp Op.AcosOp  FPDouble fae'
-      "atan"   -> AbsPVSLang.UnaryFPOp Op.AtanOp  fp       fae'
-      "Satan"  -> AbsPVSLang.UnaryFPOp Op.AtanOp  FPSingle fae'
-      "Datan"  -> AbsPVSLang.UnaryFPOp Op.AtanOp  FPDouble fae'
-      "ln"     -> AbsPVSLang.UnaryFPOp Op.LnOp    fp       fae'
-      "Sln"    -> AbsPVSLang.UnaryFPOp Op.LnOp    FPSingle fae'
-      "Dln"    -> AbsPVSLang.UnaryFPOp Op.LnOp    FPDouble fae'
-      "exp"    -> AbsPVSLang.UnaryFPOp Op.ExpoOp  fp       fae'
-      "Sexp"   -> AbsPVSLang.UnaryFPOp Op.ExpoOp  FPSingle fae'
-      "Dexp"   -> AbsPVSLang.UnaryFPOp Op.ExpoOp  FPDouble fae'
-      "Ineg"   -> AbsPVSLang.UnaryFPOp Op.NegOp   TInt     fae'
-      "Sneg"   -> AbsPVSLang.UnaryFPOp Op.NegOp   FPSingle fae'
-      "Dneg"   -> AbsPVSLang.UnaryFPOp Op.NegOp   FPDouble fae'
-      "RtoS"   -> realToFP FPSingle fae
-      "RtoD"   -> realToFP FPDouble fae
-      "ItoS"   -> intToFP  FPSingle fae
-      "ItoD"   -> intToFP  FPDouble fae
-      _        -> error $ "[raw2FAExpr] unexpected function identifier: " ++ show f
+  | Raw.Call (Raw.ExprId (Raw.Id f)) [fae] <- e
+  , Just translate <- lookup f unaryBuiltins = translate fae
   | Raw.Call (Raw.ExprId (Raw.Id "nth")) [Raw.ExprId (Raw.Id name),idx] <- e
     = do
         idx' <- raw2FAExprM idx

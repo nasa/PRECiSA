@@ -66,6 +66,30 @@ test__raw2FAExpr =
           PVS.BinaryFPOp (OP.ArrayAddOp 3) PVS.FPDouble (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "x") (PVS.FVar (PVS.ArrayOf 3 PVS.FPDouble) "y"),
           ([("x", PVS.ArrayOf 3 PVS.FPDouble), ("y", PVS.ArrayOf 3 PVS.FPDouble)], [], [])
         )
+    , test
+        ( "unary built-in",
+          Raw.Call (Raw.ExprId (Raw.Id "sqrt")) [Raw.ExprId (Raw.Id "x")],
+          PVS.UnaryFPOp OP.SqrtOp PVS.FPDouble (PVS.FVar PVS.FPDouble "x"),
+          ([("x", PVS.FPDouble)], [], [])
+        )
+    , test
+        ( "unary built-in with explicit precision",
+          Raw.Call (Raw.ExprId (Raw.Id "Dabs")) [Raw.ExprId (Raw.Id "x")],
+          PVS.UnaryFPOp OP.AbsOp PVS.FPDouble (PVS.FVar PVS.FPDouble "x"),
+          ([("x", PVS.FPDouble)], [], [])
+        )
+    , test
+        ( "one-argument function call",
+          Raw.Call (Raw.ExprId (Raw.Id "f")) [Raw.ExprId (Raw.Id "x")],
+          PVS.FEFun False "f" PVS.ResValue PVS.FPDouble [PVS.FVar PVS.FPDouble "x"],
+          ([("x", PVS.FPDouble)], [("f", PVS.FPDouble)], [])
+        )
+    , test
+        ( "two-argument function call",
+          Raw.Call (Raw.ExprId (Raw.Id "f")) [Raw.ExprId (Raw.Id "x"), Raw.ExprId (Raw.Id "y")],
+          PVS.FEFun False "f" PVS.ResValue PVS.FPDouble [PVS.FVar PVS.FPDouble "x", PVS.FVar PVS.FPDouble "y"],
+          ([("x", PVS.FPDouble), ("y", PVS.FPDouble)], [("f", PVS.FPDouble)], [])
+        )
     ]
   where
     test (name, e, e', (vEnv, fEnv, tyEnv)) = testCase name $ MAP.raw2FAExpr tyEnv vEnv fEnv e @?= e'
